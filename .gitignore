@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+addons-customize/
+.user_data_uid_*
+chromedriver_*
+config/odoo.conf
+.env
+docker-compose.yaml
