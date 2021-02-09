@@ -16,7 +16,7 @@ services:
     entrypoint: "/usr/bin/odoo -c /etc/odoo/odoo.conf"
   db:
     container_name: ${DB_HOST}
-    image: ${DB_IMAGE}:${BD_TAG}
+    image: ${DB_IMAGE}:${DB_TAG}
     environment:
       - POSTGRES_DB=${DB_NAME}
       - POSTGRES_PASSWORD=${DB_PASSWD}
