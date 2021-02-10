@@ -208,7 +208,6 @@ class Factura(Xmleable):
         xml_doc.appendChild(self.doc)
         return xml_doc
 
-
 class ResumenDiario(Xmleable):
     def __init__(self, ubl_version="2.0", customization_id="1.1", doc_id=None,
                  issue_date=None, reference_date=None, accounting_supplier_party=None,
@@ -312,7 +311,6 @@ class ResumenDiario(Xmleable):
         xml_doc = minidom.Document()
         xml_doc.appendChild(self.doc)
         return xml_doc
-
 
 class ComunicacionBaja(Xmleable):
     def __init__(self, ubl_version="2.0", customization_id="1.0", doc_id=None,
@@ -545,7 +543,6 @@ class CreditNote(Xmleable):
         xml_doc.appendChild(self.doc)
         return xml_doc
 
-
 class DebitNote(Xmleable):
     def __init__(self, ubl_extensions=None, ubl_version="2.1", doc_id=None,
                  issue_date=None, issue_time=None, document_currency_code=None, customization="2.0",
@@ -685,7 +682,6 @@ class DebitNote(Xmleable):
         xml_doc = minidom.Document()
         xml_doc.appendChild(self.doc)
         return xml_doc
-
 
 class DespatchAdvice(Xmleable):
     def __init__(self, ubl_extensions=None, ubl_version="2.1", doc_id=None, customization="2.0",
