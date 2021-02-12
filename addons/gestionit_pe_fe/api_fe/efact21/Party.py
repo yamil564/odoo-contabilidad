@@ -1,7 +1,7 @@
-from efact21.BasicGlobal import RegistrationName
-from efact21.PartyTaxScheme import PartyTaxScheme
-from efact21.RegistrationAddress import RegistrationAddress
-from efact21.util import Xmleable, default_document
+from .BasicGlobal import RegistrationName
+from .PartyTaxScheme import PartyTaxScheme
+from .RegistrationAddress import RegistrationAddress
+from .util import Xmleable, default_document
 
 
 class PartyName(Xmleable):

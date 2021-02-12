@@ -1,7 +1,7 @@
-from efact21.BasicGlobal import RegistrationName
-from efact21.RegistrationAddress import RegistrationAddress
-from efact21.TaxScheme import TaxScheme
-from efact21.util import Xmleable, default_document
+from .BasicGlobal import RegistrationName
+from .RegistrationAddress import RegistrationAddress
+from .TaxScheme import TaxScheme
+from .util import Xmleable, default_document
 
 
 class CompanyID(Xmleable):

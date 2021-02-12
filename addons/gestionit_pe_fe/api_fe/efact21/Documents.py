@@ -1,24 +1,24 @@
 from xml.dom import minidom
 
-from efact21 import BasicGlobal, InvoiceLine
-from efact21 import BillingReference
-from efact21 import DiscrepancyResponse
-from efact21 import General
-from efact21.CustomerParty import AccountingCustomerParty, DeliveryCustomerParty
-from efact21.DespatchLine import DespatchLine
-from efact21.Shipment import Shipment
-from efact21.SupplierParty import AccountingSupplierParty, DespatchSupplierParty, SellerSupplierParty
-from efact21.DocumentReference import AdditionalDocumentReference, DespatchDocumentReference
-from efact21.MonetaryTotal import LegalMonetaryTotal, RequestedMonetaryTotal
-from efact21.OrderReference import OrderReference
-from efact21.PrepaidPayment import PrepaidPayment
-from efact21.Signature import Signature
-from efact21.SummaryDocumentsLine import SummaryDocumentsLine
-from efact21.VoidedDocumentsLine import VoidedDocumentsLine
-from efact21.TaxTotal import TaxTotal
-from efact21.util import Xmleable, default_document
-from efact21 import CreditNoteLine, DebitNoteLine
-from efact21.AllowanceCharge import AllowanceCharge 
+from . import BasicGlobal, InvoiceLine
+from . import BillingReference
+from . import DiscrepancyResponse
+from . import General
+from .CustomerParty import AccountingCustomerParty, DeliveryCustomerParty
+from .DespatchLine import DespatchLine
+from .Shipment import Shipment
+from .SupplierParty import AccountingSupplierParty, DespatchSupplierParty, SellerSupplierParty
+from .DocumentReference import AdditionalDocumentReference, DespatchDocumentReference
+from .MonetaryTotal import LegalMonetaryTotal, RequestedMonetaryTotal
+from .OrderReference import OrderReference
+from .PrepaidPayment import PrepaidPayment
+from .Signature import Signature
+from .SummaryDocumentsLine import SummaryDocumentsLine
+from .VoidedDocumentsLine import VoidedDocumentsLine
+from .TaxTotal import TaxTotal
+from .util import Xmleable, default_document
+from . import CreditNoteLine, DebitNoteLine
+from .AllowanceCharge import AllowanceCharge 
 
 class Factura(Xmleable):
     def __init__(self, ubl_extensions=None, ubl_version="2.1", id=None,

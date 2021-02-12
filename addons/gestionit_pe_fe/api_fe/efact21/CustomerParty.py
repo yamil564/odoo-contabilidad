@@ -1,6 +1,6 @@
-from efact21.util import Xmleable, default_document
-from efact21.Party import Party
-from efact21.Accounting import AdditionalAccountID, CustomerAssignedAccountID
+from .util import Xmleable, default_document
+from .Party import Party
+from .Accounting import AdditionalAccountID, CustomerAssignedAccountID
 
 
 class AccountingCustomerParty(Xmleable):

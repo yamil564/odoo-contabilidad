@@ -1,5 +1,5 @@
-from efact21.AmountTypes import PaidAmount
-from efact21.util import Xmleable, default_document, createElementContent
+from .AmountTypes import PaidAmount
+from .util import Xmleable, default_document, createElementContent
 
 
 class ID(Xmleable):

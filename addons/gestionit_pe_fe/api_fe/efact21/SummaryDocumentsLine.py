@@ -1,11 +1,11 @@
-from efact21 import General
-from efact21 import TaxTotal
-from efact21.CustomerParty import AccountingCustomerParty
-from efact21.BasicGlobal import DocumentTypeCode
-from efact21.General import SimpleText
-from efact21.util import Xmleable, default_document, createElementContent
-from efact21 import AmountTypes
-from efact21.BillingReference import InvoiceDocumentReference,BillingReference
+from . import General
+from . import TaxTotal
+from .CustomerParty import AccountingCustomerParty
+from .BasicGlobal import DocumentTypeCode
+from .General import SimpleText
+from .util import Xmleable, default_document, createElementContent
+from . import AmountTypes
+from .BillingReference import InvoiceDocumentReference,BillingReference
 
 class LineID(SimpleText):
     def __init__(self, id):

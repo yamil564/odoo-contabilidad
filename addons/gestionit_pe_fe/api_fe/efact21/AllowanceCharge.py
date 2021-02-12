@@ -1,6 +1,6 @@
 
-from efact21.util import Xmleable, default_document, createCDataContent, createElementContent
-from efact21.AmountTypes import Amount,BaseAmount
+from .util import Xmleable, default_document, createCDataContent, createElementContent
+from .AmountTypes import Amount,BaseAmount
 
 
 class ChargeIndicator(Xmleable):

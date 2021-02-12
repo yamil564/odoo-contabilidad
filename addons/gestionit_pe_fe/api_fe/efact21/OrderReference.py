@@ -1,5 +1,5 @@
-from efact21.BasicGlobal import ID
-from efact21.util import Xmleable, default_document, createElementContent
+from .BasicGlobal import ID
+from .util import Xmleable, default_document, createElementContent
 
 
 class OrderTypeCode(Xmleable):

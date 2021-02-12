@@ -1,8 +1,8 @@
-from efact21.TaxTotal import TaxTotal
-from efact21.util import Xmleable, default_document, createElementContent
-from efact21.AmountTypes import LineExtensionAmount
-from efact21.Lines import PricingReference, Item, Price
-from efact21.AllowanceCharge import AllowanceCharge 
+from .TaxTotal import TaxTotal
+from .util import Xmleable, default_document, createElementContent
+from .AmountTypes import LineExtensionAmount
+from .Lines import PricingReference, Item, Price
+from .AllowanceCharge import AllowanceCharge 
 
 
 class InvoicedQuantity(Xmleable):

@@ -1,5 +1,5 @@
-from efact21 import BasicGlobal
-from efact21.util import Xmleable, default_document
+from .import BasicGlobal
+from .util import Xmleable, default_document
 
 
 class InvoiceDocumentReference(Xmleable):

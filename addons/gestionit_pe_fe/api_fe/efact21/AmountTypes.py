@@ -1,4 +1,4 @@
-from efact21.util import Xmleable, createElementContent
+from .util import Xmleable, createElementContent
 
 
 class Amount(Xmleable):

@@ -1,4 +1,4 @@
-from efact21.util import Xmleable, default_document
+from .util import Xmleable, default_document
 
 
 class RegistrationAddress(Xmleable):

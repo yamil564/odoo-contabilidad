@@ -1,0 +1,86 @@
+{
+    "fechaEmision": "2018-06-01",
+    "indicadores": {},
+    "descuento": {
+        "mntTotalDescuentos": 0.0,
+        "mntDescuentoGlobal": 0.0
+    },
+    "tipoDocumento": "01",
+    "idTransaccion": "F001-00000117",
+    "correoReceptor": "juanperez@gmail.com",
+    "impuesto": [
+        {
+            "codImpuesto": "1000",
+            "montoImpuesto": 1218.0,
+            "tasaImpuesto": 0.18
+        }
+    ],
+    "detalle": [
+        {
+            "montoIsc": 0.0,
+            "codItem": "6",
+            "idOperacion": "169",
+            "precioItemSinIgv": 600.0,
+            "tasaIgv": 0.18,
+            "montoItem": 1416.0,
+            "codAfectacionIgv": "10",
+            "unidadMedidaItem": "NIU",
+            "precioItemReferencia": 0.0,
+            "codSistemaCalculoIsc": "01",
+            "precioItem": 708.0,
+            "nombreItem": "Celular HUAWEI",
+            "cantidadItem": 2.0,
+            "montoIgv": 216.0,
+            "descuentoMonto": 0.0
+        },
+        {
+            "montoIsc": 0.0,
+            "codItem": "5",
+            "idOperacion": "169",
+            "precioItemSinIgv": 18.0,
+            "tasaIgv": 0.18,
+            "montoItem": 21.24,
+            "codAfectacionIgv": "10",
+            "unidadMedidaItem": "NIU",
+            "precioItemReferencia": 0.0,
+            "codSistemaCalculoIsc": "01",
+            "precioItem": 21.24,
+            "nombreItem": "Miscellaneous",
+            "cantidadItem": 1.0,
+            "montoIgv": 3.24,
+            "descuentoMonto": 0.0
+        }
+    ],
+    "documento": {
+        "nombreReceptor": "TABLEROS CUSCO SOCIEDAD AN\u00d3NIMA CERRADA - TABLEROS CUSCO S.A.C.",
+        "nombreReceptorAsociado": "TABLEROS CUSCO SOCIEDAD AN\u00d3NIMA CERRADA - TABLEROS CUSCO S.A.C.",
+        "tipoDocReceptor": "6",
+        "numDocReceptor": "20527567077",
+        "tipoDocEmisor": "6",
+        "mntTotalIgv": 219.24,
+        "codContrato": "F001-00000117",
+        "tipoCambioDestino": 1.0,
+        "mntTotalGrat": 0.0,
+        "fechaVencimiento": "2018-06-01",
+        "nombreComercialReceptor": "TABLEROS CUSCO SOCIEDAD AN\u00d3NIMA CERRADA - TABLEROS CUSCO S.A.C.",
+        "glosaDocumento": "VENTA",
+        "direccionOrigen": "Mz Z lote 54 Carabayllo",
+        "tipoDocReceptorAsociado": "6",
+        "nombreEmisor": "VICTOR DANIEL MORENO LOPEZ",
+        "mntTotal": 1437.24,
+        "direccionUbigeo": "140105",
+        "mntTotalIsc": 0.0,
+        "serie": "F001",
+        "tipoMoneda": "PEN",
+        "mntNeto": 1218.0,
+        "mntExe": 0.0,
+        "mntExo": 0.0,
+        "mntTotalOtrosCargos": 0.0,
+        "numDocEmisor": "10763104201",
+        "nombreComercialEmisor": "VICTOR DANIEL MORENO LOPEZ",
+        "tipoFormatoRepresentacionImpresa": "GENERAL",
+        "correlativo": 117,
+        "mntTotalOtros": 0.0,
+        "numDocReceptorAsociado": "20527567077"
+    }
+}

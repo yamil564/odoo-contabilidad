@@ -1,7 +1,7 @@
-from efact21.AmountTypes import LineExtensionAmount, TaxInclusiveAmount, PrepaidAmount
-from efact21.AmountTypes import PayableAmount, AllowanceTotalAmount, ChargeTotalAmount
-from efact21.AmountTypes import PayableRoundingAmount
-from efact21.util import Xmleable, default_document
+from .AmountTypes import LineExtensionAmount, TaxInclusiveAmount, PrepaidAmount
+from .AmountTypes import PayableAmount, AllowanceTotalAmount, ChargeTotalAmount
+from .AmountTypes import PayableRoundingAmount
+from .util import Xmleable, default_document
 
 
 class LegalMonetaryTotal(Xmleable):

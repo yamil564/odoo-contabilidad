@@ -1,6 +1,6 @@
-from efact21 import Catalogos
-from efact21.General import SimpleText
-from efact21.util import Xmleable, default_document, createCDataContent, createElementContent
+from . import Catalogos
+from .General import SimpleText
+from .util import Xmleable, default_document, createCDataContent, createElementContent
 
 
 # Datos de factura

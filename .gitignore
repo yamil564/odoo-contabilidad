@@ -5,4 +5,5 @@ addons-customize/
 chromedriver_*
 config/odoo.conf
 .env
+.venv
 docker-compose.yaml

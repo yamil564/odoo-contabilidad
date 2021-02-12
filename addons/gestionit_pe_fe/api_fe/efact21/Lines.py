@@ -1,6 +1,6 @@
-from efact21.util import Xmleable, default_document, createCDataContent, createElementContent
-from efact21.AmountTypes import PriceAmount
-from efact21.BasicGlobal import ID
+from .util import Xmleable, default_document, createCDataContent, createElementContent
+from .AmountTypes import PriceAmount
+from .BasicGlobal import ID
 
 
 class PriceTypeCode(Xmleable):

@@ -1,4 +1,4 @@
-from efact21.util import Xmleable, default_document, createElementContent
+from .util import Xmleable, default_document, createElementContent
 
 
 class Header(Xmleable):

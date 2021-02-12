@@ -1,7 +1,7 @@
 from signxml import XMLSigner, XMLVerifier, methods
 import xml.etree.ElementTree as ET
-from efact21 import Signature
-from efact21 import Envelope
+from .efact21 import Signature
+from .efact21 import Envelope
 import sys
 import zipfile
 import io

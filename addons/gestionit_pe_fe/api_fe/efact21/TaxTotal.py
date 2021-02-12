@@ -1,7 +1,7 @@
-from efact21.AmountTypes import Amount
-from efact21.util import Xmleable, default_document, createElementContent
-from efact21.TaxScheme import TaxScheme
-from efact21.General import SimpleText
+from .AmountTypes import Amount
+from .util import Xmleable, default_document, createElementContent
+from .TaxScheme import TaxScheme
+from .General import SimpleText
 
 class TaxAmount(Amount):
     def __init__(self, amount, currencyID="PEN"):

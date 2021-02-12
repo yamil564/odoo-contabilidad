@@ -1,7 +1,7 @@
 
-from efact21.util import Xmleable, createElementContent, default_document
-from efact21 import BasicGlobal
-from efact21.Lines import Item
+from .util import Xmleable, createElementContent, default_document
+from . import BasicGlobal
+from .Lines import Item
 
 
 class DeliveredQuantity(Xmleable):

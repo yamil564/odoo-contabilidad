@@ -1,4 +1,4 @@
-from efact21.util import Xmleable, default_document, createElementContent, createCDataContent
+from .util import Xmleable, default_document, createElementContent, createCDataContent
 
 
 class ReferenceID(Xmleable):

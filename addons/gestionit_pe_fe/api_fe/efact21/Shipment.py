@@ -1,7 +1,7 @@
 
-from efact21.util import Xmleable, default_document, createElementContent, createCDataContent
-from efact21.General import SimpleText
-from efact21 import BasicGlobal
+from .util import Xmleable, default_document, createElementContent, createCDataContent
+from .General import SimpleText
+from . import BasicGlobal
 
 
 class HandlingCode(SimpleText):

@@ -1,9 +1,9 @@
-from efact21 import BasicGlobal
-from efact21.General import SimpleText
-from efact21.util import Xmleable, default_document
-from efact21.AmountTypes import LineExtensionAmount
-from efact21.Lines import PricingReference, Item, Price
-from efact21.TaxTotal import TaxTotal
+from . import BasicGlobal
+from .General import SimpleText
+from .util import Xmleable, default_document
+from .AmountTypes import LineExtensionAmount
+from .Lines import PricingReference, Item, Price
+from .TaxTotal import TaxTotal
 
 
 class DebitQuantity(SimpleText):

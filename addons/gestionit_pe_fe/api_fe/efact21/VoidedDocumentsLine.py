@@ -1,6 +1,6 @@
-from efact21.util import Xmleable, default_document, createElementContent
-from efact21.BasicGlobal import DocumentTypeCode,DocumentSerialID,DocumentNumberID
-from efact21.General import SimpleText
+from .util import Xmleable, default_document, createElementContent
+from .BasicGlobal import DocumentTypeCode,DocumentSerialID,DocumentNumberID
+from .General import SimpleText
 
 class LineID(SimpleText):
     def __init__(self, id):
