@@ -21,7 +21,6 @@ from .efact21.TaxScheme import TaxSchemeID
 import yaml
 import flex
 
-
 def validate_json(data):
     with open("./files/schemas_json/invoice.yaml") as f:
         spec = yaml.safe_load(f.read())

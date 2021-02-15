@@ -1,6 +1,6 @@
 __pycache__/
+.vscode/
 *.pyc
-addons-customize/
 .user_data_uid_*
 chromedriver_*
 config/odoo.conf
