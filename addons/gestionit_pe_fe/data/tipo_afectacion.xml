@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data noupdate="1">
+        <!-- Catalogo 07  - Códigos de Tipo de Afectación del IGV  -->
+        <record id="c07_10" model="tipo.afectacion"><field name="code">10</field><field name="name">Gravado - Operación Onerosa</field><field name="no_onerosa" eval="False"/><field name="type">gravado</field></record>
+        <record id="c07_11" model="tipo.afectacion"><field name="code">11</field><field name="name">Gravado – Retiro por premio</field><field name="no_onerosa" eval="True"/><field name="type">gravado</field></record>
+        <record id="c07_12" model="tipo.afectacion"><field name="code">12</field><field name="name">Gravado – Retiro por donación</field><field name="no_onerosa" eval="True"/><field name="type">gravado</field></record>
+        <record id="c07_13" model="tipo.afectacion"><field name="code">13</field><field name="name">Gravado – Retiro</field><field name="no_onerosa" eval="True"/><field name="type">gravado</field></record>
+        <record id="c07_14" model="tipo.afectacion"><field name="code">14</field><field name="name">Gravado – Retiro por publicidad</field><field name="no_onerosa" eval="True"/><field name="type">gravado</field></record>
+        <record id="c07_15" model="tipo.afectacion"><field name="code">15</field><field name="name">Gravado – Bonificaciones</field><field name="no_onerosa" eval="True"/><field name="type">gravado</field></record>
+        <record id="c07_16" model="tipo.afectacion"><field name="code">16</field><field name="name">Gravado – Retiro por entrega a trabajadores</field><field name="no_onerosa" eval="True"/><field name="type">gravado</field></record>
+        <record id="c07_20" model="tipo.afectacion"><field name="code">20</field><field name="name">Exonerado - Operación Onerosa</field><field name="no_onerosa" eval="False"/><field name="type">exonerado</field></record>
+        <record id="c07_30" model="tipo.afectacion"><field name="code">30</field><field name="name">Inafecto - Operación Onerosa</field><field name="no_onerosa" eval="False"/><field name="type">inafecto</field></record>
+        <record id="c07_31" model="tipo.afectacion"><field name="code">31</field><field name="name">Inafecto – Retiro por Bonificación</field><field name="no_onerosa" eval="True"/><field name="type">inafecto</field></record>
+        <record id="c07_32" model="tipo.afectacion"><field name="code">32</field><field name="name">Inafecto – Retiro</field><field name="no_onerosa" eval="True"/><field name="type">inafecto</field></record>
+        <record id="c07_33" model="tipo.afectacion"><field name="code">33</field><field name="name">Inafecto – Retiro por Muestras Médicas</field><field name="no_onerosa" eval="True"/><field name="type">inafecto</field></record>
+        <record id="c07_34" model="tipo.afectacion"><field name="code">34</field><field name="name">Inafecto - Retiro por Convenio Colectivo</field><field name="no_onerosa" eval="True"/><field name="type">inafecto</field></record>
+        <record id="c07_35" model="tipo.afectacion"><field name="code">35</field><field name="name">Inafecto – Retiro por premio</field><field name="no_onerosa" eval="True"/><field name="type">inafecto</field></record>
+        <record id="c07_36" model="tipo.afectacion"><field name="code">36</field><field name="name">Inafecto - Retiro por publicidad</field><field name="no_onerosa" eval="True"/><field name="type">inafecto</field></record>
+        <record id="c07_40" model="tipo.afectacion"><field name="code">40</field><field name="name">Exportación</field><field name="no_onerosa" eval="True"/><field name="type">exonerado</field></record>
+    </data>
+</openerp>

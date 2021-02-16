@@ -1,32 +1,20 @@
 # -*- coding: utf-8 -*-
 from odoo.addons import decimal_precision as dp
-
 from odoo.exceptions import UserError, AccessError
-
 from odoo import fields, models, api, _
-
-import json
-import time
-
-import os
-
 from odoo.tools.profiler import profile
 from odoo.osv import expression
 from odoo.tools import float_is_zero, float_compare, DEFAULT_SERVER_DATETIME_FORMAT
 from odoo.tools.misc import formatLang
-
-
-import uuid
-
 from itertools import groupby
-
 from datetime import datetime, timedelta
-
 from werkzeug.urls import url_encode
-
-
 from odoo.addons.gestionit_pe_fe.models.parameters.catalogs import tdi
 
+import json
+import time
+import uuid
+import os
 
 # class SaleOrderLine(models.Model):
 #     _inherit = "sale.order.line"
@@ -79,9 +67,6 @@ class SaleOrder(models.Model):
         selection="_selection_tipo_documento_identidad")
 
     def _selection_tipo_documento_identidad(self):
-        # hola mundo
-        # asfasdf
-        asdassd
         return tdi
 
     tipo_documento = fields.Selection(

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="gestionit_pe_fe.res_partner_tipo_documento">
+            <field name="name">res.partner.tipo.documento</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='name']" position="after">
+                    <field name="tipo_documento_identidad" />
+                    <field name="documento_identidad" required="1" placeholder="Número de documento"/>
+                </xpath>
+            </field>
+        </record> 
+    </data>
+</odoo>
