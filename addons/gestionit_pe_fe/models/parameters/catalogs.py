@@ -12,7 +12,6 @@ tdi = [
     ("7", "Pasaporte"),
     ("A", "Cédula diplomática")]
 
-
 # TIPO DE COMPROBANTE
 tdc = [
     ("00","Otros"),
@@ -45,7 +44,7 @@ tdc = [
     ("27","Seguro Complementario de Trabajo de Riesgo"),
     ("28","Tarifa Unificada de Uso de Aeropuerto"),
     ("29","Documentos emitidos por la COFOPRI en calidad de oferta de venta de terrenos, los correspondientes a las subastas públicas y a la retribución de los servicios que presta"),
-    ("30","Documentos emitidos por las empresas que desempeñan el rol adquirente en los sistemas de pago mediante tarjetas de crédito y débito"),>
+    ("30","Documentos emitidos por las empresas que desempeñan el rol adquirente en los sistemas de pago mediante tarjetas de crédito y débito"),
     ("31","Guía de Remisión - Transportista"),
     ("32","Documentos emitidos por las empresas recaudadoras de la denominada Garantía de Red Principal a la que hace referencia el numeral 7.6 del artículo 7° de la Ley N° 27133 – Ley de Promoción del Desarrollo de la Industria del Gas Natural "),
     ("34","Documento del Operador"),

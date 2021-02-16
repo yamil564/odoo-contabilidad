@@ -1,0 +1,32 @@
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="gestionit_pe_fe.view_account_journal_tree_tipo_documento">
+            <field name="name">Tipo de documento - Tree </field>
+            <field name="model">account.journal</field>
+            <field name="inherit_id" ref="account.view_account_journal_tree"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='company_id']" position="after">
+                    <field name="invoice_type_code_id"/>
+                    <field name="tipo_envio"/>
+                </xpath>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="gestionit_pe_fe.view_account_journal_form_tipo_documento">
+            <field name="name">Tipo de documento - Form</field>
+            <field name="model">account.journal</field>
+            <field name="inherit_id" ref="account.view_account_journal_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='type']" position="after">
+                    <field name="invoice_type_code_id"/>
+                    <field name="tipo_envio"/>
+                    <field name="resumen"/>
+                    <field name="tipo_comprobante_a_rectificar" 
+                            attrs="{'invisible':[['invoice_type_code_id','not in',['00','07','08']]]}"
+                    />
+                    <field name="formato_comprobante"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>
