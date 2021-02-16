@@ -7,13 +7,13 @@
             <field name="inherit_id" ref="sale.view_order_form"/>
             <field name="arch" type="xml">
                 <field name='partner_id' position="after">
-                    <field name="tipo_documento_identidad" invisible="1"/>
+                    <field name="tipo_documento_identidad"/>
                     <field name="tipo_documento" widget="radio" required="1"/>
                 </field>
                 <!-- <xpath expr="//field[@name='partner_id']" position="attribute">
                     <attribute name="context">{default_}</attribute>
                 </xpath> -->
-                <xpath expr="//kanban//templates//div" position="inside">
+                <!-- <xpath expr="//kanban//templates//div" position="inside">
                     <a t-if="!read_only_mode" type="delete" class="fa fa-times pull-right"/>
                 </xpath>
                 <field name="amount_tax" position="replace"/>
@@ -26,7 +26,7 @@
                     <field name="total_descuento_global"/>
                     <field name="total_descuentos"/>
                     <field name="amount_tax" string="Total Impuestos"/>
-                </field>
+                </field> -->
             </field>
         </record> 
 <!-- 
