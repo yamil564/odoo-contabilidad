@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="ir_mail_server_facturacion_vip" model="ir.mail_server">
+            <field name="name">clientes@facturacion.vip</field>
+            <field name="smtp_host">sc111.eboundhost.com</field>
+            <field name="smtp_encryption">ssl</field>
+            <field name="smtp_user">clientes@facturacion.vip</field>
+            <field name="smtp_pass">hgW^Y~cegW]g</field>
+            <field eval="465" name="smtp_port"/>
+            <field eval="5" name="sequence"/>
+        </record>
+
+    </data>
+</odoo>

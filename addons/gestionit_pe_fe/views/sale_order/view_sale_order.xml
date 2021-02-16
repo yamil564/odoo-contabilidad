@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="gestionit_pe_fe.sale_order_tipo_documento">
+            <field name="name">sale.order.tipo.documento</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form"/>
+            <field name="arch" type="xml">
+                <field name='partner_id' position="after">
+                    <field name="tipo_documento_identidad" invisible="1"/>
+                    <field name="tipo_documento" widget="radio" required="1"/>
+                </field>
+                <!-- <xpath expr="//field[@name='partner_id']" position="attribute">
+                    <attribute name="context">{default_}</attribute>
+                </xpath> -->
+                <xpath expr="//kanban//templates//div" position="inside">
+                    <a t-if="!read_only_mode" type="delete" class="fa fa-times pull-right"/>
+                </xpath>
+                <field name="amount_tax" position="replace"/>
+                <field name="amount_untaxed" position="replace">
+                    <field name="descuento_global"/>
+                    <field name="total_venta_gravado"/>
+                    <field name="total_venta_inafecto"/>
+                    <field name="total_venta_exonerada"/>
+                    <field name="total_venta_gratuito"/>
+                    <field name="total_descuento_global"/>
+                    <field name="total_descuentos"/>
+                    <field name="amount_tax" string="Total Impuestos"/>
+                </field>
+            </field>
+        </record> 
+<!-- 
+        <record id="view_form_add_btn_guia_remision" model="ir.ui.view">
+            <field name="name">view.for.add.btn.guia.remision</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale_management.sale_order_view_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//button[@name='action_quotation_send']" position="before">
+                    <button string="Guía de Remisión" name="so_action_open_guia_remision" class="oe_highlight" type="object"/>
+                </xpath>
+            </field>
+        </record>  -->
+    </data>
+</odoo>

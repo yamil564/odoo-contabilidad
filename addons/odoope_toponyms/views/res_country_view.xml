@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <!--
+        <record id="base.view_country_state_tree" model="ir.ui.view">
+           <field name="arch" type="xml">
+                <tree>
+                
+                </tree>
+           </field> 
+        </record>
+        -->
+        <record id="view_toponyms_tree" model="ir.ui.view">
+            <field name="name">res.toponyms.tree</field>
+            <field name="model">res.country.state</field>
+            <field name='inherit_id' ref='base.view_country_state_tree'/>
+            <field name='arch' type='xml'>
+                <xpath expr="//tree" position="replace">
+                    <tree>
+                        <field name="code" string="Código"/>
+                        <field name="name" string="Nombre"/>
+                        <field name="country_id" string="País"/>
+                        <field name="state_id" string="Departamento" context="{'ubigeo_search': False }"/>
+                        <field name="province_id" string="Provincia" context="{'ubigeo_search': False }"/>
+                    </tree>
+                </xpath>
+            </field>
+        </record>
+        
+        <record id="view_toponyms_form" model="ir.ui.view">
+            <field name="name">res.toponyms.form</field>
+            <field name="model">res.country.state</field>
+            <field name='inherit_id' ref='base.view_country_state_form'/>
+            <field name='arch' type='xml'>
+                <field name="country_id" position="after">
+                    <field name="state_id" />
+                    <field name="province_id"/>
+                </field>
+            </field>
+        </record>
+
+    </data>
+</openerp>
