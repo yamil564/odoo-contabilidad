@@ -7,7 +7,7 @@ from odoo.addons.gestionit_pe_fe.models.parameters.catalogs import tdc
 class AccountJournal(models.Model):
     _inherit = "account.journal"
     codigo_documento = fields.Char("Codigo de tipo de Documento")
-    tipo_envio = fields.Selection(selection=[("0","0 - Pruebas"),("1","1 - Homologación"),("2","2 - Producción")])
+    tipo_envio = fields.Selection(selection=[("0","0 - Pruebas"),("2","2 - Producción")])
     
     resumen = fields.Boolean("Resumen Diario de Boleta",default=False)
     formato_comprobante = fields.Selection(selection=[("fisico","Físico"),("electronico","Electrónico")],default="electronico")

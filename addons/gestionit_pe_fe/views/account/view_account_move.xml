@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="gestionit_pe_fe.view_account_move_tipo_comprobante" model="ir.ui.view">
+            <field name="name">Tipo de comprobante</field>
+            <field name="model">account.move</field>
+            <field name="inherit_id" ref="account.view_move_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='ref']" position="after">
+                    <field name="invoice_type_code"/>
+                </xpath>
+            </field>
+        </record>
+
+
+
+
+        <record model="ir.ui.view" id="gestionit_pe_fe.view_account_invoice_form_desglose_venta">
+            <field name="name">Totales de venta</field>
+            <field name="model">account.move</field>
+            <field name="inherit_id" ref="account.view_move_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='amount_untaxed']" position="replace">
+                    <!-- <field name="amount_untaxed"/> -->
+                    <!-- <field name="descuento_global" string="Descuento Global (%)"/> -->
+                    <field name="total_venta_gravado" string="Monto Gravado"/>
+                    <field name="amount_igv"/>
+                    <field name="total_venta_inafecto" string="Monto Inafecto"/>
+                    <field name="total_venta_exonerada" string="Monto Exonerado"/>
+                    <field name="total_venta_gratuito" string="Monto Gratuito"/>
+                    <!-- <field name="total_descuento_global" attrs="{'invisible':[('invoice_type_code','not in',['01','03'])]}" string="Descuento Global"/> -->
+                    <!-- <field name="total_descuentos" string="Total de Descuentos"/> -->
+                </xpath>
+                <xpath expr="//field[@name='amount_by_group']" position="replace">
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>
