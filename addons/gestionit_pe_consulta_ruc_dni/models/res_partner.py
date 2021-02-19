@@ -20,10 +20,17 @@ class ResPartner(models.Model):
     #     tipo_documento_objs = self.env["einvoice.catalog.06"].sudo().search([])
     #     tipo_documento_list = [(td.code,td.name) for td in tipo_documento_objs]
     #     return tipo_documento_list
+    # state = fields.Selection(selection=[(
+    #     'habido', 'Habido'), ('nhabido', 'No Habido'), ('no_existe', 'No Existe')], string='Estado')
 
-    # state = fields.Selection([('habido', 'Habido'), ('nhabido', 'No Habido'),('no_existe','No Existe')], 'Estado')
-    # estado_contribuyente = fields.Selection([('activo', 'Activo'), ('noactivo', 'No Activo')], 'Estado del Contribuyente')
-    # msg_error = fields.Char(readonly=True)
+    estado_contribuyente = fields.Selection(selection=[(
+        'activo', 'Activo'), ('noactivo', 'No Activo')], string='Estado del Contribuyente')
+    # estado_contribuyente = fields.Char(string="prueba")
+    msg_error = fields.Char(readonly=True)
+
+    @api.onchange('l10n_latam_identification_type_id', 'vat')
+    def vat_change(self):
+        self.update_document()
 
     def get_person_name_v3(self, dni):
         try:
@@ -65,49 +72,95 @@ class ResPartner(models.Model):
             raise UserError(response['msg'])
         return response
 
-    @api.one
+    def _esrucvalido(self, dato):
+        largo_dato = len(dato)
+        if dato is not None and dato != "" and dato.isdigit() and (largo_dato == 11 or largo_dato == 8):
+            valor = int(dato)
+            if largo_dato == 8:
+                suma = 0
+                for i in range(largo_dato - 1):
+                    digito = int(dato[i]) - 0
+                    if i == 0:
+                        suma = suma + digito * 2
+                    else:
+                        suma = suma + digito * (largo_dato - 1)
+                    resto = suma % 11
+                    if resto == 1:
+                        resto = 11
+                    if (resto + int(dato[largo_dato - 1]) - 0) == 11:
+                        return True
+            elif largo_dato == 11:
+                suma = 0
+                x = 6
+                for i in range(largo_dato - 1):
+                    if i == 4:
+                        x = 8
+                    digito = int(dato[i]) - 0
+                    x = x - 1
+                    if x == 0:
+                        suma = suma + digito * x
+                    else:
+                        suma = suma + digito * x
+                resto = suma % 11
+                resto = 11 - resto
+                if resto >= 10:
+                    resto = resto - 10
+                if resto == int(dato[largo_dato - 1]) - 0:
+                    return True
+
+            return False
+        else:
+            return False
+
+    # @api.one
     def update_document(self):
+        self.ensure_one()
         if not self.vat:
             return False
-        if self.tipo_documento == '1':
+        if self.l10n_latam_identification_type_id.l10n_pe_vat_code == '1':
             # Valida DNI
             if self.vat:
                 self.vat = self.vat.strip()
-            _logger.info(self.vat)
-            _logger.info(self.tipo_documento)
             if self.vat and len(self.vat) != 8:
                 self.msg_error = 'El DNI debe tener 8 caracteres'
+            if not self._esrucvalido(self.vat):
+                self.msg_error = "El DNI no es Válido"
             else:
                 nombre_entidad = self.get_person_name_v3(self.vat)
                 if nombre_entidad:
-                    self.registration_name = nombre_entidad
                     self.name = nombre_entidad
-                    self.estado_contribuyente = "activo"
+                    # self.district_id = ""
+                    # self.province_id = ""
+                    # self.state_id = ""
+                    # self.country_id = ""
+                    # self.zip = ""
+                    # self.street = ""
                 else:
-                    self.registration_name = " - "
                     self.name = " - "
-                    self.estado_contribuyente = "noactivo"
-                
-        elif self.tipo_documento == '6':
+                    # self.district_id = ""
+                    # self.province_id = ""
+                    # self.state_id = ""
+                    # self.country_id = ""
+                    # self.zip = ""
+                    # self.street = ""
+
+        elif self.l10n_latam_identification_type_id.l10n_pe_vat_code == '6':
             # Valida RUC
             if self.vat and len(self.vat) != 11:
                 self.msg_error = "El RUC debe tener 11 carácteres"
-                #raise UserError('El Ruc debe tener 11 caracteres')
             if not self._esrucvalido(self.vat):
-                #raise UserError('El Ruc no es valido')
                 self.msg_error = "El RUC no es Válido"
             else:
                 d = self.consulta_ruc_api(self.vat)
-                #d = get_data_doc(1, self.vat)
-                # os.system("echo '%s'"%(json.dumps(d)))
                 if not d:
-                    self.name =" - "
+                    self.name = " - "
                     return True
                 if not d["success"]:
-                    self.name =" - "
+                    self.name = " - "
                     return True
                 #d = d['data']
                 # ~ Busca el distrito
+                # _logger.info(d)
                 ditrict_obj = self.env['res.country.state']
                 prov_ids = ditrict_obj.search([('name', '=', d['provincia']),
                                                ('province_id', '=', False),
@@ -123,24 +176,29 @@ class ResPartner(models.Model):
                     self.country_id = dist_id.country_id.id
 
                 # Si es HABIDO, caso contrario es NO HABIDO
-                tstate = d['condicion_de_domicilio']
-                if tstate == 'HABIDO':
-                    tstate = 'habido'
-                else:
-                    tstate = 'nhabido'
+                # tstate = d['condicion_de_domicilio']
+                # if tstate == 'HABIDO':
+                #     tstate = 'habido'
+                # else:
+                #     tstate = 'nhabido'
+
                 tstate_contribuyente = d['estado_del_contribuyente']
 
-                if tstate_contribuyente=="ACTIVO":
-                    self.estado_contribuyente = "activo"
-                else:
-                    self.estado_contribuyente = "noactivo"
+                # if tstate_contribuyente == "ACTIVO":
+                #     self.estado_contribuyente = "activo"
+                # else:
+                #     self.estado_contribuyente = "noactivo"
 
-                self.state = tstate
+                # self.state = tstate
                 self.name = d['nombre']
-                self.registration_name = d['nombre']
+                # self.registration_name = d['nombre']
                 self.zip = d["ubigeo"]
                 self.street = d['direccion_completa']
-                self.vat_subjected = True
+                # self.vat_subjected = True
                 self.is_company = True
+                self.company_type = "company"
         else:
             True
+
+    def _onchange_country(self):
+        return

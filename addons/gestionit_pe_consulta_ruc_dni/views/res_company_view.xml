@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data noupdate="0">
+        <record id="gestionit_pe_consulta_ruc_dni.fields_form_credentials_api_ruc" model="ir.ui.view">
+            <field name="name">fields.form.credentials.api.ruc</field>
+            <field name="model">res.company</field>
+            <field name="inherit_id" ref="base.view_company_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//notebook" position="inside">
+                    <page string="Credenciales de API RUC">
+                        <group>
+                            <field name="api_ruc_endpoint" string="End-point consulta RUC"/>
+                        </group>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

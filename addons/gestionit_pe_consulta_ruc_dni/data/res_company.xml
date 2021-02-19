@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data noupdate="1">
+        <function name="write" model="ir.model.data">
+            <function name="search" model="ir.model.data">
+                <value eval="[('module', '=', 'base'), ('name', '=', 'main_company')]"/>
+            </function>
+            <value eval="{'noupdate': False}" />
+        </function>
+        
+        <record id ="base.main_company" model ="res.company">
+            <field name="api_ruc_endpoint">https://k5ptgsq1o8.execute-api.us-east-1.amazonaws.com/Prod/empresa</field>
+        </record>   
+        
+ 
+
+    </data>
+</odoo>

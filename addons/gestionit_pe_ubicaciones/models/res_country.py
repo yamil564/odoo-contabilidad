@@ -42,7 +42,7 @@ class CountryState(models.Model):
         return res
         
     
-    @api.multi
+    # @api.multi
     @api.depends('name')
     def name_get(self):
         result = []

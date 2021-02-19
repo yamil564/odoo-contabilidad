@@ -28,6 +28,7 @@ from PIL import Image
 
 from odoo import models, fields, api
 
+
 class ResPartner(models.Model):
     # _name = 'res.partner'
     _inherit = 'res.partner'
@@ -42,17 +43,18 @@ class ResPartner(models.Model):
     def _address_fields(self):
         """ Returns the list of address fields that are synced from the parent
         when the `use_parent_address` flag is set. """
-        #~ return list(ADDRESS_FIELDS)
-        address_fields = ('street', 'street2', 'zip', 'city', 'state_id', 'country_id','province_id','district_id')
+        # ~ return list(ADDRESS_FIELDS)
+        address_fields = ('street', 'street2', 'zip', 'city',
+                          'state_id', 'country_id', 'province_id', 'district_id')
         return list(address_fields)
-    
+
     # Onchange para actualizar el codigo de distrito
-    
+
     @api.model
     def default_get(self, fields):
         res = super(ResPartner, self).default_get(fields)
         res.update({
-            "country_id":173
+            "country_id": 173
         })
         return res
 
@@ -67,7 +69,7 @@ class ResPartner(models.Model):
                 if not ubigeo.exists():
                     raise UserError("El Ubigeo no existe")
     """
-    
+
     @api.onchange('district_id')
     def onchange_district(self):
         if self.district_id:
@@ -75,10 +77,9 @@ class ResPartner(models.Model):
             self.province_id = self.district_id.province_id.id
             self.state_id = self.district_id.state_id.id
             self.country_id = self.district_id.country_id.id
-    
-    @api.multi
-    def _display_address(self, without_company=False):
 
+    # @api.multi
+    def _display_address(self, without_company=False):
         '''
         The purpose of this function is to build and return an address formatted accordingly to the
         standards of the country where it belongs.
@@ -90,23 +91,24 @@ class ResPartner(models.Model):
         '''
         # get the information that will be injected into the display format
         # get the address format
-        address_format = self.country_id.address_format or \
-              "%(street)s\n%(street2)s\n%(state_name)s-%(province_name)s-%(district_code)s %(zip)s\n%(country_name)s"
-        args = {
-            'district_code': self.district_id.code or '',
-            'district_name': self.district_id.name or '',
-            'province_code': self.province_id.code or '',
-            'province_name': self.province_id.name or '',
-            'state_code': self.state_id.code or '',
-            'state_name': self.state_id.name or '',
-            'country_code': self.country_id.code or '',
-            'country_name': self.country_id.name or '',
-            'company_name': self.parent_name or '',
-        }
-        for field in self._address_fields():
-            args[field] = getattr(self, field) or ''
-        if without_company:
-            args['company_name'] = ''
-        elif self.commercial_company_name:
-            address_format = '%(company_name)s\n' + address_format
-        return address_format % args
+        for record in self:
+            address_format = record.country_id.address_format or \
+                "%(street)s\n%(street2)s\n%(state_name)s-%(province_name)s-%(district_code)s %(zip)s\n%(country_name)s"
+            args = {
+                'district_code': record.district_id.code or '',
+                'district_name': record.district_id.name or '',
+                'province_code': record.province_id.code or '',
+                'province_name': record.province_id.name or '',
+                'state_code': record.state_id.code or '',
+                'state_name': record.state_id.name or '',
+                'country_code': record.country_id.code or '',
+                'country_name': record.country_id.name or '',
+                'company_name': record.parent_name or '',
+            }
+            for field in record._address_fields():
+                args[field] = getattr(record, field) or ''
+            if without_company:
+                args['company_name'] = ''
+            elif record.commercial_company_name:
+                address_format = '%(company_name)s\n' + address_format
+            return address_format % args

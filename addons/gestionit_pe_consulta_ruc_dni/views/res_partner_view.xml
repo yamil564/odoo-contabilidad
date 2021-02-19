@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <record id="gestionit_pe_consulta_ruc_dni.view_partner_form" model="ir.ui.view">
+            <field name="name">res.partner.consulta.ruc.dni</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_form" />
+            <field name="arch" type="xml">
+                <sheet position="before">
+                    <header>
+                        <button string="Actualizar datos RUC" type="object" name="update_document"/>
+                        <!-- <field name="state" widget="statusbar" nolabel="1" statusbar_visible="habido,nhabido" statusbar_colors="{&quot;habido&quot;:&quot;green&quot;,&quot;nhabido&quot;:&quot;red&quot;}" readonly="0"/> -->
+                    </header>
+                </sheet>
+                <!-- <field name="vat" position="attributes">
+                    <attribute name="string">Documento de Identidad</attribute>
+                </field> -->
+                <!-- <div class="o_row" position="before">
+                    <div class="o_row">
+                        <field name="tipo_documento" placeholder="Tipo Doc."/>
+                        <field name="catalog_06_id" placeholder="Tipo Doc." colspan="1" nolabel="1" widget="selection" invisible="1"/>
+                        <field name="vat" string="Número Doc" placeholder="Número Doc." colspan="3" nolabel="1"/>   
+                    </div>  
+                    <field name="registration_name" placeholder="Razón social" attrs="{'invisible': [('is_company','=',False)],'required': [('is_company','=',True)]}"/>
+                    <field name="estado_contribuyente" placeholder="Estado del Contribuyente"/>
+                </div>  -->
+                <div class="o_row" position="before">
+                    <field name="msg_error"/>
+                    <field name="estado_contribuyente" placeholder="Estado del Contribuyente"/>
+                </div>
+            </field>
+        </record>
+    </data>
+</openerp>

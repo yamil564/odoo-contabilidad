@@ -1,0 +1,2 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_sunat_get_data_sunat_get_data,sunat_get_data.sunat_get_data,model_sunat_get_data_sunat_get_data,,1,0,0,0
