@@ -7,3 +7,5 @@ config/odoo.conf
 .env
 .venv
 docker-compose.yaml
+main.py
+filename.txt

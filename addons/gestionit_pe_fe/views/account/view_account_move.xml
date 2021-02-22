@@ -35,5 +35,44 @@
                 </xpath>
             </field>
         </record>
+
+        <record model="ir.ui.view" id="gestionit_pe_fe.view_account_invoice_form_json_page">
+            <field name="name">Json page</field>
+            <field name="model">account.move</field>
+            <field name="inherit_id" ref="account.view_move_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//page[@name='other_info']" position="after">
+                    <page string="Comprobante" groups="base.group_no_one">
+                        <group>
+                            <field name="json_comprobante" attrs="{'readonly':[['state','not in',['draft']]]}"/>
+                            <field name="json_respuesta" attrs="{'readonly':[['state','not in',['draft']]]}"/>
+                            <!-- <field name="status_envio" attrs="{'readonly':[['state','not in',['draft']]]}"/>
+                            <field name="status_baja" attrs="{'readonly':[['state','not in',['draft']]]}"/>
+                            <field name="new_invoice" attrs="{'readonly':[['state','not in',['draft']]]}"/> -->
+
+                        </group>
+                        <!-- <group string = "Status">
+                            <field name="account_log_status_ids" mode="tree" attrs="{'readonly':[['state','not in',['draft']]]}">
+                                <tree>
+                                    <field name="name"/>
+                                    <field name="account_invoice_id"/>
+                                    <field name="api_request_id"/>
+                                    <field name="status"/>
+                                </tree>
+                            </field>
+                        </group> -->
+                    </page>
+                    <!-- <page string="Validez de Comprobante" groups="base.group_no_one">
+                        <group>
+                            <field name="estado_emision" groups="account.group_account_manager"/>
+                            <field name="estado_comprobante_electronico" groups="account.group_account_manager"/>
+                            <field name="estado_contribuyente_ruc" groups="account.group_account_manager"/>
+                            <field name="condicion_domicilio_contribuyente" groups="account.group_account_manager"/>
+                        </group>
+                    </page> -->
+                </xpath>
+            </field>
+        </record>
+
     </data>
 </odoo>

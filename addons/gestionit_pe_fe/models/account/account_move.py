@@ -1,9 +1,47 @@
 # -*- coding: utf-8 -*-
 from odoo import fields, models, api
+from odoo.exceptions import UserError, ValidationError
+from odoo.addons.gestionit_pe_fe.models.parameters import oauth
+from datetime import datetime, timedelta
+
+
+codigo_unidades_de_medida = [
+    "DZN",
+    "DAY",
+    "HUR",
+    "LTR",
+    "NIU",
+    "CMT",
+    "GLL",
+    "OZI",
+    "GRM",
+    "GLL",
+    "KGM",
+    "LBR",
+    "MTR",
+    "LBR",
+    "SMI",
+    "ONZ",
+    "FOT",
+    "INH",
+    "LTN",
+    "BX"
+]
+codigos_tipo_afectacion_igv = [
+    "10", "11", "12", "13", "14", "15", "16", "20", "30", "31", "34", "35", "36", "40"
+]
 
 
 class AccountMove(models.Model):
     _inherit = "account.move"
+
+    json_comprobante = fields.Text(string="JSON Comprobante", copy=False)
+    json_respuesta = fields.Text(string="JSON Respuesta", copy=False)
+    digest_value = fields.Char(string="Digest Value", copy=False, default="*")
+
+    tipo_cambio_fecha_factura = fields.Float(
+        string="Tipo de cambio a la fecha de factura",
+        default=1.0)
 
     invoice_type_code = fields.Selection(selection=[('00', 'Otros'),
                                                     ('01', 'Factura'),
@@ -235,3 +273,214 @@ class AccountMove(models.Model):
                     move.invoice_payment_state = 'paid'
             else:
                 move.invoice_payment_state = 'not_paid'
+
+    def post(self):
+        if self.type == "in_invoice":
+            if self.reference:
+                self._validar_reference(self)
+            else:
+                raise UserError(
+                    "La Referencia de Proveedor de la Factura de compra es obligatoria")
+            return super(AccountMove, self).post()
+
+        if self.journal_id.formato_comprobante == 'fisico':
+            obj = super(AccountMove, self).post()
+            return obj
+        # Validaciones cuando el comprobante es factura
+        msg_error = []
+        msg_error += self.validar_datos_compania()
+        msg_error += self.validar_diario()
+        # msg_error += self.validar_fecha_emision()
+        msg_error += self.validar_lineas()
+
+        if self.journal_id.invoice_type_code_id == "01":
+            msg_error += self.validacion_factura()
+            if len(msg_error) > 0:
+                msg = "\n\n".join(msg_error)
+                raise UserError(msg)
+
+        if self.journal_id.invoice_type_code_id == "03":
+            msg_error += self.validacion_boleta()
+            if len(msg_error) > 0:
+                msg = "\n\n".join(msg_error)
+                raise UserError(msg)
+
+        if self.partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code != "6" and self.journal_id.invoice_type_code_id == "01":
+            raise UserError("Tipo de documento del receptor no valido")
+
+        obj = super(AccountMove, self).post()
+
+        if self.journal_id.resumen:
+            return obj
+
+        self.write({'tipo_cambio_fecha_factura': oauth.get_tipo_cambio(
+            self, 2) if self.currency_id.name == 'USD' else 1.0})
+
+        oauth.enviar_doc(self, self.company_id.endpoint)
+        # enviar_doc(self, self.company_id.endpoint)
+
+        return obj
+
+    @api.model
+    def _validar_reference(self, obj):
+        reference = obj.reference
+        if reference:
+            if len(reference) == 13:
+                if reference[4:5] == "-" and reference[5:13].isdigit():
+                    return True
+                else:
+                    raise UserError(
+                        "La referencia debe tener el formato XXXX-########")
+            else:
+                raise UserError(
+                    "La referencia debe tener el formato XXXX-########")
+        else:
+            raise UserError("Debe colocar la Referencia del proveedor")
+
+    def validar_datos_compania(self):
+        errors = []
+        if not self.company_id.partner_id.vat:
+            errors.append(
+                "* No se tiene configurado el RUC de la empresa emisora")
+
+        if not self.company_id.partner_id.l10n_latam_identification_type_id:
+            errors.append(
+                "* No se tiene configurado el tipo de documento de la empresa emisora")
+        elif self.company_id.partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code != '6':
+            errors.append(
+                "* El Tipo de Documento de la empresa emisora debe ser RUC")
+
+        if not self.company_id.partner_id.zip:
+            errors.append(
+                "* No se encuentra configurado el Ubigeo de la empresa emisora.")
+
+        if not self.company_id.partner_id.street:
+            errors.append(
+                "* No se encuentra configurado la dirección de la empresa emisora.")
+
+        if not self.company_id.partner_id.name:
+            errors.append(
+                "* No se encuentra configurado la Razón Social de la empresa emisora.")
+
+        return errors
+
+    def validar_diario(self):
+        errors = []
+        if self.journal_id.tipo_envio != self.company_id.tipo_envio:
+            errors.append(
+                "* El tipo de envío configurado en la compañía debe coincidir con el tipo de envío del Diario que ha seleccionado.")
+        return errors
+
+    def validar_fecha_emision(self):
+        errors = []
+        now = datetime.strptime(fields.Date.today(), "%Y-%m-%d")
+        if now < datetime.strptime(self.date_invoice, "%Y-%m-%d"):
+            errors.append(
+                "* La fecha de la emisión del comprobante debe ser menor o igual a la fecha del día de hoy.")
+        elif abs(datetime.strptime(self.date_invoice, "%Y-%m-%d") - now).days > 7:
+            errors.append(
+                "* La fecha de Emisión debe tener como máximo una antiguedad de 7 días.")
+
+        return errors
+
+    def validar_lineas(self):
+        errors = []
+        for line in self.invoice_line_ids:
+            if line.name:
+                if len(line.name) < 4 and len(line.name) > 250:
+                    errors.append(
+                        "* La cantidad de carácteres de la descripción del producto debe ser mayor a 4 y menor a 250")
+                    break
+            else:
+                errors.append(
+                    "* La descripción del detalle de los productos esta vacío.")
+                break
+
+            if not line.product_uom_id.code:
+                errors.append(
+                    "* La Unidad de medida del detalle de las líneas del comprobante esta vacío.")
+            else:
+                if line.product_uom_id.code not in codigo_unidades_de_medida:
+                    errors.append(
+                        "* El código de la unida de medida del detalle de las líneas del comprobante es invalido.")
+                    break
+
+            if line.quantity <= 0:
+                errors.append(
+                    "* La cantidad del detalle de las líneas del comprobante es mayor a 0.")
+                break
+
+            if len(line.tax_ids) == 0:
+                errors.append(
+                    "* Las líneas del detalle del comprobante deben poseer al menos un impuesto.")
+                break
+            else:
+                for line_tax in line.tax_ids:
+                    if not line_tax.tax_group_id.tipo_afectacion:
+                        errors.append(
+                            "* El impuesto seleccionado en las líneas del comprobante no posee tipo de afectación al IGV.")
+                        break
+                    else:
+                        if line_tax.tax_group_id.tipo_afectacion not in codigos_tipo_afectacion_igv:
+                            errors.append(
+                                "* El código de tipo de afectación ingresado no es Válido. Consulte con su Administrador del Sistema.")
+                            break
+
+            if line.discount == 100:
+                errors.append(
+                    "El descuento no puede ser del 100%. Si el producto es gratuito, use el impuesto GRATUITO.")
+                break
+
+            if line.price_unit == 0 and len([1 for tax in line.tax_ids if tax.tax_group_id.tipo_afectacion in ["31", "32", "33", "34", "35", "36"]]) > 0:
+                errors.append(
+                    "El precio unitario de los productos debe ser siempre mayor a 0. Revise el producto {} y cambie el precio a un valor mayor a 0.".format(line.name))
+                break
+
+            # if line.price_unit == 0 and len([1 for tax in line.invoice_line_tax_ids if tax.tipo_afectacion_igv.code in ["31","32","33","34","35","36"]]) == 0:
+
+        return errors
+
+    def validacion_factura(self):
+        errors = []
+        # if self.partner_id.company_type != "company":
+        #     errors.append('''* El cliente seleccionado debe ser de tipo Compañía para las facturas
+        #                     Recuerda: que para un cliente de tipo compañía, los campos de tipo de documento,
+        #                     Documento y Razón Social son Obligatorios. Además el tipo de Documento debe ser RUC.''')
+        if self.partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code != "6":
+            errors.append(
+                "* El cliente seleccionado debe tener como tipo de documento el RUC, esto es necesario para facturas.")
+        if not self.partner_id.vat:
+            errors.append(
+                "* El cliente selecionado no tiene RUC, esto es necesario para facturas")
+        elif len(self.partner_id.vat) != 11:
+            errors.append(
+                "* El RUC del cliente selecionado debe tener 11 dígitos")
+        if not self.partner_id.zip:
+            errors.append(
+                "* El cliente selecionado no tiene configurado el Ubigeo.")
+        """
+        if not self.partner_id.email:
+            errors.append("* El cliente selecionado no tiene email.")
+        """
+        for line in self.invoice_line_ids:
+            if len(line.tax_ids) == 0:
+                errors.append(
+                    "* El Producto debe tener al menos un tipo de impuesto Asociado")
+            for tax in line.tax_ids:
+                if not tax.tax_group_id.tipo_afectacion:
+                    errors.append(
+                        "* El Tipo de Afectacion al IGV no esta configurado para el Impuesto %s del item %s" % (tax.name, line.name))
+            # Falta Validar los tipos de Afectación al IGV
+            if not line.product_uom_id.code:
+                errors.append(
+                    "* La Unidad de Medida seleccionada para el item %s no tiene código" % (line.name))
+
+        return errors
+
+    def validacion_boleta(self):
+        errors = []
+        """
+        if not self.partner_id.email:
+            errors.append("* El cliente selecionado no tiene email.")
+        """
+        return errors

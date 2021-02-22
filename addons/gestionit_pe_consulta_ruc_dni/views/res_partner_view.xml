@@ -25,6 +25,7 @@
                     <field name="estado_contribuyente" placeholder="Estado del Contribuyente"/>
                 </div>  -->
                 <div class="o_row" position="before">
+                    <field name="registration_name" placeholder="Razón social" attrs="{'invisible': [('is_company','=',False)],'required': [('is_company','=',True)]}"/>
                     <field name="msg_error"/>
                     <field name="estado_contribuyente" placeholder="Estado del Contribuyente"/>
                 </div>

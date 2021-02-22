@@ -12,7 +12,7 @@ _logger = logging.getLogger(__name__)
 class ResPartner(models.Model):
     _inherit = 'res.partner'
 
-    # registration_name = fields.Char('Name', size=128, index=True)
+    registration_name = fields.Char('Name', size=128, index=True)
     # catalog_06_id = fields.Many2one('einvoice.catalog.06', 'Tipo Doc.', index=True)
     # tipo_documento = fields.Selection(selection="_list_tipo_documento",string="Tipo Doc.Ident.")
 
@@ -129,6 +129,7 @@ class ResPartner(models.Model):
                 nombre_entidad = self.get_person_name_v3(self.vat)
                 if nombre_entidad:
                     self.name = nombre_entidad
+                    self.registration_name = nombre_entidad
                     # self.district_id = ""
                     # self.province_id = ""
                     # self.state_id = ""
@@ -137,6 +138,7 @@ class ResPartner(models.Model):
                     # self.street = ""
                 else:
                     self.name = " - "
+                    self.registration_name = " - "
                     # self.district_id = ""
                     # self.province_id = ""
                     # self.state_id = ""
@@ -191,7 +193,7 @@ class ResPartner(models.Model):
 
                 # self.state = tstate
                 self.name = d['nombre']
-                # self.registration_name = d['nombre']
+                self.registration_name = d['nombre']
                 self.zip = d["ubigeo"]
                 self.street = d['direccion_completa']
                 # self.vat_subjected = True
