@@ -35,13 +35,20 @@ codigos_tipo_afectacion_igv = [
 class AccountMove(models.Model):
     _inherit = "account.move"
 
-    json_comprobante = fields.Text(string="JSON Comprobante", copy=False)
-    json_respuesta = fields.Text(string="JSON Respuesta", copy=False)
-    digest_value = fields.Char(string="Digest Value", copy=False, default="*")
-
-    tipo_cambio_fecha_factura = fields.Float(
-        string="Tipo de cambio a la fecha de factura",
-        default=1.0)
+    @api.model
+    def default_get(self, fields_list):
+        res = super(AccountMove, self).default_get(fields_list)
+        refund_id = self._context.get("default_refund_invoice_id", False)
+        domain = []
+        if refund_id:
+            refund_obj = self.env["account.invoice"].browse(refund_id)
+            domain += [['tipo_comprobante_a_rectificar',
+                        'in', [refund_obj.invoice_type_code]]]
+        domain += [['invoice_type_code_id', '=',
+                    self._context.get("default_invoice_type_code")], ["type", "=", "sale"]]
+        journal_id = self.env['account.journal'].search(domain, limit=1)
+        res["journal_id"] = journal_id.id
+        return res
 
     invoice_type_code = fields.Selection(selection=[('00', 'Otros'),
                                                     ('01', 'Factura'),
@@ -52,11 +59,118 @@ class AccountMove(models.Model):
                                          readonly=True
                                          )
 
-    # descuento_global = fields.Float(
-    #     string="Descuento Global (%)",
+    # invoice_type_code_str = fields.Char(
+    #     "Tipo de Comrpobante*", compute="_compute_tipo_comprobante", store=True)
+
+    # def _compute_tipo_comprobante(self):
+    #     for record in self:
+    #         if record.invoice_type_code == "01":
+    #             record.invoice_type_code_str = "Factura Electrónica"
+    #         elif record.invoice_type_code == "03":
+    #             record.invoice_type_code_str = "Boleta de Venta Electrónica"
+    #         elif record.invoice_type_code == "07":
+    #             record.invoice_type_code_str = "Nota de crédito Electrónica"
+    #         elif record.invoice_type_code == "08":
+    #             record.invoice_type_code_str = "Nota de débito Electrónica"
+
+    # account_log_status_ids = fields.One2many(
+    #     "account.log.status", "account_invoice_id", string="Registro de Envíos", copy=False)
+    # tipo_comprobante_elect_ref = fields.Selection(
+    #     related="refund_invoice_id.invoice_type_code")
+    estado_emision = fields.Selection(
+        selection=[
+            ('A', 'Aceptado'),
+            ('E', 'Enviado a SUNAT'),
+            ('N', 'Envio Erróneo'),
+            ('O', 'Aceptado con Observación'),
+            ('R', 'Rechazado'),
+            ('P', 'Pendiente de envió a SUNAT'),
+        ],
+        string="Estado Emisión a SUNAT",
+        copy=False
+    )
+
+    estado_comprobante_electronico = fields.Selection(selection=[("0_NO_EXISTE", "NO EXISTE"),
+                                                                 ("1_ACEPTADO",
+                                                                  "ACEPTADO"),
+                                                                 ("2_ANULADO",
+                                                                  "ANULADO"),
+                                                                 ("3_AUTORIZADO",
+                                                                  "AUTORIZADO"),
+                                                                 ("4_NO_AUTORIZADO",
+                                                                  "NO AUTORIZADO"),
+                                                                 ("-", "-")], default="-")
+
+    estado_contribuyente_ruc = fields.Selection(selection=[("00_ACTIVO", "ACTIVO"),
+                                                           ("01_BAJA_PROVISIONAL",
+                                                            "BAJA PROVISIONAL"),
+                                                           ("02_BAJA_PROV_POR_OFICIO",
+                                                            "BAJA PROV. POR OFICIO"),
+                                                           ("03_SUSPENSION_TEMPORAL",
+                                                            "SUSPENSION TEMPORAL"),
+                                                           ("10_BAJA_DEFINITIVA",
+                                                            "BAJA DEFINITIVA"),
+                                                           ("11_BAJA_DE_OFICIO",
+                                                            "BAJA DE OFICIO"),
+                                                           ("22_INHABILITADO-VENT.UNICA",
+                                                            "INHABILITADO-VENT.UNICA"),
+                                                           ("-", "-")], default="-")
+
+    condicion_domicilio_contribuyente = fields.Selection(selection=[("00_HABIDO", "HABIDO"),
+                                                                    ("09_PENDIENTE",
+                                                                     "PENDIENTE"),
+                                                                    ("11_POR_VERIFICAR",
+                                                                     "POR VERIFICAR"),
+                                                                    ("12_NO_HABIDO",
+                                                                     "NO HABIDO"),
+                                                                    ("20_NO_HALLADO",
+                                                                     "NO HALLADO"),
+                                                                    ("-", "-")], default="-")
+
+    # partner_id = fields.Many2one(
+    #     'res.partner',
+    #     string='Partner',
+    #     change_default=True,
     #     readonly=True,
     #     states={'draft': [('readonly', False)]},
-    #     default=0.0)
+    #     track_visibility='always')
+
+    json_comprobante = fields.Text(string="JSON Comprobante", copy=False)
+    json_respuesta = fields.Text(string="JSON Respuesta", copy=False)
+    digest_value = fields.Char(string="Digest Value", copy=False, default="*")
+    status_envio = fields.Boolean(
+        string="Estado del envio del documento",
+        default=False,
+        copy=False
+    )
+    status_baja = fields.Boolean(
+        string="Estado de la baja del documento",
+        default=False,
+        copy=False
+    )
+    # variables para notas de venta
+    sustento_nota = fields.Text(
+        string="Sustento de nota",
+        readonly=True,
+        states={
+            'draft': [
+                ('readonly', False)
+            ]
+        },
+        copy=False)
+
+    tipo_cambio_fecha_factura = fields.Float(
+        string="Tipo de cambio a la fecha de factura",
+        default=1.0)
+
+    tipo_operacion = fields.Selection(selection=[(
+        "01", "Venta Interna"), ("02", "Exportación")], default="01", required=True, copy=False)
+
+    descuento_global = fields.Float(
+        string="Descuento Global (%)",
+        readonly=True,
+        states={'draft': [('readonly', False)]},
+        default=0.0)
 
     total_tax_discount = fields.Monetary(
         string="Total Descuento Impuesto",
@@ -88,16 +202,28 @@ class AccountMove(models.Model):
         default=0.0,
         compute="_compute_amount",
         currency_field='company_currency_id')
-    # total_descuentos = fields.Monetary(
-    #     string="Total Descuentos",
-    #     default=0.0,
-    #     compute="_compute_amount",
-    #     currency_field='company_currency_id')
-    # total_descuento_global = fields.Monetary(
-    #     string="Total Descuentos Global",
-    #     default=0.0,
-    #     compute="_compute_amount",
-    #     currency_field='company_currency_id')
+    total_descuentos = fields.Monetary(
+        string="Total Descuentos",
+        default=0.0,
+        compute="_compute_amount",
+        currency_field='company_currency_id')
+    total_descuento_global = fields.Monetary(
+        string="Total Descuentos Global",
+        default=0.0,
+        compute="_compute_amount",
+        currency_field='company_currency_id')
+
+    # monto_en_letras = fields.Char("Monto en letras",compute=_compute_monto_en_letras)
+    # tiene_guia_remision = fields.Boolean("Tienes guía de Remisión",default=False,copy=False)
+    invoice_picking_id = fields.Many2one(
+        "stock.picking", string="Documento de Envío", copy=False)
+    stock_picking_id = fields.Many2one(
+        "stock.picking", string="Documento de Envío", copy=False)
+    # numero_guia = fields.Char("Número de Guía",related="invoice_picking_id.numero_guia",copy=False)
+    # numero_guia_remision =  fields.Char("Número de Guía de Remisión",copy=False)
+
+    # guia_remision_ids = fields.Many2many("efact.guia_remision",string="Guía de Remisión")
+    # guia_remision_count = fields.Integer("Cantidad de GRE",compute="_compute_guia_remision_count")
 
     @api.depends(
         'line_ids.debit',
@@ -144,13 +270,13 @@ class AccountMove(models.Model):
             in_payment_set = {}
 
         for move in self:
-            # self.total_descuento_global = sum(
-            #     [
-            #         line.price_subtotal
-            #         for line in self.invoice_line_ids
-            #         if len([line.price_subtotal for line_tax in line.tax_ids
-            #                 if line_tax.tax_group_id.tipo_afectacion not in ["31", "32", "33", "34", "35", "36"]])
-            #     ])*self.descuento_global/100.0
+            self.total_descuento_global = sum(
+                [
+                    line.price_subtotal
+                    for line in self.invoice_line_ids
+                    if len([line.price_subtotal for line_tax in line.tax_ids
+                            if line_tax.tax_group_id.tipo_afectacion not in ["31", "32", "33", "34", "35", "36"]])
+                ])*self.descuento_global/100.0
 
             self.total_venta_gravado = sum(
                 [
@@ -158,8 +284,7 @@ class AccountMove(models.Model):
                     for line in self.invoice_line_ids
                     if len([line.price_subtotal for line_tax in line.tax_ids
                             if line_tax.tax_group_id.tipo_afectacion in ["10"]])
-                ])
-            # *(1-self.descuento_global/100.0)
+                ])*(1-self.descuento_global/100.0)
 
             self.total_venta_inafecto = sum(
                 [
@@ -168,8 +293,7 @@ class AccountMove(models.Model):
                     if len(
                         [line.price_subtotal for line_tax in line.tax_ids
                             if line_tax.tax_group_id.tipo_afectacion in ["40", "30"]])
-                ])
-            # *(1-self.descuento_global/100.0)
+                ])*(1-self.descuento_global/100.0)
 
             self.total_venta_exonerada = sum(
                 [
@@ -178,8 +302,7 @@ class AccountMove(models.Model):
                     if len(
                         [line.price_subtotal for line_tax in line.tax_ids
                             if line_tax.tax_group_id.tipo_afectacion in ["20"]])
-                ])
-            # *(1-self.descuento_global/100.0)
+                ])*(1-self.descuento_global/100.0)
 
             self.total_venta_gratuito = sum(
                 [
@@ -189,13 +312,13 @@ class AccountMove(models.Model):
                             if line_tax.tax_group_id.tipo_afectacion in ["31", "32", "33", "34", "35", "36", "37"]])
                 ])
 
-            # self.total_descuentos = sum(
-            #     [
-            #         ((line.price_subtotal / (1-line.discount/100.0))
-            #             * line.discount/100.0) + line.descuento_unitario
-            #         for line in self.invoice_line_ids
-            #         if line.discount < 100
-            #     ])+self.total_descuento_global
+            self.total_descuentos = sum(
+                [
+                    ((line.price_subtotal / (1-line.discount/100.0))
+                        * line.discount/100.0) + line.descuento_unitario
+                    for line in self.invoice_line_ids
+                    if line.discount < 100
+                ])+self.total_descuento_global
 
             total_untaxed = 0.0
             total_untaxed_currency = 0.0

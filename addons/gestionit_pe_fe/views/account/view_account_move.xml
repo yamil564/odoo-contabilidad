@@ -9,11 +9,12 @@
                 <xpath expr="//field[@name='ref']" position="after">
                     <field name="invoice_type_code"/>
                 </xpath>
+                <xpath expr="//field[@name='journal_id']" position="replace">
+                    <field name="tipo_operacion" string="Tipo de Operación" attrs="{'readonly':[['state','not in',['draft']]]}" widget="radio" />
+                    <field name="journal_id" string="Serie" options="{'no_create': True,'no_open':True}" domain="[('invoice_type_code_id','=',invoice_type_code),('type','=','sale')]"/>
+                </xpath>
             </field>
         </record>
-
-
-
 
         <record model="ir.ui.view" id="gestionit_pe_fe.view_account_invoice_form_desglose_venta">
             <field name="name">Totales de venta</field>
@@ -22,14 +23,14 @@
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='amount_untaxed']" position="replace">
                     <!-- <field name="amount_untaxed"/> -->
-                    <!-- <field name="descuento_global" string="Descuento Global (%)"/> -->
+                    <field name="descuento_global" string="Descuento Global (%)"/>
                     <field name="total_venta_gravado" string="Monto Gravado"/>
                     <field name="amount_igv"/>
                     <field name="total_venta_inafecto" string="Monto Inafecto"/>
                     <field name="total_venta_exonerada" string="Monto Exonerado"/>
                     <field name="total_venta_gratuito" string="Monto Gratuito"/>
-                    <!-- <field name="total_descuento_global" attrs="{'invisible':[('invoice_type_code','not in',['01','03'])]}" string="Descuento Global"/> -->
-                    <!-- <field name="total_descuentos" string="Total de Descuentos"/> -->
+                    <field name="total_descuento_global" attrs="{'invisible':[('invoice_type_code','not in',['01','03'])]}" string="Descuento Global"/>
+                    <field name="total_descuentos" string="Total de Descuentos"/>
                 </xpath>
                 <xpath expr="//field[@name='amount_by_group']" position="replace">
                 </xpath>

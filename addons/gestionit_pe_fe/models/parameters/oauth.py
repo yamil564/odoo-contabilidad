@@ -326,12 +326,46 @@ def crear_json_fac_bol(self):
             "montoBase": round(self.amount_untaxed + self.total_descuento_global, 2)
         }
 
-    if self.numero_guia_remision:
-        data["documento"]["numero_guia"] = self.numero_guia_remision
+    # if self.numero_guia_remision:
+    #     data["documento"]["numero_guia"] = self.numero_guia_remision
 
-    if self.nota_id:
-        data["nota"] = self.nota_id.descripcion
+    # if self.nota_id:
+    #     data["nota"] = self.nota_id.descripcion
+    ###############
+    self.total_venta_gravado = sum(
+        [
+            line.price_subtotal
+            for line in self.invoice_line_ids
+            if len([line.price_subtotal for line_tax in line.tax_ids
+                    if line_tax.tax_group_id.tipo_afectacion in ["10"]])
+        ])*(1-self.descuento_global/100.0)
 
+    self.total_venta_inafecto = sum(
+        [
+            line.price_subtotal
+            for line in self.invoice_line_ids
+            if len(
+                [line.price_subtotal for line_tax in line.tax_ids
+                    if line_tax.tax_group_id.tipo_afectacion in ["40", "30"]])
+        ])*(1-self.descuento_global/100.0)
+
+    self.total_venta_exonerada = sum(
+        [
+            line.price_subtotal
+            for line in self.invoice_line_ids
+            if len(
+                [line.price_subtotal for line_tax in line.tax_ids
+                    if line_tax.tax_group_id.tipo_afectacion in ["20"]])
+        ])*(1-self.descuento_global/100.0)
+
+    self.total_venta_gratuito = sum(
+        [
+            line.price_unit*line.quantity
+            for line in self.invoice_line_ids
+            if len([1 for line_tax in line.tax_ids
+                    if line_tax.tax_group_id.tipo_afectacion in ["31", "32", "33", "34", "35", "36", "37"]])
+        ])
+    ##########
     for tax in self.tax_line_ids:
         data_impuesto.append({
             "codImpuesto": str(tax.tax_id.tax_group_id.code),
