@@ -36,12 +36,12 @@ class AccountMoveLine(models.Model):
     )
     def _compute_price(self):
         self.ensure_one()
-        currency = self.invoice_id and self.invoice_id.currency_id or None
+        currency = self.move_id and self.move_id.currency_id or None
         price = self.price_unit * (1 - (self.discount or 0.0) / 100.0)
         taxes = False
         if self.tax_ids:
             taxes = self.tax_ids.compute_all(
-                price, currency, self.quantity, product=self.product_id, partner=self.invoice_id.partner_id)
+                price, currency, self.quantity, product=self.product_id, partner=self.move_id.partner_id)
 
         if len([1 for tax in self.tax_ids if tax.tax_group_id.codigo in ["31", "32", "33", "34", "35", "36"]]) == 0:
             self.price_subtotal = price_subtotal_signed = taxes[
@@ -51,10 +51,10 @@ class AccountMoveLine(models.Model):
             self.price_subtotal = price_subtotal_signed = 0
             self.price_total = 0
 
-        if self.invoice_id.currency_id and self.invoice_id.currency_id != self.invoice_id.company_id.currency_id:
-            price_subtotal_signed = self.invoice_id.currency_id.with_context(date=self.invoice_id._get_currency_rate_date(
-            )).compute(price_subtotal_signed, self.invoice_id.company_id.currency_id)
-        sign = self.invoice_id.type in ['in_refund', 'out_refund'] and -1 or 1
+        if self.move_id.currency_id and self.move_id.currency_id != self.move_id.company_id.currency_id:
+            price_subtotal_signed = self.move_id.currency_id.with_context(date=self.move_id._get_currency_rate_date(
+            )).compute(price_subtotal_signed, self.move_id.company_id.currency_id)
+        sign = self.move_id.type in ['in_refund', 'out_refund'] and -1 or 1
         self.price_subtotal_signed = price_subtotal_signed * sign
         self.price_subtotal2 = self.quantity * \
             (self.price_unit*(1 - ((self.discount or 0.0) / 100.0)) -

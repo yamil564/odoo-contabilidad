@@ -2,6 +2,7 @@
 from odoo import fields, models, api
 from odoo.exceptions import UserError, ValidationError
 from odoo.addons.gestionit_pe_fe.models.parameters import oauth
+# from ..parameters import oauth
 from datetime import datetime, timedelta
 
 
@@ -436,10 +437,10 @@ class AccountMove(models.Model):
         if self.journal_id.resumen:
             return obj
 
-        self.write({'tipo_cambio_fecha_factura': oauth.get_tipo_cambio(
-            self, 2) if self.currency_id.name == 'USD' else 1.0})
+        # self.write({'tipo_cambio_fecha_factura': oauth.get_tipo_cambio(
+        #     self, 2) if self.currency_id.name == 'USD' else 1.0})
 
-        oauth.enviar_doc(self, self.company_id.endpoint)
+        oauth.enviar_doc(self)
         # enviar_doc(self, self.company_id.endpoint)
 
         return obj

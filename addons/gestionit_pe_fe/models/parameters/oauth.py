@@ -15,19 +15,25 @@ from requests.exceptions import (
     TooManyRedirects, HTTPError, ConnectionError,
     FileModeWarning, ConnectTimeout, ReadTimeout
 )
+
+from odoo.addons.gestionit_pe_fe.api_facturacion.models import EFact21 as efact21
 import logging
 _logger = logging.getLogger()
 
 
-def enviar_doc(self, url):
-    # token = generate_token(self.company_id.api_key,
-    #                        self.company_id.api_secret, 10000)
+def enviar_doc_url(data_doc):
+    data_doc["tipoEnvio"] = int(tipoEnvio)
+    r = efact21.lamdba(data_doc)
 
+    return r
+
+
+def enviar_doc(self):
     self.invoice_type_code = self.journal_id.invoice_type_code_id
     if self.invoice_type_code == "01" or self.invoice_type_code == "03":
         data_doc = crear_json_fac_bol(self)
-    elif self.invoice_type_code == "07" or self.invoice_type_code == "08":
-        data_doc = crear_json_not_cred_deb(self)
+    # elif self.invoice_type_code == "07" or self.invoice_type_code == "08":
+    #     data_doc = crear_json_not_cred_deb(self)
     else:
         raise UserError("Tipo de documento no valido")
 
@@ -40,8 +46,7 @@ def enviar_doc(self, url):
         "account_invoice_id": self.id
     }
     try:
-        response_env = enviar_doc_url(
-            url, data_doc, token, self.company_id.tipo_envio)
+        response_env = enviar_doc_url(data_doc, self.company_id.tipo_envio)
         self.json_respuesta = json.dumps(response_env.json(), indent=4)
         data.update({
             "response_json": self.json_respuesta,
@@ -232,7 +237,7 @@ def crear_json_fac_bol(self):
     correlativo = int(self.name.split("-")[1])
     data = {
         "tipoDocumento": self.invoice_type_code,
-        "fechaEmision": self.invoice_date,
+        "fechaEmision": str(self.invoice_date),
         "idTransaccion": self.name,
         "correoReceptor": replace_false(self.partner_id.email if self.partner_id.email else "-"),
         "documento": {
@@ -264,7 +269,7 @@ def crear_json_fac_bol(self):
             "mntTotal": round(self.amount_total, 2),
             # solo para facturas y boletas
             "mntTotalGrat": round(self.total_venta_gratuito, 2),
-            "fechaVencimiento": self.invoice_date_due if self.invoice_date_due else datetime.now().strftime("%Y-%m-%d"),
+            "fechaVencimiento": str(self.invoice_date_due) if self.invoice_date_due else datetime.now().strftime("%Y-%m-%d"),
             "glosaDocumento": "VENTA",  # verificar
             "codContrato": replace_false(self.name),
             # "codCentroCosto" : "",
@@ -366,19 +371,28 @@ def crear_json_fac_bol(self):
                     if line_tax.tax_group_id.tipo_afectacion in ["31", "32", "33", "34", "35", "36", "37"]])
         ])
     ##########
-    for tax in self.tax_line_ids:
-        data_impuesto.append({
-            "codImpuesto": str(tax.tax_id.tax_group_id.code),
-            "montoImpuesto": round(tax.amount, 2),
-            "tasaImpuesto": round(tax.tax_id.amount/100, 2)
-        })
+    taxlen = 0
+    for line in self.invoice_line_ids:
+        for tax in line.tax_ids:
+            data_impuesto.append({
+                "codImpuesto": str(tax.tax_group_id.codigo),
+                "montoImpuesto": round(line.tax_base_amount, 2),
+                "tasaImpuesto": round(tax.amount/100, 2)
+            })
+            taxlen += 1
 
-    if len(self.tax_line_ids) == 0:
+    if taxlen == 0:
         data_impuesto.append({
             "codImpuesto": "1000",
             "montoImpuesto": 0.0,
             "tasaImpuesto": 0.18
         })
+    # if len(self.tax_ids) == 0:
+    #     data_impuesto.append({
+    #         "codImpuesto": "1000",
+    #         "montoImpuesto": 0.0,
+    #         "tasaImpuesto": 0.18
+    #     })
 
     for item in self.invoice_line_ids:
         #price_unit = item.price_unit*(1-(item.discount/100)) - item.descuento_unitario
@@ -412,30 +426,30 @@ def crear_json_fac_bol(self):
         montoItem = round((base_imponible) * item.quantity, 2)
         nombreItem = item.name.strip().replace("\n","")
         """
-        if item.invoice_line_tax_ids:
-            taxes = item.invoice_line_tax_ids.compute_all(item.price_unit)
-        precioItemSinIgv = taxes["total_excluded"]
+        # if item.invoice_line_tax_ids:
+        #     taxes = item.invoice_line_tax_ids.compute_all(item.price_unit)
+        # precioItemSinIgv = taxes["total_excluded"]
 
-        tasaIgv = item.invoice_line_tax_ids[0].amount / \
-            100 if len(item.invoice_line_tax_ids) else ""
+        # tasaIgv = item.invoice_line_tax_ids[0].amount / \
+        #     100 if len(item.invoice_line_tax_ids) else ""
 
         datac = {
             "cantidadItem": round(item.quantity, 2),
-            "unidadMedidaItem": item.uom_id.code,
+            "unidadMedidaItem": item.product_uom_id.code,
             "codItem": str(item.product_id.id),
             "nombreItem": item.name[0:250].strip().replace("\n", " "),
-            "precioItem": round(item.price_unit, 2) if len([item for line_tax in item.invoice_line_tax_ids
-                                                            if line_tax.tipo_afectacion_igv.code in ["31", "32", "33", "34", "35", "36"]]) == 0 else 0,  # Precio unitario con IGV
+            "precioItem": round(item.price_unit, 2) if len([item for line_tax in item.tax_ids
+                                                            if line_tax.tax_group_id.tipo_afectacion in ["31", "32", "33", "34", "35", "36"]]) == 0 else 0,  # Precio unitario con IGV
 
-            "precioItemSinIgv": round(precioItemSinIgv, 2) if len([item for line_tax in item.invoice_line_tax_ids
-                                                                   if line_tax.tipo_afectacion_igv.code in ["31", "32", "33", "34", "35", "36"]]) == 0 else 0,  # Precio unitario sin IGV y sin descuento
+            # "precioItemSinIgv": round(precioItemSinIgv, 2) if len([item for line_tax in item.tax_ids
+            #                                                        if line_tax.tax_group_id.tipo_afectacion in ["31", "32", "33", "34", "35", "36"]]) == 0 else 0,  # Precio unitario sin IGV y sin descuento
 
             # Monto total de la línea sin IGV
             "montoItem": round(item.price_unit*item.quantity, 2) if item.no_onerosa else round(item.price_subtotal, 2),
 
             # "descuentoMonto": round((item.price_subtotal*item.discount/100.0)/(1-item.discount/100.0), 2),  # solo factura y boleta
-            "codAfectacionIgv": item.invoice_line_tax_ids[0].tipo_afectacion_igv.code if len(item.invoice_line_tax_ids) else "",
-            "tasaIgv": round(tasaIgv*100, 2),
+            "codAfectacionIgv": item.tax_ids[0].tax_group_id.tipo_afectacion if len(item.tax_ids) else "",
+            # "tasaIgv": round(tasaIgv*100, 2),
             # Monto Total del IGV
             "montoIgv": round(item.price_total-item.price_subtotal, 2),
             "codSistemaCalculoIsc": "01",  # VERIFICAR
