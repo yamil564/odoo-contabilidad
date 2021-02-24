@@ -607,3 +607,9 @@ class AccountMove(models.Model):
             errors.append("* El cliente selecionado no tiene email.")
         """
         return errors
+
+    warehouse_id = fields.Many2one("stock.warehouse")
+    journal_ids = fields.Many2many(
+        "account.journal", string="Series permitidas", related="warehouse_id.journal_ids")
+    warehouses_allowed_ids = fields.Many2many(
+        "stock.warehouse", string="Almacénes Permitidos", related="user_id.warehouse_ids")
