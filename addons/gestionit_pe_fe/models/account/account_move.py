@@ -4,7 +4,8 @@ from odoo.exceptions import UserError, ValidationError
 from odoo.addons.gestionit_pe_fe.models.parameters import oauth
 # from ..parameters import oauth
 from datetime import datetime, timedelta
-
+import logging
+log = logging.getLogger(__name__)
 
 codigo_unidades_de_medida = [
     "DZN",
@@ -36,18 +37,56 @@ codigos_tipo_afectacion_igv = [
 class AccountMove(models.Model):
     _inherit = "account.move"
 
+    warehouse_id = fields.Many2one("stock.warehouse")
+    warehouses_allowed_ids = fields.Many2many(
+        "stock.warehouse", string="Almacénes Permitidos", related="user_id.warehouse_ids")
+    journal_ids = fields.Many2many(
+        "account.journal", string="Series permitidas", related="warehouse_id.journal_ids")
+
+    # @api.onchange('journal_ids')
+    # def _onchange_journal_id(self):
+    #     for j in self.journal_ids:
+    #         if j.invoice_type_code_id == self.invoice_type_code:
+    #             self.journal_id = j.id
+
     @api.model
     def default_get(self, fields_list):
         res = super(AccountMove, self).default_get(fields_list)
         refund_id = self._context.get("default_refund_invoice_id", False)
         domain = []
+
+        user_id = res.get("invoice_user_id", False)
+        if user_id:
+            warehouse_ids = self.env["res.users"].browse(user_id).warehouse_ids
+
+            if len(warehouse_ids) > 0:
+                journal_ids = self.env["stock.warehouse"].browse(
+                    warehouse_ids[0].id).journal_ids
+
+                # journal_factura = [
+                #     j for j in warehouse_ids[0].journal_ids if j.invoice_type_code_id == '01']
+                # journal_boleta = [
+                #     j for j in warehouse_ids[0].journal_ids if j.invoice_type_code_id == '03']
+
+                res.update({
+                    "warehouse_id": warehouse_ids[0].id,
+                })
+
+                # if len(journal_factura) > 0 and self._context.get("default_invoice_type_code") == "01":
+                #     res.update({"journal_id": journal_factura[0].id})
+                # elif len(journal_boleta) > 0 and self._context.get("default_invoice_type_code") == "03":
+                #     res.update({"journal_id": journal_boleta[0].id})
+                return res
+
         if refund_id:
             refund_obj = self.env["account.invoice"].browse(refund_id)
             domain += [['tipo_comprobante_a_rectificar',
                         'in', [refund_obj.invoice_type_code]]]
+
         domain += [['invoice_type_code_id', '=',
                     self._context.get("default_invoice_type_code")], ["type", "=", "sale"]]
         journal_id = self.env['account.journal'].search(domain, limit=1)
+
         res["journal_id"] = journal_id.id
         return res
 
@@ -56,7 +95,7 @@ class AccountMove(models.Model):
                                                     ('03', 'Boleta'),
                                                     ('07', 'Nota de crédito'),
                                                     ('08', 'Nota de débito')],
-                                         string="Tipo de Comprobante", related="journal_id.invoice_type_code_id",
+                                         string="Tipo de Comprobante",
                                          readonly=True
                                          )
 
@@ -608,9 +647,3 @@ class AccountMove(models.Model):
             errors.append("* El cliente selecionado no tiene email.")
         """
         return errors
-
-    warehouse_id = fields.Many2one("stock.warehouse")
-    journal_ids = fields.Many2many(
-        "account.journal", string="Series permitidas", related="warehouse_id.journal_ids")
-    warehouses_allowed_ids = fields.Many2many(
-        "stock.warehouse", string="Almacénes Permitidos", related="user_id.warehouse_ids")
