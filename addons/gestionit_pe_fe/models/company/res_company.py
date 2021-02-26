@@ -15,8 +15,8 @@ class ResCompany(models.Model):
     # endpoint = fields.Char("Endpoint")
     sunat_user = fields.Char("USUARIO SOL")
     sunat_pass = fields.Char("CLAVE SOL")
-    key_public = fields.Char("Cert. PUBLIC")
-    key_private = fields.Char("Cert. PRIVATE")
+    key_public = fields.Text("Cert. PUBLIC")
+    key_private = fields.Text("Cert. PRIVATE")
     tipo_envio = fields.Selection(selection=[(
         "0", "0 - Pruebas"), ("1", "1 - Homologación"), ("2", "2 - Producción")])
 

@@ -16,7 +16,7 @@ from requests.exceptions import (
     FileModeWarning, ConnectTimeout, ReadTimeout
 )
 
-# from odoo.addons.gestionit_pe_fe.api_facturacion.models import EFact21
+from .api_facturacion import models
 
 import logging
 _logger = logging.getLogger(__name__)
@@ -24,13 +24,8 @@ _logger = logging.getLogger(__name__)
 
 def enviar_doc_url(data_doc, tipoEnvio):
     data_doc["tipoEnvio"] = int(tipoEnvio)
-    # efact = EFact21()
-    # r = efact21.lamdba(data_doc)
 
-    _logger.info(
-        "---------------------------------------------------------------------||||||||||||||||||||||||||---------------------------------")
-    _logger.info(efact.prueba())
-    # _logger.info(data_doc)
+    r = models.lamdba(data_doc)
 
     return r
 
@@ -54,70 +49,70 @@ def enviar_doc(self):
     }
     try:
         response_env = enviar_doc_url(data_doc, self.company_id.tipo_envio)
-        self.json_respuesta = json.dumps(response_env.json(), indent=4)
+        self.json_respuesta = json.dumps(response_env, indent=4)
         data.update({
             "response_json": self.json_respuesta,
         })
-        if response_env.status_code == 200:
-            # Envío exitoso
-            response_env = response_env.json()
-            if "result" in response_env:
-                result = response_env["result"]
-                if "sunat_status" in result:
-                    if result["sunat_status"] in ["A", "O", "P", "E", "N", "B"]:
-                        self.estado_emision = result["sunat_status"]
-                    else:
-                        self.estado_emision = "P"
+        # if response_env.status_code == 200:
+        #     # Envío exitoso
+        #     response_env = response_env.json()
+        #     if "result" in response_env:
+        #         result = response_env["result"]
+        #         if "sunat_status" in result:
+        #             if result["sunat_status"] in ["A", "O", "P", "E", "N", "B"]:
+        #                 self.estado_emision = result["sunat_status"]
+        #             else:
+        #                 self.estado_emision = "P"
 
-                if "digest_value" in result:
-                    data["digest_value"] = result["digest_value"]
-                    self.digest_value = result["digest_value"]
+        #         if "digest_value" in result:
+        #             data["digest_value"] = result["digest_value"]
+        #             self.digest_value = result["digest_value"]
 
-                if "signed_xml" in result:
-                    try:
-                        ps = parseString(result["signed_xml"])
-                        data["signed_xml_data"] = ps.toprettyxml()
-                    except Exception as e:
-                        data["signed_xml_data"] = result["signed_xml"]
-                    data["signed_xml_data_without_format"] = result["signed_xml"]
+        #         if "signed_xml" in result:
+        #             try:
+        #                 ps = parseString(result["signed_xml"])
+        #                 data["signed_xml_data"] = ps.toprettyxml()
+        #             except Exception as e:
+        #                 data["signed_xml_data"] = result["signed_xml"]
+        #             data["signed_xml_data_without_format"] = result["signed_xml"]
 
-                if "response_content_xml" in result:
-                    try:
-                        ps = parseString(result["response_content_xml"])
-                        data["content_xml"] = ps.toprettyxml()
-                    except Exception as e:
-                        data["content_xml"] = result["response_content_xml"]
+        #         if "response_content_xml" in result:
+        #             try:
+        #                 ps = parseString(result["response_content_xml"])
+        #                 data["content_xml"] = ps.toprettyxml()
+        #             except Exception as e:
+        #                 data["content_xml"] = result["response_content_xml"]
 
-                if "response_xml" in result:
-                    try:
-                        ps = parseString(result["response_xml"])
-                        data["response_xml"] = ps.toprettyxml()
-                    except Exception as e:
-                        data["response_xml"] = result["response_xml"]
-                    data["response_xml_without_format"] = result["response_xml"]
+        #         if "response_xml" in result:
+        #             try:
+        #                 ps = parseString(result["response_xml"])
+        #                 data["response_xml"] = ps.toprettyxml()
+        #             except Exception as e:
+        #                 data["response_xml"] = result["response_xml"]
+        #             data["response_xml_without_format"] = result["response_xml"]
 
-                if "tipoDocumento" in data_doc:
-                    tipo_documento = data_doc["tipoDocumento"]
-                    if tipo_documento == '01':
-                        data["name"] = "Factura electrónica "+self.name
-                    elif tipo_documento == '03':
-                        data["name"] = "Boleta Electrónica "+self.number
-                    elif tipo_documento == '07':
-                        data["name"] = "Nota de Crédito "+self.number
-                    elif tipo_documento == '08':
-                        data["name"] = "Nota de Débito "+self.number
+        #         if "tipoDocumento" in data_doc:
+        #             tipo_documento = data_doc["tipoDocumento"]
+        #             if tipo_documento == '01':
+        #                 data["name"] = "Factura electrónica "+self.name
+        #             elif tipo_documento == '03':
+        #                 data["name"] = "Boleta Electrónica "+self.number
+        #             elif tipo_documento == '07':
+        #                 data["name"] = "Nota de Crédito "+self.number
+        #             elif tipo_documento == '08':
+        #                 data["name"] = "Nota de Débito "+self.number
 
-                if "unsigned_xml" in result:
-                    try:
-                        ps = parseString(result["unsigned_xml"])
-                        data["unsigned_xml"] = ps.toprettyxml()
-                    except Exception as e:
-                        data["unsigned_xml"] = result["unsigned_xml"]
+        #         if "unsigned_xml" in result:
+        #             try:
+        #                 ps = parseString(result["unsigned_xml"])
+        #                 data["unsigned_xml"] = ps.toprettyxml()
+        #             except Exception as e:
+        #                 data["unsigned_xml"] = result["unsigned_xml"]
 
-                if "sunat_status" in result:
-                    data["status"] = result["sunat_status"]
-                if 'request_id' in response_env['result']:
-                    data["api_request_id"] = result['request_id']
+        #         if "sunat_status" in result:
+        #             data["status"] = result["sunat_status"]
+        #         if 'request_id' in response_env['result']:
+        #             data["api_request_id"] = result['request_id']
 
     except Timeout as e:
         self.estado_emision = "P"
@@ -439,9 +434,9 @@ def crear_json_fac_bol(self):
         montoItem = round((base_imponible) * item.quantity, 2)
         nombreItem = item.name.strip().replace("\n","")
         """
-        # if item.invoice_line_tax_ids:
-        #     taxes = item.invoice_line_tax_ids.compute_all(item.price_unit)
-        # precioItemSinIgv = taxes["total_excluded"]
+        if item.tax_ids:
+            taxes = item.tax_ids.compute_all(item.price_unit)
+        precioItemSinIgv = taxes["total_excluded"]
 
         # tasaIgv = item.invoice_line_tax_ids[0].amount / \
         #     100 if len(item.invoice_line_tax_ids) else ""
@@ -451,12 +446,10 @@ def crear_json_fac_bol(self):
             "unidadMedidaItem": item.product_uom_id.code,
             "codItem": str(item.product_id.id),
             "nombreItem": item.name[0:250].strip().replace("\n", " "),
-            "precioItem": round(item.price_unit, 2) if len([item for line_tax in item.tax_ids
-                                                            if line_tax.tax_group_id.tipo_afectacion in ["31", "32", "33", "34", "35", "36"]]) == 0 else 0,  # Precio unitario con IGV
-
-            # "precioItemSinIgv": round(precioItemSinIgv, 2) if len([item for line_tax in item.tax_ids
-            #                                                        if line_tax.tax_group_id.tipo_afectacion in ["31", "32", "33", "34", "35", "36"]]) == 0 else 0,  # Precio unitario sin IGV y sin descuento
-
+            # Precio unitario con IGV
+            "precioItem": round(item.price_unit, 2) if len([item for line_tax in item.tax_ids if line_tax.tax_group_id.tipo_afectacion in ["31", "32", "33", "34", "35", "36"]]) == 0 else 0,
+            # Precio unitario sin IGV y sin descuento
+            "precioItemSinIgv": round(precioItemSinIgv, 2) if len([item for line_tax in item.tax_ids if line_tax.tax_group_id.tipo_afectacion in ["31", "32", "33", "34", "35", "36"]]) == 0 else 0,
             # Monto total de la línea sin IGV
             "montoItem": round(item.price_unit*item.quantity, 2) if item.no_onerosa else round(item.price_subtotal, 2),
 

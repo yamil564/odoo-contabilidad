@@ -67,7 +67,7 @@
                     <page string="Comprobante" groups="base.group_no_one">
                         <group>
                             <field name="json_comprobante" attrs="{'readonly':[['state','not in',['draft']]]}"/>
-                            <field name="json_respuesta" attrs="{'readonly':[['state','not in',['draft']]]}"/>
+                            <field name="json_respuesta"/>
                             <!-- <field name="status_envio" attrs="{'readonly':[['state','not in',['draft']]]}"/>
                             <field name="status_baja" attrs="{'readonly':[['state','not in',['draft']]]}"/>
                             <field name="new_invoice" attrs="{'readonly':[['state','not in',['draft']]]}"/> -->

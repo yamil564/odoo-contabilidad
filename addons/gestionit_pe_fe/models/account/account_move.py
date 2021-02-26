@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from odoo import fields, models, api
 from odoo.exceptions import UserError, ValidationError
-from odoo.addons.gestionit_pe_fe.models.parameters import oauth
+from . import oauth
 # from ..parameters import oauth
 from datetime import datetime, timedelta
 import logging

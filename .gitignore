@@ -7,5 +7,5 @@ config/odoo.conf
 .env
 .venv
 docker-compose.yaml
-main.py
+xml_state.py
 filename.txt
