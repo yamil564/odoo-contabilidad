@@ -409,10 +409,14 @@ class AccountMove(models.Model):
             move.amount_tax = sign * \
                 (total_tax_currency if len(currencies) == 1 else total_tax)
             #
-            move.amount_igv = move.amount_tax + move.total_venta_gratuito
+            move.amount_igv = (
+                move.amount_tax + move.total_venta_gratuito)*(1-move.descuento_global/100.0)
             #
-            move.amount_total = sign * \
-                (total_currency if len(currencies) == 1 else total)
+            # move.amount_total = sign * \
+            #     (total_currency if len(currencies) ==
+            #      1 else total) - move.total_descuentos
+            move.amount_total = move.total_venta_gravado + move.total_venta_exonerada + \
+                move.total_venta_inafecto + move.amount_igv
             move.amount_residual = -sign * \
                 (total_residual_currency if len(currencies) == 1 else total_residual)
             move.amount_untaxed_signed = -total_untaxed

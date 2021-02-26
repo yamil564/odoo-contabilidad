@@ -35,32 +35,33 @@ class AccountMoveLine(models.Model):
         'move_id.company_id', 'move_id.date'
     )
     def _compute_price(self):
-        self.ensure_one()
-        currency = self.move_id and self.move_id.currency_id or None
-        price = self.price_unit * (1 - (self.discount or 0.0) / 100.0)
-        taxes = False
-        if self.tax_ids:
-            taxes = self.tax_ids.compute_all(
-                price, currency, self.quantity, product=self.product_id, partner=self.move_id.partner_id)
+        # self.ensure_one()
+        for line in self:
+            currency = line.move_id and line.move_id.currency_id or None
+            price = line.price_unit * (1 - (line.discount or 0.0) / 100.0)
+            taxes = False
+            if line.tax_ids:
+                taxes = line.tax_ids.compute_all(
+                    price, currency, line.quantity, product=line.product_id, partner=line.move_id.partner_id)
 
-        if len([1 for tax in self.tax_ids if tax.tax_group_id.codigo in ["31", "32", "33", "34", "35", "36"]]) == 0:
-            self.price_subtotal = price_subtotal_signed = taxes[
-                'total_excluded'] if taxes else self.quantity * price
-            self.price_total = taxes['total_included'] if taxes else self.price_subtotal
-        else:
-            self.price_subtotal = price_subtotal_signed = 0
-            self.price_total = 0
+            if len([1 for tax in line.tax_ids if tax.tax_group_id.codigo in ["31", "32", "33", "34", "35", "36"]]) == 0:
+                line.price_subtotal = price_subtotal_signed = taxes[
+                    'total_excluded'] if taxes else line.quantity * price
+                line.price_total = taxes['total_included'] if taxes else line.price_subtotal
+            else:
+                line.price_subtotal = price_subtotal_signed = 0
+                line.price_total = 0
 
-        if self.move_id.currency_id and self.move_id.currency_id != self.move_id.company_id.currency_id:
-            price_subtotal_signed = self.move_id.currency_id.with_context(date=self.move_id._get_currency_rate_date(
-            )).compute(price_subtotal_signed, self.move_id.company_id.currency_id)
-        sign = self.move_id.type in ['in_refund', 'out_refund'] and -1 or 1
-        self.price_subtotal_signed = price_subtotal_signed * sign
-        self.price_subtotal2 = self.quantity * \
-            (self.price_unit*(1 - ((self.discount or 0.0) / 100.0)) -
-             self.descuento_unitario)
-        self.no_onerosa = self.tax_ids[0].tax_group_id.no_onerosa if len(
-            self.tax_ids) > 0 else False
+            if line.move_id.currency_id and line.move_id.currency_id != line.move_id.company_id.currency_id:
+                price_subtotal_signed = line.move_id.currency_id.with_context(date=line.move_id._get_currency_rate_date(
+                )).compute(price_subtotal_signed, line.move_id.company_id.currency_id)
+            sign = line.move_id.type in ['in_refund', 'out_refund'] and -1 or 1
+            line.price_subtotal_signed = price_subtotal_signed * sign
+            line.price_subtotal2 = line.quantity * \
+                (line.price_unit*(1 - ((line.discount or 0.0) / 100.0)) -
+                 line.descuento_unitario)
+            line.no_onerosa = line.tax_ids[0].tax_group_id.no_onerosa if len(
+                line.tax_ids) > 0 else False
 
     # @profile
     @api.onchange("tax_ids")

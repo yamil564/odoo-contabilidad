@@ -16,14 +16,21 @@ from requests.exceptions import (
     FileModeWarning, ConnectTimeout, ReadTimeout
 )
 
-from odoo.addons.gestionit_pe_fe.api_facturacion.models import EFact21 as efact21
+# from odoo.addons.gestionit_pe_fe.api_facturacion.models import EFact21
+
 import logging
-_logger = logging.getLogger()
+_logger = logging.getLogger(__name__)
 
 
-def enviar_doc_url(data_doc):
+def enviar_doc_url(data_doc, tipoEnvio):
     data_doc["tipoEnvio"] = int(tipoEnvio)
-    r = efact21.lamdba(data_doc)
+    # efact = EFact21()
+    # r = efact21.lamdba(data_doc)
+
+    _logger.info(
+        "---------------------------------------------------------------------||||||||||||||||||||||||||---------------------------------")
+    _logger.info(efact.prueba())
+    # _logger.info(data_doc)
 
     return r
 
@@ -236,6 +243,12 @@ def crear_json_fac_bol(self):
 
     correlativo = int(self.name.split("-")[1])
     data = {
+        "company": {
+            "SUNAT_user": self.company_id.sunat_user,
+            "SUNAT_pass": self.company_id.sunat_pass,
+            "key_private": self.company_id.key_private,
+            "key_public": self.company_id.key_public,
+        },
         "tipoDocumento": self.invoice_type_code,
         "fechaEmision": str(self.invoice_date),
         "idTransaccion": self.name,
@@ -265,7 +278,7 @@ def crear_json_fac_bol(self):
             "mntNeto": round(self.total_venta_gravado, 2),
             "mntExe": round(self.total_venta_inafecto, 2),
             "mntExo": round(self.total_venta_exonerada, 2),
-            "mntTotalIgv": round(self.amount_tax, 2),
+            "mntTotalIgv": round(self.amount_igv, 2),
             "mntTotal": round(self.amount_total, 2),
             # solo para facturas y boletas
             "mntTotalGrat": round(self.total_venta_gratuito, 2),
@@ -469,7 +482,7 @@ def crear_json_fac_bol(self):
 
         data_detalle.append(datac)
 
-    data["impuesto"] = data_impuesto
+    # data["impuesto"] = data_impuesto
     data["detalle"] = data_detalle
     if len(data_anticipo):
         data["anticipos"] = data_anticipo
