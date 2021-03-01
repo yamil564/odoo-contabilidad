@@ -50,6 +50,7 @@ RUN pip3 install selenium
 RUN pip3 install boto3
 RUN pip3 install lxml
 RUN pip3 install flex
+RUN pip3 install pynamodb
 # RUN pip3 install culqipy
 # RUN pip3 install mercadopago
 # RUN apt-get clean && apt-get autoclean
