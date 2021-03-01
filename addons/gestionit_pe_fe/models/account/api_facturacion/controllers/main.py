@@ -3,7 +3,7 @@ import requests
 import os
 # , resumendiario, comunicacionbaja, nota_credito, nota_debito
 from . import factura, firma
-from . import xml_validation  # ,sunat_response_handle
+from . import xml_validation, sunat_response_handle
 # , ResumenDiario, ComunicacionBaja, CreditNote, DespatchAdvice, DebitNote
 from ..efact21.Documents import Factura
 # from . import guia_remision
@@ -335,47 +335,47 @@ def handle(data, user_credentials, self_signed=False):
     """
 
 
-# def send_xml_sunat(prev_sign, data, user):
-#     tipo_envio = data.get("tipoEnvio", 0)
+def send_xml_sunat(prev_sign, data):
+    tipo_envio = data.get("tipoEnvio", 0)
 
-#     if tipo_envio in [1, 3]:
-#         url = urls[tipo_envio]
-#     elif tipo_envio == 0:
-#         if prev_sign['document_type'] in ["09"]:
-#             url = urls_test[1]
-#         else:
-#             url = urls_test[0]
-#     elif tipo_envio == 2:
-#         if prev_sign['document_type'] in ["09"]:
-#             url = urls_production[1]
-#         else:
-#             url = urls_production[0]
-#     elif tipo_envio == 4:
-#         url = url_check_xml
-#     else:
-#         raise Exception("bad tipoEnvio")
-#     headers = {"Content-Type": "application/xml"}
+    if tipo_envio in [1, 3]:
+        url = urls[tipo_envio]
+    elif tipo_envio == 0:
+        if prev_sign['document_type'] in ["09"]:
+            url = urls_test[1]
+        else:
+            url = urls_test[0]
+    elif tipo_envio == 2:
+        if prev_sign['document_type'] in ["09"]:
+            url = urls_production[1]
+        else:
+            url = urls_production[0]
+    elif tipo_envio == 4:
+        url = url_check_xml
+    else:
+        raise Exception("bad tipoEnvio")
+    headers = {"Content-Type": "application/xml"}
 
-#     resp = requests.post(
-#         url,
-#         data=prev_sign['final_xml'],
-#         headers=headers,
-#         timeout=20)
-#     response_xml = resp.text
+    resp = requests.post(
+        url,
+        data=prev_sign['final_xml'],
+        headers=headers,
+        timeout=20)
+    response_xml = resp.text
 
-#     document_type = prev_sign['document_type']
-#     if document_type in ['01', '03', '07', '08', '09']:
-#         resp = sunat_response_handle.get_response(response_xml)
-#     elif document_type in ['RA', 'RC']:
-#         resp = sunat_response_handle.get_response_ticket(response_xml)
-#         # Send queue
-#     else:
-#         resp = {
-#             "success": False,
-#             "message": "Invalid document type."
-#         }
-#     resp['response_xml'] = response_xml
-#     return resp
+    document_type = prev_sign['document_type']
+    if document_type in ['01', '03', '07', '08', '09']:
+        resp = sunat_response_handle.get_response(response_xml)
+    elif document_type in ['RA', 'RC']:
+        resp = sunat_response_handle.get_response_ticket(response_xml)
+        # Send queue
+    else:
+        resp = {
+            "success": False,
+            "message": "Invalid document type."
+        }
+    resp['response_xml'] = response_xml
+    return resp
 
 
 # def send_xml_nubefact(prev_sign, data, user):

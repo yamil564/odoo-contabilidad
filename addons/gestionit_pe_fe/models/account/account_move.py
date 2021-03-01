@@ -62,20 +62,9 @@ class AccountMove(models.Model):
             if len(warehouse_ids) > 0:
                 journal_ids = self.env["stock.warehouse"].browse(
                     warehouse_ids[0].id).journal_ids
-
-                # journal_factura = [
-                #     j for j in warehouse_ids[0].journal_ids if j.invoice_type_code_id == '01']
-                # journal_boleta = [
-                #     j for j in warehouse_ids[0].journal_ids if j.invoice_type_code_id == '03']
-
                 res.update({
                     "warehouse_id": warehouse_ids[0].id,
                 })
-
-                # if len(journal_factura) > 0 and self._context.get("default_invoice_type_code") == "01":
-                #     res.update({"journal_id": journal_factura[0].id})
-                # elif len(journal_boleta) > 0 and self._context.get("default_invoice_type_code") == "03":
-                #     res.update({"journal_id": journal_boleta[0].id})
                 return res
 
         if refund_id:
@@ -113,8 +102,8 @@ class AccountMove(models.Model):
     #         elif record.invoice_type_code == "08":
     #             record.invoice_type_code_str = "Nota de débito Electrónica"
 
-    # account_log_status_ids = fields.One2many(
-    #     "account.log.status", "account_invoice_id", string="Registro de Envíos", copy=False)
+    account_log_status_ids = fields.One2many(
+        "account.log.status", "account_move_id", string="Registro de Envíos", copy=False)
     # tipo_comprobante_elect_ref = fields.Selection(
     #     related="refund_invoice_id.invoice_type_code")
     estado_emision = fields.Selection(
@@ -177,6 +166,7 @@ class AccountMove(models.Model):
 
     json_comprobante = fields.Text(string="JSON Comprobante", copy=False)
     json_respuesta = fields.Text(string="JSON Respuesta", copy=False)
+    # cdr_sunat = fields.Binary(string="CDR", copy=False)
     digest_value = fields.Char(string="Digest Value", copy=False, default="*")
     status_envio = fields.Boolean(
         string="Estado del envio del documento",

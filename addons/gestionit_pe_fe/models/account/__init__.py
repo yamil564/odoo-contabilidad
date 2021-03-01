@@ -1,3 +1,4 @@
+from . import account_log_status
 from . import account_tax_group
 from . import account_journal
 from . import account_move

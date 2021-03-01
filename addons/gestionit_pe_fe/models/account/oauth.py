@@ -2,6 +2,7 @@ import requests
 from odoo.exceptions import UserError, ValidationError
 import json
 import os
+import base64
 import datetime
 from bs4 import BeautifulSoup
 import jwt
@@ -26,6 +27,7 @@ def enviar_doc_url(data_doc, tipoEnvio):
     data_doc["tipoEnvio"] = int(tipoEnvio)
 
     r = models.lamdba(data_doc)
+    # _logger.info(r)
 
     return r
 
@@ -40,80 +42,89 @@ def enviar_doc(self):
         raise UserError("Tipo de documento no valido")
 
     self.json_comprobante = json.dumps(data_doc, indent=4)
+
     data = {
         "request_json": self.json_comprobante,
         "name": self.name,
         "date_request": fields.Datetime.now(),
         "date_issue": self.invoice_date,
-        "account_invoice_id": self.id
+        "account_move_id": self.id
     }
     try:
         response_env = enviar_doc_url(data_doc, self.company_id.tipo_envio)
+
         self.json_respuesta = json.dumps(response_env, indent=4)
+
         data.update({
             "response_json": self.json_respuesta,
         })
+
+        # _logger.info(
+        #     "+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-")
+        # _logger.info(response_env.status_code)
+
         # if response_env.status_code == 200:
-        #     # Envío exitoso
-        #     response_env = response_env.json()
-        #     if "result" in response_env:
-        #         result = response_env["result"]
-        #         if "sunat_status" in result:
-        #             if result["sunat_status"] in ["A", "O", "P", "E", "N", "B"]:
-        #                 self.estado_emision = result["sunat_status"]
-        #             else:
-        #                 self.estado_emision = "P"
+        # Envío exitoso
+        # result = response_env.json()
+        # if "result" in response_env:
+        # result = response_env["result"]
+        # _logger.info(response_env)
+        if "sunat_status" in response_env:
+            if response_env["sunat_status"] in ["A", "O", "P", "E", "N", "B"]:
+                self.estado_emision = response_env["sunat_status"]
+            else:
+                self.estado_emision = "P"
 
-        #         if "digest_value" in result:
-        #             data["digest_value"] = result["digest_value"]
-        #             self.digest_value = result["digest_value"]
+        if "digest_value" in response_env:
+            data["digest_value"] = response_env["digest_value"]
+            self.digest_value = response_env["digest_value"]
 
-        #         if "signed_xml" in result:
-        #             try:
-        #                 ps = parseString(result["signed_xml"])
-        #                 data["signed_xml_data"] = ps.toprettyxml()
-        #             except Exception as e:
-        #                 data["signed_xml_data"] = result["signed_xml"]
-        #             data["signed_xml_data_without_format"] = result["signed_xml"]
+        if "signed_xml" in response_env:
+            try:
+                ps = parseString(response_env["signed_xml"])
+                data["signed_xml_data"] = ps.toprettyxml()
+            except Exception as e:
+                data["signed_xml_data"] = response_env["signed_xml"]
+            data["signed_xml_data_without_format"] = response_env["signed_xml"]
 
-        #         if "response_content_xml" in result:
-        #             try:
-        #                 ps = parseString(result["response_content_xml"])
-        #                 data["content_xml"] = ps.toprettyxml()
-        #             except Exception as e:
-        #                 data["content_xml"] = result["response_content_xml"]
+        if "response_content_xml" in response_env:
+            try:
+                ps = parseString(response_env["response_content_xml"])
+                data["content_xml"] = ps.toprettyxml()
+            except Exception as e:
+                data["content_xml"] = response_env["response_content_xml"]
 
-        #         if "response_xml" in result:
-        #             try:
-        #                 ps = parseString(result["response_xml"])
-        #                 data["response_xml"] = ps.toprettyxml()
-        #             except Exception as e:
-        #                 data["response_xml"] = result["response_xml"]
-        #             data["response_xml_without_format"] = result["response_xml"]
+        if "response_xml" in response_env:
+            try:
+                ps = parseString(response_env["response_xml"])
+                data["response_xml"] = ps.toprettyxml()
+            except Exception as e:
+                data["response_xml"] = response_env["response_xml"]
+            data["response_xml_without_format"] = response_env["response_xml"]
 
-        #         if "tipoDocumento" in data_doc:
-        #             tipo_documento = data_doc["tipoDocumento"]
-        #             if tipo_documento == '01':
-        #                 data["name"] = "Factura electrónica "+self.name
-        #             elif tipo_documento == '03':
-        #                 data["name"] = "Boleta Electrónica "+self.number
-        #             elif tipo_documento == '07':
-        #                 data["name"] = "Nota de Crédito "+self.number
-        #             elif tipo_documento == '08':
-        #                 data["name"] = "Nota de Débito "+self.number
+        if "tipoDocumento" in data_doc:
+            tipo_documento = data_doc["tipoDocumento"]
+            if tipo_documento == '01':
+                data["name"] = "Factura electrónica "+self.name
+            elif tipo_documento == '03':
+                data["name"] = "Boleta Electrónica "+self.number
+            elif tipo_documento == '07':
+                data["name"] = "Nota de Crédito "+self.number
+            elif tipo_documento == '08':
+                data["name"] = "Nota de Débito "+self.number
 
-        #         if "unsigned_xml" in result:
-        #             try:
-        #                 ps = parseString(result["unsigned_xml"])
-        #                 data["unsigned_xml"] = ps.toprettyxml()
-        #             except Exception as e:
-        #                 data["unsigned_xml"] = result["unsigned_xml"]
+        if "unsigned_xml" in response_env:
+            try:
+                ps = parseString(response_env["unsigned_xml"])
+                data["unsigned_xml"] = ps.toprettyxml()
+            except Exception as e:
+                data["unsigned_xml"] = response_env["unsigned_xml"]
 
-        #         if "sunat_status" in result:
-        #             data["status"] = result["sunat_status"]
-        #         if 'request_id' in response_env['result']:
-        #             data["api_request_id"] = result['request_id']
-
+        if "sunat_status" in response_env:
+            data["status"] = response_env["sunat_status"]
+        if 'request_id' in response_env:
+            data["api_request_id"] = response_env['request_id']
+        # _logger.info(data)
     except Timeout as e:
         self.estado_emision = "P"
         return {

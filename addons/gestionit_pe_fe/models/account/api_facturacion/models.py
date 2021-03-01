@@ -1,6 +1,21 @@
-import logging
+from . import dbmodels
 from .controllers import main
+import logging
+import random
+
+
 _logger = logging.getLogger(__name__)
+
+
+def random_string(l):
+    def to_char(x):
+        if x < 10:
+            return chr(48 + x)
+        if x < 36:
+            return chr(55 + x)
+        return chr(61 + x)
+
+    return "".join([to_char(random.randint(0, 61)) for _ in range(l)])
 
 
 def lamdba(data):
@@ -16,27 +31,24 @@ def lamdba(data):
 
     main_xml = main.handle(data, credentials, True)
 
-    return main_xml
+    # return main_xml
 
-    # _logger.info(
-    #     "-++--++--++--++--++--++--++--++--++--++--++--++--++--++--++--++--++--++--++--++--++-")
-    # _logger.info(main_xml)
-    # _logger.info(
-    #     "-++--++--++--++--++--++--++--++--++--++--++--++--++--++--++--++--++--++--++--++--++-")
+    request_id = random_string(20)
 
-    # request_id = random_string(20)
+    if data["tipoEnvio"] == 0:
+        request_id = "test/%s" % (request_id)
 
-    # if data["tipoEnvio"] == 0:
-    #     request_id = "test/%s" % (request_id)
+    ans = {
+        'request_id': request_id
+    }
+    ans.update(main_xml)
 
-    # ans = {
-    #     'request_id': request_id
-    # }
-    # ans.update(main_xml)
     # log = dbmodels.Log(
     #     id=request_id,
     #     timestamp=time.time(),
     #     user_id=self.user.id)
+
+    # _logger.info(log)
 
     # log.request_json = data
     # log.s3_saved = True
@@ -45,6 +57,7 @@ def lamdba(data):
     #     "response_json": ans,
     # }
     # log.estado = "invalid-request"
+
     # if not ans['success']:
     #     if "signer" in ans:
     #         del ans['signer']
@@ -67,28 +80,29 @@ def lamdba(data):
     # if generate_xml_only:
     #     ans['sunat_status'] = '-'
     # elif asyncrono:
-    #     worker.add_task(ans, self.user, data, main_xml['signer'])
-    #     log.estado = "pending-delivery"
+    #     # worker.add_task(ans, self.user, data, main_xml['signer'])
+    #     # log.estado = "pending-delivery"
     #     ans['sunat_status'] = "P"
     # else:
-    #     resp = main.send_xml(ans, data, self.user)
-    #     ans["token"] = resp.get("token")
-    #     ans['sunat_observaciones'] = resp.get('observaciones', [])
-    #     if resp['success']:
-    #         log.estado = "sunat-accepted"
-    #     else:
-    #         log.estado = "sunat-rejected"
-    #         ans['sunat_errors'] = resp.get('errors', [])
-    #     ans['sunat_status'] = resp.get('status', "-")
-    #     if resp.get("ticket", False):
-    #         ans['ticket'] = resp['ticket']
-    #         #worker.add_task_ticket(ans, self.user, data, main_xml['signer'], resp['ticket'])
-    #         log.estado = "pending-ticket"
-    #     ans['response_xml'] = resp.get('response_xml')
-    #     if resp.get("xml_content", None):
-    #         ans['response_content_xml'] = resp['xml_content']
-    #         s3obj['sunat_response_content_xml'] = resp["xml_content"]
-    #     s3obj['sunat_response_xml'] = resp.get('response_xml')
+    resp = main.send_xml_sunat(ans, data)
+
+    ans["token"] = resp.get("token")
+    ans['sunat_observaciones'] = resp.get('observaciones', [])
+    # if resp['success']:
+    # log.estado = "sunat-accepted"
+    # else:
+    # log.estado = "sunat-rejected"
+    ans['sunat_errors'] = resp.get('errors', [])
+    ans['sunat_status'] = resp.get('status', "-")
+    if resp.get("ticket", False):
+        ans['ticket'] = resp['ticket']
+        #worker.add_task_ticket(ans, self.user, data, main_xml['signer'], resp['ticket'])
+        # log.estado = "pending-ticket"
+    ans['response_xml'] = resp.get('response_xml')
+    if resp.get("xml_content", None):
+        ans['response_content_xml'] = resp['xml_content']
+        # s3obj['sunat_response_content_xml'] = resp["xml_content"]
+        # s3obj['sunat_response_xml'] = resp.get('response_xml')
     # log.save()
 
     # del ans['signer']
@@ -100,5 +114,4 @@ def lamdba(data):
     #     ContentType="application/json",
     #     Key=request_id
     # )
-
-    # return ans
+    return ans
