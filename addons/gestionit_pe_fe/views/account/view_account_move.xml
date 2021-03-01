@@ -8,6 +8,8 @@
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='ref']" position="after">
                     <field name="invoice_type_code"/>
+                    <!-- <field name="estado_emision" readonly="1" force_save="1" groups="base.group_user"/> -->
+                    <field name="estado_emision" readonly="1" force_save="1"/>
                 </xpath>
                 <xpath expr="//field[@name='journal_id']" position="replace">
                     <field name="tipo_operacion" string="Tipo de Operación" attrs="{'readonly':[['state','not in',['draft']]]}" widget="radio" />
