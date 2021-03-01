@@ -64,6 +64,7 @@ class AccountMove(models.Model):
                     warehouse_ids[0].id).journal_ids
                 res.update({
                     "warehouse_id": warehouse_ids[0].id,
+                    "journal_id": journal_ids[0].id
                 })
                 return res
 
