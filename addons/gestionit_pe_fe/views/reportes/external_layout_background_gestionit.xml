@@ -1,19 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <template id="external_layout_background_gestionit">
-        <div t-attf-class="o_company_#{company.id}_layout header" t-att-style="report_header_style">
+        <t t-set="o" t-value="o.with_context(lang=lang)"/>
+        <!-- <div t-attf-class="o_company_#{company.id}_layout header" t-att-style="report_header_style"> -->
+        <div t-attf-class="o_company_#{company.id}_layout header">
             <div class="o_background_header">
-                <div class="float-right">
-                    <h3 class="mt0 text-right" t-field="company.report_header"/>
-                </div>
-                <img t-if="company.logo" t-att-src="image_data_uri(company.logo)" class="float-left" alt="Logo"/>
-                <div class="float-left company_address">
-                    <div>
-                        <strong t-field="company.partner_id.name"/>
+                <div class="row">
+                    <div class="col-3">
+                        <img t-if="company.logo" t-att-src="image_data_uri(company.logo)" class="float-left" alt="Logo"/>
                     </div>
-                    <span t-field="company.partner_id" t-options="{&quot;widget&quot;: &quot;contact&quot;, &quot;fields&quot;: [&quot;address&quot;], &quot;no_marker&quot;: true}"/>
+                    <div class="col-5">
+                        <div>
+                            <h3>
+                                <span t-field="company.name"/>
+                            </h3>
+                        </div>
+                        <div>
+                            <span t-field="company.street"/>
+                        </div>
+                        <br/>
+                        <div t-if="company.email">
+                            <b> Email: </b>
+                            <span t-field="company.email"/>
+                        </div>
+                        <div t-if="company.phone">
+                            <b> Teléfono: </b>
+                            <span t-field="company.phone"/>
+                        </div>
+                    </div>
+                    <br/>
+                    <div class="col-4" style="border-style:solid; border-width:thin;">
+                        <div class="text-center">RUC: <span t-field="company.vat"/>
+                        </div>
+                        <br/>
+                        <div class="text-center">
+                            <h2>
+                                <span t-if="o.type == 'out_invoice' and (o.state == 'posted' or o.state == 'paid') and o.journal_id.invoice_type_code_id=='01'">FACTURA ELECTRÓNICA</span>
+                                <span t-if="o.type == 'out_invoice' and (o.state == 'posted' or o.state == 'paid') and o.journal_id.invoice_type_code_id=='03'">BOLETA ELECTRÓNICA</span>
+                                <span t-if="o.type == 'out_refund' and (o.state == 'posted' or o.state == 'paid') and o.journal_id.invoice_type_code_id=='07'">NOTA DE CRÉDITO ELECTRÓNICA</span>
+                                <span t-if="o.type == 'out_invoice' and (o.state == 'posted' or o.state == 'paid') and o.journal_id.invoice_type_code_id=='08'">NOTA DE DÉBITO ELECTRÓNICA</span>
+                                <span t-if="o.type == 'out_invoice' and o.state == 'proforma2'">PRO-FORMA</span>
+                                <span t-if="o.type == 'out_invoice' and o.state == 'draft'">
+                                    <span t-if="o.journal_id.invoice_type_code_id=='01'">FACTURA </span>
+                                    <span t-if="o.journal_id.invoice_type_code_id=='03'">BOLETA </span>
+                                    <span t-if="o.journal_id.invoice_type_code_id=='07'">NOTA DE CRÉDITO</span>
+                                    <span t-if="o.journal_id.invoice_type_code_id=='08'">NOTA DE DÉBITO</span>
+                                        BORRADOR
+                                </span>
+                                <span t-if="o.type == 'out_invoice' and o.state == 'cancel' and o.journal_id.invoice_type_code_id=='01'">FACTURA CANCELADA</span>
+                                <span t-if="o.type == 'out_invoice' and o.state == 'cancel' and o.journal_id.invoice_type_code_id=='03'">BOLETA CANCELADA</span>
+                                <span t-if="o.type == 'out_refund' and o.state == 'cancel' and o.journal_id.invoice_type_code_id=='07'">NOTA DE CRÉDITO CANCELADA</span>
+                                <span t-if="o.type == 'out_invoice' and o.state == 'cancel' and o.journal_id.invoice_type_code_id=='08'">NOTA DE DÉBITO CANCELADA</span>
+                                <span t-if="o.type == 'in_invoice' and o.journal_id.invoice_type_code_id=='01'">FACTURA DE PROVEEDOR</span>
+                                <span t-if="o.type == 'in_invoice' and o.journal_id.invoice_type_code_id=='03'">BOLETA DE PROVEEDOR</span>
+                                <span t-if="o.type == 'in_refund' and o.journal_id.invoice_type_code_id=='07'">NOTA DE CRÉDITO DE PROVEEDOR</span>
+                                <span t-if="o.type == 'in_invoice' and o.journal_id.invoice_type_code_id=='08'">NOTA DE DÉBITO DE PROVEEDOR</span>
+                            </h2>
+                        </div>
+                        <br/>
+                        <div class="text-center">Nro. <span t-field="o.name"/>
+                        </div>
+                    </div>
                 </div>
-                <div class="clearfix mb8"/>
             </div>
         </div>
 
@@ -21,36 +69,5 @@
             <t t-call="web.address_layout"/>
             <t t-raw="0"/>
         </div>
-
-        <!-- <div t-attf-class="o_company_#{company.id}_layout footer o_background_footer">
-            <div class="text-center">
-                <ul class="list-inline">
-                    <li t-if="company.phone" class="list-inline-item">
-                        <i class="fa fa-phone" role="img" aria-label="Phone" title="Phone"/>
-                        <span class="o_force_ltr" t-field="company.phone"/>
-                    </li>
-                    <li t-if="company.email" class="list-inline-item">
-                        <i class="fa fa-at" role="img" aria-label="Email" title="Email"/>
-                        <span t-field="company.email"/>
-                    </li>
-                    <li t-if="company.website" class="list-inline-item">
-                        <i class="fa fa-globe" role="img" aria-label="Website" title="Website"/>
-                        <span t-field="company.website"/>
-                    </li>
-                    <li t-if="company.vat" class="list-inline-item">
-                        <i class="fa fa-building-o" role="img" aria-label="Fiscal number"/>
-                        <t t-esc="company.country_id.vat_label or 'Tax ID'"/>
-:                        <span t-field="company.vat"/>
-                    </li>
-                </ul>
-                <div t-field="company.report_footer"/>
-                <div t-if="report_type == 'pdf'" class="text-muted">
-                    Page:
-                    <span class="page"/>
-                    of
-                    <span class="topage"/>
-                </div>
-            </div>
-        </div> -->
     </template>
 </odoo>
