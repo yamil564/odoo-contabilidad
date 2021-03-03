@@ -13,19 +13,9 @@ class ResPartner(models.Model):
     _inherit = 'res.partner'
 
     registration_name = fields.Char('Name', size=128, index=True)
-    # catalog_06_id = fields.Many2one('einvoice.catalog.06', 'Tipo Doc.', index=True)
-    # tipo_documento = fields.Selection(selection="_list_tipo_documento",string="Tipo Doc.Ident.")
-
-    # def _list_tipo_documento(self):
-    #     tipo_documento_objs = self.env["einvoice.catalog.06"].sudo().search([])
-    #     tipo_documento_list = [(td.code,td.name) for td in tipo_documento_objs]
-    #     return tipo_documento_list
-    # state = fields.Selection(selection=[(
-    #     'habido', 'Habido'), ('nhabido', 'No Habido'), ('no_existe', 'No Existe')], string='Estado')
-
+    ubigeo = fields.Char('Ubigeo')
     estado_contribuyente = fields.Selection(selection=[(
         'activo', 'Activo'), ('noactivo', 'No Activo')], string='Estado del Contribuyente')
-    # estado_contribuyente = fields.Char(string="prueba")
     msg_error = fields.Char(readonly=True)
 
     @api.onchange('l10n_latam_identification_type_id', 'vat')
@@ -194,7 +184,7 @@ class ResPartner(models.Model):
                 # self.state = tstate
                 self.name = d['nombre']
                 self.registration_name = d['nombre']
-                self.zip = d["ubigeo"]
+                self.ubigeo = d["ubigeo"]
                 self.street = d['direccion_completa']
                 # self.vat_subjected = True
                 self.is_company = True
