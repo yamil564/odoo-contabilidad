@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="sale.report_invoice_document_inherit_sale" inherit_id="account.report_invoice_document">
+    </template>
+
+    <template id="gestionit_report_invoice_document" inherit_id="account.report_invoice_document">
+        <xpath expr="//address" position="replace">
+
+        </xpath>
+        <xpath expr="//div[hasclass('page')]" position="before">
+            <div>
+                <h1>Hola Mundo</h1>
+            </div>
+        </xpath>
+    </template>
+</odoo>

@@ -20,6 +20,8 @@
         'views/user/view_users.xml',
         'views/stock/view_stock_warehouse.xml',
         'views/company/view_company.xml',
+        'views/reportes/external_layout_background_gestionit.xml',
+        'views/reportes/report_invoice_document.xml',
         'data/product_uom.xml',
         'data/tax_group.xml',
         'data/account_journal.xml',

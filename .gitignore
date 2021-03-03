@@ -9,3 +9,4 @@ config/odoo.conf
 docker-compose.yaml
 xml_state.py
 filename.txt
+before*

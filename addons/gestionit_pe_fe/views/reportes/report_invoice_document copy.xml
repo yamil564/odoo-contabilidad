@@ -1,0 +1,472 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="sale.report_invoice_document_inherit_sale" inherit_id="account.report_invoice_document">
+    </template>
+
+    <template id="account.report_invoice_document">
+        <t t-call="gestionit_pe_fe.external_layout_background_gestionit">
+            <t t-set="o" t-value="o.with_context({'lang':o.partner_id.lang})"/>
+            <div class="o_background_header">
+                <div class="row">
+                    <div class="col-xs-3">
+                        <!-- <span t-field="o.company_id.logo" t-field-options="{'widget':'image'}"/> -->
+                        <img t-if="o.company_id.logo" t-att-src="image_data_uri(o.company_id.logo)" class="float-left" alt="Logo"/>
+                    </div>
+                    <div class="col-xs-4">
+                        <div>
+                            <h3>
+                                <span t-field="o.company_id.name"/>
+                            </h3>
+                        </div>
+                        <div>
+                            <span t-field="o.company_id.street"/>
+                        </div>
+                        <br/>
+                        <div t-if="o.company_id.email">
+                            <b> Email: </b>
+                            <span t-field="o.company_id.email"/>
+                        </div>
+                        <div t-if="o.company_id.phone">
+                            <b> Teléfono: </b>
+                            <span t-field="o.company_id.phone"/>
+                        </div>
+                    </div>
+                    <div class="col-xs-4 col-xs-offset-1" style="border-style:solid; border-width:thin;">
+                        <div class="text-center">RUC: <span t-field="o.company_id.vat"/>
+                        </div>
+                        <div class="text-center">
+                            <h3>
+                                <span t-if="o.type == 'out_invoice' and (o.state == 'open' or o.state == 'paid') and o.journal_id.invoice_type_code_id=='01'">FACTURA ELECTRÓNICA</span>
+                                <span t-if="o.type == 'out_invoice' and (o.state == 'open' or o.state == 'paid') and o.journal_id.invoice_type_code_id=='03'">BOLETA ELECTRÓNICA</span>
+                                <span t-if="o.type == 'out_refund' and (o.state == 'open' or o.state == 'paid') and o.journal_id.invoice_type_code_id=='07'">NOTA DE CRÉDITO ELECTRÓNICA</span>
+                                <span t-if="o.type == 'out_invoice' and (o.state == 'open' or o.state == 'paid') and o.journal_id.invoice_type_code_id=='08'">NOTA DE DÉBITO ELECTRÓNICA</span>
+                                <span t-if="o.type == 'out_invoice' and o.state == 'proforma2'">PRO-FORMA</span>
+                                <span t-if="o.type == 'out_invoice' and o.state == 'draft'">
+                                    <span t-if="o.journal_id.invoice_type_code_id=='01'">FACTURA </span>
+                                    <span t-if="o.journal_id.invoice_type_code_id=='03'">BOLETA </span>
+                                    <span t-if="o.journal_id.invoice_type_code_id=='07'">NOTA DE CRÉDITO</span>
+                                    <span t-if="o.journal_id.invoice_type_code_id=='08'">NOTA DE DÉBITO</span>
+                                        BORRADOR
+                                </span>
+                                <span t-if="o.type == 'out_invoice' and o.state == 'cancel' and o.journal_id.invoice_type_code_id=='01'">FACTURA CANCELADA</span>
+                                <span t-if="o.type == 'out_invoice' and o.state == 'cancel' and o.journal_id.invoice_type_code_id=='03'">BOLETA CANCELADA</span>
+                                <span t-if="o.type == 'out_refund' and o.state == 'cancel' and o.journal_id.invoice_type_code_id=='07'">NOTA DE CRÉDITO CANCELADA</span>
+                                <span t-if="o.type == 'out_invoice' and o.state == 'cancel' and o.journal_id.invoice_type_code_id=='08'">NOTA DE DÉBITO CANCELADA</span>
+                                <span t-if="o.type == 'in_invoice' and o.journal_id.invoice_type_code_id=='01'">FACTURA DE PROVEEDOR</span>
+                                <span t-if="o.type == 'in_invoice' and o.journal_id.invoice_type_code_id=='03'">BOLETA DE PROVEEDOR</span>
+                                <span t-if="o.type == 'in_refund' and o.journal_id.invoice_type_code_id=='07'">NOTA DE CRÉDITO DE PROVEEDOR</span>
+                                <span t-if="o.type == 'in_invoice' and o.journal_id.invoice_type_code_id=='08'">NOTA DE DÉBITO DE PROVEEDOR</span>
+                            </h3>
+                        </div>
+                        <div class="text-center">Nro. <span t-field="o.name"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="page" style="padding-top:30px;position:absolute">
+                <div class="row" style="font-size:10px">
+                    <!--DIRECCIÓN DEL CLIENTE-->
+                    <div name="invoice_address" class="col-xs-5">
+                        <div t-if="o.partner_id.parent_id">
+                            <div>
+                                <b>Cliente:</b>
+                                <t t-if="o.partner_id.parent_id.registration_name">
+                                    <span t-esc="o.partner_id.parent_id.registration_name"/>
+                                </t>
+                                <t t-else="">
+                                    <span t-esc="o.partner_id.parent_id.name"/>
+                                </t>
+                            </div>
+
+                            <div t-if="o.partner_id.parent_id.vat">
+                                <b>
+                                    <span t-if="o.invoice_type_code=='01' and o.partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code =='6' ">RUC: </span>
+                                </b>
+                                <b>
+                                    <span t-if="o.partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code == '0' ">DOC.TRIB.NO.DOM.SIN.RUC : </span>
+                                </b>
+                                <b>
+                                    <span t-if="o.invoice_type_code=='03' and o.partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code in ['1','6']">DNI/RUC:</span>
+                                </b>
+                                <span t-esc="o.partner_id.vat"/>
+                            </div>
+
+                            <div>
+                                <b>
+                                    <span>Dirección:</span>
+                                </b>
+                                <span t-esc="o.partner_id.parent_id.street"/>
+                            </div>
+                            <div>
+                                <span t-field="o.partner_id.parent_id.state_id"/>
+ -                                <span t-field="o.partner_id.parent_id.province_id"/>
+ -                                <span t-field="o.partner_id.parent_id.district_id"/>
+                            </div>
+                        </div>
+                        <div t-else="">
+                            <b>Cliente: </b>
+                            <div t-if="o.partner_id.registration_name">
+                                <span t-field="o.partner_id.registration_name"/>
+                            </div>
+                            <div t-else="">
+                                <span t-field="o.partner_id.name"/>
+                            </div>
+                            <div t-if="o.partner_id.vat">
+                                <span t-if="o.invoice_type_code=='01' and o.partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code =='6' ">
+                                    <b>RUC:</b>
+                                </span>
+                                <span t-if="o.partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code == '0' ">
+                                    <b>DOC.TRIB.NO.DOM.SIN.RUC :</b>
+                                </span>
+                                <span t-if="o.invoice_type_code=='03' and o.partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code in ['1','6']">
+                                    <b>DNI/RUC:</b>
+                                </span>
+                                <span t-field="o.partner_id.vat"/>
+                            </div>
+                            <div>
+                                <b>Dirección: </b>
+                                <span t-field="o.partner_id.street"/>
+                            </div>
+                            <div>
+                                <span t-field="o.partner_id.state_id"/>
+ -                                <span t-field="o.partner_id.province_id"/>
+ -                                <span t-field="o.partner_id.district_id"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!--DATOS DE LA FACTURA-->
+                    <div class="col-xs-3 col-xs-offset-3">
+                        <strong t-if="o.invoice_date">Fecha de emisión:</strong>
+                        <p t-field="o.invoice_date"/>
+
+                        <!-- <t t-if="o.formato_comprobante_ref=='fisico'">
+                            <br t-if="o.formato_comprobante_ref"/>
+                            <strong t-if="o.comprobante_fisico_ref">Referencia: </strong>
+                            <span t-field="o.comprobante_fisico_ref"/>
+                        </t>
+
+                        <t t-if="o.formato_comprobante_ref=='electronico'">
+                            <br t-if="o.refund_invoice_id.move_name"/>
+                            <strong t-if="o.refund_invoice_id.move_name">Referencia: </strong>
+                            <span t-field="o.refund_invoice_id.move_name"/>
+                        </t> -->
+
+                        <!-- <br t-if="o.sustento_nota"/>
+                        <strong t-if="o.sustento_nota">Sustento: </strong>
+                        <span t-field="o.sustento_nota"/>
+
+                        <br t-if="o.tipo_nota_credito.code"/>
+                        <strong t-if="o.tipo_nota_credito.code">Tipo de nota de Crédito: </strong>
+                        <span t-field="o.tipo_nota_credito.code"/>
+-                        <span t-field="o.tipo_nota_credito.name"/> -->
+
+                        <!-- <br t-if="o.invoice_picking_id.numero_guia"/>
+                        <strong t-if="o.invoice_picking_id.numero_guia">Guía de Remisión: </strong>
+                        <span t-field="o.invoice_picking_id.numero_guia"/>
+                        <br t-if="o.numero_guia_remision"/>
+                        <strong t-if="o.numero_guia_remision">Guía de Remisión: </strong>
+                        <span t-field="o.numero_guia_remision"/> -->
+                        <br t-if="o.invoice_date_due"/>
+                        <strong t-if="o.invoice_date_due">Fecha de Vencimiento: </strong>
+                        <span t-field="o.invoice_date_due"/>
+
+                        <br t-if="o.currency_id.currency_unit_label"/>
+                        <strong t-if="o.currency_id.currency_unit_label">Tipo de Moneda: </strong>
+                        <span t-field="o.currency_id.currency_unit_label"/>
+
+                        <br t-if="o.invoice_payment_term_id.note"/>
+                        <strong t-if="o.invoice_payment_term_id.note">Condición de Pago: </strong>
+                        <span t-field="o.invoice_payment_term_id.note"/>
+                    </div>
+
+                </div>
+                <div class="row mt32 mb32 hidden">
+                    <div class="col-xs-2" t-if="o.name">
+                        <strong>Description:</strong>
+                        <p t-field="o.name"/>
+                    </div>
+                    <div class="col-xs-2" t-if="o.invoice_origin">
+                        <strong>Source:</strong>
+                        <p t-field="o.invoice_origin"/>
+                    </div>
+                    <div class="col-xs-2" t-if="o.partner_id.ref">
+                        <strong>Customer Code:</strong>
+                        <p t-field="o.partner_id.ref"/>
+                    </div>
+                    <div name="reference" class="col-xs-2" t-if="o.ref">
+                        <strong>Reference:</strong>
+                        <p t-field="o.ref"/>
+                    </div>
+                </div>
+
+                <!-- Is there a discount on at least one line? -->
+                <t t-set="display_discount" t-value="any([l.discount for l in o.invoice_line_ids])"/>
+
+                <table class="table table-condensed">
+                    <thead>
+                        <tr>
+                            <th class="text-right">Cantidad</th>
+                            <th>Description</th>
+                            <th class="hidden">Source Document</th>
+                            <th class="text-right">Unidad de Medida</th>
+                            <th class="text-right">Precio de Venta Unitario</th>
+                            <th t-if="display_discount" class="text-right">Disc.(%)</th>
+                            <th class="text-right">Precio Total</th>
+                        </tr>
+                    </thead>
+                    <tbody class="invoice_tbody" style="font-size:10px;">
+                        <tr t-foreach="o.invoice_line_ids" t-as="l">
+                            <td class="text-right">
+                                <span t-field="l.quantity"/>
+                            </td>
+                            <td>
+                                <span t-field="l.product_id.name"/>
+                            </td>
+                            <!-- <td class="hidden">
+                                <span t-field="l.invoice_origin"/>
+                            </td> -->
+                            <td class="text-right">
+                                <!-- <span t-field="l.product_uom_id.code" groups="product.group_uom"/> -->
+                                <span t-field="l.product_uom_id.code" groups="product.group_uom"/>
+                            </td>
+                            <td class="text-right">
+                                <span t-field="l.price_unit"/>
+                            </td>
+                            <td t-if="display_discount" class="text-right">
+                                <span t-field="l.discount"/>
+                            </td>
+                            <td class="text-right" id="subtotal">
+                                <!-- <span t-field="l.price_subtotal2" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/> -->
+                                <span t-field="l.price_subtotal" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="row" id="total">
+                    <!-- <div class="col-xs-6 pull-left">
+                        <span t-field="o.company_id.ventas_nota_extra"/>
+                    </div> -->
+                    <div class="col-xs-4 pull-right">
+                        <table class="table table-condensed">
+                            <tr>
+                                <td>
+                                    <b>Monto Gravado</b>
+                                </td>
+                                <td class="text-right">
+                                    <span t-field="o.total_venta_gravado" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <b>Monto Inafecto</b>
+                                </td>
+                                <td class="text-right">
+                                    <span t-field="o.total_venta_inafecto" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <b>Monto Exonerado</b>
+                                </td>
+                                <td class="text-right">
+                                    <span t-field="o.total_venta_exonerada" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <b>Monto Gratuito</b>
+                                </td>
+                                <td class="text-right">
+                                    <span t-field="o.amount_igv" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <b>IGV 18% Venta</b>
+                                </td>
+                                <td class="text-right">
+                                    <span t-field="o.total_venta_gratuito" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
+                                </td>
+                            </tr>
+
+                            <!-->
+                            <tr class="border-black">
+                                <td>
+                                    <strong>Valor de Venta</strong>
+                                </td>
+                                <td class="text-right">
+                                    <span t-field="o.amount_untaxed" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
+                                </td>
+                            </tr>
+									-->
+                            <!--
+								<t t-foreach="o._get_tax_amount_by_group()" t-as="amount_by_group">
+									<tr>
+										<td><span t-esc="amount_by_group[0] if len(o.tax_line_ids) &gt; 1 else (o.tax_line_ids.tax_id.description or o.tax_line_ids.tax_id.name)"/></td>
+										<td class="text-right">
+											<span t-esc="amount_by_group[2]"/>
+										</td>
+									</tr>
+								</t>
+								-->
+                            <!--
+								<t t-foreach="o._get_tax_amount_by_group()" t-as="amount_by_group">
+									<tr>
+										<t t-if="len(amount_by_group)&gt;0">
+											<td><span t-esc="amount_by_group[0] if len(o.tax_line_ids) &gt; 1 else (o.tax_line_ids.tax_id.description or o.tax_line_ids.tax_id.name)"/></td>
+										</t>
+										<t t-if="len(amount_by_group)&gt;2">
+											<td class="text-right">
+												<span t-esc="amount_by_group[2]"/>
+											</td>
+										</t>
+									</tr>
+								</t>
+								-->
+                            <!-- <t t-foreach="o.tax_line_ids" t-as="tax_line">
+                                <tr>
+                                    <td>
+                                        <span t-field="tax_line.name"/>
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-field="tax_line.amount" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
+                                    </td>
+                                </tr>
+                            </t> -->
+
+                            <tr class="border-black">
+                                <td>
+                                    <strong>Total</strong>
+                                </td>
+                                <td class="text-right">
+                                    <span t-field="o.amount_total" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- <div t-if="o.incoterms_id.code" class="row">
+                    <div class="col-xs-4">
+                        <table class="table table-condensed">
+                            <tr t-if="o.trans_local" class="border-black">
+                                <td>
+                                    <strong>Transporte local</strong>
+                                </td>
+                                <td class="text-right">
+                                    <span t-field="o.trans_local" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
+                                </td>
+                            </tr>
+                            <tr t-if="o.precio_fob" class="border-black">
+                                <td>
+                                    <strong>Precio FOB</strong>
+                                </td>
+                                <td class="text-right">
+                                    <span t-field="o.precio_fob" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
+                                </td>
+                            </tr>
+                            <tr t-if="o.flete" class="border-black">
+                                <td>
+                                    <strong>Flete</strong>
+                                </td>
+                                <td class="text-right">
+                                    <span t-field="o.flete" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
+                                </td>
+                            </tr>
+                            <tr t-if="o.seguro" class="border-black">
+                                <td>
+                                    <strong>Seguro</strong>
+                                </td>
+                                <td class="text-right">
+                                    <span t-field="o.seguro" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
+                                </td>
+                            </tr>
+                            <tr t-if="o.otros_gastos" class="border-black">
+                                <td>
+                                    <strong>Otros gastos</strong>
+                                </td>
+                                <td class="text-right">
+                                    <span t-field="o.otros_gastos" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
+                                </td>
+                            </tr>
+                            <tr t-if="o.gasto_pickup" class="border-black">
+                                <td>
+                                    <strong>Pickup</strong>
+                                </td>
+                                <td class="text-right">
+                                    <span t-field="o.gasto_pickup" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
+                                </td>
+                            </tr>
+                            <tr t-if="o.otros_impuestos" class="border-black">
+                                <td>
+                                    <strong>Otros impuestos</strong>
+                                </td>
+                                <td class="text-right">
+                                    <span t-field="o.otros_impuestos" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
+                                </td>
+                            </tr>
+                            <tr t-if="o.gasto_destino" class="border-black">
+                                <td>
+                                    <strong>Gasto en destino</strong>
+                                </td>
+                                <td class="text-right">
+                                    <span t-field="o.gasto_destino" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
+                                </td>
+                            </tr> 
+                        </table>
+                    </div>
+                </div>-->
+
+                <!-- <div style="font-size: 12px; width: 100%">
+                    <p>Importe en letras</p>
+                    <b>
+                        <span t-esc="to_word(o.amount_total,o.currency_id.name).upper()"/>
+                    </b>
+                    <p>
+                        <t t-if="o.amount_total==0.0">TRANSFERENCIA GRATUITA</t>
+                    </p> -->
+                <p>---------------------------------------------------------------</p>
+                <!-- </div> -->
+
+                <!-- <p t-if="o.comment">
+                    <strong>Comment:</strong>
+                    <span t-field="o.comment"/>
+                </p> -->
+                <p t-if="o.invoice_payment_term_id and o.amount_total!=0.0">
+                    <span t-field="o.invoice_payment_term_id.note"/>
+                </p>
+                <p t-if="o.fiscal_position_id.note">
+                    <strong>Fiscal Position Remark:</strong>
+                    <span t-field="o.fiscal_position_id.note"/>
+                </p>
+                <div class="row">
+                    <div class="col-xs-4">
+                        <t t-if="o.state in ['open','paid']">
+                            <img t-att-src="'/report/barcode/?type=%s&amp;value=%s&amp;width=%s&amp;height=%s'%('QR', generate_text_qr(o), 200, 200)"/>
+                        </t>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xs-12 text-center">
+                        <span t-if="o.type == 'out_invoice' and (o.state == 'open' or o.state == 'paid') and o.invoice_type_code=='01'">
+									Representación impresa de la <b>FACTURA ELECTRÓNICA</b>
+                        </span>
+                        <span t-if="o.type == 'out_invoice' and (o.state == 'open' or o.state == 'paid') and o.invoice_type_code=='03'">
+									Representación impresa de la <b>BOLETA ELECTRÓNICA</b>
+                        </span>
+                        <!-- <span t-if="o.company_id.mensaje_representacion_impresa" t-field="o.company_id.mensaje_representacion_impresa"/>
+                        <span t-if="o.company_id.url_consulta_comprobante">
+									Consulte su Comprobante ingresando al siguiente enlace <a t-att-href="o.company_id.url_consulta_comprobante" target="_blank">
+                            <t t-esc="o.company_id.url_consulta_comprobante"/>
+                        </a>
+                    </span> -->
+                    </div>
+                </div>
+            </div>
+
+        </t>
+    </template>
+</odoo>
