@@ -613,7 +613,7 @@ class AccountMove(models.Model):
         elif len(self.partner_id.vat) != 11:
             errors.append(
                 "* El RUC del cliente selecionado debe tener 11 dígitos")
-        if not self.partner_id.zip:
+        if not self.partner_id.ubigeo:
             errors.append(
                 "* El cliente selecionado no tiene configurado el Ubigeo.")
         """
