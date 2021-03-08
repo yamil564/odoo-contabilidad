@@ -8,6 +8,8 @@
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='ref']" position="after">
                     <field name="invoice_type_code"/>
+                    <field name="tipo_nota_credito" attrs="{'invisible': [('invoice_type_code','!=','07')],'required':[('invoice_type_code','=','07')]}"/>
+                    <field name="sustento_nota" attrs="{'invisible': [('invoice_type_code','!=','07'),('invoice_type_code','!=','08')],'required':[('invoice_type_code','!=','01'),('invoice_type_code','!=','03')]}"/>
                     <!-- <field name="estado_emision" readonly="1" force_save="1" groups="base.group_user"/> -->
                     <field name="estado_emision" readonly="1" force_save="1"/>
                 </xpath>
@@ -87,6 +89,18 @@
                             <field name="condicion_domicilio_contribuyente" groups="account.group_account_manager"/>
                         </group>
                     </page> -->
+                </xpath>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="gestionit_pe_fe.view_account_invoice_form_buttons">
+            <field name="name">Botones para documentos</field>
+            <field name="model">account.move</field>
+            <field name="inherit_id" ref="account.view_move_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//button[@name='action_reverse']" position="after">
+                    <!-- <button name="generar_nota_credito" string="Generar Nota de Crédito" class="oe_highlight" type="object" attrs="{'invisible': ['|','|',('invoice_type_code','not in',['00','01','03']),('state','in',('cancel','draft')),('documento_baja_id','!=',False)]}"/> -->
+                    <button name="generar_nota_credito" string="Generar Nota de Crédito" class="oe_highlight" type="object" attrs="{'invisible': ['|','|',('invoice_type_code','not in',['00','01','03']),('state','in',('cancel','draft'))]}"/>
                 </xpath>
             </field>
         </record>

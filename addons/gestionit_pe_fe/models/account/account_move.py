@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
 from odoo import fields, models, api
+from odoo.tools.translate import _
 from odoo.exceptions import UserError, ValidationError
+from odoo.http import request
 from . import oauth
 # from ..parameters import oauth
 from datetime import datetime, timedelta
+from odoo.addons.gestionit_pe_fe.models.parameters.catalogs import tnc
+
 import logging
 log = logging.getLogger(__name__)
 
@@ -42,12 +46,6 @@ class AccountMove(models.Model):
         "stock.warehouse", string="Almacénes Permitidos", related="user_id.warehouse_ids")
     journal_ids = fields.Many2many(
         "account.journal", string="Series permitidas", related="warehouse_id.journal_ids")
-
-    # @api.onchange('journal_ids')
-    # def _onchange_journal_id(self):
-    #     for j in self.journal_ids:
-    #         if j.invoice_type_code_id == self.invoice_type_code:
-    #             self.journal_id = j.id
 
     @api.model
     def default_get(self, fields_list):
@@ -119,6 +117,15 @@ class AccountMove(models.Model):
         string="Estado Emisión a SUNAT",
         copy=False
     )
+
+    sustento_nota = fields.Text(string="Sustento de nota", readonly=True, states={
+                                'draft': [('readonly', False)]}, copy=False)
+
+    tipo_nota_credito = fields.Selection(string='Tipo de Nota de Crédito', readonly=True,
+                                         selection="_selection_tipo_nota_credito", states={'draft': [('readonly', False)]})
+
+    def _selection_tipo_nota_credito(self):
+        return tnc
 
     estado_comprobante_electronico = fields.Selection(selection=[("0_NO_EXISTE", "NO EXISTE"),
                                                                  ("1_ACEPTADO",
@@ -474,8 +481,7 @@ class AccountMove(models.Model):
         # self.write({'tipo_cambio_fecha_factura': oauth.get_tipo_cambio(
         #     self, 2) if self.currency_id.name == 'USD' else 1.0})
 
-        oauth.enviar_doc(self)
-        # enviar_doc(self, self.company_id.endpoint)
+        # oauth.enviar_doc(self)
 
         return obj
 
@@ -642,3 +648,112 @@ class AccountMove(models.Model):
             errors.append("* El cliente selecionado no tiene email.")
         """
         return errors
+
+    def generar_nota_credito(self):
+        self.ensure_one()
+        moves = self.env['account.move'].browse(self.id)
+
+        # Create default values.
+        default_values_list = []
+        for move in moves:
+            default_values_list.append(
+                self.env['account.move.reversal']._prepare_default_reversal(move))
+
+        batches = [
+            # Moves to be cancelled by the reverses.
+            [self.env['account.move'], [], True],
+            [self.env['account.move'], [], False],  # Others.
+        ]
+        refund_method = 'refund'
+        for move, default_vals in zip(moves, default_values_list):
+            is_auto_post = bool(default_vals.get('auto_post'))
+            is_cancel_needed = not is_auto_post and refund_method in (
+                'cancel', 'modify')
+            batch_index = 0 if is_cancel_needed else 1
+            batches[batch_index][0] |= move
+            batches[batch_index][1].append(default_vals)
+
+        # Handle reverse method.
+        moves_to_redirect = self.env['account.move']
+        for moves, default_values_list, is_cancel_needed in batches:
+            new_moves = moves._reverse_moves(
+                default_values_list, cancel=is_cancel_needed)
+
+            if refund_method == 'modify':
+                moves_vals_list = []
+                for move in moves.with_context(include_business_fields=True):
+                    moves_vals_list.append(move.copy_data(
+                        {'date': move.date})[0])
+                new_moves = self.self.env['account.move'].create(
+                    moves_vals_list)
+
+            moves_to_redirect |= new_moves
+
+        moves_to_redirect.invoice_type_code = '07'
+
+        for j in moves_to_redirect.journal_ids:
+            if j.invoice_type_code_id == '07':
+                moves_to_redirect.journal_id = j.id
+        # Create action.
+        action = {
+            'name': _('Reverse Moves'),
+            'type': 'ir.actions.act_window',
+            'res_model': 'account.move',
+            # 'context': {
+            #     'default_invoice_type_code': '07',
+            # }
+        }
+        log.info(action)
+        if len(moves_to_redirect) == 1:
+            action.update({
+                'view_mode': 'form',
+                'res_id': moves_to_redirect.id,
+            })
+        else:
+            action.update({
+                'view_mode': 'tree,form',
+                'domain': [('id', 'in', moves_to_redirect.ids)],
+            })
+        return action
+        # if not self.name:
+        #     self.action_post()
+        # ref = request.env.ref("account.view_move_form")
+        # inv_lines2 = []
+        # for il1 in self.invoice_line_ids:
+        #     obj = il1.copy()
+        #     inv_lines2.append(obj.id)
+        # return {
+        #     "type": "ir.actions.act_window",
+        #     "res_model": "account.move",
+        #     "target": "self",
+        #     "view_id": ref.id,
+        #     "view_mode": "form",
+        #     "context": {
+        #         'default_partner_id': self.partner_id.id,
+        #         'default_reversed_entry_id': self.id,
+        #         'default_invoice_date': datetime.now().strftime("%Y-%m-%d"),
+        #         'default_invoice_payment_term_id': self.payment_term_id.id,
+        #         'default_invoice_line_ids': inv_lines2,
+        #         'default_line_ids': self.line_ids,
+        #         'default_new_invoice': False,
+        #         'default_type': 'out_refund',
+        #         'journal_type': 'sale',
+        #         'default_invoice_type_code': '07',
+        #         'default_name': 'Nota de Crédito 123'},
+        #     "domain": [('type', 'in', ('out_invoice', 'out_refund')), ('invoice_type_code', '=', '07')]
+        # }
+
+
+class AccountMoveReversal(models.TransientModel):
+    _inherit = 'account.move.reversal'
+
+    def _prepare_default_reversal(self, move):
+        return {
+            'ref': _('Nota de crédito de: %s, %s') % (move.name, self.reason) if self.reason else _('Nota de crédito de: %s') % (move.name),
+            'date': move.date,
+            'invoice_date': move.is_invoice(include_receipts=True) and (self.date or move.date) or False,
+            'journal_id': self.journal_id and self.journal_id.id or move.journal_id.id,
+            'invoice_payment_term_id': None,
+            'auto_post': False,
+            'invoice_user_id': move.invoice_user_id.id,
+        }

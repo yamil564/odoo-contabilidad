@@ -34,10 +34,11 @@ def enviar_doc_url(data_doc, tipoEnvio):
 
 def enviar_doc(self):
     self.invoice_type_code = self.journal_id.invoice_type_code_id
+
     if self.invoice_type_code == "01" or self.invoice_type_code == "03":
         data_doc = crear_json_fac_bol(self)
-    # elif self.invoice_type_code == "07" or self.invoice_type_code == "08":
-    #     data_doc = crear_json_not_cred_deb(self)
+    elif self.invoice_type_code == "07" or self.invoice_type_code == "08":
+        data_doc = crear_json_not_cred_deb(self)
     else:
         raise UserError("Tipo de documento no valido")
 
@@ -495,6 +496,233 @@ def crear_json_fac_bol(self):
 
     return data
     # return json.dumps(data,indent=4)
+
+
+def crear_json_not_cred_deb(self):
+    now = fields.Datetime.now()
+
+    nombreEmisor = self.company_id.partner_id.registration_name.strip()
+    numDocEmisor = self.company_id.partner_id.vat.strip(
+    ) if self.company_id.partner_id.vat else ""
+
+    numDocReceptor = self.partner_id.vat.strip() if self.partner_id.l10n_latam_identification_type_id in [
+        "1", "6"] and self.partner_id.vat else "-"
+    nombreReceptor = self.partner_id.registration_name if self.partner_id.registration_name not in [
+        "", "-", " - ", False] else self.partner_id.name
+    nombreReceptor = nombreReceptor.strip()
+    correlativo = int(self.name.split("-")[1])
+
+    data = {
+        "tipoDocumento": self.journal_id.invoice_type_code_id,
+        "fechaEmision": self.invoice_date,
+        "idTransaccion": self.name,
+        "correoReceptor": replace_false(self.partner_id.email if self.partner_id.email else "-"),
+        "documento": {
+            "serie": self.journal_id.code,
+            "correlativo": correlativo,
+            "nombreEmisor": nombreEmisor,
+            "tipoDocEmisor": self.company_id.partner_id.l10n_latam_identification_type_id,
+            "numDocEmisor": numDocEmisor,
+            "direccionOrigen": replace_false(self.company_id.partner_id.street),
+            "direccionUbigeo": replace_false(self.company_id.partner_id.ubigeo),
+            "nombreComercialEmisor": replace_false(self.company_id.partner_id.registration_name),
+            "tipoDocReceptor": self.partner_id.l10n_latam_identification_type_id,
+            "numDocReceptor": numDocReceptor,
+            "nombreReceptor": nombreReceptor,
+            "nombreComercialReceptor": replace_false(
+                self.partner_id.name if self.partner_id.name else self.partner_id.registration_name),
+            "direccionReceptor": self.partner_id.street if self.partner_id.street else "-",
+            # VERIFICAR
+            "tipoDocReceptorAsociado": replace_false(self.partner_id.l10n_latam_identification_type_id),
+            "numDocReceptorAsociado": replace_false(self.partner_id.vat),
+            "nombreReceptorAsociado": replace_false(
+                self.partner_id.registration_name if self.partner_id.registration_name else self.partner_id.name),
+
+            # "direccionDestino" : "",#solo para boletas
+            "tipoMoneda": self.currency_id.name,
+            "sustento": replace_false(self.sustento_nota),  # solo notas
+            # solo_notas
+            # "tipoMotivoNotaModificatoria": str(self.tipo_nota_credito.code if self.invoice_type_code == "07" else self.tipo_nota_dedito.code),
+            "tipoMotivoNotaModificatoria": "",
+            "mntNeto": round(self.total_venta_gravado, 2),
+            "mntExe": round(self.total_venta_inafecto, 2),
+            "mntExo": round(self.total_venta_exonerada, 2),
+            "mntTotalIgv": round(self.amount_tax, 2),
+            "mntTotal": round(self.amount_total, 2),
+            # "mntTotalGrat": round(self.total_venta_gratuito, 2),  # solo para facturas y boletas
+            "fechaVencimiento": self.invoice_date_due if self.invoice_date_due else now.strftime("%Y-%m-%d"),
+            "glosaDocumento": "VENTA",  # verificar
+            "codContrato": replace_false(self.name),
+            # "codCentroCosto" : "",
+            # verificar
+            # "tipoCambioDestino": round(self.tipo_cambio_fecha_factura, 4),
+            "mntTotalIsc": 0.0,
+            "mntTotalOtros": 0.0,
+            "mntTotalOtrosCargos": 0.0,
+            # "mntTotalAnticipos" : 0.0, #solo factura y boleta
+            "tipoFormatoRepresentacionImpresa": "GENERAL",
+            "mntTotalLetras": to_word(round(self.amount_total, 2), self.currency_id.name)
+        },
+        "descuento": {
+            # "mntDescuentoGlobal": self.total_descuento_global,
+            "mntTotalDescuentos": round(self.total_descuentos, 2)
+        },
+        # solo factura y boleta
+        # "servicioHospedaje": { },
+        # solo factura y boleta, con expecciones
+
+        "indicadores": {
+            # VERIFICAR ESTOS CAMPOS
+
+            # "indExportacion" : False,
+            # "indNoDomiciliados" : False, #valido para notas
+            # "indAnticipo" : True,
+            # "indDeduccionAnticipos" : False,
+            # "indServiciosHospedaje" : False,
+            # "indVentaItinerante" : False,
+            # "indTrasladoBienesConRepresentacionImpresa" : False,
+            # "indVentaArrozPilado" : False,
+            # "indComprobantePercepcion" : False,
+            # "indBienesTransferidosAmazonia" : False,
+            # "indServiciosPrestadosAmazonia" : False,
+            # "indContratosConstruccionEjecutadosAmazonia" : False
+
+        },
+
+        # solo factura y boleta
+        # "percepcion": {
+        # "mntBaseImponible" : 0.0,
+        # "mntPercepcion" : 0.0,
+        # "mntTotalMasPercepcion" : 0.0,
+        # "tasaPercepcion" : 1.0
+        # },
+        # "datosAdicionales": {},
+    }
+    data_impuesto = []
+    data_detalle = []
+    data_referencia = []  # solo para notas
+    data_anticipo = []  # solo facturas y boletas
+    data_anexo = []  # si hay anexos
+
+    for tax in self.tax_line_ids:
+        data_impuesto.append({
+            "codImpuesto": str(tax.tax_id.tax_group_id.code),
+            "montoImpuesto": round(tax.base, 2),
+            "tasaImpuesto": round(tax.tax_id.amount/100, 2)
+        })
+
+    if len(self.tax_line_ids) == 0:
+        data_impuesto.append({
+            "codImpuesto": "1000",
+            "montoImpuesto": 0.0,
+            "tasaImpuesto": 0.18
+        })
+
+    for item in self.invoice_line_ids:
+        price_unit = item.price_unit * \
+            (1-(item.discount/100)) - item.descuento_unitario
+        if (item.invoice_line_tax_ids.price_include):
+
+            if (item.invoice_line_tax_ids.amount == 0):
+                montoImpuestoUni = 0
+                base_imponible = price_unit
+            else:
+                base_imponible = price_unit / \
+                    (1 + (item.invoice_line_tax_ids.amount / 100))
+                montoImpuestoUni = price_unit - base_imponible
+
+            precioItem = price_unit
+
+        else:
+            montoImpuestoUni = price_unit * \
+                (item.invoice_line_tax_ids.amount / 100)
+
+            precioItem = price_unit + montoImpuestoUni
+            base_imponible = price_unit
+
+        '''
+        data_impuesto.append({
+            "codImpuesto": str(item.invoice_line_tax_ids.tax_group_id.code),
+            "montoImpuesto": round(montoImpuestoUni * item.quantity, 2),
+            "tasaImpuesto": round(item.invoice_line_tax_ids.amount / 100, 2)
+        })
+        
+        '''
+        tasaIgv = item.invoice_line_tax_ids[0].amount / \
+            100 if len(item.invoice_line_tax_ids) else ""
+        montoItem = round((base_imponible) * item.quantity, 2)
+        nombreItem = item.name.strip().replace("\n", "")
+        data_detalle.append({
+            "cantidadItem": round(item.quantity, 3),
+            "unidadMedidaItem": item.uom_id.code,
+            "codItem": str(item.product_id.id),
+            "nombreItem": nombreItem[0:250].strip().replace("\n", " "),
+            "precioItem": round(precioItem, 2),
+            "precioItemSinIgv": round(base_imponible, 2),
+            "montoItem": round(item.product_id.lst_price*item.quantity, 2) if montoItem == 0 else montoItem,
+            # "descuentoMonto": item.discount * precioItem / 100,  # solo factura y boleta
+            "codAfectacionIgv":  item.invoice_line_tax_ids[0].tipo_afectacion_igv.code if len(item.invoice_line_tax_ids) > 0 else False,
+            "tasaIgv": round(tasaIgv*100, 2),
+            "montoIgv": round(montoImpuestoUni * item.quantity, 2),
+            "codSistemaCalculoIsc": "01",  # VERIFICAR
+            "montoIsc": 0.0,  # VERIFICAR
+            # "tasaIsc" : 0.0, #VERIFICAR
+            "precioItemReferencia": round(item.product_id.lst_price, 2),
+            "idOperacion": str(self.id),
+            "no_onerosa": True if item.no_onerosa else False
+        })
+
+    if self.invoice_type_code in ["07", "08"]:
+        if self.formato_comprobante_ref not in ["fisico", "electronico"]:
+            raise ValidationError(
+                "El formato del comprobante de referencia debe ser Físico o Electrónico")
+
+        if self.formato_comprobante_ref == "fisico":
+            if not self.comprobante_fisico_ref and not self.tipo_comprobante_ref:
+                raise ValidationError(
+                    "Cuando el tipo de comprobante de referencia es físico entonces, debe completar el campo de comprobante físico de referencia y el tipo de documento (Factura o Boleta)")
+            else:
+                if not re.match("^\d{4}-\d{1,8}$", self.comprobante_fisico_ref):
+                    raise ValidationError(
+                        "El Comprobante no posee el formato Requerido")
+
+                serieRef = self.comprobante_fisico_ref.split("-")[0]
+                correlativoRef = self.comprobante_fisico_ref.split("-")[1]
+                tipoDocumentoRef = self.tipo_comprobante_ref
+
+                data_referencia.append({
+                    'tipoDocumentoRef': tipoDocumentoRef,
+                    'serieRef': serieRef,
+                    'correlativoRef': correlativoRef,
+                    'fechaEmisionRef': self.fecha_emision_comprobante_fisico_ref,
+                    'numero': self.comprobante_fisico_ref
+                })
+
+        elif self.formato_comprobante_ref == "electronico":
+            document_reference = self.refund_invoice_id
+            data_referencia.append({
+                'tipoDocumentoRef': document_reference.invoice_type_code,
+                'serieRef': document_reference.number[0:4],
+                'correlativoRef': int(document_reference.number[5:len(document_reference.number)]),
+                'fechaEmisionRef': document_reference.date_invoice,
+                'numero': document_reference.number
+            })
+            if document_reference.number[0] != self.journal_id.code[0]:
+                raise UserError(
+                    "Las Notas de Facturas deben iniciar con 'F' y las Notas de Boletas deben iniciar con 'B'")
+        else:
+            raise ValidationError("El Formato del Comprobante se Obligatorio")
+    else:
+        raise ValidationError(
+            "El código del tipo de comprobante debe ser 07 para Notas de Crédito o 08 para Notas de Débito")
+
+    data["impuesto"] = data_impuesto
+    data["detalle"] = data_detalle
+    data["anticipos"] = data_anticipo
+    data["anexos"] = data_anexo
+    data["referencia"] = data_referencia
+
+    return data
 
 
 def replace_false(dato):

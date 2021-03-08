@@ -1,6 +1,18 @@
 # ESTADOS DE ENVÍO
 # TIPO DE PRECIO DE VENTA UNITARIO
 
+# Codigos de Tipo de Nota de Credito Electronica
+tnc = [
+    ("01", "Anulación de la operación"),
+    ("02", "Anulación por error en el RUC"),
+    ("03", "Corrección por error en la descripción"),
+    ("04", "Descuento global"),
+    ("05", "Descuento por ítem"),
+    ("06", "Devolución total"),
+    ("07", "Devolución por ítem"),
+    ("08", "Bonificación"),
+    ("09", "Disminución en el valor"),
+]
 
 
 # TIPO DE DOCUMENTO DE IDENTIDAD
@@ -14,16 +26,16 @@ tdi = [
 
 # TIPO DE COMPROBANTE
 tdc = [
-    ("00","Otros"),
-    ("01","Factura"),
+    ("00", "Otros"),
+    ("01", "Factura"),
     # ("02","Recibo por Honorarios"),
-    ("03","Boleta de Venta"),
+    ("03", "Boleta de Venta"),
     # ("04","Liquidación de compra"),
     # ("05","Boleto de compañía de aviación comercial por el servicio de transporte aéreo de pasajeros"),
     # ("06","Carta de porte aéreo por el servicio de transporte de carga aérea"),
-    ("07","Nota de crédito"),
-    ("08","Nota de débito"),
-    ("09","Guía de remisión - Remitente"),
+    ("07", "Nota de crédito"),
+    ("08", "Nota de débito"),
+    ("09", "Guía de remisión - Remitente"),
     # ("10","Recibo por Arrendamiento"),
     # ("11","Póliza emitida por las Bolsas de Valores, Bolsas de Productos o Agentes de Intermediación por operaciones realizadas en las Bolsas de Valores o Productos o fuera de las mismas, autorizadas por CONASEV"),
     # ("12","Ticket o cinta emitido por máquina registradora"),
@@ -63,15 +75,15 @@ tdc = [
     # ("97","Nota de Crédito - No Domiciliado"),
     # ("98","Nota de Débito - No Domiciliado"),
     # ("99","Otros -  Consolidado de Boletas de Venta")
-    ]
+]
 
 # ESTADO DE COMPROBANTE ELECTRÓNICO
 ece = [
-    ("0","0_NO_EXISTE"),
-    ("1","1_ACEPTADO"),
-    ("2","2_ANULADO"),
-    ("3","3_AUTORIZADO"),
-    ("4","4_NO_AUTORIZADO")]
+    ("0", "0_NO_EXISTE"),
+    ("1", "1_ACEPTADO"),
+    ("2", "2_ANULADO"),
+    ("3", "3_AUTORIZADO"),
+    ("4", "4_NO_AUTORIZADO")]
 
 # ESTADO DE COMPROBANTE: EMISIÓN
 estado_emision = [
@@ -82,21 +94,20 @@ estado_emision = [
     ("R", "Rechazado"),
     ("P", "Pendiente de envió a SUNAT")]
 
-# ESTADO CONTRIBUYENTE: RUC                                    
+# ESTADO CONTRIBUYENTE: RUC
 ecruc = [
-    ("00","00_ACTIVO"),
-    ("01","01_BAJA_PROVISIONAL"),
-    ("02","02_BAJA_PROV_POR_OFICIO"),
-    ("03","03_SUSPENSION_TEMPORAL"),
-    ("10","10_BAJA_DEFINITIVA"),
-    ("11","11_BAJA_DE_OFICIO"),
-    ("22","22_INHABILITADO-VENT.UNICA")]
+    ("00", "00_ACTIVO"),
+    ("01", "01_BAJA_PROVISIONAL"),
+    ("02", "02_BAJA_PROV_POR_OFICIO"),
+    ("03", "03_SUSPENSION_TEMPORAL"),
+    ("10", "10_BAJA_DEFINITIVA"),
+    ("11", "11_BAJA_DE_OFICIO"),
+    ("22", "22_INHABILITADO-VENT.UNICA")]
 
 # CONDICION DOMICILIO CONTRIBUYENTE
 cdc = [
-    ("00","00_HABIDO"),
-    ("09","09_PENDIENTE"),
-    ("11","11_POR_VERIFICAR"),
-    ("12","12_NO_HABIDO"),
-    ("20","20_NO_HALLADO")]
-                                        
+    ("00", "00_HABIDO"),
+    ("09", "09_PENDIENTE"),
+    ("11", "11_POR_VERIFICAR"),
+    ("12", "12_NO_HABIDO"),
+    ("20", "20_NO_HALLADO")]
