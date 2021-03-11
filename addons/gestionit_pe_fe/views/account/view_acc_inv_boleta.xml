@@ -9,10 +9,10 @@
             <field name="view_id" ref="gestionit_pe_fe.account_factura_tree_1" />
             <field name="view_mode">tree,kanban,form,pivot,graph</field>
             <field name="context">
-				{
-				'default_type':'out_invoice',
-				'journal_type': 'sale',
-				'default_invoice_type_code':'03',
+			    {
+                    'default_type':'out_invoice',
+                    'journal_type': 'sale',
+                    'default_invoice_type_code':'03',
 				}
             </field>
             <field name="domain"> [('type','=','out_invoice'),('journal_id.invoice_type_code_id','=','03')]

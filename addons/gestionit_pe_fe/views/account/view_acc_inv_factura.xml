@@ -39,11 +39,13 @@
             <field name="res_model">account.move</field>
             <field name="view_mode">tree,kanban,form,pivot,graph</field>
             <field name="view_id" ref="gestionit_pe_fe.account_factura_tree_1" />
-            <field name="context">{
-                 'default_type':'out_invoice',
-                 'journal_type': 'sale',
-                 'default_invoice_type_code':'01',
-                 'default_payment_term_id':1}
+            <field name="context">
+                {
+                    'default_type':'out_invoice',
+                    'journal_type': 'sale',
+                    'default_invoice_type_code':'01',
+                    'default_payment_term_id':1
+                }
             </field>
             <field name="domain">[('type','=','out_invoice'),('journal_id.invoice_type_code_id','=','01')]</field>
             <field name="help">

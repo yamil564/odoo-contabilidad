@@ -78,6 +78,7 @@
             <field name="tipo_envio">0</field>
             <field name="formato_comprobante">electronico</field>
             <field name="sequence_id" ref="gestionit_pe_fe.gestionit_sequence_factura"/>
+            <field name="refund_sequence">False</field>
         </record>
 
         <record model="account.journal" id="gestionit_account_journal_credit_note">
@@ -89,6 +90,7 @@
             <field name="tipo_comprobante_a_rectificar">01</field>
             <field name="formato_comprobante">electronico</field>
             <field name="sequence_id" ref="gestionit_pe_fe.gestionit_sequence_credit_note"/>
+            <field name="refund_sequence">False</field>
         </record>
 
         <record model="account.journal" id="gestionit_account_journal_debit_note">
@@ -100,6 +102,7 @@
             <field name="tipo_comprobante_a_rectificar">01</field>
             <field name="formato_comprobante">electronico</field>
             <field name="sequence_id" ref="gestionit_pe_fe.gestionit_sequence_debit_note"/>
+            <field name="refund_sequence">False</field>
         </record>
 
         <record model="account.journal" id="gestionit_account_journal_boleta_venta">
@@ -110,6 +113,7 @@
             <field name="tipo_envio">0</field>
             <field name="formato_comprobante">electronico</field>
             <field name="sequence_id" ref="gestionit_pe_fe.gestionit_sequence_boleta_venta"/>
+            <field name="refund_sequence">False</field>
         </record>
 
         <record model="account.journal" id="gestionit_account_journal_nota_credito_bct1">
@@ -121,6 +125,7 @@
             <field name="tipo_comprobante_a_rectificar">03</field>
             <field name="formato_comprobante">electronico</field>
             <field name="sequence_id" ref="gestionit_pe_fe.gestionit_sequence_nota_credito_boleta"/>
+            <field name="refund_sequence">False</field>
         </record>
 
         <record model="account.journal" id="gestionit_account_journal_nota_debito_bdt1">
@@ -132,6 +137,7 @@
             <field name="tipo_comprobante_a_rectificar">03</field>
             <field name="formato_comprobante">electronico</field>
             <field name="sequence_id" ref="gestionit_pe_fe.gestionit_sequence_nota_debito_boleta"/>
+            <field name="refund_sequence">False</field>
         </record>
 
         <record model="account.journal" id="gestionit_account_journal_guia_remision_t001">
@@ -142,6 +148,7 @@
             <field name="tipo_envio">0</field>
             <field name="formato_comprobante">electronico</field>
             <field name="sequence_id" ref="gestionit_pe_fe.gestionit_sequence_guia_remision"/>
+            <field name="refund_sequence">False</field>
         </record>
         <!--DIARIOS END-->
 

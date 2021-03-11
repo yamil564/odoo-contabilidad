@@ -15,6 +15,8 @@
         'views/account/view_account_move.xml',
         'views/account/view_acc_inv_factura.xml',
         'views/account/view_acc_inv_boleta.xml',
+        'views/account/view_acc_inv_nota_credito.xml',
+        'views/account/view_acc_inv_nota_debito.xml',
         'views/account/view_acc_log_status.xml',
         'views/account/view_account_log_status.xml',
         'views/user/view_users.xml',

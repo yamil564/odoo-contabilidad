@@ -29,7 +29,7 @@
 
                         <div t-if="o.partner_id.parent_id.vat">
                             <b>
-                                <span t-if="o.invoice_type_code=='01' and o.partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code =='6' ">RUC: </span>
+                                <span t-if="o.invoice_type_code in ['01','07'] and o.partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code =='6' ">RUC: </span>
                             </b>
                             <b>
                                 <span t-if="o.partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code == '0' ">DOC.TRIB.NO.DOM.SIN.RUC : </span>
@@ -61,7 +61,7 @@
                             <span t-field="o.partner_id.name"/>
                         </div>
                         <div t-if="o.partner_id.vat">
-                            <span t-if="o.invoice_type_code=='01' and o.partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code =='6' ">
+                            <span t-if="o.invoice_type_code in ['01','07'] and o.partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code =='6' ">
                                 <b>RUC:</b>
                             </span>
                             <span t-if="o.partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code == '0' ">
@@ -85,9 +85,10 @@
                 </div>
 
                 <!--DATOS DE LA FACTURA-->
-                <div class="col-3 col-offset-3">
+                <div class="col-3">
                     <strong t-if="o.invoice_date">Fecha de emisión:</strong>
-                    <p t-field="o.invoice_date"/>
+                    <span t-field="o.invoice_date"/>
+
                     <br t-if="o.invoice_date_due"/>
                     <strong t-if="o.invoice_date_due">Fecha de Vencimiento: </strong>
                     <span t-field="o.invoice_date_due"/>
@@ -99,6 +100,22 @@
                     <br t-if="o.invoice_payment_term_id.note"/>
                     <strong t-if="o.invoice_payment_term_id.note">Condición de Pago: </strong>
                     <span t-field="o.invoice_payment_term_id.note"/>
+                </div>
+                <div class="col-3">
+                    <t t-if="o.ref">
+                        <strong>Referencia:</strong>
+                        <span t-field="o.ref"/>
+                    </t>
+                    <t t-if="o.sustento_nota">
+                        <br/>
+                        <strong>Sustento: </strong>
+                        <span t-field="o.sustento_nota"/>
+                    </t>
+                    <t t-if="o.tipo_nota_credito">
+                        <br/>
+                        <strong>Tipo de nota de Crédito: </strong>
+                        <span t-field="o.tipo_nota_credito"/>
+                    </t>
                 </div>
             </div>
             <!-- <div class="row mt32 mb32 hidden">
@@ -230,7 +247,7 @@
             <div style="font-size: 12px; width: 100%">
                 <p>Importe en letras</p>
                 <b>
-                    <span t-esc="to_word(o.amount_total,o.currency_id.name).upper()"/>
+                    <span t-esc="o.to_word(o.amount_total,o.currency_id.name)"/>
                 </b>
                 <p>
                     <t t-if="o.amount_total==0.0">TRANSFERENCIA GRATUITA</t>
@@ -243,7 +260,7 @@
             <div class="row">
                 <div class="col-4">
                     <t t-if="o.state in ['posted','paid']">
-                        <img t-att-src="'/report/barcode/?type=%s&amp;value=%s&amp;width=%s&amp;height=%s'%('QR', generate_text_qr(o), 200, 200)"/>
+                        <img t-att-src="'/report/barcode/?type=%s&amp;value=%s&amp;width=%s&amp;height=%s'%('QR', o.generate_text_qr(o), 200, 200)"/>
                     </t>
                 </div>
             </div>

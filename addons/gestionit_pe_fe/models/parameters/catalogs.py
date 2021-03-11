@@ -12,6 +12,18 @@ tnc = [
     ("07", "Devolución por ítem"),
     ("08", "Bonificación"),
     ("09", "Disminución en el valor"),
+    ("10", "Otros Conceptos "),
+    ("11", "Ajustes de operaciones de exportación"),
+    ("12", "Ajustes afectos al IVAP"),
+    ("13", "Ajustes – montos y/o fechas de pago"),
+]
+
+tnd = [
+    ("01", "Intereses por mora"),
+    ("02", "Aumento en el valor"),
+    ("03", "Penalidades / otros conceptos"),
+    ("11", "Ajustes de operaciones de exportación"),
+    ("12", "Ajustes afectos al IVAP"),
 ]
 
 

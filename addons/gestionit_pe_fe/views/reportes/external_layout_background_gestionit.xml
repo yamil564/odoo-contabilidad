@@ -34,7 +34,7 @@
                         </div>
                         <br/>
                         <div class="text-center">
-                            <h2>
+                            <h3>
                                 <span t-if="o.type == 'out_invoice' and (o.state == 'posted' or o.state == 'paid') and o.journal_id.invoice_type_code_id=='01'">FACTURA ELECTRÓNICA</span>
                                 <span t-if="o.type == 'out_invoice' and (o.state == 'posted' or o.state == 'paid') and o.journal_id.invoice_type_code_id=='03'">BOLETA ELECTRÓNICA</span>
                                 <span t-if="o.type == 'out_refund' and (o.state == 'posted' or o.state == 'paid') and o.journal_id.invoice_type_code_id=='07'">NOTA DE CRÉDITO ELECTRÓNICA</span>
@@ -55,7 +55,7 @@
                                 <span t-if="o.type == 'in_invoice' and o.journal_id.invoice_type_code_id=='03'">BOLETA DE PROVEEDOR</span>
                                 <span t-if="o.type == 'in_refund' and o.journal_id.invoice_type_code_id=='07'">NOTA DE CRÉDITO DE PROVEEDOR</span>
                                 <span t-if="o.type == 'in_invoice' and o.journal_id.invoice_type_code_id=='08'">NOTA DE DÉBITO DE PROVEEDOR</span>
-                            </h2>
+                            </h3>
                         </div>
                         <br/>
                         <div class="text-center">Nro. <span t-field="o.name"/>

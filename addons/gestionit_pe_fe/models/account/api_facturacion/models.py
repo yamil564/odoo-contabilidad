@@ -30,7 +30,7 @@ def lamdba(data):
     }
 
     main_xml = main.handle(data, credentials, True)
-
+    _logger.info(main_xml)
     # return main_xml
 
     request_id = random_string(20)

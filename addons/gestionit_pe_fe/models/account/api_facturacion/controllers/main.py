@@ -1,11 +1,11 @@
 import json
 import requests
 import os
-# , resumendiario, comunicacionbaja, nota_credito, nota_debito
-from . import factura, firma
+# , resumendiario, comunicacionbaja, nota_debito
+from . import factura, nota_credito, firma
 from . import xml_validation, sunat_response_handle
-# , ResumenDiario, ComunicacionBaja, CreditNote, DespatchAdvice, DebitNote
-from ..efact21.Documents import Factura
+# , ResumenDiario, ComunicacionBaja, DespatchAdvice, DebitNote
+from ..efact21.Documents import Factura, CreditNote
 # from . import guia_remision
 import base64
 from io import BytesIO
@@ -71,6 +71,7 @@ url_crd_status = "https://e-factura.sunat.gob.pe/ol-it-wsconscpegem/billConsultS
 
 def handle(data, user_credentials, self_signed=False):
     xsd = None
+
     if data.get("resumen", False):
         document_type = data["tipoResumen"]
         if document_type == "RC":
@@ -106,13 +107,13 @@ def handle(data, user_credentials, self_signed=False):
         document_type = data["tipoDocumento"]
         file_name = document.file_name
         # xsd = "./files/XSD 2.1/maindoc/UBL-Invoice-2.1.xsd"
-    # elif data.get("tipoDocumento") == "07":
-    #     document = nota_credito.build_nota_credito(data)
-    #     if type(document) != CreditNote:
-    #         return {"success": False, "document": document}
-    #     document_type = data["tipoDocumento"]
-    #     file_name = document.file_name
-    #     xsd = "./files/XSD 2.1/maindoc/UBL-CreditNote-2.1.xsd"
+    elif data.get("tipoDocumento") == "07":
+        document = nota_credito.build_nota_credito(data)
+        if type(document) != CreditNote:
+            return {"success": False, "document": document}
+        document_type = data["tipoDocumento"]
+        file_name = document.file_name
+        # xsd = "./files/XSD 2.1/maindoc/UBL-CreditNote-2.1.xsd"
     # elif data.get("tipoDocumento") == "08":
     #     document = nota_debito.build_nota_debito(data)
     #     if type(document) != DebitNote:

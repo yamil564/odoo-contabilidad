@@ -7,6 +7,7 @@ from . import oauth
 # from ..parameters import oauth
 from datetime import datetime, timedelta
 from odoo.addons.gestionit_pe_fe.models.parameters.catalogs import tnc
+from odoo.addons.gestionit_pe_fe.models.parameters.catalogs import tnd
 
 import logging
 log = logging.getLogger(__name__)
@@ -52,6 +53,7 @@ class AccountMove(models.Model):
         res = super(AccountMove, self).default_get(fields_list)
         refund_id = self._context.get("default_refund_invoice_id", False)
         domain = []
+        array_journal = []
 
         user_id = res.get("invoice_user_id", False)
         if user_id:
@@ -60,11 +62,27 @@ class AccountMove(models.Model):
             if len(warehouse_ids) > 0:
                 journal_ids = self.env["stock.warehouse"].browse(
                     warehouse_ids[0].id).journal_ids
-                res.update({
-                    "warehouse_id": warehouse_ids[0].id,
-                    "journal_id": journal_ids[0].id
-                })
-                return res
+
+                for wh in warehouse_ids:
+                    for whj in wh.journal_ids:
+                        if whj.invoice_type_code_id == self._context.get("default_invoice_type_code"):
+                            res.update({
+                                "warehouse_id": wh.id,
+                                "journal_id": whj.id
+                            })
+                            return res
+
+                raise UserError(
+                    "El almacén no tiene diarios configurados para este tipo de documento. Contacte con el administrador del sistema.")
+                # res.update({
+                #     "warehouse_id": warehouse_ids[0].id,
+                #     "journal_id": journal_ids[0].id
+                # })
+                # return res
+
+            else:
+                raise UserError(
+                    "El usuario no tiene almacenes configurados para la creación de documentos. Contacte con el administrador del sistema.")
 
         if refund_id:
             refund_obj = self.env["account.invoice"].browse(refund_id)
@@ -123,9 +141,14 @@ class AccountMove(models.Model):
 
     tipo_nota_credito = fields.Selection(string='Tipo de Nota de Crédito', readonly=True,
                                          selection="_selection_tipo_nota_credito", states={'draft': [('readonly', False)]})
+    tipo_nota_debito = fields.Selection(string='Tipo de Nota de Débito', readonly=True,
+                                        selection="_selection_tipo_nota_debito", states={'draft': [('readonly', False)]})
 
     def _selection_tipo_nota_credito(self):
         return tnc
+
+    def _selection_tipo_nota_debito(self):
+        return tnd
 
     estado_comprobante_electronico = fields.Selection(selection=[("0_NO_EXISTE", "NO EXISTE"),
                                                                  ("1_ACEPTADO",
@@ -481,7 +504,7 @@ class AccountMove(models.Model):
         # self.write({'tipo_cambio_fecha_factura': oauth.get_tipo_cambio(
         #     self, 2) if self.currency_id.name == 'USD' else 1.0})
 
-        # oauth.enviar_doc(self)
+        oauth.enviar_doc(self)
 
         return obj
 
@@ -514,7 +537,7 @@ class AccountMove(models.Model):
             errors.append(
                 "* El Tipo de Documento de la empresa emisora debe ser RUC")
 
-        if not self.company_id.partner_id.zip:
+        if not self.company_id.partner_id.ubigeo:
             errors.append(
                 "* No se encuentra configurado el Ubigeo de la empresa emisora.")
 
@@ -649,6 +672,37 @@ class AccountMove(models.Model):
         """
         return errors
 
+    def generar_nota_debito(self):
+        if not self.name:
+            self.post()
+        ref = request.env.ref("account.view_move_form")
+        inv_lines2 = []
+        for il1 in self.invoice_line_ids:
+            obj = il1.copy(default={
+                "move_id": ""
+            })
+            inv_lines2.append(obj.id)
+
+        return {
+            "type": "ir.actions.act_window",
+            "res_model": "account.move",
+            "target": "self",
+            "view_id": ref.id,
+            "view_mode": "form",
+            "context": {
+                'default_partner_id': self.partner_id.id,
+                # 'default_refund_invoice_id': self.id,
+                'default_invoice_date': datetime.now().strftime("%Y-%m-%d"),
+                'default_invoice_payment_term_id': self.payment_term_id.id,
+                'default_invoice_line_ids': inv_lines2,
+                'default_new_invoice': False,
+                'default_type': 'out_invoice',
+                'journal_type': 'sale',
+                'default_invoice_type_code': '08',
+                'default_name': 'Nota de Débito 123'},
+            "domain": [('type', 'in', ('out_invoice', 'out_refund')), ('invoice_type_code', '=', '08')]
+        }
+
     def generar_nota_credito(self):
         self.ensure_one()
         moves = self.env['account.move'].browse(self.id)
@@ -676,18 +730,21 @@ class AccountMove(models.Model):
         # Handle reverse method.
         moves_to_redirect = self.env['account.move']
         for moves, default_values_list, is_cancel_needed in batches:
-            new_moves = moves._reverse_moves(
-                default_values_list, cancel=is_cancel_needed)
+            if is_cancel_needed is True:
+                pass
+            else:
+                new_moves = moves._reverse_moves(
+                    default_values_list, cancel=is_cancel_needed)
 
-            if refund_method == 'modify':
-                moves_vals_list = []
-                for move in moves.with_context(include_business_fields=True):
-                    moves_vals_list.append(move.copy_data(
-                        {'date': move.date})[0])
-                new_moves = self.self.env['account.move'].create(
-                    moves_vals_list)
+                if refund_method == 'modify':
+                    moves_vals_list = []
+                    for move in moves.with_context(include_business_fields=True):
+                        moves_vals_list.append(move.copy_data(
+                            {'date': move.date})[0])
+                    new_moves = self.self.env['account.move'].create(
+                        moves_vals_list)
 
-            moves_to_redirect |= new_moves
+                moves_to_redirect |= new_moves
 
         moves_to_redirect.invoice_type_code = '07'
 
@@ -699,11 +756,7 @@ class AccountMove(models.Model):
             'name': _('Reverse Moves'),
             'type': 'ir.actions.act_window',
             'res_model': 'account.move',
-            # 'context': {
-            #     'default_invoice_type_code': '07',
-            # }
         }
-        log.info(action)
         if len(moves_to_redirect) == 1:
             action.update({
                 'view_mode': 'form',
@@ -715,33 +768,69 @@ class AccountMove(models.Model):
                 'domain': [('id', 'in', moves_to_redirect.ids)],
             })
         return action
-        # if not self.name:
-        #     self.action_post()
-        # ref = request.env.ref("account.view_move_form")
-        # inv_lines2 = []
-        # for il1 in self.invoice_line_ids:
-        #     obj = il1.copy()
-        #     inv_lines2.append(obj.id)
-        # return {
-        #     "type": "ir.actions.act_window",
-        #     "res_model": "account.move",
-        #     "target": "self",
-        #     "view_id": ref.id,
-        #     "view_mode": "form",
-        #     "context": {
-        #         'default_partner_id': self.partner_id.id,
-        #         'default_reversed_entry_id': self.id,
-        #         'default_invoice_date': datetime.now().strftime("%Y-%m-%d"),
-        #         'default_invoice_payment_term_id': self.payment_term_id.id,
-        #         'default_invoice_line_ids': inv_lines2,
-        #         'default_line_ids': self.line_ids,
-        #         'default_new_invoice': False,
-        #         'default_type': 'out_refund',
-        #         'journal_type': 'sale',
-        #         'default_invoice_type_code': '07',
-        #         'default_name': 'Nota de Crédito 123'},
-        #     "domain": [('type', 'in', ('out_invoice', 'out_refund')), ('invoice_type_code', '=', '07')]
-        # }
+
+    def _reverse_moves(self, default_values_list=None, cancel=False):
+        ''' Reverse a recordset of account.move.
+        If cancel parameter is true, the reconcilable or liquidity lines
+        of each original move will be reconciled with its reverse's.
+
+        :param default_values_list: A list of default values to consider per move.
+                                    ('type' & 'reversed_entry_id' are computed in the method).
+        :return:                    An account.move recordset, reverse of the current self.
+        '''
+
+        log.info("-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.")
+        log.info(cancel)
+        if not default_values_list:
+            default_values_list = [{} for move in self]
+
+        if cancel:
+            lines = self.mapped('line_ids')
+            # Avoid maximum recursion depth.
+            if lines:
+                lines.remove_move_reconcile()
+
+        reverse_type_map = {
+            'entry': 'entry',
+            'out_invoice': 'out_refund',
+            'out_refund': 'entry',
+            'in_invoice': 'in_refund',
+            'in_refund': 'entry',
+            'out_receipt': 'entry',
+            'in_receipt': 'entry',
+        }
+
+        move_vals_list = []
+        for move, default_values in zip(self, default_values_list):
+            default_values.update({
+                'type': reverse_type_map[move.type],
+                'reversed_entry_id': move.id,
+            })
+            move_vals_list.append(move.with_context(
+                move_reverse_cancel=cancel)._reverse_move_vals(default_values, cancel=cancel))
+
+        reverse_moves = self.env['account.move'].create(move_vals_list)
+        for move, reverse_move in zip(self, reverse_moves.with_context(check_move_validity=False)):
+            # Update amount_currency if the date has changed.
+            if move.date != reverse_move.date:
+                for line in reverse_move.line_ids:
+                    if line.currency_id:
+                        line._onchange_currency()
+            reverse_move._recompute_dynamic_lines(recompute_all_taxes=False)
+        reverse_moves._check_balanced()
+
+        # Reconcile moves together to cancel the previous one.
+        if cancel:
+            reverse_moves.with_context(move_reverse_cancel=cancel).post()
+            for move, reverse_move in zip(self, reverse_moves):
+                accounts = move.mapped('line_ids.account_id') \
+                    .filtered(lambda account: account.reconcile or account.internal_type == 'liquidity')
+                for account in accounts:
+                    (move.line_ids + reverse_move.line_ids)\
+                        .filtered(lambda line: line.account_id == account and line.balance)\
+                        .reconcile()
+
+        return reverse_moves
 
 
 class AccountMoveReversal(models.TransientModel):

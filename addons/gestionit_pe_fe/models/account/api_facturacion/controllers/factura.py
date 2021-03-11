@@ -1,4 +1,5 @@
 from . import validacion
+from ..efact21.Documents import Factura
 from ..efact21 import CustomerParty
 from ..efact21 import SupplierParty
 from ..efact21 import BasicGlobal
@@ -11,7 +12,7 @@ from ..efact21.AmountTypes import PriceAmount, PrepaidAmount, ChargeTotalAmount,
     AllowanceTotalAmount, PayableAmount, TaxInclusiveAmount
 from ..efact21.BasicGlobal import RegistrationName
 from ..efact21.DocumentReference import DespatchDocumentReference, DocumentTypeCode
-from ..efact21.Documents import Factura
+
 from ..efact21.Lines import PricingReference, Item, Price
 from ..efact21.Party import PartyIdentification, PartyLegalEntity, PartyName
 from ..efact21.RegistrationAddress import RegistrationAddress
