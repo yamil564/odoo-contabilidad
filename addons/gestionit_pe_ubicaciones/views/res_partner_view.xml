@@ -19,7 +19,7 @@
 
                     <field name="state_id" invisible="1" class="o_address_city" placeholder="Departamento" options="{'no_open': True}" attrs="{'readonly': [('type', '=', 'contact'),('parent_id', '!=', False)]}" domain="[('country_id', '=', country_id),('state_id', '=', False)]"/>
                     <field name="street2" invisible="1" placeholder="Urbanización o Zona" class="o_address_street" attrs="{'readonly': [('type', '=', 'contact'),('parent_id', '!=', False)]}"/>
-                    <field name="city" insible="1" placeholder="Otra referencia" attrs="{'readonly': [('type', '=', 'contact'),('parent_id', '!=', False)]}"/>
+                    <field name="city" invisible="1" placeholder="Otra referencia" attrs="{'readonly': [('type', '=', 'contact'),('parent_id', '!=', False)]}"/>
                     <!-- <div class="o_address_format"> -->
                     <!-- <field name="country_id" position="replace"/>
                         <field name="state_id" position="replace"/>
