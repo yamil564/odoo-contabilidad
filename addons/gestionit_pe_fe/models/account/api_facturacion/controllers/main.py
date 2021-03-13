@@ -1,11 +1,11 @@
 import json
 import requests
 import os
-# , resumendiario, comunicacionbaja, nota_debito
-from . import factura, nota_credito, firma
+# , resumendiario, comunicacionbaja
+from . import factura, nota_credito, nota_debito, firma
 from . import xml_validation, sunat_response_handle
-# , ResumenDiario, ComunicacionBaja, DespatchAdvice, DebitNote
-from ..efact21.Documents import Factura, CreditNote
+# , ResumenDiario, ComunicacionBaja, DespatchAdvice
+from ..efact21.Documents import Factura, CreditNote, DebitNote
 # from . import guia_remision
 import base64
 from io import BytesIO
@@ -114,14 +114,14 @@ def handle(data, user_credentials, self_signed=False):
         document_type = data["tipoDocumento"]
         file_name = document.file_name
         # xsd = "./files/XSD 2.1/maindoc/UBL-CreditNote-2.1.xsd"
-    # elif data.get("tipoDocumento") == "08":
-    #     document = nota_debito.build_nota_debito(data)
-    #     if type(document) != DebitNote:
-    #         return {"success": False, "document": document}
-    #     document_type = data["tipoDocumento"]
-    #     file_name = document.file_name
-    #     xsd = "./files/XSD 2.1/maindoc/UBL-DebitNote-2.1.xsd"
-    #     # return {"success": False, "error": "Not implemented"}
+    elif data.get("tipoDocumento") == "08":
+        document = nota_debito.build_nota_debito(data)
+        if type(document) != DebitNote:
+            return {"success": False, "document": document}
+        document_type = data["tipoDocumento"]
+        file_name = document.file_name
+        # xsd = "./files/XSD 2.1/maindoc/UBL-DebitNote-2.1.xsd"
+        # return {"success": False, "error": "Not implemented"}
     # elif data.get("tipoDocumento") == "09":
     #     document = guia_remision.build_guia(data)
     #     document_type = data["tipoDocumento"]

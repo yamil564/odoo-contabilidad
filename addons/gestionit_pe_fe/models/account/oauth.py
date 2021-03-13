@@ -678,7 +678,7 @@ def crear_json_not_cred_deb(self):
         })
 
     if self.invoice_type_code in ["07", "08"]:
-        document_reference = self.reversed_entry_id
+        document_reference = self.reversed_entry_id if self.invoice_type_code == '07' else self.debit_origin_id
         data_referencia.append({
             'tipoDocumentoRef': document_reference.invoice_type_code,
             'serieRef': document_reference.name[0:4],

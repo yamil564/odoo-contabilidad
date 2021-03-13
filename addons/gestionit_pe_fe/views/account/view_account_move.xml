@@ -6,8 +6,11 @@
             <field name="model">account.move</field>
             <field name="inherit_id" ref="account.view_move_form"/>
             <field name="arch" type="xml">
-                <xpath expr="//field[@name='ref']" position="after">
+                <xpath expr="//span[hasclass('o_form_label')]//field[@name='type']" position="replace">
+                    <field name="type" invisible="1" />
                     <field name="invoice_type_code"/>
+                </xpath>
+                <xpath expr="//field[@name='ref']" position="after">
                     <field name="tipo_nota_credito" attrs="{'invisible': [('invoice_type_code','!=','07')],'required':[('invoice_type_code','=','07')]}"/>
                     <field name="tipo_nota_debito" attrs="{'invisible': [('invoice_type_code','!=','08')],'required':[('invoice_type_code','=','08')]}"/>
                     <field name="sustento_nota" attrs="{'invisible': [('invoice_type_code','!=','07'),('invoice_type_code','!=','08')],'required':[('invoice_type_code','!=','01'),('invoice_type_code','!=','03')]}"/>
@@ -107,5 +110,38 @@
             </field>
         </record>
 
+        <record model="ir.ui.view" id="gestionit_pe_fe.view_popup_debit_note">
+            <field name="name">Pop-up nota de débito</field>
+            <field name="model">account.debit.note</field>
+            <field name="inherit_id" ref="account_debit_note.view_account_debit_note"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='reason']" position="replace">
+                    <field name="tipo_nota_debito" required="1" />
+                    <field name="reason" required="1" />
+                </xpath>
+                <xpath expr="//field[@name='journal_id']" position="replace">
+                    <field name="journal_id" domain="[('type', '=', journal_type),('invoice_type_code_id', '=', '08'),('tipo_comprobante_a_rectificar', '=', '01')]" />
+                </xpath>
+                <xpath expr="//form[@string='Create Debit Note']" position="attributes">
+                    <attribute name="string">Crear Nota de débito</attribute>
+                </xpath>
+                <xpath expr="//field[@name='journal_id']" position="attributes">
+                    <attribute name="string">Serie</attribute>
+                </xpath>
+                <xpath expr="//field[@name='reason']" position="attributes">
+                    <attribute name="string">Sustento de nota</attribute>
+                </xpath>
+                <xpath expr="//field[@name='date']" position="attributes">
+                    <attribute name="string">Fecha</attribute>
+                </xpath>
+                <xpath expr="//field[@name='copy_lines']" position="attributes">
+                    <attribute name="string">Copiar detalle</attribute>
+                    <attribute name="default">True</attribute>
+                </xpath>
+                <xpath expr="//button[@name='create_debit']" position="attributes">
+                    <attribute name="string">Crear</attribute>
+                </xpath>
+            </field>
+        </record>
     </data>
 </odoo>

@@ -116,6 +116,11 @@
                         <strong>Tipo de nota de Crédito: </strong>
                         <span t-field="o.tipo_nota_credito"/>
                     </t>
+                    <t t-if="o.tipo_nota_debito">
+                        <br/>
+                        <strong>Tipo de nota de Débito: </strong>
+                        <span t-field="o.tipo_nota_debito"/>
+                    </t>
                 </div>
             </div>
             <!-- <div class="row mt32 mb32 hidden">
@@ -261,6 +266,14 @@
                 <div class="col-4">
                     <t t-if="o.state in ['posted','paid']">
                         <img t-att-src="'/report/barcode/?type=%s&amp;value=%s&amp;width=%s&amp;height=%s'%('QR', o.generate_text_qr(o), 200, 200)"/>
+                    </t>
+                </div>
+            </div>
+            <br/>
+            <div class="row">
+                <div class="col-6">
+                    <t t-if="o.digest_value">
+                        <span t-field="o.digest_value"/>
                     </t>
                 </div>
             </div>

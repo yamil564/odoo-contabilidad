@@ -63,26 +63,31 @@ class AccountMove(models.Model):
                 journal_ids = self.env["stock.warehouse"].browse(
                     warehouse_ids[0].id).journal_ids
 
-                for wh in warehouse_ids:
-                    for whj in wh.journal_ids:
-                        if whj.invoice_type_code_id == self._context.get("default_invoice_type_code"):
-                            res.update({
-                                "warehouse_id": wh.id,
-                                "journal_id": whj.id
-                            })
-                            return res
+                res.update({
+                    "warehouse_id": warehouse_ids[0].id,
+                    "journal_id": journal_ids[0].id
+                })
+                return res
+            #     for wh in warehouse_ids:
+            #         for whj in wh.journal_ids:
+            #             if whj.invoice_type_code_id == self._context.get("default_invoice_type_code"):
+            #                 res.update({
+            #                     "warehouse_id": wh.id,
+            #                     "journal_id": whj.id
+            #                 })
+            #                 return res
 
-                raise UserError(
-                    "El almacén no tiene diarios configurados para este tipo de documento. Contacte con el administrador del sistema.")
-                # res.update({
-                #     "warehouse_id": warehouse_ids[0].id,
-                #     "journal_id": journal_ids[0].id
-                # })
-                # return res
+            #     raise UserError(
+            #         "El almacén no tiene diarios configurados para este tipo de documento. Contacte con el administrador del sistema.")
+            #     # res.update({
+            #     #     "warehouse_id": warehouse_ids[0].id,
+            #     #     "journal_id": journal_ids[0].id
+            #     # })
+            #     # return res
 
-            else:
-                raise UserError(
-                    "El usuario no tiene almacenes configurados para la creación de documentos. Contacte con el administrador del sistema.")
+            # else:
+            #     raise UserError(
+            #         "El usuario no tiene almacenes configurados para la creación de documentos. Contacte con el administrador del sistema.")
 
         if refund_id:
             refund_obj = self.env["account.invoice"].browse(refund_id)
@@ -672,36 +677,71 @@ class AccountMove(models.Model):
         """
         return errors
 
-    def generar_nota_debito(self):
-        if not self.name:
-            self.post()
-        ref = request.env.ref("account.view_move_form")
-        inv_lines2 = []
-        for il1 in self.invoice_line_ids:
-            obj = il1.copy(default={
-                "move_id": ""
-            })
-            inv_lines2.append(obj.id)
+    # def create_debit(self):
+    #     self.ensure_one()
+    #     new_moves = self.env['account.move'].browse(self.id)
+    #     # copy sale/purchase links
+    #     for move in self.move_ids.with_context(include_business_fields=True):
+    #         default_values = self._prepare_default_values(move)
+    #         # Context key is used for l10n_latam_invoice_document for ar/cl/pe
+    #         new_move = move.with_context(
+    #             internal_type='debit_note').copy(default=default_values)
+    #         move_msg = _(
+    #             "This debit note was created from:") + " <a href=# data-oe-model=account.move data-oe-id=%d>%s</a>" % (
+    #             move.id, move.name)
+    #         new_move.message_post(body=move_msg)
+    #         new_moves |= new_move
 
-        return {
-            "type": "ir.actions.act_window",
-            "res_model": "account.move",
-            "target": "self",
-            "view_id": ref.id,
-            "view_mode": "form",
-            "context": {
-                'default_partner_id': self.partner_id.id,
-                # 'default_refund_invoice_id': self.id,
-                'default_invoice_date': datetime.now().strftime("%Y-%m-%d"),
-                'default_invoice_payment_term_id': self.payment_term_id.id,
-                'default_invoice_line_ids': inv_lines2,
-                'default_new_invoice': False,
-                'default_type': 'out_invoice',
-                'journal_type': 'sale',
-                'default_invoice_type_code': '08',
-                'default_name': 'Nota de Débito 123'},
-            "domain": [('type', 'in', ('out_invoice', 'out_refund')), ('invoice_type_code', '=', '08')]
+    #     action = {
+    #         'name': _('Debit Notes'),
+    #         'type': 'ir.actions.act_window',
+    #         'res_model': 'account.move',
+    #     }
+    #     if len(new_moves) == 1:
+    #         action.update({
+    #             'view_mode': 'form',
+    #             'res_id': new_moves.id,
+    #         })
+    #     else:
+    #         action.update({
+    #             'view_mode': 'tree,form',
+    #             'domain': [('id', 'in', new_moves.ids)],
+    #         })
+    #     return action
+
+    def generar_nota_debito(self):
+        self.ensure_one()
+        new_moves = self.env['account.move']
+        # copy sale/purchase links
+        for move in self.env['account.debit.note'].move_ids.with_context(include_business_fields=True):
+            default_values = self.env['account.debit.note']._prepare_default_values(
+                move)
+            # Context key is used for l10n_latam_invoice_document for ar/cl/pe
+            new_move = move.with_context(
+                internal_type='debit_note').copy(default=default_values)
+            move_msg = _(
+                "This debit note was created from:") + " <a href=# data-oe-model=account.move data-oe-id=%d>%s</a>" % (
+                move.id, move.name)
+            new_move.message_post(body=move_msg)
+            new_moves |= new_move
+        log.info("MOVIEMIENTOS DÉBITO")
+        log.info(new_moves)
+        action = {
+            'name': _('Debit Notes'),
+            'type': 'ir.actions.act_window',
+            'res_model': 'account.move',
         }
+        if len(new_moves) == 1:
+            action.update({
+                'view_mode': 'form',
+                'res_id': new_moves.id,
+            })
+        else:
+            action.update({
+                'view_mode': 'tree,form',
+                'domain': [('id', 'in', new_moves.ids)],
+            })
+        return action
 
     def generar_nota_credito(self):
         self.ensure_one()
@@ -846,3 +886,37 @@ class AccountMoveReversal(models.TransientModel):
             'auto_post': False,
             'invoice_user_id': move.invoice_user_id.id,
         }
+
+
+class AccountDebitNote(models.TransientModel):
+    _inherit = 'account.debit.note'
+
+    tipo_nota_debito = fields.Selection(
+        string='Tipo de Nota de Débito', selection="_selection_tipo_nota_debito")
+    copy_lines = fields.Boolean("Copy Lines",
+                                help="In case you need to do corrections for every line, it can be in handy to copy them.  "
+                                     "We won't copy them for debit notes from credit notes. ", default=True)
+
+    def _selection_tipo_nota_debito(self):
+        return tnd
+
+    def _prepare_default_values(self, move):
+        if move.type in ('in_refund', 'out_refund'):
+            type = 'in_invoice' if move.type == 'in_refund' else 'out_invoice'
+        else:
+            type = move.type
+        default_values = {
+            'ref': '%s, %s' % (move.name, self.reason) if self.reason else move.name,
+            'sustento_nota': self.reason,
+            'tipo_nota_debito': self.tipo_nota_debito,
+            'invoice_type_code': '08',
+            'date': self.date or move.date,
+            'invoice_date': move.is_invoice(include_receipts=True) and (self.date or move.date) or False,
+            'journal_id': self.journal_id and self.journal_id.id or move.journal_id.id,
+            'invoice_payment_term_id': None,
+            'debit_origin_id': move.id,
+            'type': type,
+        }
+        if not self.copy_lines or move.type in [('in_refund', 'out_refund')]:
+            default_values['line_ids'] = [(5, 0, 0)]
+        return default_values

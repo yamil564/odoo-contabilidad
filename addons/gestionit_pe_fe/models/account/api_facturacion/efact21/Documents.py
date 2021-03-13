@@ -583,159 +583,159 @@ class CreditNote(Xmleable):
         return xml_doc
 
 
-# class DebitNote(Xmleable):
-#     def __init__(self, ubl_extensions=None, ubl_version="2.1", doc_id=None,
-#                  issue_date=None, issue_time=None, document_currency_code=None, customization="2.0",
-#                  discrepancy_response=None, billing_reference=None,
-#                  signature=None, accounting_supplier_party=None, accounting_customer_party=None,
-#                  tax_total=None, requested_monetary_total=None):
+class DebitNote(Xmleable):
+    def __init__(self, ubl_extensions=None, ubl_version="2.1", doc_id=None,
+                 issue_date=None, issue_time=None, document_currency_code=None, customization="2.0",
+                 discrepancy_response=None, billing_reference=None,
+                 signature=None, accounting_supplier_party=None, accounting_customer_party=None,
+                 tax_total=None, requested_monetary_total=None):
 
-#         self.credit_note_lines = []
-#         self.notes = []
-#         self.file_name = None
+        self.credit_note_lines = []
+        self.notes = []
+        self.file_name = None
 
-#         self.ubl_extensions = ubl_extensions
-#         self.ubl_version = ubl_version
-#         self.customization = customization
-#         self.doc_id = doc_id
-#         self.issue_date = issue_date
-#         self.issue_time = issue_time
-#         self.document_currency_code = document_currency_code
-#         self.discrepancy_response = discrepancy_response
-#         self.billing_reference = billing_reference
-#         self.signature = signature
-#         self.accounting_supplier_party = accounting_supplier_party
-#         self.accounting_customer_party = accounting_customer_party
-#         self.tax_total = tax_total
-#         self.requested_monetary_total = requested_monetary_total
+        self.ubl_extensions = ubl_extensions
+        self.ubl_version = ubl_version
+        self.customization = customization
+        self.doc_id = doc_id
+        self.issue_date = issue_date
+        self.issue_time = issue_time
+        self.document_currency_code = document_currency_code
+        self.discrepancy_response = discrepancy_response
+        self.billing_reference = billing_reference
+        self.signature = signature
+        self.accounting_supplier_party = accounting_supplier_party
+        self.accounting_customer_party = accounting_customer_party
+        self.tax_total = tax_total
+        self.requested_monetary_total = requested_monetary_total
 
-#     def set_file_name(self, name):
-#         self.file_name = name
+    def set_file_name(self, name):
+        self.file_name = name
 
-#     def add_credit_note_line(self, credit_note_line):
-#         assert type(credit_note_line) == DebitNoteLine.DebitNoteLine
-#         self.credit_note_lines.append(credit_note_line)
-#         credit_note_line.ord = len(self.credit_note_lines)
+    def add_credit_note_line(self, credit_note_line):
+        assert type(credit_note_line) == DebitNoteLine.DebitNoteLine
+        self.credit_note_lines.append(credit_note_line)
+        credit_note_line.ord = len(self.credit_note_lines)
 
-#     def add_note(self, note):
-#         if type(note) == str:
-#             note = BasicGlobal.Note(note)
-#         assert type(note) == BasicGlobal.Note
-#         self.notes.append(note)
+    def add_note(self, note):
+        if type(note) == str:
+            note = BasicGlobal.Note(note)
+        assert type(note) == BasicGlobal.Note
+        self.notes.append(note)
 
-#     def fix_values(self):
-#         if not self.ubl_extensions:
-#             self.ubl_extensions = BasicGlobal.UBLExtensions()
-#         if type(self.ubl_version) == str:
-#             self.ubl_version = BasicGlobal.UBLVersion(self.ubl_version)
-#         if type(self.customization) == str:
-#             self.customization = BasicGlobal.CustomizationID(
-#                 self.customization)
-#         if type(self.doc_id) == str:
-#             self.doc_id = BasicGlobal.ID(self.doc_id)
-#         if type(self.issue_date) == str:
-#             self.issue_date = General.IssueDate(self.issue_date)
-#         if type(self.issue_time) == str:
-#             self.issue_time = BasicGlobal.IssueTime(self.issue_time)
-#         if type(self.document_currency_code) == str:
-#             self.document_currency_code = BasicGlobal.DocumentCurrencyCode(
-#                 self.document_currency_code)
+    def fix_values(self):
+        if not self.ubl_extensions:
+            self.ubl_extensions = BasicGlobal.UBLExtensions()
+        if type(self.ubl_version) == str:
+            self.ubl_version = BasicGlobal.UBLVersion(self.ubl_version)
+        if type(self.customization) == str:
+            self.customization = BasicGlobal.CustomizationID(
+                self.customization)
+        if type(self.doc_id) == str:
+            self.doc_id = BasicGlobal.ID(self.doc_id)
+        if type(self.issue_date) == str:
+            self.issue_date = General.IssueDate(self.issue_date)
+        if type(self.issue_time) == str:
+            self.issue_time = BasicGlobal.IssueTime(self.issue_time)
+        if type(self.document_currency_code) == str:
+            self.document_currency_code = BasicGlobal.DocumentCurrencyCode(
+                self.document_currency_code)
 
-#     def validate(self, errs, obs):
-#         assert type(self.ubl_extensions) == BasicGlobal.UBLExtensions
-#         assert type(self.customization) == BasicGlobal.CustomizationID
-#         assert type(self.doc_id) == BasicGlobal.ID
-#         assert type(self.issue_date) == General.IssueDate
-#         assert self.issue_time is None or type(
-#             self.issue_time) == BasicGlobal.IssueTime
-#         assert type(
-#             self.discrepancy_response) == DiscrepancyResponse.DiscrepancyResponse
-#         assert type(self.billing_reference) == BillingReference.BillingReference
-#         assert type(
-#             self.document_currency_code) == BasicGlobal.DocumentCurrencyCode
-#         assert type(self.accounting_supplier_party) == AccountingSupplierParty
-#         assert type(self.tax_total) == TaxTotal
-#         assert type(self.requested_monetary_total) == RequestedMonetaryTotal
-#         assert type(self.accounting_customer_party) == AccountingCustomerParty
+    def validate(self, errs, obs):
+        assert type(self.ubl_extensions) == BasicGlobal.UBLExtensions
+        assert type(self.customization) == BasicGlobal.CustomizationID
+        assert type(self.doc_id) == BasicGlobal.ID
+        assert type(self.issue_date) == General.IssueDate
+        assert self.issue_time is None or type(
+            self.issue_time) == BasicGlobal.IssueTime
+        assert type(
+            self.discrepancy_response) == DiscrepancyResponse.DiscrepancyResponse
+        assert type(self.billing_reference) == BillingReference.BillingReference
+        assert type(
+            self.document_currency_code) == BasicGlobal.DocumentCurrencyCode
+        assert type(self.accounting_supplier_party) == AccountingSupplierParty
+        assert type(self.tax_total) == TaxTotal
+        assert type(self.requested_monetary_total) == RequestedMonetaryTotal
+        assert type(self.accounting_customer_party) == AccountingCustomerParty
 
-#     def generate_root(self):
-#         self.doc = default_document.createElement("DebitNote")
-#         self.doc.setAttribute(
-#             "xmlns", "urn:oasis:names:specification:ubl:schema:xsd:DebitNote-2")
-#         self.doc.setAttribute(
-#             "xmlns:cac", "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2")
-#         self.doc.setAttribute(
-#             "xmlns:cbc", "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2")
-#         self.doc.setAttribute(
-#             "xmlns:ccts", "urn:un:unece:uncefact:documentation:2")
-#         self.doc.setAttribute("xmlns:ds", "http://www.w3.org/2000/09/xmldsig#")
-#         self.doc.setAttribute(
-#             "xmlns:ext", "urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2")
-#         self.doc.setAttribute(
-#             "xmlns:qdt", "urn:oasis:names:specification:ubl:schema:xsd:QualifiedDatatypes-2")
-#         self.doc.setAttribute(
-#             "xmlns:sac", "urn:sunat:names:specification:ubl:peru:schema:xsd:SunatAggregateComponents-1")
-#         self.doc.setAttribute(
-#             "xmlns:udt", "urn:un:unece:uncefact:data:specification:UnqualifiedDataTypesSchemaModule:2")
-#         self.doc.setAttribute(
-#             "xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance")
+    def generate_root(self):
+        self.doc = default_document.createElement("DebitNote")
+        self.doc.setAttribute(
+            "xmlns", "urn:oasis:names:specification:ubl:schema:xsd:DebitNote-2")
+        self.doc.setAttribute(
+            "xmlns:cac", "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2")
+        self.doc.setAttribute(
+            "xmlns:cbc", "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2")
+        self.doc.setAttribute(
+            "xmlns:ccts", "urn:un:unece:uncefact:documentation:2")
+        self.doc.setAttribute("xmlns:ds", "http://www.w3.org/2000/09/xmldsig#")
+        self.doc.setAttribute(
+            "xmlns:ext", "urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2")
+        self.doc.setAttribute(
+            "xmlns:qdt", "urn:oasis:names:specification:ubl:schema:xsd:QualifiedDatatypes-2")
+        self.doc.setAttribute(
+            "xmlns:sac", "urn:sunat:names:specification:ubl:peru:schema:xsd:SunatAggregateComponents-1")
+        self.doc.setAttribute(
+            "xmlns:udt", "urn:un:unece:uncefact:data:specification:UnqualifiedDataTypesSchemaModule:2")
+        self.doc.setAttribute(
+            "xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance")
 
-#     def generate_doc(self):
-#         self.generate_root()
+    def generate_doc(self):
+        self.generate_root()
 
-#         self.doc.appendChild(self.ubl_extensions.get_document())
+        self.doc.appendChild(self.ubl_extensions.get_document())
 
-#         # Datos de la factura
-#         self.doc.appendChild(self.ubl_version.get_document())
-#         self.doc.appendChild(self.customization.get_document())
-#         self.doc.appendChild(self.doc_id.get_document())
+        # Datos de la factura
+        self.doc.appendChild(self.ubl_version.get_document())
+        self.doc.appendChild(self.customization.get_document())
+        self.doc.appendChild(self.doc_id.get_document())
 
-#         # Fecha de Emisión
-#         self.doc.appendChild(self.issue_date.get_document())
+        # Fecha de Emisión
+        self.doc.appendChild(self.issue_date.get_document())
 
-#         # Hora de Emisión
-#         if self.issue_time:
-#             self.doc.appendChild(self.issue_time.get_document())
+        # Hora de Emisión
+        if self.issue_time:
+            self.doc.appendChild(self.issue_time.get_document())
 
-#         # Moneda
-#         self.doc.appendChild(self.document_currency_code.get_document())
+        # Moneda
+        self.doc.appendChild(self.document_currency_code.get_document())
 
-#         # Informacion adicional
-#         for note in self.notes:
-#             self.doc.appendChild(note.get_document())
+        # Informacion adicional
+        for note in self.notes:
+            self.doc.appendChild(note.get_document())
 
-#             # Discrepancy Response
-#         self.doc.appendChild(self.discrepancy_response.get_document())
+            # Discrepancy Response
+        self.doc.appendChild(self.discrepancy_response.get_document())
 
-#         # Billing reference
-#         self.doc.appendChild(self.billing_reference.get_document())
+        # Billing reference
+        self.doc.appendChild(self.billing_reference.get_document())
 
-#         # Datos de la firma
-#         if self.signature:
-#             self.doc.appendChild(self.signature.get_document())
+        # Datos de la firma
+        if self.signature:
+            self.doc.appendChild(self.signature.get_document())
 
-#         # Datos del emisor
-#         self.doc.appendChild(self.accounting_supplier_party.get_document())
+        # Datos del emisor
+        self.doc.appendChild(self.accounting_supplier_party.get_document())
 
-#         # Datos del receptor
-#         self.doc.appendChild(self.accounting_customer_party.get_document())
+        # Datos del receptor
+        self.doc.appendChild(self.accounting_customer_party.get_document())
 
-#         # Total de Impuestos de la factura
-#         self.doc.appendChild(self.tax_total.get_document())
+        # Total de Impuestos de la factura
+        self.doc.appendChild(self.tax_total.get_document())
 
-#         self.doc.appendChild(self.requested_monetary_total.get_document())
+        self.doc.appendChild(self.requested_monetary_total.get_document())
 
-#         # Items de la factura
-#         for line in self.credit_note_lines:
-#             self.doc.appendChild(line.get_document())
+        # Items de la factura
+        for line in self.credit_note_lines:
+            self.doc.appendChild(line.get_document())
 
-#     def get_document(self):
-#         self.fix_values()
-#         self.generate_doc()
+    def get_document(self):
+        self.fix_values()
+        self.generate_doc()
 
-#         xml_doc = minidom.Document()
-#         xml_doc.appendChild(self.doc)
-#         return xml_doc
+        xml_doc = minidom.Document()
+        xml_doc.appendChild(self.doc)
+        return xml_doc
 
 
 # class DespatchAdvice(Xmleable):
