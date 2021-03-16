@@ -5,7 +5,7 @@
     "depends": [
         "base",
         "account",
-        "sale", "stock"
+        "sale", "stock", "account_debit_note"
     ],
     "category": "invoicing",
     "data": [

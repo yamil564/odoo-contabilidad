@@ -18,7 +18,7 @@
                     <field name="estado_contribuyente" placeholder="Estado del Contribuyente"/>
                 </div>
                 <xpath expr="//field[@name='city']" position="after">
-                    <field name="ubigeo" />
+                    <field name="ubigeo" invisible="1"/>
                 </xpath>
             </field>
         </record>

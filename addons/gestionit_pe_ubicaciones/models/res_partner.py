@@ -73,7 +73,7 @@ class ResPartner(models.Model):
     @api.onchange('district_id')
     def onchange_district(self):
         if self.district_id:
-            self.zip = self.district_id.code
+            self.ubigeo = self.district_id.code
             self.province_id = self.district_id.province_id.id
             self.state_id = self.district_id.state_id.id
             self.country_id = self.district_id.country_id.id

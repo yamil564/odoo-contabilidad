@@ -122,9 +122,6 @@
                 <xpath expr="//field[@name='journal_id']" position="replace">
                     <field name="journal_id" domain="[('type', '=', journal_type),('invoice_type_code_id', '=', '08'),('tipo_comprobante_a_rectificar', '=', '01')]" />
                 </xpath>
-                <xpath expr="//form[@string='Create Debit Note']" position="attributes">
-                    <attribute name="string">Crear Nota de débito</attribute>
-                </xpath>
                 <xpath expr="//field[@name='journal_id']" position="attributes">
                     <attribute name="string">Serie</attribute>
                 </xpath>
