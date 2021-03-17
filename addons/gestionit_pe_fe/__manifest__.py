@@ -17,6 +17,8 @@
         'views/account/view_acc_inv_boleta.xml',
         'views/account/view_acc_inv_nota_credito.xml',
         'views/account/view_acc_inv_nota_debito.xml',
+        'views/account/view_acc_summary.xml',
+        'views/account/view_acc_com_baja.xml',
         'views/account/view_acc_log_status.xml',
         'views/account/view_account_log_status.xml',
         'views/user/view_users.xml',

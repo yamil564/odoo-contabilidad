@@ -18,15 +18,16 @@ from .VoidedDocumentsLine import VoidedDocumentsLine
 from .TaxTotal import TaxTotal
 from .util import Xmleable, default_document
 from . import CreditNoteLine, DebitNoteLine
-from .AllowanceCharge import AllowanceCharge 
+from .AllowanceCharge import AllowanceCharge
+
 
 class Factura(Xmleable):
     def __init__(self, ubl_extensions=None, ubl_version="2.1", id=None,
                  issue_date=None, issue_time=None, due_date=None,
                  invoice_type_code=None, document_currency_code=None, customization="2.0",
-                 despatch_document_reference = None, additional_document_reference=None, signature=None,
+                 despatch_document_reference=None, additional_document_reference=None, signature=None,
                  accounting_supplier_party=None, accounting_customer_party=None,
-                 legal_monetary_total=None, tax_total=None,descuento_global=None):
+                 legal_monetary_total=None, tax_total=None, descuento_global=None):
         self.invoice_lines = []
         self.notes = []
         self.tax_total = tax_total
@@ -94,17 +95,20 @@ class Factura(Xmleable):
         if type(self.document_currency_code) == str:
             self.document_currency_code = BasicGlobal.DocumentCurrencyCode(
                 self.document_currency_code)
-        self.line_count_numeric = BasicGlobal.LineCountNumeric(len(self.invoice_lines))
+        self.line_count_numeric = BasicGlobal.LineCountNumeric(
+            len(self.invoice_lines))
 
     def validate(self, errs, obs):
         assert type(self.ubl_extensions) == BasicGlobal.UBLExtensions
         assert type(self.customization) == BasicGlobal.CustomizationID
         assert type(self.id) == BasicGlobal.SummaryId
         assert type(self.issue_date) == General.IssueDate
-        assert self.issue_time is None or type(self.issue_time) == BasicGlobal.IssueTime
+        assert self.issue_time is None or type(
+            self.issue_time) == BasicGlobal.IssueTime
         assert self.due_date is None or type(self.due_date) == General.DueDate
         assert type(self.invoice_type_code) == BasicGlobal.InvoiceTypeCode
-        assert type(self.document_currency_code) == BasicGlobal.DocumentCurrencyCode
+        assert type(
+            self.document_currency_code) == BasicGlobal.DocumentCurrencyCode
         assert self.additional_document_reference is None or \
             type(self.additional_document_reference) == AdditionalDocumentReference
         assert type(self.accounting_supplier_party) == AccountingSupplierParty
@@ -117,16 +121,23 @@ class Factura(Xmleable):
 
     def generate_root(self):
         self.doc = default_document.createElement("Invoice")
-        self.doc.setAttribute("xmlns", "urn:oasis:names:specification:ubl:schema:xsd:Invoice-2")
-        self.doc.setAttribute("xmlns:cac", "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2")
-        self.doc.setAttribute("xmlns:cbc", "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2")
-        self.doc.setAttribute("xmlns:ccts", "urn:un:unece:uncefact:documentation:2")
+        self.doc.setAttribute(
+            "xmlns", "urn:oasis:names:specification:ubl:schema:xsd:Invoice-2")
+        self.doc.setAttribute(
+            "xmlns:cac", "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2")
+        self.doc.setAttribute(
+            "xmlns:cbc", "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2")
+        self.doc.setAttribute(
+            "xmlns:ccts", "urn:un:unece:uncefact:documentation:2")
         self.doc.setAttribute("xmlns:ds", "http://www.w3.org/2000/09/xmldsig#")
-        self.doc.setAttribute("xmlns:ext", "urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2")
-        self.doc.setAttribute("xmlns:qdt", "urn:oasis:names:specification:ubl:schema:xsd:QualifiedDatatypes-2")
+        self.doc.setAttribute(
+            "xmlns:ext", "urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2")
+        self.doc.setAttribute(
+            "xmlns:qdt", "urn:oasis:names:specification:ubl:schema:xsd:QualifiedDatatypes-2")
         self.doc.setAttribute("xmlns:udt",
                               "urn:un:unece:uncefact:data:specification:UnqualifiedDataTypesSchemaModule:2")
-        self.doc.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance")
+        self.doc.setAttribute(
+            "xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance")
 
     def generate_doc(self):
         self.generate_root()
@@ -164,11 +175,13 @@ class Factura(Xmleable):
 
         # despatch_document_reference
         if self.despatch_document_reference:
-            self.doc.appendChild(self.despatch_document_reference.get_document())
+            self.doc.appendChild(
+                self.despatch_document_reference.get_document())
 
         # Documentos de referencia
         if self.additional_document_reference:
-            self.doc.appendChild(self.additional_document_reference.get_document())
+            self.doc.appendChild(
+                self.additional_document_reference.get_document())
 
         # Datos de la firma
         if self.signature:
@@ -207,6 +220,7 @@ class Factura(Xmleable):
         xml_doc = minidom.Document()
         xml_doc.appendChild(self.doc)
         return xml_doc
+
 
 class ResumenDiario(Xmleable):
     def __init__(self, ubl_version="2.0", customization_id="1.1", doc_id=None,
@@ -254,16 +268,23 @@ class ResumenDiario(Xmleable):
 
     def generate_root(self):
         self.doc = default_document.createElement("SummaryDocuments")
-        self.doc.setAttribute("xmlns", "urn:sunat:names:specification:ubl:peru:schema:xsd:SummaryDocuments-1")
-        self.doc.setAttribute("xmlns:cac", "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2")
-        self.doc.setAttribute("xmlns:cbc", "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2")
+        self.doc.setAttribute(
+            "xmlns", "urn:sunat:names:specification:ubl:peru:schema:xsd:SummaryDocuments-1")
+        self.doc.setAttribute(
+            "xmlns:cac", "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2")
+        self.doc.setAttribute(
+            "xmlns:cbc", "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2")
         self.doc.setAttribute("xmlns:ds", "http://www.w3.org/2000/09/xmldsig#")
-        self.doc.setAttribute("xmlns:ccts", "urn:un:unece:uncefact:documentation:2")
-        self.doc.setAttribute("xmlns:qdt", "urn:oasis:names:specification:ubl:schema:xsd:QualifiedDatatypes-2")
+        self.doc.setAttribute(
+            "xmlns:ccts", "urn:un:unece:uncefact:documentation:2")
+        self.doc.setAttribute(
+            "xmlns:qdt", "urn:oasis:names:specification:ubl:schema:xsd:QualifiedDatatypes-2")
         self.doc.setAttribute("xmlns:udp",
                               "urn:un:unece:uncefact:data:specification:UnqualifiedDataTypesSchemaModule:2")
-        self.doc.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance")
-        self.doc.setAttribute("xmlns:ext", "urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2")
+        self.doc.setAttribute(
+            "xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance")
+        self.doc.setAttribute(
+            "xmlns:ext", "urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2")
         self.doc.setAttribute("xmlns:sac",
                               "urn:sunat:names:specification:ubl:peru:schema:xsd:SunatAggregateComponents-1")
 
@@ -303,7 +324,6 @@ class ResumenDiario(Xmleable):
         for doc_line in self.documents_line:
             self.doc.appendChild(doc_line.get_document())
 
-
     def get_document(self):
         self.fix_values()
         self.generate_doc()
@@ -311,6 +331,7 @@ class ResumenDiario(Xmleable):
         xml_doc = minidom.Document()
         xml_doc.appendChild(self.doc)
         return xml_doc
+
 
 class ComunicacionBaja(Xmleable):
     def __init__(self, ubl_version="2.0", customization_id="1.0", doc_id=None,
@@ -327,7 +348,7 @@ class ComunicacionBaja(Xmleable):
         self.documents_line = []
         self.notes = []
         self.file_name = None
-    
+
     def set_file_name(self, name):
         self.file_name = name
 
@@ -358,14 +379,19 @@ class ComunicacionBaja(Xmleable):
 
     def generate_root(self):
         self.doc = default_document.createElement("VoidedDocuments")
-        self.doc.setAttribute('xmlns', 'urn:sunat:names:specification:ubl:peru:schema:xsd:VoidedDocuments-1')
-        self.doc.setAttribute('xmlns:cac', 'urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2')
-        self.doc.setAttribute('xmlns:cbc', 'urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2')
+        self.doc.setAttribute(
+            'xmlns', 'urn:sunat:names:specification:ubl:peru:schema:xsd:VoidedDocuments-1')
+        self.doc.setAttribute(
+            'xmlns:cac', 'urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2')
+        self.doc.setAttribute(
+            'xmlns:cbc', 'urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2')
         self.doc.setAttribute('xmlns:ds', 'http://www.w3.org/2000/09/xmldsig#')
-        self.doc.setAttribute('xmlns:ext', 'urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2')
-        self.doc.setAttribute('xmlns:sac', 'urn:sunat:names:specification:ubl:peru:schema:xsd:SunatAggregateComponents-1')
-        self.doc.setAttribute('xmlns:xsi', 'http://www.w3.org/2001/XMLSchema-instance')
-
+        self.doc.setAttribute(
+            'xmlns:ext', 'urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2')
+        self.doc.setAttribute(
+            'xmlns:sac', 'urn:sunat:names:specification:ubl:peru:schema:xsd:SunatAggregateComponents-1')
+        self.doc.setAttribute(
+            'xmlns:xsi', 'http://www.w3.org/2001/XMLSchema-instance')
 
     def add_voided_document_line(self, doc_line):
         assert type(doc_line) == VoidedDocumentsLine
@@ -389,7 +415,7 @@ class ComunicacionBaja(Xmleable):
 
         self.doc.appendChild(self.accounting_supplier_party.get_document())
 
-        # Docs Lines    
+        # Docs Lines
         for doc_line in self.documents_line:
             self.doc.appendChild(doc_line.get_document())
 
@@ -400,6 +426,7 @@ class ComunicacionBaja(Xmleable):
         xml_doc = minidom.Document()
         xml_doc.appendChild(self.doc)
         return xml_doc
+
 
 class CreditNote(Xmleable):
     def __init__(self, ubl_extensions=None, ubl_version="2.1", id=None,
@@ -447,7 +474,8 @@ class CreditNote(Xmleable):
         if type(self.ubl_version) == str:
             self.ubl_version = BasicGlobal.UBLVersion(self.ubl_version)
         if type(self.customization) == str:
-            self.customization = BasicGlobal.CustomizationID(self.customization)
+            self.customization = BasicGlobal.CustomizationID(
+                self.customization)
         if type(self.id) == str:
             self.id = BasicGlobal.SummaryId(self.id)
         if type(self.issue_date) == str:
@@ -455,17 +483,21 @@ class CreditNote(Xmleable):
         if type(self.issue_time) == str:
             self.issue_time = BasicGlobal.IssueTime(self.issue_time)
         if type(self.document_currency_code) == str:
-            self.document_currency_code = BasicGlobal.DocumentCurrencyCode(self.document_currency_code)
+            self.document_currency_code = BasicGlobal.DocumentCurrencyCode(
+                self.document_currency_code)
 
     def validate(self, errs, obs):
         assert type(self.ubl_extensions) == BasicGlobal.UBLExtensions
         assert type(self.customization) == BasicGlobal.CustomizationID
         assert type(self.id) == BasicGlobal.SummaryId
         assert type(self.issue_date) == General.IssueDate
-        assert self.issue_time is None or type(self.issue_time) == BasicGlobal.IssueTime
-        assert type(self.discrepancy_response) == DiscrepancyResponse.DiscrepancyResponse
+        assert self.issue_time is None or type(
+            self.issue_time) == BasicGlobal.IssueTime
+        assert type(
+            self.discrepancy_response) == DiscrepancyResponse.DiscrepancyResponse
         assert type(self.billing_reference) == BillingReference.BillingReference
-        assert type(self.document_currency_code) == BasicGlobal.DocumentCurrencyCode
+        assert type(
+            self.document_currency_code) == BasicGlobal.DocumentCurrencyCode
         assert type(self.accounting_supplier_party) == AccountingSupplierParty
         assert type(self.tax_total) == TaxTotal
         assert type(self.legal_monetary_total) == LegalMonetaryTotal
@@ -473,18 +505,25 @@ class CreditNote(Xmleable):
 
     def generate_root(self):
         self.doc = default_document.createElement("CreditNote")
-        self.doc.setAttribute("xmlns", "urn:oasis:names:specification:ubl:schema:xsd:CreditNote-2")
-        self.doc.setAttribute("xmlns:cac", "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2")
-        self.doc.setAttribute("xmlns:cbc", "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2")
-        self.doc.setAttribute("xmlns:ccts", "urn:un:unece:uncefact:documentation:2")
+        self.doc.setAttribute(
+            "xmlns", "urn:oasis:names:specification:ubl:schema:xsd:CreditNote-2")
+        self.doc.setAttribute(
+            "xmlns:cac", "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2")
+        self.doc.setAttribute(
+            "xmlns:cbc", "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2")
+        self.doc.setAttribute(
+            "xmlns:ccts", "urn:un:unece:uncefact:documentation:2")
         self.doc.setAttribute("xmlns:ds", "http://www.w3.org/2000/09/xmldsig#")
-        self.doc.setAttribute("xmlns:ext", "urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2")
-        self.doc.setAttribute("xmlns:qdt", "urn:oasis:names:specification:ubl:schema:xsd:QualifiedDatatypes-2")
+        self.doc.setAttribute(
+            "xmlns:ext", "urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2")
+        self.doc.setAttribute(
+            "xmlns:qdt", "urn:oasis:names:specification:ubl:schema:xsd:QualifiedDatatypes-2")
         self.doc.setAttribute("xmlns:sac",
                               "urn:sunat:names:specification:ubl:peru:schema:xsd:SunatAggregateComponents-1")
         self.doc.setAttribute("xmlns:udt",
                               "urn:un:unece:uncefact:data:specification:UnqualifiedDataTypesSchemaModule:2")
-        self.doc.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance")
+        self.doc.setAttribute(
+            "xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance")
 
     def generate_doc(self):
         self.generate_root()
@@ -543,6 +582,7 @@ class CreditNote(Xmleable):
         xml_doc.appendChild(self.doc)
         return xml_doc
 
+
 class DebitNote(Xmleable):
     def __init__(self, ubl_extensions=None, ubl_version="2.1", doc_id=None,
                  issue_date=None, issue_time=None, document_currency_code=None, customization="2.0",
@@ -589,7 +629,8 @@ class DebitNote(Xmleable):
         if type(self.ubl_version) == str:
             self.ubl_version = BasicGlobal.UBLVersion(self.ubl_version)
         if type(self.customization) == str:
-            self.customization = BasicGlobal.CustomizationID(self.customization)
+            self.customization = BasicGlobal.CustomizationID(
+                self.customization)
         if type(self.doc_id) == str:
             self.doc_id = BasicGlobal.ID(self.doc_id)
         if type(self.issue_date) == str:
@@ -597,17 +638,21 @@ class DebitNote(Xmleable):
         if type(self.issue_time) == str:
             self.issue_time = BasicGlobal.IssueTime(self.issue_time)
         if type(self.document_currency_code) == str:
-            self.document_currency_code = BasicGlobal.DocumentCurrencyCode(self.document_currency_code)
+            self.document_currency_code = BasicGlobal.DocumentCurrencyCode(
+                self.document_currency_code)
 
     def validate(self, errs, obs):
         assert type(self.ubl_extensions) == BasicGlobal.UBLExtensions
         assert type(self.customization) == BasicGlobal.CustomizationID
         assert type(self.doc_id) == BasicGlobal.ID
         assert type(self.issue_date) == General.IssueDate
-        assert self.issue_time is None or type(self.issue_time) == BasicGlobal.IssueTime
-        assert type(self.discrepancy_response) == DiscrepancyResponse.DiscrepancyResponse
+        assert self.issue_time is None or type(
+            self.issue_time) == BasicGlobal.IssueTime
+        assert type(
+            self.discrepancy_response) == DiscrepancyResponse.DiscrepancyResponse
         assert type(self.billing_reference) == BillingReference.BillingReference
-        assert type(self.document_currency_code) == BasicGlobal.DocumentCurrencyCode
+        assert type(
+            self.document_currency_code) == BasicGlobal.DocumentCurrencyCode
         assert type(self.accounting_supplier_party) == AccountingSupplierParty
         assert type(self.tax_total) == TaxTotal
         assert type(self.requested_monetary_total) == RequestedMonetaryTotal
@@ -615,16 +660,25 @@ class DebitNote(Xmleable):
 
     def generate_root(self):
         self.doc = default_document.createElement("DebitNote")
-        self.doc.setAttribute("xmlns", "urn:oasis:names:specification:ubl:schema:xsd:DebitNote-2")
-        self.doc.setAttribute("xmlns:cac", "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2")
-        self.doc.setAttribute("xmlns:cbc", "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2")
-        self.doc.setAttribute("xmlns:ccts", "urn:un:unece:uncefact:documentation:2")
+        self.doc.setAttribute(
+            "xmlns", "urn:oasis:names:specification:ubl:schema:xsd:DebitNote-2")
+        self.doc.setAttribute(
+            "xmlns:cac", "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2")
+        self.doc.setAttribute(
+            "xmlns:cbc", "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2")
+        self.doc.setAttribute(
+            "xmlns:ccts", "urn:un:unece:uncefact:documentation:2")
         self.doc.setAttribute("xmlns:ds", "http://www.w3.org/2000/09/xmldsig#")
-        self.doc.setAttribute("xmlns:ext", "urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2")
-        self.doc.setAttribute("xmlns:qdt", "urn:oasis:names:specification:ubl:schema:xsd:QualifiedDatatypes-2")
-        self.doc.setAttribute("xmlns:sac", "urn:sunat:names:specification:ubl:peru:schema:xsd:SunatAggregateComponents-1")
-        self.doc.setAttribute("xmlns:udt", "urn:un:unece:uncefact:data:specification:UnqualifiedDataTypesSchemaModule:2")
-        self.doc.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance")
+        self.doc.setAttribute(
+            "xmlns:ext", "urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2")
+        self.doc.setAttribute(
+            "xmlns:qdt", "urn:oasis:names:specification:ubl:schema:xsd:QualifiedDatatypes-2")
+        self.doc.setAttribute(
+            "xmlns:sac", "urn:sunat:names:specification:ubl:peru:schema:xsd:SunatAggregateComponents-1")
+        self.doc.setAttribute(
+            "xmlns:udt", "urn:un:unece:uncefact:data:specification:UnqualifiedDataTypesSchemaModule:2")
+        self.doc.setAttribute(
+            "xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance")
 
     def generate_doc(self):
         self.generate_root()
@@ -683,6 +737,7 @@ class DebitNote(Xmleable):
         xml_doc.appendChild(self.doc)
         return xml_doc
 
+
 class DespatchAdvice(Xmleable):
     def __init__(self, ubl_extensions=None, ubl_version="2.1", doc_id=None, customization="2.0",
                  issue_date=None, issue_time=None, despatch_advice_type_code=None,
@@ -729,7 +784,8 @@ class DespatchAdvice(Xmleable):
         if type(self.ubl_version) == str:
             self.ubl_version = BasicGlobal.UBLVersion(self.ubl_version)
         if type(self.customization) == str:
-            self.customization = BasicGlobal.CustomizationID(self.customization)
+            self.customization = BasicGlobal.CustomizationID(
+                self.customization)
         if type(self.doc_id) == str:
             self.doc_id = BasicGlobal.ID(self.doc_id)
         if type(self.issue_date) == str:
@@ -737,37 +793,49 @@ class DespatchAdvice(Xmleable):
         if type(self.issue_time) == str:
             self.issue_time = BasicGlobal.IssueTime(self.issue_time)
         if type(self.despatch_advice_type_code) == str:
-            self.despatch_advice_type_code = BasicGlobal.DespatchAdviceTypeCode(self.despatch_advice_type_code)
+            self.despatch_advice_type_code = BasicGlobal.DespatchAdviceTypeCode(
+                self.despatch_advice_type_code)
 
     def validate(self, errs, obs):
         assert type(self.ubl_extensions) == BasicGlobal.UBLExtensions
         assert type(self.customization) == BasicGlobal.CustomizationID
         assert type(self.doc_id) == BasicGlobal.ID
         assert type(self.issue_date) == General.IssueDate
-        assert self.issue_time is None or type(self.issue_time) == BasicGlobal.IssueTime
-        assert type(self.despatch_advice_type_code) is BasicGlobal.DespatchAdviceTypeCode
-        assert self.order_reference is None or type(self.order_reference) == OrderReference
+        assert self.issue_time is None or type(
+            self.issue_time) == BasicGlobal.IssueTime
+        assert type(
+            self.despatch_advice_type_code) is BasicGlobal.DespatchAdviceTypeCode
+        assert self.order_reference is None or type(
+            self.order_reference) == OrderReference
         assert self.additional_document_reference is None or \
             type(self.additional_document_reference) == AdditionalDocumentReference
         assert type(self.despatch_supplier_party) == DespatchSupplierParty
         assert type(self.delivery_customer_party) is DeliveryCustomerParty
-        assert self.seller_supplier_party is None or type(self.seller_supplier_party) is SellerSupplierParty
+        assert self.seller_supplier_party is None or type(
+            self.seller_supplier_party) is SellerSupplierParty
         assert type(self.shipment) == Shipment
 
     def generate_root(self):
         self.doc = default_document.createElement("DespatchAdvice")
-        self.doc.setAttribute("xmlns", "urn:oasis:names:specification:ubl:schema:xsd:DespatchAdvice-2")
-        self.doc.setAttribute("xmlns:cac", "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2")
-        self.doc.setAttribute("xmlns:cbc", "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2")
-        self.doc.setAttribute("xmlns:ccts", "urn:un:unece:uncefact:documentation:2")
+        self.doc.setAttribute(
+            "xmlns", "urn:oasis:names:specification:ubl:schema:xsd:DespatchAdvice-2")
+        self.doc.setAttribute(
+            "xmlns:cac", "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2")
+        self.doc.setAttribute(
+            "xmlns:cbc", "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2")
+        self.doc.setAttribute(
+            "xmlns:ccts", "urn:un:unece:uncefact:documentation:2")
         self.doc.setAttribute("xmlns:ds", "http://www.w3.org/2000/09/xmldsig#")
-        self.doc.setAttribute("xmlns:ext", "urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2")
-        self.doc.setAttribute("xmlns:qdt", "urn:oasis:names:specification:ubl:schema:xsd:QualifiedDatatypes-2")
+        self.doc.setAttribute(
+            "xmlns:ext", "urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2")
+        self.doc.setAttribute(
+            "xmlns:qdt", "urn:oasis:names:specification:ubl:schema:xsd:QualifiedDatatypes-2")
         self.doc.setAttribute("xmlns:sac",
-          "urn:sunat:names:specification:ubl:peru:schema:xsd:SunatAggregateComponents-1")
+                              "urn:sunat:names:specification:ubl:peru:schema:xsd:SunatAggregateComponents-1")
         self.doc.setAttribute("xmlns:udt",
-          "urn:un:unece:uncefact:data:specification:UnqualifiedDataTypesSchemaModule:2")
-        self.doc.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance")
+                              "urn:un:unece:uncefact:data:specification:UnqualifiedDataTypesSchemaModule:2")
+        self.doc.setAttribute(
+            "xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance")
 
     def generate_doc(self):
         self.generate_root()
@@ -795,7 +863,8 @@ class DespatchAdvice(Xmleable):
         if self.order_reference:
             self.doc.appendChild(self.order_reference.get_document())
         if self.additional_document_reference:
-            self.doc.appendChild(self.additional_document_reference.get_document())
+            self.doc.appendChild(
+                self.additional_document_reference.get_document())
 
         # Datos de la firma
         if self.signature:
@@ -820,5 +889,3 @@ class DespatchAdvice(Xmleable):
         xml_doc = minidom.Document()
         xml_doc.appendChild(self.doc)
         return xml_doc
-
-

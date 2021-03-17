@@ -21,5 +21,32 @@
             <field name="perm_create">1</field>
             <field name="group_id" ref="base.group_user"/>
         </record>
+        <record model="ir.model.access" id="gestionit_pe_fe.access_model_summary_line">
+            <field name="name">gestionit_pe_fe.access.model.summary.line</field>
+            <field name="model_id" ref="gestionit_pe_fe.model_account_summary_line"/>
+            <field name="perm_read">1</field>
+            <field name="perm_write">1</field>
+            <field name="perm_unlink">1</field>
+            <field name="perm_create">1</field>
+            <field name="group_id" ref="base.group_user"/>
+        </record>
+        <record model="ir.model.access" id="gestionit_pe_fe.access_model_summary">
+            <field name="name">gestionit_pe_fe.access.model.summary</field>
+            <field name="model_id" ref="gestionit_pe_fe.model_account_summary"/>
+            <field name="perm_read">1</field>
+            <field name="perm_write">1</field>
+            <field name="perm_unlink">1</field>
+            <field name="perm_create">1</field>
+            <field name="group_id" ref="base.group_user"/>
+        </record>
+        <record model="ir.model.access" id="gestionit_pe_fe.access_model_comunicacion_baja">
+            <field name="name">gestionit_pe_fe.access.model.account.comunicacion.baja</field>
+            <field name="model_id" ref="gestionit_pe_fe.model_account_comunicacion_baja"/>
+            <field name="perm_read">1</field>
+            <field name="perm_write">1</field>
+            <field name="perm_unlink">1</field>
+            <field name="perm_create">1</field>
+            <field name="group_id" ref="base.group_user"/>
+        </record>
     </data>
 </odoo>

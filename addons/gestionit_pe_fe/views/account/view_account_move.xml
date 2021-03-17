@@ -68,6 +68,7 @@
                 <xpath expr="//page[@name='other_info']" position="after">
                     <page string="Comprobante" groups="base.group_no_one">
                         <group>
+                            <field name="estado_comprobante_electronico" />
                             <field name="json_comprobante" attrs="{'readonly':[['state','not in',['draft']]]}"/>
                             <field name="json_respuesta"/>
                             <field name="status_envio" attrs="{'readonly':[['state','not in',['draft']]]}"/>

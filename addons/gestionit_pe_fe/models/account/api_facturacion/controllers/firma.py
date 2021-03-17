@@ -92,8 +92,8 @@ def generate_envio_xml(username, password, file_name, doc_zip):
     return envelope.get_document().toxml()
 
 
-# def generate_envio_resumen_xml(username, password, file_name, doc_zip):
-#     header = Envelope.Header(username, password)
-#     body = Envelope.BodyResumen(file_name, doc_zip)
-#     envelope = Envelope.Envelope(header, body)
-#     return envelope.get_document().toxml()
+def generate_envio_resumen_xml(username, password, file_name, doc_zip):
+    header = Envelope.Header(username, password)
+    body = Envelope.BodyResumen(file_name, doc_zip)
+    envelope = Envelope.Envelope(header, body)
+    return envelope.get_document().toxml()

@@ -1,24 +1,19 @@
-from efact21 import General
-from efact21 import SummaryDocumentsLine
-from efact21 import TaxTotal
-from efact21.Accounting import CustomerAssignedAccountID, AdditionalAccountID
-from efact21.CustomerParty import AccountingCustomerParty
-from efact21.SupplierParty import AccountingSupplierParty
-from efact21.Documents import ResumenDiario
-from efact21.Party import PartyLegalEntity, Party
-from efact21 import AmountTypes
-from efact21.BillingReference import InvoiceDocumentReference,BillingReference
+from ..efact21 import General
+from ..efact21 import SummaryDocumentsLine
+from ..efact21 import TaxTotal
+from ..efact21.Accounting import CustomerAssignedAccountID, AdditionalAccountID
+from ..efact21.CustomerParty import AccountingCustomerParty
+from ..efact21.SupplierParty import AccountingSupplierParty
+from ..efact21.Documents import ResumenDiario
+from ..efact21.Party import PartyLegalEntity, Party
+from ..efact21 import AmountTypes
+from ..efact21.BillingReference import InvoiceDocumentReference, BillingReference
 
 required_fields = ["fechaGeneracion", "resumen", "detalle"]
-resumen_required_fields = [
-    "id", "numDocEmisor", "tipoFormatoRepresentacionImpresa",
-    "tipoDocEmisor", "fechaReferente", "nombreEmisor"
-]
-detalle_required_fields = [
-    "serie", "correlativo", "tipoDocumento", "tipoDocReceptor", "numDocReceptor", "tipoMoneda",
-    "codAfectacionIgv", "mntIgv", "mntIsc", "codOperacion", "mntTotal", "mntNeto",
-    "mntExe", "mntExo", "mntExp", "mntGrat", "mntOtros"
-]
+resumen_required_fields = ["id", "numDocEmisor", "tipoFormatoRepresentacionImpresa",
+                           "tipoDocEmisor", "fechaReferente", "nombreEmisor"]
+detalle_required_fields = ["serie", "correlativo", "tipoDocumento", "tipoDocReceptor", "numDocReceptor", "tipoMoneda",
+                           "mntIgv", "mntIsc", "codOperacion", "mntTotal", "mntNeto", "mntExe", "mntExo", "mntExp", "mntGrat", "mntOtros"]
 
 
 def build_detalle(detalle):
@@ -38,34 +33,42 @@ def build_detalle(detalle):
 
     doc_line = SummaryDocumentsLine.SummaryDocumentsLine()
     doc_line.id = serie + "-" + str(correlativo)
-    doc_line.document_type_code = SummaryDocumentsLine.DocumentTypeCode(tipo_documento)
+    doc_line.document_type_code = SummaryDocumentsLine.DocumentTypeCode(
+        tipo_documento)
 
     if tipoDocReceptor in ["0", "1", "4", "6", "7", "A", "B", "C", "D", "E"] and numDocReceptor != "-":
         acp = AccountingCustomerParty()
-        acp.customer_assigned_accountID = CustomerAssignedAccountID(numDocReceptor)
+        acp.customer_assigned_accountID = CustomerAssignedAccountID(
+            numDocReceptor)
         acp.additional_accountID = AdditionalAccountID(tipoDocReceptor)
         doc_line.accounting_customer_party = acp
 
     doc_line.status = codOperacion
     doc_line.total_amount = AmountTypes.TotalAmount(mntTotal)
 
-    #Documento de Referencia (Notas asociadas a boletas)
-    print(type(numDocReferencia) == str and type(tipoDocReferencia)== str)
-    if type(numDocReferencia) == str and type(tipoDocReferencia)== str:
-        print(numDocReferencia)
-        print(tipoDocReferencia)
-        invoice_document_reference = InvoiceDocumentReference(numDocReferencia,tipoDocReferencia)
-        doc_line.billing_reference = BillingReference(invoice_document_reference=invoice_document_reference)
-    #Gravado
+    # Documento de Referencia (Notas asociadas a boletas)
+    # print(type(numDocReferencia) == str and type(tipoDocReferencia) == str)
+    if tipo_documento in ['07', '08']:
+        if type(numDocReferencia) == str and type(tipoDocReferencia) == str:
+            # print(numDocReferencia)
+            # print(tipoDocReferencia)
+            invoice_document_reference = InvoiceDocumentReference(
+                numDocReferencia, tipoDocReferencia)
+            doc_line.billing_reference = BillingReference(
+                invoice_document_reference=invoice_document_reference)
+    # Gravado
     doc_line.billing_payments = []
     if mntNeto:
-        doc_line.billing_payments.append(SummaryDocumentsLine.BillingPayment(mntNeto, "01"))
-    #Exonerado
+        doc_line.billing_payments.append(
+            SummaryDocumentsLine.BillingPayment(mntNeto, "01"))
+    # Exonerado
     if mntExo:
-        doc_line.billing_payments.append(SummaryDocumentsLine.BillingPayment(mntExo, "02"))
-    #Inafecto
+        doc_line.billing_payments.append(
+            SummaryDocumentsLine.BillingPayment(mntExo, "02"))
+    # Inafecto
     if mntExe:
-        doc_line.billing_payments.append(SummaryDocumentsLine.BillingPayment(mntExe, "03"))
+        doc_line.billing_payments.append(
+            SummaryDocumentsLine.BillingPayment(mntExe, "03"))
 
     tax_total = TaxTotal.TaxTotal()
     tax_total.tax_amount = TaxTotal.TaxAmount(mntIgv)
@@ -97,7 +100,8 @@ def build_resumen(data):
     fecha_referente = resumen.get("fechaReferente")
 
     res_dia = ResumenDiario(ubl_version="2.0", customization_id="1.1")
-    res_dia.doc_id = "RC-" + fecha_generacion.replace("-", "") + "-" + str(resumen_id)
+    res_dia.doc_id = "RC-" + \
+        fecha_generacion.replace("-", "") + "-" + str(resumen_id)
     res_dia.issue_date = fecha_generacion
     res_dia.reference_date = fecha_referente
 

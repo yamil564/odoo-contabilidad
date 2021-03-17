@@ -20,6 +20,9 @@ from .util import Xmleable, default_document
 from . import CreditNoteLine, DebitNoteLine
 from .AllowanceCharge import AllowanceCharge
 
+import logging
+_logger = logging.getLogger(__name__)
+
 
 class Factura(Xmleable):
     def __init__(self, ubl_extensions=None, ubl_version="2.1", id=None,
@@ -222,210 +225,210 @@ class Factura(Xmleable):
         return xml_doc
 
 
-# class ResumenDiario(Xmleable):
-#     def __init__(self, ubl_version="2.0", customization_id="1.1", doc_id=None,
-#                  issue_date=None, reference_date=None, accounting_supplier_party=None,
-#                  signature=None, ubl_extensions=None):
-#         self.ubl_version = ubl_version
-#         self.customization_id = customization_id
-#         self.doc_id = doc_id
-#         self.issue_date = issue_date
-#         self.reference_date = reference_date
-#         self.accounting_supplier_party = accounting_supplier_party
-#         self.signature = signature
-#         self.ubl_extensions = ubl_extensions
-#         self.documents_line = []
-#         self.notes = []
-#         self.file_name = None
+class ResumenDiario(Xmleable):
+    def __init__(self, ubl_version="2.0", customization_id="1.1", doc_id=None,
+                 issue_date=None, reference_date=None, accounting_supplier_party=None,
+                 signature=None, ubl_extensions=None):
+        self.ubl_version = ubl_version
+        self.customization_id = customization_id
+        self.doc_id = doc_id
+        self.issue_date = issue_date
+        self.reference_date = reference_date
+        self.accounting_supplier_party = accounting_supplier_party
+        self.signature = signature
+        self.ubl_extensions = ubl_extensions
+        self.documents_line = []
+        self.notes = []
+        self.file_name = None
 
-#     def set_file_name(self, name):
-#         self.file_name = name
+    def set_file_name(self, name):
+        self.file_name = name
 
-#     def fix_values(self):
-#         if type(self.ubl_version) == str:
-#             self.ubl_version = BasicGlobal.UBLVersion(self.ubl_version)
-#         if type(self.customization_id) == str:
-#             self.customization_id = BasicGlobal.CustomizationID(
-#                 self.customization_id)
-#         if type(self.doc_id) == str:
-#             self.doc_id = BasicGlobal.SummaryId(self.doc_id)
-#         if type(self.reference_date) == str:
-#             self.reference_date = General.ReferenceDate(self.reference_date)
-#         if self.ubl_extensions is None:
-#             self.ubl_extensions = BasicGlobal.UBLExtensions()
-#         if type(self.issue_date) == str:
-#             self.issue_date = General.IssueDate(self.issue_date)
+    def fix_values(self):
+        if type(self.ubl_version) == str:
+            self.ubl_version = BasicGlobal.UBLVersion(self.ubl_version)
+        if type(self.customization_id) == str:
+            self.customization_id = BasicGlobal.CustomizationID(
+                self.customization_id)
+        if type(self.doc_id) == str:
+            self.doc_id = BasicGlobal.SummaryId(self.doc_id)
+        if type(self.reference_date) == str:
+            self.reference_date = General.ReferenceDate(self.reference_date)
+        if self.ubl_extensions is None:
+            self.ubl_extensions = BasicGlobal.UBLExtensions()
+        if type(self.issue_date) == str:
+            self.issue_date = General.IssueDate(self.issue_date)
 
-#     def validate(self, errs, obs):
-#         assert type(self.ubl_version) == BasicGlobal.UBLVersion
-#         assert type(self.customization_id) == BasicGlobal.CustomizationID
-#         assert type(self.doc_id) == BasicGlobal.SummaryId
-#         assert type(self.issue_date) == General.IssueDate
-#         assert type(self.reference_date) == General.ReferenceDate
-#         assert type(self.accounting_supplier_party) == AccountingSupplierParty
-#         assert self.signature is None or type(self.signature) == Signature
-#         assert type(self.ubl_extensions) == BasicGlobal.UBLExtensions
+    def validate(self, errs, obs):
+        assert type(self.ubl_version) == BasicGlobal.UBLVersion
+        assert type(self.customization_id) == BasicGlobal.CustomizationID
+        assert type(self.doc_id) == BasicGlobal.SummaryId
+        assert type(self.issue_date) == General.IssueDate
+        assert type(self.reference_date) == General.ReferenceDate
+        assert type(self.accounting_supplier_party) == AccountingSupplierParty
+        assert self.signature is None or type(self.signature) == Signature
+        assert type(self.ubl_extensions) == BasicGlobal.UBLExtensions
 
-#     def generate_root(self):
-#         self.doc = default_document.createElement("SummaryDocuments")
-#         self.doc.setAttribute(
-#             "xmlns", "urn:sunat:names:specification:ubl:peru:schema:xsd:SummaryDocuments-1")
-#         self.doc.setAttribute(
-#             "xmlns:cac", "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2")
-#         self.doc.setAttribute(
-#             "xmlns:cbc", "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2")
-#         self.doc.setAttribute("xmlns:ds", "http://www.w3.org/2000/09/xmldsig#")
-#         self.doc.setAttribute(
-#             "xmlns:ccts", "urn:un:unece:uncefact:documentation:2")
-#         self.doc.setAttribute(
-#             "xmlns:qdt", "urn:oasis:names:specification:ubl:schema:xsd:QualifiedDatatypes-2")
-#         self.doc.setAttribute("xmlns:udp",
-#                               "urn:un:unece:uncefact:data:specification:UnqualifiedDataTypesSchemaModule:2")
-#         self.doc.setAttribute(
-#             "xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance")
-#         self.doc.setAttribute(
-#             "xmlns:ext", "urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2")
-#         self.doc.setAttribute("xmlns:sac",
-#                               "urn:sunat:names:specification:ubl:peru:schema:xsd:SunatAggregateComponents-1")
+    def generate_root(self):
+        self.doc = default_document.createElement("SummaryDocuments")
+        self.doc.setAttribute(
+            "xmlns", "urn:sunat:names:specification:ubl:peru:schema:xsd:SummaryDocuments-1")
+        self.doc.setAttribute(
+            "xmlns:cac", "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2")
+        self.doc.setAttribute(
+            "xmlns:cbc", "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2")
+        self.doc.setAttribute("xmlns:ds", "http://www.w3.org/2000/09/xmldsig#")
+        self.doc.setAttribute(
+            "xmlns:ccts", "urn:un:unece:uncefact:documentation:2")
+        self.doc.setAttribute(
+            "xmlns:qdt", "urn:oasis:names:specification:ubl:schema:xsd:QualifiedDatatypes-2")
+        self.doc.setAttribute("xmlns:udp",
+                              "urn:un:unece:uncefact:data:specification:UnqualifiedDataTypesSchemaModule:2")
+        self.doc.setAttribute(
+            "xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance")
+        self.doc.setAttribute(
+            "xmlns:ext", "urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2")
+        self.doc.setAttribute("xmlns:sac",
+                              "urn:sunat:names:specification:ubl:peru:schema:xsd:SunatAggregateComponents-1")
 
-#     def add_summary_document_line(self, doc_line):
-#         assert type(doc_line) == SummaryDocumentsLine
-#         self.documents_line.append(doc_line)
-#         doc_line.line_id = len(self.documents_line)
+    def add_summary_document_line(self, doc_line):
+        assert type(doc_line) == SummaryDocumentsLine
+        self.documents_line.append(doc_line)
+        doc_line.line_id = len(self.documents_line)
 
-#     def add_note(self, note):
-#         if type(note) == str:
-#             note = BasicGlobal.Note(note)
-#         assert type(note) == BasicGlobal.Note
-#         self.notes.append(note)
+    def add_note(self, note):
+        if type(note) == str:
+            note = BasicGlobal.Note(note)
+        assert type(note) == BasicGlobal.Note
+        self.notes.append(note)
 
-#     def generate_doc(self):
-#         self.generate_root()
+    def generate_doc(self):
+        self.generate_root()
 
-#         self.doc.appendChild(self.ubl_extensions.get_document())
+        self.doc.appendChild(self.ubl_extensions.get_document())
 
-#         # Datos del resumen
-#         self.doc.appendChild(self.ubl_version.get_document())
-#         self.doc.appendChild(self.customization_id.get_document())
-#         self.doc.appendChild(self.doc_id.get_document())
-#         self.doc.appendChild(self.reference_date.get_document())
-#         self.doc.appendChild(self.issue_date.get_document())
+        # Datos del resumen
+        self.doc.appendChild(self.ubl_version.get_document())
+        self.doc.appendChild(self.customization_id.get_document())
+        self.doc.appendChild(self.doc_id.get_document())
+        self.doc.appendChild(self.reference_date.get_document())
+        self.doc.appendChild(self.issue_date.get_document())
 
-#         if self.signature:
-#             self.doc.appendChild(self.signature.get_document())
+        if self.signature:
+            self.doc.appendChild(self.signature.get_document())
 
-#         self.doc.appendChild(self.accounting_supplier_party.get_document())
+        self.doc.appendChild(self.accounting_supplier_party.get_document())
 
-#         # Notes
-#         for note in self.notes:
-#             self.doc.appendChild(note.get_document())
+        # Notes
+        for note in self.notes:
+            self.doc.appendChild(note.get_document())
 
-#         # Docs Lines
-#         for doc_line in self.documents_line:
-#             self.doc.appendChild(doc_line.get_document())
+        # Docs Lines
+        for doc_line in self.documents_line:
+            self.doc.appendChild(doc_line.get_document())
 
-#     def get_document(self):
-#         self.fix_values()
-#         self.generate_doc()
+    def get_document(self):
+        self.fix_values()
+        self.generate_doc()
 
-#         xml_doc = minidom.Document()
-#         xml_doc.appendChild(self.doc)
-#         return xml_doc
+        xml_doc = minidom.Document()
+        xml_doc.appendChild(self.doc)
+        return xml_doc
 
 
-# class ComunicacionBaja(Xmleable):
-#     def __init__(self, ubl_version="2.0", customization_id="1.0", doc_id=None,
-#                  issue_date=None, reference_date=None, accounting_supplier_party=None,
-#                  signature=None, ubl_extensions=None):
-#         self.ubl_version = ubl_version
-#         self.customization_id = customization_id
-#         self.doc_id = doc_id
-#         self.issue_date = issue_date
-#         self.reference_date = reference_date
-#         self.accounting_supplier_party = accounting_supplier_party
-#         self.signature = signature
-#         self.ubl_extensions = ubl_extensions
-#         self.documents_line = []
-#         self.notes = []
-#         self.file_name = None
+class ComunicacionBaja(Xmleable):
+    def __init__(self, ubl_version="2.0", customization_id="1.0", doc_id=None,
+                 issue_date=None, reference_date=None, accounting_supplier_party=None,
+                 signature=None, ubl_extensions=None):
+        self.ubl_version = ubl_version
+        self.customization_id = customization_id
+        self.doc_id = doc_id
+        self.issue_date = issue_date
+        self.reference_date = reference_date
+        self.accounting_supplier_party = accounting_supplier_party
+        self.signature = signature
+        self.ubl_extensions = ubl_extensions
+        self.documents_line = []
+        self.notes = []
+        self.file_name = None
 
-#     def set_file_name(self, name):
-#         self.file_name = name
+    def set_file_name(self, name):
+        self.file_name = name
 
-#     def fix_values(self):
-#         if type(self.ubl_version) == str:
-#             self.ubl_version = BasicGlobal.UBLVersion(self.ubl_version)
-#         if type(self.customization_id) == str:
-#             self.customization_id = BasicGlobal.CustomizationID(
-#                 self.customization_id)
-#         if type(self.doc_id) == str:
-#             self.doc_id = BasicGlobal.SummaryId(self.doc_id)
-#         if type(self.reference_date) == str:
-#             self.reference_date = General.ReferenceDate(self.reference_date)
-#         if self.ubl_extensions is None:
-#             self.ubl_extensions = BasicGlobal.UBLExtensions()
-#         if type(self.issue_date) == str:
-#             self.issue_date = General.IssueDate(self.issue_date)
+    def fix_values(self):
+        if type(self.ubl_version) == str:
+            self.ubl_version = BasicGlobal.UBLVersion(self.ubl_version)
+        if type(self.customization_id) == str:
+            self.customization_id = BasicGlobal.CustomizationID(
+                self.customization_id)
+        if type(self.doc_id) == str:
+            self.doc_id = BasicGlobal.SummaryId(self.doc_id)
+        if type(self.reference_date) == str:
+            self.reference_date = General.ReferenceDate(self.reference_date)
+        if self.ubl_extensions is None:
+            self.ubl_extensions = BasicGlobal.UBLExtensions()
+        if type(self.issue_date) == str:
+            self.issue_date = General.IssueDate(self.issue_date)
 
-#     def validate(self, errs, obs):
-#         assert type(self.ubl_version) == BasicGlobal.UBLVersion
-#         assert type(self.customization_id) == BasicGlobal.CustomizationID
-#         assert type(self.doc_id) == BasicGlobal.SummaryId
-#         assert type(self.issue_date) == General.IssueDate
-#         assert type(self.reference_date) == General.ReferenceDate
-#         assert type(self.accounting_supplier_party) == AccountingSupplierParty
-#         assert self.signature is None or type(self.signature) == Signature
-#         assert type(self.ubl_extensions) == BasicGlobal.UBLExtensions
+    def validate(self, errs, obs):
+        assert type(self.ubl_version) == BasicGlobal.UBLVersion
+        assert type(self.customization_id) == BasicGlobal.CustomizationID
+        assert type(self.doc_id) == BasicGlobal.SummaryId
+        assert type(self.issue_date) == General.IssueDate
+        assert type(self.reference_date) == General.ReferenceDate
+        assert type(self.accounting_supplier_party) == AccountingSupplierParty
+        assert self.signature is None or type(self.signature) == Signature
+        assert type(self.ubl_extensions) == BasicGlobal.UBLExtensions
 
-#     def generate_root(self):
-#         self.doc = default_document.createElement("VoidedDocuments")
-#         self.doc.setAttribute(
-#             'xmlns', 'urn:sunat:names:specification:ubl:peru:schema:xsd:VoidedDocuments-1')
-#         self.doc.setAttribute(
-#             'xmlns:cac', 'urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2')
-#         self.doc.setAttribute(
-#             'xmlns:cbc', 'urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2')
-#         self.doc.setAttribute('xmlns:ds', 'http://www.w3.org/2000/09/xmldsig#')
-#         self.doc.setAttribute(
-#             'xmlns:ext', 'urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2')
-#         self.doc.setAttribute(
-#             'xmlns:sac', 'urn:sunat:names:specification:ubl:peru:schema:xsd:SunatAggregateComponents-1')
-#         self.doc.setAttribute(
-#             'xmlns:xsi', 'http://www.w3.org/2001/XMLSchema-instance')
+    def generate_root(self):
+        self.doc = default_document.createElement("VoidedDocuments")
+        self.doc.setAttribute(
+            'xmlns', 'urn:sunat:names:specification:ubl:peru:schema:xsd:VoidedDocuments-1')
+        self.doc.setAttribute(
+            'xmlns:cac', 'urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2')
+        self.doc.setAttribute(
+            'xmlns:cbc', 'urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2')
+        self.doc.setAttribute('xmlns:ds', 'http://www.w3.org/2000/09/xmldsig#')
+        self.doc.setAttribute(
+            'xmlns:ext', 'urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2')
+        self.doc.setAttribute(
+            'xmlns:sac', 'urn:sunat:names:specification:ubl:peru:schema:xsd:SunatAggregateComponents-1')
+        self.doc.setAttribute(
+            'xmlns:xsi', 'http://www.w3.org/2001/XMLSchema-instance')
 
-#     def add_voided_document_line(self, doc_line):
-#         assert type(doc_line) == VoidedDocumentsLine
-#         self.documents_line.append(doc_line)
-#         doc_line.line_id = len(self.documents_line)
+    def add_voided_document_line(self, doc_line):
+        assert type(doc_line) == VoidedDocumentsLine
+        self.documents_line.append(doc_line)
+        doc_line.line_id = len(self.documents_line)
 
-#     def generate_doc(self):
-#         self.generate_root()
+    def generate_doc(self):
+        self.generate_root()
 
-#         self.doc.appendChild(self.ubl_extensions.get_document())
+        self.doc.appendChild(self.ubl_extensions.get_document())
 
-#         # Datos del resumen
-#         self.doc.appendChild(self.ubl_version.get_document())
-#         self.doc.appendChild(self.customization_id.get_document())
-#         self.doc.appendChild(self.doc_id.get_document())
-#         self.doc.appendChild(self.reference_date.get_document())
-#         self.doc.appendChild(self.issue_date.get_document())
+        # Datos del resumen
+        self.doc.appendChild(self.ubl_version.get_document())
+        self.doc.appendChild(self.customization_id.get_document())
+        self.doc.appendChild(self.doc_id.get_document())
+        self.doc.appendChild(self.reference_date.get_document())
+        self.doc.appendChild(self.issue_date.get_document())
 
-#         if self.signature:
-#             self.doc.appendChild(self.signature.get_document())
+        if self.signature:
+            self.doc.appendChild(self.signature.get_document())
 
-#         self.doc.appendChild(self.accounting_supplier_party.get_document())
+        self.doc.appendChild(self.accounting_supplier_party.get_document())
 
-#         # Docs Lines
-#         for doc_line in self.documents_line:
-#             self.doc.appendChild(doc_line.get_document())
+        # Docs Lines
+        for doc_line in self.documents_line:
+            self.doc.appendChild(doc_line.get_document())
 
-#     def get_document(self):
-#         self.fix_values()
-#         self.generate_doc()
+    def get_document(self):
+        self.fix_values()
+        self.generate_doc()
 
-#         xml_doc = minidom.Document()
-#         xml_doc.appendChild(self.doc)
-#         return xml_doc
+        xml_doc = minidom.Document()
+        xml_doc.appendChild(self.doc)
+        return xml_doc
 
 
 class CreditNote(Xmleable):

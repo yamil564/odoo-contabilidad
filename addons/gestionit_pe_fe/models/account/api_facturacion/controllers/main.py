@@ -1,11 +1,10 @@
 import json
 import requests
 import os
-# , resumendiario, comunicacionbaja
-from . import factura, nota_credito, nota_debito, firma
+from . import factura, nota_credito, nota_debito, firma, resumendiario, comunicacionbaja
 from . import xml_validation, sunat_response_handle
-# , ResumenDiario, ComunicacionBaja, DespatchAdvice
-from ..efact21.Documents import Factura, CreditNote, DebitNote
+# DespatchAdvice
+from ..efact21.Documents import Factura, CreditNote, DebitNote, ResumenDiario, ComunicacionBaja
 # from . import guia_remision
 import base64
 from io import BytesIO
@@ -80,7 +79,7 @@ def handle(data, user_credentials, self_signed=False):
                 return document
 
             ruc = data["resumen"]["numDocEmisor"]
-            number = data["fechaGeneracion"].replace(
+            number = str(data["fechaGeneracion"]).replace(
                 "-", "") + "-" + str(data["resumen"]["id"])
             file_name = str("{ruc}-{doc_type}-{number}".format(
                 ruc=ruc,
@@ -92,14 +91,14 @@ def handle(data, user_credentials, self_signed=False):
             if type(document) != ComunicacionBaja:
                 return document
             ruc = data["resumen"]["numDocEmisor"]
-            number = data["fechaGeneracion"].replace(
+            number = str(data["fechaGeneracion"]).replace(
                 "-", "") + "-" + str(data["resumen"]["id"])
             file_name = str("{ruc}-{doc_type}-{number}".format(
                 ruc=ruc,
                 doc_type=document_type,
                 number=number
             ))
-        xsd = "./files/XSD 2.1/maindoc/UBL-Invoice-2.1.xsd"  # Poner el valor correcto
+        # xsd = "./files/XSD 2.1/maindoc/UBL-Invoice-2.1.xsd"  # Poner el valor correcto
     elif data.get("tipoDocumento") in ["01", "03"]:
         document = factura.build_factura(data)
         if type(document) != Factura:
@@ -189,30 +188,30 @@ def handle(data, user_credentials, self_signed=False):
     }
 
 
-# def send_consulta(consulta_xml, data, user, consulta=False):
-#     url = ""
-#     tipo_envio = data.get("tipoEnvio", 0)
-#     if user.ose in ['sunat', '', None]:
-#         if tipo_envio == 0:  # Beta
-#             url = "https://e-beta.sunat.gob.pe:443/ol-ti-itcpfegem-beta/billService"
-#         elif tipo_envio == 1:  # Homologacion
-#             url = "https://www.sunat.gob.pe:443/ol-ti-itcpgem-sqa/billService"
-#         elif tipo_envio == 2:  # Produccion
-#             if not consulta:
-#                 url = "https://e-factura.sunat.gob.pe/ol-ti-itcpfegem/billService"
-#             else:
-#                 url = "https://e-factura.sunat.gob.pe/ol-it-wsconscpegem/billConsultService"
-#     elif user.ose == "nubefact":
-#         if tipo_envio == 0:  # Beta
-#             url = urls_ose_nubefact["test"]["document"]
-#         elif tipo_envio == 2:  # Producción
-#             url = urls_ose_nubefact["production"]["document"]
-#     else:
-#         raise("URL de envío no configurado")
-#     print(url)
-#     r = requests.post(url=url, data=consulta_xml, headers={
-#                       "Content-Type": "text/xml"})
-#     return r.text
+def send_consulta(consulta_xml, data, user, consulta=False):
+    url = ""
+    tipo_envio = data.get("tipoEnvio", 0)
+    # if user.ose in ['sunat', '', None]:
+    if tipo_envio == 0:  # Beta
+        url = "https://e-beta.sunat.gob.pe:443/ol-ti-itcpfegem-beta/billService"
+    elif tipo_envio == 1:  # Homologacion
+        url = "https://www.sunat.gob.pe:443/ol-ti-itcpgem-sqa/billService"
+    elif tipo_envio == 2:  # Produccion
+        if not consulta:
+            url = "https://e-factura.sunat.gob.pe/ol-ti-itcpfegem/billService"
+        else:
+            url = "https://e-factura.sunat.gob.pe/ol-it-wsconscpegem/billConsultService"
+    # elif user.ose == "nubefact":
+    #     if tipo_envio == 0:  # Beta
+    #         url = urls_ose_nubefact["test"]["document"]
+    #     elif tipo_envio == 2:  # Producción
+    #         url = urls_ose_nubefact["production"]["document"]
+    else:
+        raise("URL de envío no configurado")
+    # print(url)
+    r = requests.post(url=url, data=consulta_xml, headers={
+                      "Content-Type": "text/xml"})
+    return r.text
 
 
 # def send_xml_efact(prev_sign, data, user):

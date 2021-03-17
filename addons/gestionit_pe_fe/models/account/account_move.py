@@ -191,7 +191,26 @@ class AccountMove(models.Model):
                                                                     ("20_NO_HALLADO",
                                                                      "NO HALLADO"),
                                                                     ("-", "-")], default="-")
+    documento_baja_id = fields.Many2one(
+        "account.comunicacion_baja", copy=False)
+    documento_baja_state = fields.Selection(
+        string="Estado del Documento de Baja", related="documento_baja_id.state", copy=False)
 
+    resumen_anulacion_id = fields.Many2one("account.summary", copy=False)
+    resumen_anulacion_state = fields.Selection(
+        related="resumen_anulacion_id.estado_emision", copy=False)
+
+    anulacion_comprobante = fields.Char(
+        "Anulación de Comprobante", compute="_compute_obtener_estado_anulacion_comprobante")
+
+    def _compute_obtener_estado_anulacion_comprobante(self):
+        for record in self:
+            if record.documento_baja_id:
+                record.anulacion_comprobante = record.documento_baja_state
+            elif record.resumen_anulacion_id:
+                record.anulacion_comprobante = record.resumen_anulacion_state
+            else:
+                record.anulacion_comprobante = "-"
     # partner_id = fields.Many2one(
     #     'res.partner',
     #     string='Partner',
@@ -336,55 +355,55 @@ class AccountMove(models.Model):
             in_payment_set = {}
 
         for move in self:
-            self.total_descuento_global = sum(
+            move.total_descuento_global = sum(
                 [
                     line.price_subtotal
-                    for line in self.invoice_line_ids
+                    for line in move.invoice_line_ids
                     if len([line.price_subtotal for line_tax in line.tax_ids
                             if line_tax.tax_group_id.tipo_afectacion not in ["31", "32", "33", "34", "35", "36"]])
-                ])*self.descuento_global/100.0
+                ])*move.descuento_global/100.0
 
-            self.total_venta_gravado = sum(
+            move.total_venta_gravado = sum(
                 [
                     line.price_subtotal
-                    for line in self.invoice_line_ids
+                    for line in move.invoice_line_ids
                     if len([line.price_subtotal for line_tax in line.tax_ids
                             if line_tax.tax_group_id.tipo_afectacion in ["10"]])
-                ])*(1-self.descuento_global/100.0)
+                ])*(1-move.descuento_global/100.0)
 
-            self.total_venta_inafecto = sum(
+            move.total_venta_inafecto = sum(
                 [
                     line.price_subtotal
-                    for line in self.invoice_line_ids
+                    for line in move.invoice_line_ids
                     if len(
                         [line.price_subtotal for line_tax in line.tax_ids
                             if line_tax.tax_group_id.tipo_afectacion in ["40", "30"]])
-                ])*(1-self.descuento_global/100.0)
+                ])*(1-move.descuento_global/100.0)
 
-            self.total_venta_exonerada = sum(
+            move.total_venta_exonerada = sum(
                 [
                     line.price_subtotal
-                    for line in self.invoice_line_ids
+                    for line in move.invoice_line_ids
                     if len(
                         [line.price_subtotal for line_tax in line.tax_ids
                             if line_tax.tax_group_id.tipo_afectacion in ["20"]])
-                ])*(1-self.descuento_global/100.0)
+                ])*(1-move.descuento_global/100.0)
 
-            self.total_venta_gratuito = sum(
+            move.total_venta_gratuito = sum(
                 [
                     line.price_unit*line.quantity
-                    for line in self.invoice_line_ids
+                    for line in move.invoice_line_ids
                     if len([1 for line_tax in line.tax_ids
                             if line_tax.tax_group_id.tipo_afectacion in ["31", "32", "33", "34", "35", "36", "37"]])
                 ])
 
-            self.total_descuentos = sum(
+            move.total_descuentos = sum(
                 [
                     ((line.price_subtotal / (1-line.discount/100.0))
                         * line.discount/100.0) + line.descuento_unitario
-                    for line in self.invoice_line_ids
+                    for line in move.invoice_line_ids
                     if line.discount < 100
-                ])+self.total_descuento_global
+                ])+move.total_descuento_global
 
             total_untaxed = 0.0
             total_untaxed_currency = 0.0
@@ -506,9 +525,6 @@ class AccountMove(models.Model):
         if self.journal_id.resumen:
             return obj
 
-        # self.write({'tipo_cambio_fecha_factura': oauth.get_tipo_cambio(
-        #     self, 2) if self.currency_id.name == 'USD' else 1.0})
-
         oauth.enviar_doc(self)
 
         return obj
@@ -566,10 +582,10 @@ class AccountMove(models.Model):
     def validar_fecha_emision(self):
         errors = []
         now = datetime.strptime(fields.Date.today(), "%Y-%m-%d")
-        if now < datetime.strptime(self.date_invoice, "%Y-%m-%d"):
+        if now < datetime.strptime(self.invoice_date, "%Y-%m-%d"):
             errors.append(
                 "* La fecha de la emisión del comprobante debe ser menor o igual a la fecha del día de hoy.")
-        elif abs(datetime.strptime(self.date_invoice, "%Y-%m-%d") - now).days > 7:
+        elif abs(datetime.strptime(self.invoice_date, "%Y-%m-%d") - now).days > 7:
             errors.append(
                 "* La fecha de Emisión debe tener como máximo una antiguedad de 7 días.")
 
@@ -676,38 +692,6 @@ class AccountMove(models.Model):
             errors.append("* El cliente selecionado no tiene email.")
         """
         return errors
-
-    # def create_debit(self):
-    #     self.ensure_one()
-    #     new_moves = self.env['account.move'].browse(self.id)
-    #     # copy sale/purchase links
-    #     for move in self.move_ids.with_context(include_business_fields=True):
-    #         default_values = self._prepare_default_values(move)
-    #         # Context key is used for l10n_latam_invoice_document for ar/cl/pe
-    #         new_move = move.with_context(
-    #             internal_type='debit_note').copy(default=default_values)
-    #         move_msg = _(
-    #             "This debit note was created from:") + " <a href=# data-oe-model=account.move data-oe-id=%d>%s</a>" % (
-    #             move.id, move.name)
-    #         new_move.message_post(body=move_msg)
-    #         new_moves |= new_move
-
-    #     action = {
-    #         'name': _('Debit Notes'),
-    #         'type': 'ir.actions.act_window',
-    #         'res_model': 'account.move',
-    #     }
-    #     if len(new_moves) == 1:
-    #         action.update({
-    #             'view_mode': 'form',
-    #             'res_id': new_moves.id,
-    #         })
-    #     else:
-    #         action.update({
-    #             'view_mode': 'tree,form',
-    #             'domain': [('id', 'in', new_moves.ids)],
-    #         })
-    #     return action
 
     def generar_nota_debito(self):
         self.ensure_one()

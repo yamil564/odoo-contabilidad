@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data noupdate="0">
+        <record id="gestionit_pe_fe.view_tree_summary" model ="ir.ui.view">
+            <field name="name">gestionit_pe_fe.view.tree.summary</field>
+            <field name="model">account.summary</field>
+            <field name="arch" type="xml">
+                <tree decoration-warning="estado_emision =='R'" decoration-bf="estado_emision in ['A','O']" decoration-info="estado_emision == 'P'" decoration-danger="estado_emision == 'R'">
+                    <field name="identificador_resumen" />
+                    <field name="fecha_emision_documentos"/>
+                    <field name="fecha_generacion"/>
+                    <field name="cod_operacion"/>
+                    <field name="estado_emision"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="gestionit_pe_fe.view_form_summary" model="ir.ui.view">
+            <field name="name">gestionit_pe_fe.view.form.summary</field>
+            <field name="model">account.summary</field>
+            <field name="arch" type="xml">
+                <form>
+                    <header>
+                        <button name="btn_enviar_resumen_diario" string="Enviar Resumen Diario" type="object" class="oe_highlight" attrs="{'invisible':[['estado_emision','in',['A','E','N','O','R']],['account_invoice_ids','!=',False]]}"/>
+                        <!--
+                        <button name="cargar_resumen_lineas" string="Actualizar Líneas" type="object" class="oe_highlight" attrs="{'invisible':[['estado_emision','not in',['B','P']]]}"/>
+                                -->
+                        <button name="convertir_a_borrador" string="Convertir a Borrador" type="object" groups="base.group_no_one" attrs="{'invisible':[['estado_emision','not in',['N','R','P']]]}"/>
+
+                        <button name="cargar_comprobantes" string="Cargar Comprobantes" type="object" class="oe_highlight oe_right" attrs="{'invisible':[['estado_emision','not in',['B','P']]]}" />
+                        <button name="consulta_estado_resumen" string="Consulta Estado Resumen" type="object" class="oe_highlight oe_right" attrs="{'invisible':[['estado_emision','not in',['E']]]}"/>
+                    </header>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="estado_emision" readonly="1"/>
+                                <field name="company_id" readonly="1"/>
+                                <field name="fecha_generacion" attrs="{'readonly':[('estado_emision','!=','B')]}"/>
+                                <field name="numero_envio" attrs="{'readonly':[('estado_emision','!=','B')]}"/>
+                                <field name="identificador_resumen" attrs="{'readonly':[('estado_emision','!=','B')]}"/>
+                                <field name="cod_operacion" attrs="{'readonly':[('estado_emision','!=','B')]}"/>
+
+                            </group>
+                            <group>
+                                <field name="fecha_emision_documentos" attrs="{'readonly':[('estado_emision','!=','B')]}"/>
+
+                                <field name="ticket" readonly="1"/>
+
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Comprobantes" groups="base.group_no_one">
+                                <field name="account_invoice_ids"/>
+                            </page>
+                            <page string="Líneas de Resumen Diario">
+                                <field name="summary_line_ids" mode="tree" options="{'no_create': True, 'no_open': True, 'no_create_edit': True}">
+                                    <tree editable="top">
+                                        <field name="tipo_documento" readonly="1"/>
+                                        <field name="serie" readonly="1"/>
+                                        <field name="correlativo" readonly="1"/>
+                                        <field name="tipo_moneda" readonly="1"/>
+                                        <!--
+                                        <field name="numero_documento_inicio"/>
+                                        <field name="numero_documento_fin"/>
+                                        -->
+                                        <field name="monto_igv" readonly="1"/>
+                                        <field name="monto_total" readonly="1"/>
+                                        <field name="cod_operacion"/>
+                                    </tree>
+                                </field>
+                            </page>
+                            <page string="Resumen Diario JSON" groups="base.group_no_one">
+                                <group>
+                                    <field name="resumen_diario_json" readonly="1"/>
+                                    <field name="json_respuesta" readonly="1"/>
+                                    <button name="convertir_a_borrador" string="Convertir a Borrador" type="object" groups="base.group_no_one"/>
+                                </group>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="gestionit_pe_fe.view_popup_account_summary_anulacion" model="ir.ui.view">
+            <field name="name">Anulación de Comprobane</field>
+            <field name="model">account.summary.anulacion</field>
+            <field name="arch" type="xml">
+                <form>
+                    <span>Esta seguro que desea anular este comprobante?</span>
+                    <group>
+                        <field name="account_invoice_id" readonly="1"/>
+                    </group>
+                    <footer>
+                        <button name="btn_anular_comprobante" string="Anular Comprobante" type="object" class="oe_highlight"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_view_form_summary" model="ir.actions.act_window">
+            <field name="name">Resumen Diario</field>
+            <field name="res_model">account.summary</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <menuitem name="Resumen Diario" id="menu_summary" action="action_view_form_summary" parent="account.menu_finance_receivables"/>
+    </data>
+</odoo>

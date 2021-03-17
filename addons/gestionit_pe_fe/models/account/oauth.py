@@ -17,7 +17,7 @@ from requests.exceptions import (
     FileModeWarning, ConnectTimeout, ReadTimeout
 )
 
-from .api_facturacion import models
+from .api_facturacion import api_models
 
 import logging
 _logger = logging.getLogger(__name__)
@@ -26,8 +26,7 @@ _logger = logging.getLogger(__name__)
 def enviar_doc_url(data_doc, tipoEnvio):
     data_doc["tipoEnvio"] = int(tipoEnvio)
 
-    r = models.lamdba(data_doc)
-    # _logger.info(r)
+    r = api_models.lamdba(data_doc)
 
     return r
 
@@ -53,10 +52,7 @@ def enviar_doc(self):
     }
 
     try:
-        _logger.info("response_env0")
         response_env = enviar_doc_url(data_doc, self.company_id.tipo_envio)
-        _logger.info("response_env1")
-        _logger.info(response_env)
         self.json_respuesta = json.dumps(response_env, indent=4)
 
         data.update({
@@ -121,7 +117,6 @@ def enviar_doc(self):
 
     except Timeout as e:
         self.estado_emision = "P"
-        _logger.info(e)
         return {
             'name': 'Tiempo de espera excedido',
             'type': 'ir.actions.act_window',
@@ -247,6 +242,8 @@ def crear_json_fac_bol(self):
     correlativo = int(self.name.split("-")[1])
     data = {
         "company": {
+            "numDocEmisor": numDocEmisor,
+            "nombreEmisor": nombreEmisor,
             "SUNAT_user": self.company_id.sunat_user,
             "SUNAT_pass": self.company_id.sunat_pass,
             "key_private": self.company_id.key_private,
@@ -743,3 +740,94 @@ def replace_false(dato):
         return dato
     else:
         return ""
+
+
+def enviar_doc_baja_url(data_doc, tipoEnvio):
+    data_doc["tipoEnvio"] = int(tipoEnvio)
+
+    r = api_models.lamdba(data_doc)
+
+    return r
+
+
+def enviar_doc_resumen_url(data_doc, tipoEnvio):
+    data_doc["tipoEnvio"] = int(tipoEnvio)
+
+    r = api_models.lamdba(data_doc)
+
+    return r
+
+
+def baja_doc(self):
+    token = generate_token(self.company_id.api_key,
+                           self.company_id.api_secret, 10000)
+    data_doc = crear_json_baja(self)
+    response_env = enviar_doc_resumen_url(
+        self.company_id.endpoint, data_doc, token, self.company_id.tipo_envio)
+    self.json_comprobante = data_doc
+    self.json_respuesta = json.dumps(response_env.json(), indent=4)
+    if response_env.ok:
+        self.status_envio = True
+        self.estado_emision = extaer_estado_emision(response_env.json())
+        return True, ""
+    else:
+        recepcionado, estado_emision, msg_error = extraer_error(response_env)
+        if recepcionado:
+            self.status_envio = True
+            self.estado_emision = estado_emision
+            return True, msg_error
+        else:
+            return False, msg_error
+
+
+def extaer_estado_emision(response_env):
+    result = response_env.get("result", False)
+    if result:
+        if result.get("data", False):
+            data = result["data"]
+            return data['estadoEmision']
+    return ""
+
+
+def extraer_error(response_env):
+
+    if not response_env.get("success"):
+        raise UserError(json.dumps(response_env))
+
+    if response_env.get("result", False):
+        if response_env["result"].get("errors"):
+            errors = response_env["result"].get("errors")
+        else:
+            raise UserError(json.dumps(response_env["result"]))
+    else:
+        raise UserError(json.dumps(response_env))
+
+    #errors = response_env["result"]['errors']
+    msg_error = ""
+    i_error = 1
+    estado_emision = ""
+    recepcionado = False
+    for error in errors:
+        if 'meta' in error:
+            error_meta = error['meta']
+            if 'estadoEmision' in error_meta:
+                estado_emision = error_meta['estadoEmision']
+                recepcionado = True
+
+            if 'codigoErrorSUNAT' in error_meta:
+                msg_error = msg_error + "ERROR N " + \
+                    str(i_error) + ": Error en SUNAT " + \
+                    error_meta['codigoErrorSUNAT'] + \
+                    error_meta['descripcionErrorSUNAT']
+            else:
+                # + " - " + error['detail'].encode('latin1')
+                msg_error = msg_error + "ERROR N " + \
+                    str(i_error) + ": " + str(error['code'])
+        else:
+            # + " - " + error['detail'].encode('latin1')
+            msg_error = msg_error + "ERROR N " + \
+                str(i_error) + ": " + str(error['code'])
+
+        i_error = i_error + 1
+
+    return recepcionado, estado_emision, msg_error
