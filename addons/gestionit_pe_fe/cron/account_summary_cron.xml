@@ -1,0 +1,29 @@
+<odoo>
+    <data>
+        <record id="gestionit_pe_fe.ir_cron_crear_resumen_diario" model="ir.cron">
+            <field name="name">CRON Creación y emisión de Resumenes Diarios</field>
+            <field name="model_id" ref="gestionit_pe_fe.model_account_summary"/>
+            <field name="state">code</field>
+            <field name="interval_number">24</field>
+            <field name="interval_type">hours</field>
+            <field name="numbercall">-1</field>
+            <field name="doall">1</field>
+            <field name="user_id" ref="base.user_root"/>
+            <field name="code">model.cron_crear_resumenes_diarios()</field>
+            <field name="nextcall" eval="(datetime.strptime(datetime.now().strftime('%Y-%m-%d %H:00:00'),'%Y-%m-%d %X') + timedelta(hours=20) ).strftime('%Y-%m-%d %X')"/>
+        </record>
+
+        <record id="gestionit_pe_fe.ir_cron_validacion_de_resumen_diario" model="ir.cron">
+            <field name="name">CRON Consulta de estado de Resumenes Diarios</field>
+            <field name="model_id" ref="gestionit_pe_fe.model_account_summary"/>
+            <field name="state">code</field>
+            <field name="interval_number">24</field>
+            <field name="doall">1</field>
+            <field name="interval_type">hours</field>
+            <field name="numbercall">-1</field>
+            <field name="user_id" ref="base.user_root"/>
+            <field name="code">model.cron_consulta_estado_resumen()</field>
+            <field name="nextcall" eval="(datetime.strptime(datetime.now().strftime('%Y-%m-%d %H:00:00'),'%Y-%m-%d %X') + timedelta(hours=24) ).strftime('%Y-%m-%d %X')"/>
+        </record>
+    </data>
+</odoo>

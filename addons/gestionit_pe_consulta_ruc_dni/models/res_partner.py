@@ -13,7 +13,6 @@ class ResPartner(models.Model):
     _inherit = 'res.partner'
 
     registration_name = fields.Char('Name', size=128, index=True)
-    ubigeo = fields.Char('Ubigeo')
     estado_contribuyente = fields.Selection(selection=[(
         'activo', 'Activo'), ('noactivo', 'No Activo')], string='Estado del Contribuyente')
     msg_error = fields.Char(readonly=True)

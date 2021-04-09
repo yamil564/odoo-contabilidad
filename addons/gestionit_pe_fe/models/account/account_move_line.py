@@ -2,6 +2,9 @@
 from odoo import fields, models, api
 from odoo.tools.profiler import profile
 
+import logging
+log = logging.getLogger(__name__)
+
 
 class AccountMoveLine(models.Model):
     _inherit = "account.move.line"
@@ -66,9 +69,9 @@ class AccountMoveLine(models.Model):
     # @profile
     @api.onchange("tax_ids")
     def _afectacion_igv(self):
-        self.tipo_afectacion_igv_type = self.tax_ids[0].tax_group_id.tipo_afectacion if len(
-            self.tax_ids) > 0 else False
-        self.tipo_afectacion_igv_code = self.tax_ids[0].tax_group_id.codigo if len(
-            self.tax_ids) > 0 else False
-        self.tipo_afectacion_igv_name = self.tax_ids[0].tax_group_id.descripcion if len(
-            self.tax_ids) > 0 else False
+        self.tipo_afectacion_igv_type = self.tax_ids[0].tax_group_id.tipo_afectacion if self.tax_ids else False
+        self.tipo_afectacion_igv_code = self.tax_ids[0].tax_group_id.codigo if self.tax_ids else False
+        self.tipo_afectacion_igv_name = self.tax_ids[0].tax_group_id.descripcion if self.tax_ids else False
+
+        log.info("tipo_afectacion line")
+        log.info(self.tax_ids)

@@ -1,7 +1,7 @@
 {
-    "name": "Generación y Emisión de comprobantes electrónicos XML a SUNAT",
+    "name": "Consulta de datos de clientes",
     "author": "Gestión IT",
-    "description": "",
+    "description": "Consulta y obtención de datos desde RUC o DNI",
     "depends": ["base", "l10n_latam_base", "gestionit_pe_ubicaciones"],
     "data": [
         'data/res_company.xml',

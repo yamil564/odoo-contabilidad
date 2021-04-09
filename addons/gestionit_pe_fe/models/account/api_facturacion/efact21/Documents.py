@@ -741,154 +741,154 @@ class DebitNote(Xmleable):
         return xml_doc
 
 
-# class DespatchAdvice(Xmleable):
-#     def __init__(self, ubl_extensions=None, ubl_version="2.1", doc_id=None, customization="2.0",
-#                  issue_date=None, issue_time=None, despatch_advice_type_code=None,
-#                  order_reference=None, additional_document_reference=None, signature=None,
-#                  despatch_supplier_party=None, delivery_customer_party=None,
-#                  shipment=None, seller_supplier_party=None):
+class DespatchAdvice(Xmleable):
+    def __init__(self, ubl_extensions=None, ubl_version="2.1", doc_id=None, customization="2.0",
+                 issue_date=None, issue_time=None, despatch_advice_type_code=None,
+                 order_reference=None, additional_document_reference=None, signature=None,
+                 despatch_supplier_party=None, delivery_customer_party=None,
+                 shipment=None, seller_supplier_party=None):
 
-#         self.guia_lines = []
-#         self.notes = []
-#         self.file_name = None
+        self.guia_lines = []
+        self.notes = []
+        self.file_name = None
 
-#         self.ubl_extensions = ubl_extensions
-#         self.ubl_version = ubl_version
-#         self.customization = customization
-#         self.doc_id = doc_id
-#         self.issue_date = issue_date
-#         self.issue_time = issue_time
-#         self.despatch_advice_type_code = despatch_advice_type_code
-#         self.order_reference = order_reference
-#         self.additional_document_reference = additional_document_reference
-#         self.signature = signature
-#         self.despatch_supplier_party = despatch_supplier_party
-#         self.delivery_customer_party = delivery_customer_party
-#         self.seller_supplier_party = seller_supplier_party
-#         self.shipment = shipment
+        self.ubl_extensions = ubl_extensions
+        self.ubl_version = ubl_version
+        self.customization = customization
+        self.doc_id = doc_id
+        self.issue_date = issue_date
+        self.issue_time = issue_time
+        self.despatch_advice_type_code = despatch_advice_type_code
+        self.order_reference = order_reference
+        self.additional_document_reference = additional_document_reference
+        self.signature = signature
+        self.despatch_supplier_party = despatch_supplier_party
+        self.delivery_customer_party = delivery_customer_party
+        self.seller_supplier_party = seller_supplier_party
+        self.shipment = shipment
 
-#     def set_file_name(self, name):
-#         self.file_name = name
+    def set_file_name(self, name):
+        self.file_name = name
 
-#     def add_guia_line(self, credit_note_line):
-#         assert type(credit_note_line) == DespatchLine
-#         self.guia_lines.append(credit_note_line)
-#         credit_note_line.ord = len(self.guia_lines)
+    def add_guia_line(self, credit_note_line):
+        assert type(credit_note_line) == DespatchLine
+        self.guia_lines.append(credit_note_line)
+        credit_note_line.ord = len(self.guia_lines)
 
-#     def add_note(self, note):
-#         if type(note) == str:
-#             note = BasicGlobal.Note(note)
-#         assert type(note) == BasicGlobal.Note
-#         self.notes.append(note)
+    def add_note(self, note):
+        if type(note) == str:
+            note = BasicGlobal.Note(note)
+        assert type(note) == BasicGlobal.Note
+        self.notes.append(note)
 
-#     def fix_values(self):
-#         if not self.ubl_extensions:
-#             self.ubl_extensions = BasicGlobal.UBLExtensions()
-#         if type(self.ubl_version) == str:
-#             self.ubl_version = BasicGlobal.UBLVersion(self.ubl_version)
-#         if type(self.customization) == str:
-#             self.customization = BasicGlobal.CustomizationID(
-#                 self.customization)
-#         if type(self.doc_id) == str:
-#             self.doc_id = BasicGlobal.ID(self.doc_id)
-#         if type(self.issue_date) == str:
-#             self.issue_date = General.IssueDate(self.issue_date)
-#         if type(self.issue_time) == str:
-#             self.issue_time = BasicGlobal.IssueTime(self.issue_time)
-#         if type(self.despatch_advice_type_code) == str:
-#             self.despatch_advice_type_code = BasicGlobal.DespatchAdviceTypeCode(
-#                 self.despatch_advice_type_code)
+    def fix_values(self):
+        if not self.ubl_extensions:
+            self.ubl_extensions = BasicGlobal.UBLExtensions()
+        if type(self.ubl_version) == str:
+            self.ubl_version = BasicGlobal.UBLVersion(self.ubl_version)
+        if type(self.customization) == str:
+            self.customization = BasicGlobal.CustomizationID(
+                self.customization)
+        if type(self.doc_id) == str:
+            self.doc_id = BasicGlobal.ID(self.doc_id)
+        if type(self.issue_date) == str:
+            self.issue_date = General.IssueDate(self.issue_date)
+        if type(self.issue_time) == str:
+            self.issue_time = BasicGlobal.IssueTime(self.issue_time)
+        if type(self.despatch_advice_type_code) == str:
+            self.despatch_advice_type_code = BasicGlobal.DespatchAdviceTypeCode(
+                self.despatch_advice_type_code)
 
-#     def validate(self, errs, obs):
-#         assert type(self.ubl_extensions) == BasicGlobal.UBLExtensions
-#         assert type(self.customization) == BasicGlobal.CustomizationID
-#         assert type(self.doc_id) == BasicGlobal.ID
-#         assert type(self.issue_date) == General.IssueDate
-#         assert self.issue_time is None or type(
-#             self.issue_time) == BasicGlobal.IssueTime
-#         assert type(
-#             self.despatch_advice_type_code) is BasicGlobal.DespatchAdviceTypeCode
-#         assert self.order_reference is None or type(
-#             self.order_reference) == OrderReference
-#         assert self.additional_document_reference is None or \
-#             type(self.additional_document_reference) == AdditionalDocumentReference
-#         assert type(self.despatch_supplier_party) == DespatchSupplierParty
-#         assert type(self.delivery_customer_party) is DeliveryCustomerParty
-#         assert self.seller_supplier_party is None or type(
-#             self.seller_supplier_party) is SellerSupplierParty
-#         assert type(self.shipment) == Shipment
+    def validate(self, errs, obs):
+        assert type(self.ubl_extensions) == BasicGlobal.UBLExtensions
+        assert type(self.customization) == BasicGlobal.CustomizationID
+        assert type(self.doc_id) == BasicGlobal.ID
+        assert type(self.issue_date) == General.IssueDate
+        assert self.issue_time is None or type(
+            self.issue_time) == BasicGlobal.IssueTime
+        assert type(
+            self.despatch_advice_type_code) is BasicGlobal.DespatchAdviceTypeCode
+        assert self.order_reference is None or type(
+            self.order_reference) == OrderReference
+        assert self.additional_document_reference is None or \
+            type(self.additional_document_reference) == AdditionalDocumentReference
+        assert type(self.despatch_supplier_party) == DespatchSupplierParty
+        assert type(self.delivery_customer_party) is DeliveryCustomerParty
+        assert self.seller_supplier_party is None or type(
+            self.seller_supplier_party) is SellerSupplierParty
+        assert type(self.shipment) == Shipment
 
-#     def generate_root(self):
-#         self.doc = default_document.createElement("DespatchAdvice")
-#         self.doc.setAttribute(
-#             "xmlns", "urn:oasis:names:specification:ubl:schema:xsd:DespatchAdvice-2")
-#         self.doc.setAttribute(
-#             "xmlns:cac", "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2")
-#         self.doc.setAttribute(
-#             "xmlns:cbc", "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2")
-#         self.doc.setAttribute(
-#             "xmlns:ccts", "urn:un:unece:uncefact:documentation:2")
-#         self.doc.setAttribute("xmlns:ds", "http://www.w3.org/2000/09/xmldsig#")
-#         self.doc.setAttribute(
-#             "xmlns:ext", "urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2")
-#         self.doc.setAttribute(
-#             "xmlns:qdt", "urn:oasis:names:specification:ubl:schema:xsd:QualifiedDatatypes-2")
-#         self.doc.setAttribute("xmlns:sac",
-#                               "urn:sunat:names:specification:ubl:peru:schema:xsd:SunatAggregateComponents-1")
-#         self.doc.setAttribute("xmlns:udt",
-#                               "urn:un:unece:uncefact:data:specification:UnqualifiedDataTypesSchemaModule:2")
-#         self.doc.setAttribute(
-#             "xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance")
+    def generate_root(self):
+        self.doc = default_document.createElement("DespatchAdvice")
+        self.doc.setAttribute(
+            "xmlns", "urn:oasis:names:specification:ubl:schema:xsd:DespatchAdvice-2")
+        self.doc.setAttribute(
+            "xmlns:cac", "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2")
+        self.doc.setAttribute(
+            "xmlns:cbc", "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2")
+        self.doc.setAttribute(
+            "xmlns:ccts", "urn:un:unece:uncefact:documentation:2")
+        self.doc.setAttribute("xmlns:ds", "http://www.w3.org/2000/09/xmldsig#")
+        self.doc.setAttribute(
+            "xmlns:ext", "urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2")
+        self.doc.setAttribute(
+            "xmlns:qdt", "urn:oasis:names:specification:ubl:schema:xsd:QualifiedDatatypes-2")
+        self.doc.setAttribute("xmlns:sac",
+                              "urn:sunat:names:specification:ubl:peru:schema:xsd:SunatAggregateComponents-1")
+        self.doc.setAttribute("xmlns:udt",
+                              "urn:un:unece:uncefact:data:specification:UnqualifiedDataTypesSchemaModule:2")
+        self.doc.setAttribute(
+            "xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance")
 
-#     def generate_doc(self):
-#         self.generate_root()
+    def generate_doc(self):
+        self.generate_root()
 
-#         self.doc.appendChild(self.ubl_extensions.get_document())
+        self.doc.appendChild(self.ubl_extensions.get_document())
 
-#         # Datos de la guia
-#         self.doc.appendChild(self.ubl_version.get_document())
-#         self.doc.appendChild(self.customization.get_document())
-#         self.doc.appendChild(self.doc_id.get_document())
+        # Datos de la guia
+        self.doc.appendChild(self.ubl_version.get_document())
+        self.doc.appendChild(self.customization.get_document())
+        self.doc.appendChild(self.doc_id.get_document())
 
-#         # Fecha de Emisión
-#         self.doc.appendChild(self.issue_date.get_document())
+        # Fecha de Emisión
+        self.doc.appendChild(self.issue_date.get_document())
 
-#         # Hora de Emisión
-#         if self.issue_time:
-#             self.doc.appendChild(self.issue_time.get_document())
+        # Hora de Emisión
+        if self.issue_time:
+            self.doc.appendChild(self.issue_time.get_document())
 
-#         self.doc.appendChild(self.despatch_advice_type_code.get_document())
+        self.doc.appendChild(self.despatch_advice_type_code.get_document())
 
-#         # Informacion adicional
-#         for note in self.notes:
-#             self.doc.appendChild(note.get_document())
+        # Informacion adicional
+        for note in self.notes:
+            self.doc.appendChild(note.get_document())
 
-#         if self.order_reference:
-#             self.doc.appendChild(self.order_reference.get_document())
-#         if self.additional_document_reference:
-#             self.doc.appendChild(
-#                 self.additional_document_reference.get_document())
+        if self.order_reference:
+            self.doc.appendChild(self.order_reference.get_document())
+        if self.additional_document_reference:
+            self.doc.appendChild(
+                self.additional_document_reference.get_document())
 
-#         # Datos de la firma
-#         if self.signature:
-#             self.doc.appendChild(self.signature.get_document())
+        # Datos de la firma
+        if self.signature:
+            self.doc.appendChild(self.signature.get_document())
 
-#         self.doc.appendChild(self.despatch_supplier_party.get_document())
-#         self.doc.appendChild(self.delivery_customer_party.get_document())
-#         if self.seller_supplier_party:
-#             self.doc.appendChild(self.seller_supplier_party.get_document())
+        self.doc.appendChild(self.despatch_supplier_party.get_document())
+        self.doc.appendChild(self.delivery_customer_party.get_document())
+        if self.seller_supplier_party:
+            self.doc.appendChild(self.seller_supplier_party.get_document())
 
-#         # Datos del envio
-#         self.doc.appendChild(self.shipment.get_document())
+        # Datos del envio
+        self.doc.appendChild(self.shipment.get_document())
 
-#         # Items de la fguia
-#         for line in self.guia_lines:
-#             self.doc.appendChild(line.get_document())
+        # Items de la fguia
+        for line in self.guia_lines:
+            self.doc.appendChild(line.get_document())
 
-#     def get_document(self):
-#         self.fix_values()
-#         self.generate_doc()
+    def get_document(self):
+        self.fix_values()
+        self.generate_doc()
 
-#         xml_doc = minidom.Document()
-#         xml_doc.appendChild(self.doc)
-#         return xml_doc
+        xml_doc = minidom.Document()
+        xml_doc.appendChild(self.doc)
+        return xml_doc

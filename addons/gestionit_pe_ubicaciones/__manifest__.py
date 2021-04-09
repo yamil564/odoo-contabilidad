@@ -1,8 +1,8 @@
 {
-    "name": "Tabla paramétrica de Ubicaciones de Perú",
+    "name": "Parámetros de ubigeo - Perú",
     'version': '1.0.0',
     'author': 'Gestión IT',
-    'summary': 'Departamentos, Provincias y distritos del Perú.',
+    'description': 'Tabla paramétrica de Ubicaciones de Perú: Departamentos, Provincias y distritos.',
     'depends': [],
     'data': [
         'views/res_partner_view.xml',

@@ -336,6 +336,10 @@ def crear_json_fac_bol(self):
     data_anticipo = []  # solo facturas y boletas
     data_anexo = []  # si hay anexos
 
+    if self.invoice_payment_term_id:
+        data["documento"]["metodosPago"] = {
+            "metodo": "Credito",
+        }
     if self.descuento_global:
         data["documento"]["descuentoGlobal"] = {
             "factor": round(self.descuento_global/100.00, 2),
@@ -445,7 +449,7 @@ def crear_json_fac_bol(self):
 
         # tasaIgv = item.invoice_line_tax_ids[0].amount / \
         #     100 if len(item.invoice_line_tax_ids) else ""
-
+        montoIgv = round(item.price_total-item.price_subtotal, 2)
         datac = {
             "cantidadItem": round(item.quantity, 2),
             "unidadMedidaItem": item.product_uom_id.code,
@@ -462,7 +466,7 @@ def crear_json_fac_bol(self):
             "codAfectacionIgv": item.tax_ids[0].tax_group_id.tipo_afectacion if len(item.tax_ids) else "",
             # "tasaIgv": round(tasaIgv*100, 2),
             # Monto Total del IGV
-            "montoIgv": round(item.price_total-item.price_subtotal, 2),
+            "montoIgv": montoIgv if montoIgv > 0 else 0.0,
             "codSistemaCalculoIsc": "01",  # VERIFICAR
             "montoIsc": 0.0,  # VERIFICAR
             # "tasaIsc" : 0.0, #VERIFICAR
@@ -653,6 +657,7 @@ def crear_json_not_cred_deb(self):
         montoImpuestoUni = 0
         montoItem = round((price_unit) * item.quantity, 2)
         nombreItem = item.name.strip().replace("\n", "")
+        montoIgv = round(item.price_total-item.price_subtotal, 2)
         data_detalle.append({
             "cantidadItem": round(item.quantity, 3),
             "unidadMedidaItem": item.product_uom_id.code,
@@ -665,7 +670,7 @@ def crear_json_not_cred_deb(self):
             "codAfectacionIgv":  item.tax_ids[0].tax_group_id.tipo_afectacion if len(item.tax_ids) else "",
             # "tasaIgv": round(tasaIgv*100, 2),
             # "montoIgv": round(montoImpuestoUni * item.quantity, 2),
-            "montoIgv": round(item.price_total-item.price_subtotal, 2),
+            "montoIgv": montoIgv if montoIgv > 0 else 0.0,
             "codSistemaCalculoIsc": "01",  # VERIFICAR
             "montoIsc": 0.0,  # VERIFICAR
             # "tasaIsc" : 0.0, #VERIFICAR

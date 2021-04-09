@@ -48,5 +48,54 @@
             <field name="perm_create">1</field>
             <field name="group_id" ref="base.group_user"/>
         </record>
+
+
+        <record model="ir.model.access" id="gestionit_pe_fe.access_model_gestionit_guia_remision_remitente">
+            <field name="name">gestionit.access.model.gestionit.guia.remision.remitente</field>
+            <field name="model_id" ref="gestionit_pe_fe.model_gestionit_guia_remision"/>
+            <field name="perm_read">1</field>
+            <field name="perm_write">1</field>
+            <field name="perm_unlink">1</field>
+            <field name="perm_create">1</field>
+            <field name="group_id" ref="base.group_user"/>
+        </record>
+        
+        <record model="ir.model.access" id="gestionit_pe_fe.access_model_gestionit_guia_remision_line_remitente">
+            <field name="name">gestionit.access.model.gestionit.guia.remision.line.remitente</field>
+            <field name="model_id" ref="gestionit_pe_fe.model_gestionit_guia_remision_line"/>
+            <field name="perm_read">1</field>
+            <field name="perm_write">1</field>
+            <field name="perm_unlink">1</field>
+            <field name="perm_create">1</field>
+            <field name="group_id" ref="base.group_user"/>
+        </record>
+        <record model="ir.model.access" id="gestionit_pe_fe.access_model_gestionit_vehiculo">
+            <field name="name">gestionit.access.model.gestionit.vehiculo</field>
+            <field name="model_id" ref="gestionit_pe_fe.model_gestionit_vehiculo"/>
+            <field name="perm_read">1</field>
+            <field name="perm_write">1</field>
+            <field name="perm_unlink">1</field>
+            <field name="perm_create">1</field>
+            <field name="group_id" ref="base.group_user"/>
+        </record>
+        <record model="ir.model.access" id="gestionit_pe_fe.access_model_gestionit_modalidad_transporte">
+            <field name="name">gestionit.access.model.gestionit.modalidad.transporte</field>
+            <field name="model_id" ref="gestionit_pe_fe.model_gestionit_modalidad_transporte"/>
+            <field name="perm_read">1</field>
+            <field name="perm_write">0</field>
+            <field name="perm_unlink">0</field>
+            <field name="perm_create">0</field>
+            <field name="group_id" ref="base.group_user"/>
+        </record>
+
+        <record model="ir.model.access" id="gestionit_pe_fe.access_model_gestionit_motivo_traslado">
+            <field name="name">gestionit.access.model.gestionit.motivo.traslado</field>
+            <field name="model_id" ref="gestionit_pe_fe.model_gestionit_motivo_traslado"/>
+            <field name="perm_read">1</field>
+            <field name="perm_write">0</field>
+            <field name="perm_unlink">0</field>
+            <field name="perm_create">0</field>
+            <field name="group_id" ref="base.group_user"/>
+        </record>
     </data>
 </odoo>

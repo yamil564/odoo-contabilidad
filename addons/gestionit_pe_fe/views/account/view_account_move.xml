@@ -7,7 +7,7 @@
             <field name="inherit_id" ref="account.view_move_form"/>
             <field name="arch" type="xml">
                 <xpath expr="//span[hasclass('o_form_label')]//field[@name='type']" position="replace">
-                    <field name="type" invisible="1" />
+                    <field name="type" />
                     <field name="invoice_type_code"/>
                 </xpath>
                 <xpath expr="//field[@name='ref']" position="after">
@@ -35,7 +35,8 @@
                     <field name="journal_ids" widget="many2many_tags" string="Series Permitidas" groups="base.group_no_one"/>
                 </xpath>
                 <xpath expr="//field[@name='journal_id']" position="attributes">
-                    <attribute name="domain">[('invoice_type_code_id','=',invoice_type_code), ('type','=','sale'),('id','in',journal_ids)]</attribute>
+                    <!-- <attribute name="domain">[('invoice_type_code_id','=',invoice_type_code), ('type','=','sale'),('id','in',journal_ids)]</attribute> -->
+                    <attribute name="domain">[('invoice_type_code_id','=',invoice_type_code), ('id','in',journal_ids)]</attribute>
                 </xpath>
             </field>
         </record>
@@ -140,6 +141,23 @@
                     <attribute name="string">Crear</attribute>
                 </xpath>
             </field>
+        </record>
+
+        <record id="custom_pop_message_wizard_view_form" model="ir.ui.view">
+            <field name="name">custom.pop.message.form</field>
+            <field name="model">custom.pop.message</field>
+            <field name="arch" type="xml">
+                 <form string="Mensaje Importante">
+                     <div class="alert alert-danger" role="alert" style="margin-bottom:0px;">
+                        <field name="name" readonly="1"/>
+                        <field name="accion" readonly="1"/>
+                        <!--Si desea enviar este documento debe ser <bold><a class="alert-link" href="#outstanding" role="button">DUPLICADO</a></bold>.-->
+                    </div>
+                     <footer>
+                         <button string="Aceptar" class="btn-default" special="cancel"/>
+                     </footer>
+                 </form>
+             </field>
         </record>
     </data>
 </odoo>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data noupdate="0">
+        <record id="gestionit_pe_fe.ir_cron_envio_comunicaciones_baja" model="ir.cron">
+            <field name="name">1. CRON Envío de Comunicaciones de baja pendientes</field>
+            <field name="model_id" ref="gestionit_pe_fe.model_account_comunicacion_baja"/>
+            <field name="state">code</field>
+            <field name="interval_number">12</field>
+            <field name="interval_type">hours</field>
+            <field name="numbercall">-1</field>
+            <field name="doall">1</field>
+            <field name="user_id" ref="base.user_root"/>
+            <field name="code">model.cron_enviar_comunicacion_baja()</field>
+            <field name="nextcall" eval="(datetime.strptime(datetime.now().strftime('%Y-%m-%d %H:00:00'),'%Y-%m-%d %X') + timedelta(hours=6) ).strftime('%Y-%m-%d %X')"/>
+        </record>
+        
+        <record id="gestionit_pe_fe.ir_cron_consulta_comunicaciones_baja" model="ir.cron">
+            <field name="name">2. CRON Consulta de Comunicaciones de baja enviadas a Sunat</field>
+            <field name="model_id" ref="gestionit_pe_fe.model_account_comunicacion_baja"/>
+            <field name="state">code</field>
+            <field name="interval_number">12</field>
+            <field name="interval_type">hours</field>
+            <field name="numbercall">-1</field>
+            <field name="doall">1</field>
+            <field name="user_id" ref="base.user_root"/>
+            <field name="code">model.cron_consulta_estado_comunicacion_baja()</field>
+            <field name="nextcall" eval="(datetime.strptime(datetime.now().strftime('%Y-%m-%d %H:00:00'),'%Y-%m-%d %X') + timedelta(hours=4) ).strftime('%Y-%m-%d %X')"/>
+        </record>
+    </data>
+</odoo>

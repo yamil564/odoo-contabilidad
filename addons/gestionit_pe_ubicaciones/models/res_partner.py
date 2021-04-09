@@ -37,6 +37,7 @@ class ResPartner(models.Model):
     state_id = fields.Many2one('res.country.state', 'Departamento')
     province_id = fields.Many2one('res.country.state', 'Provincia')
     district_id = fields.Many2one('res.country.state', 'Distrito')
+    ubigeo = fields.Char('Ubigeo')
 
     # Funcion reemplazada para considerar los nuevos campos en el onchange
     @api.model

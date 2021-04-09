@@ -1,11 +1,9 @@
 import json
 import requests
 import os
-from . import factura, nota_credito, nota_debito, firma, resumendiario, comunicacionbaja
+from . import factura, nota_credito, nota_debito, firma, resumendiario, comunicacionbaja, guia_remision
 from . import xml_validation, sunat_response_handle
-# DespatchAdvice
-from ..efact21.Documents import Factura, CreditNote, DebitNote, ResumenDiario, ComunicacionBaja
-# from . import guia_remision
+from ..efact21.Documents import Factura, CreditNote, DebitNote, ResumenDiario, ComunicacionBaja, DespatchAdvice
 import base64
 from io import BytesIO
 # with open("./pce-credentials.json") as f:
@@ -121,14 +119,14 @@ def handle(data, user_credentials, self_signed=False):
         file_name = document.file_name
         # xsd = "./files/XSD 2.1/maindoc/UBL-DebitNote-2.1.xsd"
         # return {"success": False, "error": "Not implemented"}
-    # elif data.get("tipoDocumento") == "09":
-    #     document = guia_remision.build_guia(data)
-    #     document_type = data["tipoDocumento"]
-    #     if type(document) != DespatchAdvice:
-    #         document['success'] = False
-    #         return document
-    #     file_name = document.file_name
-    #     xsd = "./files/XSD 2.1/maindoc/UBL-DespatchAdvice-2.1.xsd"
+    elif data.get("tipoDocumento") == "09":
+        document = guia_remision.build_guia(data)
+        document_type = data["tipoDocumento"]
+        if type(document) != DespatchAdvice:
+            document['success'] = False
+            return document
+        file_name = document.file_name
+        # xsd = "./files/XSD 2.1/maindoc/UBL-DespatchAdvice-2.1.xsd"
     errs, obs = [], []
     document.check_validation(errs, obs)
 
@@ -336,6 +334,8 @@ def send_consulta(consulta_xml, data, user, consulta=False):
 
 
 def send_xml_sunat(prev_sign, data):
+    _logger.info("PREV SIGN")
+    _logger.info(prev_sign)
     tipo_envio = data.get("tipoEnvio", 0)
 
     if tipo_envio in [1, 3]:

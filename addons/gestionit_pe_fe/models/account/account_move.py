@@ -44,7 +44,7 @@ class AccountMove(models.Model):
 
     warehouse_id = fields.Many2one("stock.warehouse")
     warehouses_allowed_ids = fields.Many2many(
-        "stock.warehouse", string="Almacénes Permitidos", related="user_id.warehouse_ids")
+        "stock.warehouse", string="Almacenes Permitidos", related="user_id.warehouse_ids")
     journal_ids = fields.Many2many(
         "account.journal", string="Series permitidas", related="warehouse_id.journal_ids")
 
@@ -60,45 +60,26 @@ class AccountMove(models.Model):
             warehouse_ids = self.env["res.users"].browse(user_id).warehouse_ids
 
             if len(warehouse_ids) > 0:
-                journal_ids = self.env["stock.warehouse"].browse(
-                    warehouse_ids[0].id).journal_ids
-
-                res.update({
-                    "warehouse_id": warehouse_ids[0].id,
-                    "journal_id": journal_ids[0].id
-                })
-                return res
-            #     for wh in warehouse_ids:
-            #         for whj in wh.journal_ids:
-            #             if whj.invoice_type_code_id == self._context.get("default_invoice_type_code"):
-            #                 res.update({
-            #                     "warehouse_id": wh.id,
-            #                     "journal_id": whj.id
-            #                 })
-            #                 return res
-
-            #     raise UserError(
-            #         "El almacén no tiene diarios configurados para este tipo de documento. Contacte con el administrador del sistema.")
-            #     # res.update({
-            #     #     "warehouse_id": warehouse_ids[0].id,
-            #     #     "journal_id": journal_ids[0].id
-            #     # })
-            #     # return res
-
-            # else:
-            #     raise UserError(
-            #         "El usuario no tiene almacenes configurados para la creación de documentos. Contacte con el administrador del sistema.")
-
+                for wh in warehouse_ids:
+                    for whj in wh.journal_ids:
+                        if whj.invoice_type_code_id == self._context.get("default_invoice_type_code"):
+                            res.update({
+                                "warehouse_id": wh.id,
+                                "journal_id": whj.id
+                            })
+                            return res
         if refund_id:
-            refund_obj = self.env["account.invoice"].browse(refund_id)
+            refund_obj = self.env["account.move"].browse(refund_id)
             domain += [['tipo_comprobante_a_rectificar',
                         'in', [refund_obj.invoice_type_code]]]
 
         domain += [['invoice_type_code_id', '=',
                     self._context.get("default_invoice_type_code")], ["type", "=", "sale"]]
+
         journal_id = self.env['account.journal'].search(domain, limit=1)
 
         res["journal_id"] = journal_id.id
+
         return res
 
     invoice_type_code = fields.Selection(selection=[('00', 'Otros'),
@@ -487,8 +468,12 @@ class AccountMove(models.Model):
                 move.invoice_payment_state = 'not_paid'
 
     def post(self):
+        # Validar journal
+        # if journal.invoice_type_code_id not in ['01','03','08','09']:
+        # return super(AccountMove, self).post()
+
         if self.type == "in_invoice":
-            if self.reference:
+            if self.ref:
                 self._validar_reference(self)
             else:
                 raise UserError(
@@ -531,7 +516,7 @@ class AccountMove(models.Model):
 
     @api.model
     def _validar_reference(self, obj):
-        reference = obj.reference
+        reference = obj.ref
         if reference:
             if len(reference) == 13:
                 if reference[4:5] == "-" and reference[5:13].isdigit():
@@ -802,9 +787,6 @@ class AccountMove(models.Model):
                                     ('type' & 'reversed_entry_id' are computed in the method).
         :return:                    An account.move recordset, reverse of the current self.
         '''
-
-        log.info("-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.")
-        log.info(cancel)
         if not default_values_list:
             default_values_list = [{} for move in self]
 
@@ -813,6 +795,8 @@ class AccountMove(models.Model):
             # Avoid maximum recursion depth.
             if lines:
                 lines.remove_move_reconcile()
+
+        # p_obj.with_context(filter_order_ids=order_ids).filtered(lambda r: r.origin_id.id IN r._context['filter_order_ids'])
 
         reverse_type_map = {
             'entry': 'entry',
@@ -840,6 +824,10 @@ class AccountMove(models.Model):
                 for line in reverse_move.line_ids:
                     if line.currency_id:
                         line._onchange_currency()
+
+            reverse_move.invoice_line_ids = [(6, 0, reverse_move.invoice_line_ids.filtered(
+                lambda r: r.tax_ids[0].tax_group_id.tipo_afectacion == '10').mapped('id'))]
+
             reverse_move._recompute_dynamic_lines(recompute_all_taxes=False)
         reverse_moves._check_balanced()
 
@@ -904,3 +892,10 @@ class AccountDebitNote(models.TransientModel):
         if not self.copy_lines or move.type in [('in_refund', 'out_refund')]:
             default_values['line_ids'] = [(5, 0, 0)]
         return default_values
+
+
+class CustomPopMessage(models.TransientModel):
+    _name = "custom.pop.message"
+
+    name = fields.Char('Message')
+    accion = fields.Text(string="Accion a realizar")

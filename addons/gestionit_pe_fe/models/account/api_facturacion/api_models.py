@@ -20,7 +20,6 @@ def random_string(l):
 
 
 def lamdba(data):
-
     credentials = {
         "ruc": data["company"]["numDocEmisor"],
         'razon_social': data["company"]["nombreEmisor"],
