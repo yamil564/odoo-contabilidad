@@ -3,14 +3,17 @@ from odoo import fields, models, api
 from odoo.tools.translate import _
 from odoo.exceptions import UserError, ValidationError
 from odoo.http import request
-from . import oauth
-# from ..parameters import oauth
-from datetime import datetime, timedelta
+from odoo.tools.misc import get_lang
 from odoo.addons.gestionit_pe_fe.models.parameters.catalogs import tnc
 from odoo.addons.gestionit_pe_fe.models.parameters.catalogs import tnd
 
+from datetime import datetime, timedelta
+from . import oauth
+import base64
+import re
+
 import logging
-log = logging.getLogger(__name__)
+_logger = logging.getLogger(__name__)
 
 codigo_unidades_de_medida = [
     "DZN",
@@ -469,8 +472,8 @@ class AccountMove(models.Model):
 
     def post(self):
         # Validar journal
-        # if journal.invoice_type_code_id not in ['01','03','08','09']:
-        # return super(AccountMove, self).post()
+        if self.journal_id.invoice_type_code_id not in ['01', '03', '08', '09']:
+            return super(AccountMove, self).post()
 
         if self.type == "in_invoice":
             if self.ref:
@@ -513,6 +516,73 @@ class AccountMove(models.Model):
         oauth.enviar_doc(self)
 
         return obj
+
+    def action_invoice_sent(self):
+        """ Open a window to compose an email, with the edi invoice template
+            message loaded by default
+        """
+        self.ensure_one()
+        template = self.env.ref(
+            'account.email_template_edi_invoice', raise_if_not_found=False)
+        lang = get_lang(self.env)
+        if template and template.lang:
+            lang = template._render_template(
+                template.lang, 'account.move', self.id)
+        else:
+            lang = lang.code
+        compose_form = self.env.ref(
+            'account.account_invoice_send_wizard_form', raise_if_not_found=False)
+        ctx = dict(
+            default_model='account.move',
+            default_res_id=self.id,
+            # For the sake of consistency we need a default_res_model if
+            # default_res_id is set. Not renaming default_model as it can
+            # create many side-effects.
+            default_res_model='account.move',
+            default_use_template=bool(template),
+            default_template_id=template and template.id or False,
+            default_composition_mode='comment',
+            mark_invoice_as_sent=True,
+            custom_layout="mail.mail_notification_paynow",
+            model_description=self.with_context(lang=lang).type_name,
+            force_email=True
+        )
+
+        fname = self.name+".xml"
+        cdr_fname = self.name+"_cdr.xml"
+        if len(self.account_log_status_ids) > 0:
+            log_status = self.account_log_status_ids[-1]
+            data_signed_xml = log_status.signed_xml_data_without_format
+            ctx["default_attachment_ids"] = []
+            if data_signed_xml:
+                datas = base64.b64encode(data_signed_xml.encode())
+                # ctx["default_attachment_ids"].append(self.env["ir.attachment"].create(
+                #     {"name": fname, "type": "binary", "datas": datas, "mimetype": "text/xml", "datas_fname": fname}).id)
+                ctx["default_attachment_ids"].append(self.env["ir.attachment"].create(
+                    {"name": fname, "type": "binary", "datas": datas, "mimetype": "text/xml"}).id)
+
+            response_xml = log_status.response_xml_without_format
+            if response_xml:
+                datas = base64.b64encode(response_xml.encode())
+                # ctx["default_attachment_ids"].append(self.env["ir.attachment"].create(
+                #     {"name": cdr_fname, "type": "binary", "datas": datas, "mimetype": "text/xml", "datas_fname": cdr_fname}).id)
+                ctx["default_attachment_ids"].append(self.env["ir.attachment"].create(
+                    {"name": cdr_fname, "type": "binary", "datas": datas, "mimetype": "text/xml"}).id)
+
+        _logger.info("Mail logger")
+        _logger.info(ctx)
+
+        return {
+            'name': _('Send Invoice'),
+            'type': 'ir.actions.act_window',
+            'view_type': 'form',
+            'view_mode': 'form',
+            'res_model': 'account.invoice.send',
+            'views': [(compose_form.id, 'form')],
+            'view_id': compose_form.id,
+            'target': 'new',
+            'context': ctx,
+        }
 
     @api.model
     def _validar_reference(self, obj):
@@ -843,6 +913,63 @@ class AccountMove(models.Model):
                         .reconcile()
 
         return reverse_moves
+
+    def btn_comunicacion_baja(self):
+        ref = self.env.ref("gestionit_pe_fe.view_comunicacion_baja_form")
+        # if self.estado_comprobante_electronico in ["-",False,"0_NO_EXISTE"]:
+        # self.btn_consulta_validez_comprobante()
+
+        _logger.info(True if self.documento_baja_id else False)
+
+        if self.estado_comprobante_electronico == "2_ANULADO":
+            raise UserError("Este comprobante ha sido Anulado.")
+
+        elif re.match("^F\w{3}-\d{1,8}$", self.name):
+            if self.documento_baja_id:
+                return {
+                    "type": "ir.actions.act_window",
+                    "res_model": "account.comunicacion_baja",
+                    "target": "self",
+                    "res_id": self.documento_baja_id.id,
+                    "view_mode": "form",
+                    "view_id": ref.id,
+                }
+            else:
+                return {
+                    "type": "ir.actions.act_window",
+                    "res_model": "account.comunicacion_baja",
+                    "target": "self",
+                    "view_id": ref.id,
+                    "view_mode": "form",
+                    "context": {
+                        'default_invoice_ids': [self.id],
+                        'default_invoice_type_code_id': self.invoice_type_code,
+                        'default_date_invoice': self.invoice_date,
+                        'default_issue_date': datetime.now().strftime("%Y-%m-%d")
+                    }
+                }
+        elif re.match("^B\w{3}-\d{1,8}$", self.move_name):
+            if self.resumen_anulacion_id:
+                return {
+                    "type": "ir.actions.act_window",
+                    "res_model": "account.summary",
+                    "name": "Anulación de comprobante",
+                    "view_mode": "form",
+                    "target": "self",
+                    "res_id": self.resumen_anulacion_id.id
+                }
+            else:
+                return {
+                    "type": "ir.actions.act_window",
+                    "res_model": "account.summary.anulacion",
+                    "name": "Anulación de Comprobante",
+                    "view_id": self.env.ref("gestionit_pe_fe.view_popup_account_summary_anulacion").id,
+                    "view_mode": "form",
+                    "target": "new",
+                    "context": {
+                            "default_account_invoice_id": self.id
+                    }
+                }
 
 
 class AccountMoveReversal(models.TransientModel):

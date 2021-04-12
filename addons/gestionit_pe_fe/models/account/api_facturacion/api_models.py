@@ -1,4 +1,3 @@
-from . import dbmodels
 from .controllers import main
 from .utils.ComunicacionBaja import ComunicacionBaja
 from .lista_errores import errores
@@ -41,77 +40,20 @@ def lamdba(data):
     }
     ans.update(main_xml)
 
-    # log = dbmodels.Log(
-    #     id=request_id,
-    #     timestamp=time.time(),
-    #     user_id=self.user.id)
-
-    # _logger.info(log)
-
-    # log.request_json = data
-    # log.s3_saved = True
-    # s3obj = {
-    #     "request_json": data,
-    #     "response_json": ans,
-    # }
-    # log.estado = "invalid-request"
-
-    # if not ans['success']:
-    #     if "signer" in ans:
-    #         del ans['signer']
-    #     s3_client.put_object(
-    #         Bucket=os.environ['S3_BUCKET'],
-    #         Body=json.dumps(s3obj, ensure_ascii=False).encode(
-    #             "ISO-8859-1"),
-    #         ContentType="application/json",
-    #         Key=request_id
-    #     )
-    #     log.save()
-    #     return ans
-
-    # log.estado = "pending-delivery"
-    # s3obj['signed_xml'] = main_xml['signed_xml']
-    # s3obj['sunat_request_xml'] = main_xml['final_xml']
-
-    # asyncrono = data.get("asyncrono", False)
-    # generate_xml_only = data.get("generate-xml-only", False)
-    # if generate_xml_only:
-    #     ans['sunat_status'] = '-'
-    # elif asyncrono:
-    #     # worker.add_task(ans, self.user, data, main_xml['signer'])
-    #     # log.estado = "pending-delivery"
-    #     ans['sunat_status'] = "P"
-    # else:
     resp = main.send_xml_sunat(ans, data)
 
     ans["token"] = resp.get("token")
     ans['sunat_observaciones'] = resp.get('observaciones', [])
-    # if resp['success']:
-    # log.estado = "sunat-accepted"
-    # else:
-    # log.estado = "sunat-rejected"
+
     ans['sunat_errors'] = resp.get('errors', [])
     ans['sunat_status'] = resp.get('status', "-")
     if resp.get("ticket", False):
         ans['ticket'] = resp['ticket']
-        #worker.add_task_ticket(ans, self.user, data, main_xml['signer'], resp['ticket'])
-        # log.estado = "pending-ticket"
+
     ans['response_xml'] = resp.get('response_xml')
     if resp.get("xml_content", None):
         ans['response_content_xml'] = resp['xml_content']
-        # s3obj['sunat_response_content_xml'] = resp["xml_content"]
-        # s3obj['sunat_response_xml'] = resp.get('response_xml')
-    # log.save()
 
-    # del ans['signer']
-    # del ans['final_xml']
-
-    # s3_client.put_object(
-    #     Bucket=os.environ['S3_BUCKET'],
-    #     Body=json.dumps(s3obj, ensure_ascii=False).encode("ISO-8859-1"),
-    #     ContentType="application/json",
-    #     Key=request_id
-    # )
     return ans
 
 
@@ -132,7 +74,6 @@ def consultaResumen(data):
     if not ruc:
         errors.append("El ruc es obligatorio")
 
-    # ticket = data.get("ticket", False)
     ticket = data["ticket"]
     if not ticket:
         errors.append("El ticket es obligatorio")
@@ -151,12 +92,9 @@ def consultaResumen(data):
     tipoEnvio = data["tipoEnvio"]
     status = comb.getStatus(username, password, ticket)
 
-    # os.system("echo '%s'" % (status.toprettyxml("  ")))
-
     response = main.send_consulta(
         status.toprettyxml("  "), data=data, user=user)
 
-    # os.system("echo '%s'" % (response))
     doc = minidom.parseString(response.encode("ISO-8859-1"))
 
     fault = doc.getElementsByTagName("faultcode")
@@ -164,7 +102,6 @@ def consultaResumen(data):
         faultcode = doc.getElementsByTagName(
             "faultcode")[0].firstChild.data
         try:
-            # int(faultcode)
             faultstring = errores[str(int(faultcode))]
         except Exception as e:
             faultstring = doc.getElementsByTagName(
@@ -176,7 +113,6 @@ def consultaResumen(data):
             "status": "N"
         }
 
-    # return doc.toprettyxml("        "),status.toprettyxml("        ")
     digestValue = False
     cdr = False
     statusCode = doc.getElementsByTagName("statusCode")[0].firstChild.data
@@ -187,7 +123,6 @@ def consultaResumen(data):
         status = ""
         if statusCode in ["0", "99"]:
             content = doc.getElementsByTagName("content")
-            #os.system("echo '%s'"%(content[0].firstChild.data))
             zip_data = content[0].firstChild.data
             zip_decode = base64.b64decode(zip_data)
             zip_file = zipfile.ZipFile(io.BytesIO(zip_decode))
@@ -209,7 +144,6 @@ def consultaResumen(data):
                         str(int(ResponseCode), "")))
             if statusCode == "0":
                 cdr = doc_xml.toprettyxml("        ")
-                # return  DocumentResponse[0].toprettyxml("  ")
                 Description = doc_xml.getElementsByTagName("cbc:Description")[
                     0].firstChild.data
                 digestValue = doc_xml.getElementsByTagName("DigestValue")[
