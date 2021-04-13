@@ -1,5 +1,5 @@
 {
-    "name": "Parámetros de ubigeo - Perú",
+    "name": "GIT - Parámetros de ubigeo - Perú",
     'version': '1.0.0',
     'author': 'Gestión IT',
     'description': 'Tabla paramétrica de Ubicaciones de Perú: Departamentos, Provincias y distritos.',
@@ -15,7 +15,6 @@
     ],
     'installable': True,
     'auto_install': False,
-    'application': True,
     "sequence": 1,
 }
 

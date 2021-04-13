@@ -15,11 +15,12 @@ from .efact21.Documents import Factura
 from .efact21.Lines import PricingReference, Item, Price
 from .efact21.Party import PartyIdentification, PartyLegalEntity, PartyName
 from .efact21.RegistrationAddress import RegistrationAddress
-from .efact21.TaxTotal import TaxTotal, TaxSubtotal, TaxCategory, TaxScheme, CategoryID, TaxableAmount, TaxAmount,BaseUnitMeasure,PerUnitAmount
+from .efact21.TaxTotal import TaxTotal, TaxSubtotal, TaxCategory, TaxScheme, CategoryID, TaxableAmount, TaxAmount, BaseUnitMeasure, PerUnitAmount
 from .efact21.TaxScheme import TaxSchemeID
 
 import yaml
 import flex
+
 
 def validate_json(data):
     with open("./files/schemas_json/invoice.yaml") as f:
@@ -97,7 +98,7 @@ def build_factura(data):
             "status": 400,
             "code": "51",
             "detail": validacion.error_list[
-                          "51"] + " Tipo de Envio (tipoEnvio) no válido (0=Desarrollo, 1=Homologacion, 2=Producción)."
+                "51"] + " Tipo de Envio (tipoEnvio) no válido (0=Desarrollo, 1=Producción)."
         })
 
     if not fechaEmision:
@@ -106,7 +107,7 @@ def build_factura(data):
             "status": 400,
             "code": "51",
             "detail": validacion.error_list[
-                          "51"] + " Fecha de Emisión (fechaEmision) tiene formato incorrecto (yyyy-MM-dd)."
+                "51"] + " Fecha de Emisión (fechaEmision) tiene formato incorrecto (yyyy-MM-dd)."
         })
 
     if not documento:
@@ -123,7 +124,7 @@ def build_factura(data):
             "status": 400,
             "code": "51",
             "detail": validacion.error_list[
-                          "51"] + " Información de descuento (descuento) tiene formato incorrecto."
+                "51"] + " Información de descuento (descuento) tiene formato incorrecto."
         })
 
     if not detalle:
@@ -132,7 +133,7 @@ def build_factura(data):
             "status": 400,
             "code": "51",
             "detail": validacion.error_list[
-                          "51"] + " Información del detalle de documento (detalle) tiene formato incorrecto."
+                "51"] + " Información del detalle de documento (detalle) tiene formato incorrecto."
         })
 
     if flag_error:
@@ -149,14 +150,14 @@ def build_factura(data):
                 "code": "01",
                 "detail": validacion.error_list["01"].replace("$_PARAMETRO", field) +
                           validacion.fields_required_doc_fac_bol[field]
-            })
+                          })
     if ('mntNeto' not in documento) and ('mntExe' not in documento) and ('mntExo' not in documento):
         flag_error = True
         errors.append({
             "status": 400,
             "code": "51",
             "detail": validacion.error_list[
-                          "51"] + " Es necesario el Monto Neto (mntNeto) o el Monto Gravado (mntExe) o el Monto Exonerado (mntExo)."
+                "51"] + " Es necesario el Monto Neto (mntNeto) o el Monto Gravado (mntExe) o el Monto Exonerado (mntExo)."
         })
 
     # VALIDACION DETALLE
@@ -169,7 +170,7 @@ def build_factura(data):
                     "code": "01",
                     "detail": validacion.error_list["01"].replace("$_PARAMETRO", field) +
                               validacion.fields_required_detalle_fac_bol[field]
-                })
+                              })
 
     if flag_error:
         return {
@@ -206,7 +207,7 @@ def build_factura(data):
     mntExo = documento.get('mntExo', 0.0)
     mntTotalIgv = documento.get('mntTotalIgv', 0.0)
     mntTotalIsc = documento.get('mntTotalIsc', 0.0)
-    mntICBPER = documento.get("mntICBPER",0.0)
+    mntICBPER = documento.get("mntICBPER", 0.0)
     # fechaVencimiento = documento.get('fechaVencimiento', 0.0)
 
     # glosaDocumento = documento.get('glosaDocumento', '')
@@ -231,17 +232,19 @@ def build_factura(data):
                         "status": 400,
                         "code": "51",
                         "detail": validacion.error_list["51"] +
-                                  " El Tipo de Afectacion IGV(codAfectacionIgv) del detalle deber ser igual a '40' "
-                                  "en caso de exportaciones."
+                        " El Tipo de Afectacion IGV(codAfectacionIgv) del detalle deber ser igual a '40' "
+                        "en caso de exportaciones."
                     }]
                 }
 
     # TIPO DE DOCUMENTO
-    invoice_type_code = BasicGlobal.InvoiceTypeCode(tipoDocumento, listID="0101")
+    invoice_type_code = BasicGlobal.InvoiceTypeCode(
+        tipoDocumento, listID="0101")
 
     # PROVEEDOR
     registration_name = RegistrationName(registration_name=nombreEmisor)
-    party_identification = PartyIdentification(id_document=numDocEmisor, document_type=tipoDocEmisor)
+    party_identification = PartyIdentification(
+        id_document=numDocEmisor, document_type=tipoDocEmisor)
 
     registration_address = RegistrationAddress(address_type_code="0000", address=None,
                                                urbanization=None, province_name=None,
@@ -272,20 +275,30 @@ def build_factura(data):
     if "descuentoGlobal" in documento:
         documento_descuento_global = documento["descuentoGlobal"]
         if ("factor" in documento_descuento_global) and ("montoDescuento" in documento_descuento_global) and ("montoBase" in documento_descuento_global):
-            descuento_global = AllowanceCharge(charge_indicator = False,
-                                                    allowance_charge_reason_code = "00",
-                                                    multiplier_factor_numeric = documento_descuento_global.get("factor",0.0),#Porcentaje del descuento 
-                                                    amount = documento_descuento_global.get("montoDescuento"),
-                                                    base_amount = documento_descuento_global.get("montoBase"),#base_amount es el monto total de la línea sin IGV y sin descuento
-                                                    currency_id = tipoMoneda)
+            descuento_global = AllowanceCharge(charge_indicator=False,
+                                               allowance_charge_reason_code="00",
+                                               multiplier_factor_numeric=documento_descuento_global.get(
+                                                   "factor", 0.0),  # Porcentaje del descuento
+                                               amount=documento_descuento_global.get(
+                                                   "montoDescuento"),
+                                               # base_amount es el monto total de la línea sin IGV y sin descuento
+                                               base_amount=documento_descuento_global.get(
+                                                   "montoBase"),
+                                               currency_id=tipoMoneda)
 
     # MONTO DE PAGO
-    prepaid_amount = PrepaidAmount(amount=round(mntTotalAnticipos,2), currencyID=tipoMoneda)
-    charge_total_amount = ChargeTotalAmount(amount=round(mntTotalOtrosCargos,2), currencyID=tipoMoneda)
-    line_extension_amount = LineExtensionAmount(amount=round(mntNeto + mntExe + mntExo + mntTotalDescuentos,2), currencyID=tipoMoneda)
-    allowance_total_amount = AllowanceTotalAmount(amount=round(mntTotalDescuentos,2), currencyID=tipoMoneda)
-    payable_amount = PayableAmount(amount=round(mntTotal,2), currencyID=tipoMoneda)
-    tax_inclusive_amount = TaxInclusiveAmount(amount=round(mntTotal,2), currencyID=tipoMoneda)
+    prepaid_amount = PrepaidAmount(amount=round(
+        mntTotalAnticipos, 2), currencyID=tipoMoneda)
+    charge_total_amount = ChargeTotalAmount(amount=round(
+        mntTotalOtrosCargos, 2), currencyID=tipoMoneda)
+    line_extension_amount = LineExtensionAmount(amount=round(
+        mntNeto + mntExe + mntExo + mntTotalDescuentos, 2), currencyID=tipoMoneda)
+    allowance_total_amount = AllowanceTotalAmount(
+        amount=round(mntTotalDescuentos, 2), currencyID=tipoMoneda)
+    payable_amount = PayableAmount(
+        amount=round(mntTotal, 2), currencyID=tipoMoneda)
+    tax_inclusive_amount = TaxInclusiveAmount(
+        amount=round(mntTotal, 2), currencyID=tipoMoneda)
 
     legal_monetary_total = MonetaryTotal.LegalMonetaryTotal(line_extension_amount=line_extension_amount,
                                                             prepaid_amount=prepaid_amount,
@@ -306,7 +319,8 @@ def build_factura(data):
     if mntExportacion > 0:
         tax_scheme = TaxScheme("9995", "EXP", "FRE")
         category_id = CategoryID(category_id="G", add_attributes=False)
-        tax_category = TaxCategory(category_id=category_id, tax_scheme=tax_scheme)
+        tax_category = TaxCategory(
+            category_id=category_id, tax_scheme=tax_scheme)
         taxable_amount = TaxableAmount(amount=mntExportacion,
                                        currencyID=tipoMoneda)
         tax_amount = TaxAmount(amount=0,
@@ -320,7 +334,8 @@ def build_factura(data):
     if mntTotalGrat > 0:
         tax_scheme = TaxScheme("9996", "GRA", "FRE")
         category_id = CategoryID(category_id="Z", add_attributes=False)
-        tax_category = TaxCategory(category_id=category_id, tax_scheme=tax_scheme)
+        tax_category = TaxCategory(
+            category_id=category_id, tax_scheme=tax_scheme)
         taxable_amount = TaxableAmount(amount=mntTotalGrat,
                                        currencyID=tipoMoneda)
         tax_amount = TaxAmount(amount=0,
@@ -334,7 +349,8 @@ def build_factura(data):
     if mntExo > 0:
         tax_scheme = TaxScheme("9997", "EXO", "VAT")
         category_id = CategoryID(category_id="E", add_attributes=False)
-        tax_category = TaxCategory(category_id=category_id, tax_scheme=tax_scheme)
+        tax_category = TaxCategory(
+            category_id=category_id, tax_scheme=tax_scheme)
 
         taxable_amount = TaxableAmount(amount=mntExo,
                                        currencyID=tipoMoneda)
@@ -349,7 +365,8 @@ def build_factura(data):
     if mntExe > 0:
         tax_scheme = TaxScheme("9998", "INA", "FRE")
         category_id = CategoryID(category_id="E", add_attributes=False)
-        tax_category = TaxCategory(category_id=category_id,tax_scheme=tax_scheme)
+        tax_category = TaxCategory(
+            category_id=category_id, tax_scheme=tax_scheme)
 
         tax_amount = TaxAmount(amount=0,
                                currencyID=tipoMoneda)
@@ -379,7 +396,8 @@ def build_factura(data):
     if mntTotalIsc > 0:
         tax_scheme = TaxScheme("2000", "ISC", "EXC")
         category_id = CategoryID(category_id="S", add_attributes=False)
-        tax_category = TaxCategory(category_id=category_id, tax_scheme=tax_scheme)
+        tax_category = TaxCategory(
+            category_id=category_id, tax_scheme=tax_scheme)
         taxable_amount = TaxableAmount(amount=mntNeto,
                                        currencyID=tipoMoneda)
         tax_amount = TaxAmount(amount=mntTotalIsc,
@@ -389,8 +407,8 @@ def build_factura(data):
                                    tax_category=tax_category)
         tax_total.add_tax_subtotal(tax_subtotal)
 
-    #ICBPER
-    if mntICBPER >0:
+    # ICBPER
+    if mntICBPER > 0:
         tax_scheme = TaxScheme("7152", "ICBPER", "OTH")
         tax_category = TaxCategory(tax_scheme=tax_scheme)
 
@@ -414,18 +432,19 @@ def build_factura(data):
         guia_doc_type_code = DocumentTypeCode("09")
         guia_doc_type_code.listName = "Tipo de Documento"
         guia_doc_type_code.listURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo01"
-        desp_doc_ref = DespatchDocumentReference(documento['numero_guia'], guia_doc_type_code)
+        desp_doc_ref = DespatchDocumentReference(
+            documento['numero_guia'], guia_doc_type_code)
         fact.despatch_document_reference = desp_doc_ref
 
     # LINEAS
     for line in detalle:
         invoice_quantity = InvoiceLine.InvoicedQuantity(quantity=line.get("cantidadItem", 0),
                                                         unit_code=line.get('unidadMedidaItem'))
-        line_extension_amount = LineExtensionAmount(amount=line.get("montoItem", 0), currencyID=tipoMoneda)
+        line_extension_amount = LineExtensionAmount(
+            amount=line.get("montoItem", 0), currencyID=tipoMoneda)
 
-        
-        
-        precio = line.get('precioItem', 0) if not line.get("no_onerosa") else line.get('precioItemReferencia', 0)
+        precio = line.get('precioItem', 0) if not line.get(
+            "no_onerosa") else line.get('precioItemReferencia', 0)
         price_code = "01" if not line.get("no_onerosa") else "02"
         price_amount = PriceAmount(amount=precio, currencyID=tipoMoneda)
         pricing_reference = PricingReference(price_amount=price_amount,
@@ -437,9 +456,8 @@ def build_factura(data):
 
         cod_afectacion_igv = line.get("codAfectacionIgv", False)
 
-        
-        tasaICBPER = line.get("tasa_ICBPER",10)
-        afectacion_icbper = line.get("afectacionICBPER",False)
+        tasaICBPER = line.get("tasa_ICBPER", 10)
+        afectacion_icbper = line.get("afectacionICBPER", False)
 
         tasaIgv = 18.0
         # 1000 - IGV Impuesto General a las Ventas
@@ -447,7 +465,8 @@ def build_factura(data):
             tax_scheme = TaxScheme("1000", "IGV", "VAT")
             tax_category = TaxCategory(category_id="S",
                                        percent=tasaIgv,
-                                       tax_exemption_reason_code=line.get("codAfectacionIgv"),
+                                       tax_exemption_reason_code=line.get(
+                                           "codAfectacionIgv"),
                                        tax_scheme=tax_scheme)
             taxable_amount = TaxableAmount(amount=line.get("montoItem", 0.0),
                                            currencyID=tipoMoneda)
@@ -459,16 +478,18 @@ def build_factura(data):
                                        tax_category=tax_category)
             tax_total.add_tax_subtotal(tax_subtotal=tax_subtotal)
 
-        
         # 9995 -	Exportación
         if cod_afectacion_igv in ["40"]:
             tax_scheme = TaxScheme("9995", "EXP", "EXP")
             tax_category = TaxCategory(category_id="G",
                                        percent=tasaIgv,
-                                       tax_exemption_reason_code=line.get("codAfectacionIgv"),
+                                       tax_exemption_reason_code=line.get(
+                                           "codAfectacionIgv"),
                                        tax_scheme=tax_scheme)
-            taxable_amount = TaxableAmount(amount=line.get("montoItem", 0.0), currencyID=tipoMoneda)
-            tax_amount = TaxAmount(amount=line.get("montoIgv", 0.0), currencyID=tipoMoneda)
+            taxable_amount = TaxableAmount(amount=line.get(
+                "montoItem", 0.0), currencyID=tipoMoneda)
+            tax_amount = TaxAmount(amount=line.get(
+                "montoIgv", 0.0), currencyID=tipoMoneda)
 
             tax_subtotal = TaxSubtotal(taxable_amount=taxable_amount,
                                        tax_amount=tax_amount,
@@ -482,7 +503,8 @@ def build_factura(data):
             tax_scheme = TaxScheme("9996", "GRA", "FRE")
             tax_category = TaxCategory(category_id="Z",
                                        percent=tasaIgv,
-                                       tax_exemption_reason_code=line.get("codAfectacionIgv"),
+                                       tax_exemption_reason_code=line.get(
+                                           "codAfectacionIgv"),
                                        tax_scheme=tax_scheme)
             taxable_amount = TaxableAmount(amount=line.get("montoItem", 0.0),
                                            currencyID=tipoMoneda)
@@ -493,15 +515,17 @@ def build_factura(data):
                                        tax_amount=tax_amount,
                                        tax_category=tax_category)
             tax_total.add_tax_subtotal(tax_subtotal=tax_subtotal)
-        
+
         # 9997 - Exonerado
         if cod_afectacion_igv in ["20"]:
             tax_scheme = TaxScheme("9997", "EXO", "VAT")
             tax_category = TaxCategory(category_id="E",
                                        percent=tasaIgv,
-                                       tax_exemption_reason_code=line.get("codAfectacionIgv"),
+                                       tax_exemption_reason_code=line.get(
+                                           "codAfectacionIgv"),
                                        tax_scheme=tax_scheme)
-            taxable_amount = TaxableAmount(amount=line.get("montoItem", 0.0), currencyID=tipoMoneda)
+            taxable_amount = TaxableAmount(amount=line.get(
+                "montoItem", 0.0), currencyID=tipoMoneda)
             tax_amount = TaxAmount(amount=line.get("montoIgv", 0.0),
                                    currencyID=tipoMoneda)
 
@@ -509,16 +533,17 @@ def build_factura(data):
                                        tax_amount=tax_amount,
                                        tax_category=tax_category)
             tax_total.add_tax_subtotal(tax_subtotal=tax_subtotal)
-
 
         # 9998 -	Inafecto
         if cod_afectacion_igv in ["30"]:
             tax_scheme = TaxScheme("9998", "INA", "FRE")
             tax_category = TaxCategory(category_id="O",
                                        percent=tasaIgv,
-                                       tax_exemption_reason_code=line.get("codAfectacionIgv"),
+                                       tax_exemption_reason_code=line.get(
+                                           "codAfectacionIgv"),
                                        tax_scheme=tax_scheme)
-            taxable_amount = TaxableAmount(amount=line.get("precioItemReferencia", 0.0), currencyID=tipoMoneda)
+            taxable_amount = TaxableAmount(amount=line.get(
+                "precioItemReferencia", 0.0), currencyID=tipoMoneda)
             tax_amount = TaxAmount(amount=line.get("montoIgv", 0.0),
                                    currencyID=tipoMoneda)
 
@@ -528,22 +553,22 @@ def build_factura(data):
 
             tax_total.add_tax_subtotal(tax_subtotal=tax_subtotal)
 
-        
         if afectacion_icbper:
-            per_unit_amount = PerUnitAmount(amount=tasaICBPER,currencyID=tipoMoneda)
+            per_unit_amount = PerUnitAmount(
+                amount=tasaICBPER, currencyID=tipoMoneda)
             tax_scheme = TaxScheme("7152", "ICBPER", "OTH")
             tax_category = TaxCategory(per_unit_amount=per_unit_amount,
-                                        tax_scheme=tax_scheme)
+                                       tax_scheme=tax_scheme)
 
-            base_unit_measure = BaseUnitMeasure(quantity = line.get("cantidadItem", 0),
-                                                unit_code = line.get('unidadMedidaItem'))
-            
-            tax_amount = TaxAmount(amount=round(line.get("cantidadItem", 0.0)*tasaICBPER,2),
+            base_unit_measure = BaseUnitMeasure(quantity=line.get("cantidadItem", 0),
+                                                unit_code=line.get('unidadMedidaItem'))
+
+            tax_amount = TaxAmount(amount=round(line.get("cantidadItem", 0.0)*tasaICBPER, 2),
                                    currencyID=tipoMoneda)
 
             tax_subtotal = TaxSubtotal(tax_amount=tax_amount,
-                                        base_unit_measure=base_unit_measure,
-                                        tax_category=tax_category)
+                                       base_unit_measure=base_unit_measure,
+                                       tax_category=tax_category)
 
             tax_total.add_tax_subtotal(tax_subtotal=tax_subtotal)
 
@@ -555,12 +580,16 @@ def build_factura(data):
         if "descuento" in line:
             line_descuento = line["descuento"]
             if "factor" in line_descuento and "montoDescuento" in line_descuento and "montoBase" in line_descuento:
-                descuento = AllowanceCharge(charge_indicator = False,
-                                            allowance_charge_reason_code = "00",
-                                            multiplier_factor_numeric = line_descuento.get("factor",0.0),#Porcentaje del descuento 
-                                            amount = line_descuento.get("montoDescuento"),
-                                            base_amount = line_descuento.get("montoBase"),#base_amount es el monto total de la línea sin IGV y sin descuento
-                                            currency_id = tipoMoneda)
+                descuento = AllowanceCharge(charge_indicator=False,
+                                            allowance_charge_reason_code="00",
+                                            multiplier_factor_numeric=line_descuento.get(
+                                                "factor", 0.0),  # Porcentaje del descuento
+                                            amount=line_descuento.get(
+                                                "montoDescuento"),
+                                            # base_amount es el monto total de la línea sin IGV y sin descuento
+                                            base_amount=line_descuento.get(
+                                                "montoBase"),
+                                            currency_id=tipoMoneda)
 
         invoice_line = InvoiceLine.InvoiceLine(invoice_quantity=invoice_quantity,
                                                line_extension_amount=line_extension_amount,
@@ -569,11 +598,10 @@ def build_factura(data):
                                                item=item,
                                                price=price,
                                                descuento=descuento)
-        
-            
 
         fact.add_invoice_line(invoice_line)
 
-    fact.set_file_name(str(numDocEmisor) + "-" + tipoDocumento + "-" + serie + "-" + str(correlativo).zfill(8))
+    fact.set_file_name(str(numDocEmisor) + "-" + tipoDocumento +
+                       "-" + serie + "-" + str(correlativo).zfill(8))
 
     return fact

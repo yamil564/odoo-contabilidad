@@ -699,7 +699,9 @@ class AccountMove(models.Model):
                     "El descuento no puede ser del 100%. Si el producto es gratuito, use el impuesto GRATUITO.")
                 break
 
-            if line.price_unit == 0 and len([1 for tax in line.tax_ids if tax.tax_group_id.tipo_afectacion in ["31", "32", "33", "34", "35", "36"]]) > 0:
+            # if line.price_unit == 0 and len([1 for tax in line.tax_ids if tax.tax_group_id.tipo_afectacion in ["31", "32", "33", "34", "35", "36"]]) > 0:
+            # if line.price_unit == 0 and line.tax_ids[0].tax_group_id.tipo_afectacion == "31":
+            if line.price_unit == 0:
                 errors.append(
                     "El precio unitario de los productos debe ser siempre mayor a 0. Revise el producto {} y cambie el precio a un valor mayor a 0.".format(line.name))
                 break

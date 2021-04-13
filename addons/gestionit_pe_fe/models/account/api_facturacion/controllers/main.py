@@ -192,9 +192,7 @@ def send_consulta(consulta_xml, data, user, consulta=False):
     # if user.ose in ['sunat', '', None]:
     if tipo_envio == 0:  # Beta
         url = "https://e-beta.sunat.gob.pe:443/ol-ti-itcpfegem-beta/billService"
-    elif tipo_envio == 1:  # Homologacion
-        url = "https://www.sunat.gob.pe:443/ol-ti-itcpgem-sqa/billService"
-    elif tipo_envio == 2:  # Produccion
+    elif tipo_envio == 1:  # Produccion
         if not consulta:
             url = "https://e-factura.sunat.gob.pe/ol-ti-itcpfegem/billService"
         else:

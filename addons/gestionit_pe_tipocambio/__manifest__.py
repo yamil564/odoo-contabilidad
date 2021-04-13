@@ -1,9 +1,9 @@
 {
-    "name":"Actualización Automática de Tipo de Dólares desde SUNAT",
-    "author":"Gestión IT",
-    "description":"",
-    "depends":[],
-    "category":"invoicing",
-    "data":[],
-    "external_dependencies":{"python":[]}
+    "name": "GIT - Actualización Automática de Tipo de Dólares desde SUNAT",
+    "author": "Gestión IT",
+    "description": "",
+    "depends": [],
+    "category": "invoicing",
+    "data": [],
+    "external_dependencies": {"python": []}
 }

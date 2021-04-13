@@ -1,5 +1,5 @@
 {
-    "name": "Facturación electrónica - SUNAT",
+    "name": "GIT - Facturación electrónica - SUNAT",
     "author": "Gestión IT",
     "description": "Generación y Emisión de comprobantes electrónicos XML a SUNAT",
     "depends": ["base", "account", "sale_management", "stock", "l10n_pe", "account_debit_note", "gestionit_pe_ubicaciones", "gestionit_pe_consulta_ruc_dni"],
@@ -17,6 +17,7 @@
         'views/account/view_acc_com_baja.xml',
         'views/account/view_acc_log_status.xml',
         'views/account/view_account_log_status.xml',
+        'views/account/view_acc_mis_comprobantes.xml',
         'views/guia_remision/guia_remision_electronica.xml',
         'views/guia_remision/popup_form_seleccion_ubigeo.xml',
         'views/guia_remision/res_partner_destinatario.xml',
@@ -40,5 +41,6 @@
         'cron/guia_remision_cron.xml',
         'cron/validez_comprobante_cron.xml',
     ],
+    'application': True,
     "external_dependencies": {"python": ["signxml"]}
 }

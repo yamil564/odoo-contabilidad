@@ -1,5 +1,5 @@
 {
-    "name": "Exportación de reportes PLE de Ventas y Compras",
+    "name": "GIT - Exportación de reportes PLE de Ventas y Compras",
     "author": "Gestión IT",
     "description": "",
     "depends": ['account'],

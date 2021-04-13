@@ -31,7 +31,7 @@ fields_required = {'tipoDocumento': ' Es necesario el tipo de Documento a enviar
                    'detalle': ' Es necesario el detalle del documento a enviar.',
                    'descuento': ' Es necesario la información de descuentos del documento a enviar.',
                    'indicadores': ' Es necesario algunos indicadores del documento a enviar.',
-                   'tipoEnvio': ' Es necesario especificar el tipo de Envio (0=Desarrollo, 1=Homologacion, 2=Producción).'}
+                   'tipoEnvio': ' Es necesario especificar el tipo de Envio (0=Desarrollo, 1=Producción).'}
 
 fields_required_doc_fac_bol = {'serie': ' Es necesario la serie del documento con formato (AXXX).',
                                'correlativo': ' Es necesario el correlativo del documento.',
@@ -79,7 +79,7 @@ fields_required_summaries = {'tipoResumen': ' Es necesario el tipo de Resumen (R
                              'idTransaccion': ' Es necesario el ID de la Transacción del día.',
                              'resumen': ' Es necesaria la información del Resumen.',
                              'detalle': ' Es necesario el detalle del Resumen.',
-                             'tipoEnvio': ' Es necesario especificar el tipo de Envio (0=Desarrollo, 1=Homologacion, 2=Producción).'}
+                             'tipoEnvio': ' Es necesario especificar el tipo de Envio (0=Desarrollo, 1=Producción).'}
 
 fields_required_summaries_resumen = {'id': ' Es necesario el ID del Resumen.',
                                      'tipoDocEmisor': ' Es necesario el Tipo de Documento del Emisor del Resumen.',
@@ -109,7 +109,7 @@ fields_required_guiaremision = {'tipoDocumento': ' Es necesario el tipo de Docum
                                 'correoReceptor': 'Es necesario el correo del receptor del documento.',
                                 'documento': ' Es necesario información del documento a enviar.',
                                 'detalle': ' Es necesario el detalle del Resumen.',
-                                'tipoEnvio': ' Es necesario especificar el tipo de Envio (0=Desarrollo, 1=Homologacion, 2=Producción).'}
+                                'tipoEnvio': ' Es necesario especificar el tipo de Envio (0=Desarrollo, 1=Producción).'}
 
 
 fields_required_doc_guiaremision = {'serie': ' Es necesario la serie del documento con formato (AXXX).',

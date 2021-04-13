@@ -511,6 +511,8 @@ def crear_json_not_cred_deb(self):
 
     data = {
         "company": {
+            "numDocEmisor": numDocEmisor,
+            "nombreEmisor": nombreEmisor,
             "SUNAT_user": self.company_id.sunat_user,
             "SUNAT_pass": self.company_id.sunat_pass,
             "key_private": self.company_id.key_private,

@@ -99,7 +99,7 @@ def build_factura(data):
             "status": 400,
             "code": "51",
             "detail": validacion.error_list[
-                "51"] + " Tipo de Envio (tipoEnvio) no válido (0=Desarrollo, 1=Homologacion, 2=Producción)."
+                "51"] + " Tipo de Envio (tipoEnvio) no válido (0=Desarrollo, 1=Producción)."
         })
 
     if not fechaEmision:

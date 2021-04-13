@@ -542,7 +542,7 @@ errores = {
     "2417": "Debe consignar Valor Referencial unitario por ítem en operaciones no onerosas",
     "2418": "Si consigna Valor Referencial unitario por ítem en operaciones no onerosas, la operación debe ser no onerosa",
     "2419": "El dato ingresado en AllowanceTotalAmount no cumple con el formato establecido",
-    "2420": "Ya transcurrieronmásde 25díascalendarios para concluir con su proceso dehomologación",
+    "2420": "Ya transcurrieronmásde 25díascalendarios para concluir con su proceso de homologación",
     "2421": "Debe indicar toda lainformaciónde sustento detrasladode bienes",
     "2422": "El valor unitario debe ser menor al precio unitario",
     "2423": "Si ha consignado monto ISC a nivel deítem, debe consignar un monto a nivel de total",

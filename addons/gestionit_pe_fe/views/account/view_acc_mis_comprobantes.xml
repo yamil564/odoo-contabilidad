@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data noupdate="0">
+        <record id="gestionit_pe_fe.view_tree_comprobantes_venta" model="ir.ui.view">
+            <field name="name">view.tree.comprobantes.venta</field>
+            <field name="model">account.move</field>
+            <field name="arch" type="xml">
+                <tree string="Comprobantes"
+                    create="0"
+                    decoration-info="state == 'draft'" 
+                    decoration-muted="state == 'cancel'"
+                    decoration-warning="estado_emision == 'N'" 
+                    decoration-danger="estado_emision == 'R'" 
+                    decoration-success="estado_emision == 'E'" 
+                    decoration-bf="estado_emision in ['A','O']">
+                    <field name="partner_id" groups="base.group_user" string="Cliente"/>
+                    <field name="invoice_date" string="Fecha de la factura"/>
+                    <field name="name" string="Número"/>
+                    <!-- <field name="refund_invoice_id" string="Comprobante a rectificar"/> -->
+                    <field name="commercial_partner_id" invisible="1" />
+                    <field name="ref" invisible="1"/>
+                    <!-- <field name="name" invisible="1"/> -->
+                    <field name="journal_id" invisible="1"/>
+                    <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}" string="Empresa"/>
+                    <field name="user_id" string="Vendedor"/>
+                    <field name="invoice_date_due" string="Fecha de Vencimiento"/>
+                    <!-- <field name="origin" string="Origen"/> -->
+                    <field name="amount_total_signed" string="Total" sum="Total"/>
+                    <!-- <field name="residual_signed" string="Monto adeudado" sum="Amount Due"/> -->
+                    <field name="currency_id" invisible="1" string="Moneda"/>
+                    <field name="company_currency_id" invisible="1"/>
+                    <field name="state" string="Estado"/>
+                    <field name="estado_emision" invisible="1"/>
+                    <field name="estado_comprobante_electronico" />
+                    <field name="anulacion_comprobante" />
+                    <field name="type" invisible="context.get('type',True)" string="Tipo"/>
+                </tree>
+            </field>
+        </record>
+
+        
+        <record id="gestionit_pe_fe.view_form_comprobantes_venta" model="ir.ui.view">
+            <field name="name">view.form.comprobantes.venta</field>
+            <field name="model">account.move</field>
+            <field name="inherit_id" ref="account.view_move_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//form" position="attributes"> 
+                    <attribute name="create">0</attribute>    
+                </xpath>
+            </field>
+        </record>
+        
+        <!-- MIS COMPROBANTES DE VENTA BEGIN -->
+        <record id="action_mis_comprobantes_venta" model="ir.actions.act_window">
+            <field name="name">Comprobantes de Venta</field>
+            <field name="res_model">account.move</field>
+            <field name="view_id" ref="gestionit_pe_fe.view_tree_comprobantes_venta" />
+            <field name="view_mode">tree,kanban,form,pivot,graph</field>
+            <field name="domain">
+				[('journal_id.type','=','sale')]
+            </field>
+            <field name="search_view_id" ref="account.view_account_invoice_filter" />
+        </record>
+
+        <record id="action_invoice_refund_out_tree_tree_mis_comprobantes" model="ir.actions.act_window.view">
+            <field eval="1" name="sequence"/>
+            <field name="view_mode">tree</field>
+            <field name="view_id" ref="gestionit_pe_fe.view_tree_comprobantes_venta" />
+            <field name="act_window_id" ref="gestionit_pe_fe.action_mis_comprobantes_venta" />
+        </record>
+
+        <record id="action_invoice_refund_out_tree_form_mis_comprobantes" model="ir.actions.act_window.view">
+            <field eval="2" name="sequence" />
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="gestionit_pe_fe.view_form_comprobantes_venta" />
+            <field name="act_window_id" ref="gestionit_pe_fe.action_mis_comprobantes_venta" />
+        </record>
+
+        <menuitem name="Comprobantes de Venta" 
+                    id="menu_mis_comprobantes_venta" 
+                    action="action_mis_comprobantes_venta" 
+                    parent="account.menu_finance_receivables" sequence="0" />
+        <!-- MIS COMPROBANTES DE VENTA START -->
+    </data>
+</odoo>

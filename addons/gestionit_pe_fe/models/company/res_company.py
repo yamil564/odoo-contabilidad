@@ -18,7 +18,7 @@ class ResCompany(models.Model):
     key_public = fields.Text("Cert. PUBLIC")
     key_private = fields.Text("Cert. PRIVATE")
     tipo_envio = fields.Selection(selection=[(
-        "0", "0 - Pruebas"), ("1", "1 - Homologación"), ("2", "2 - Producción")])
+        "0", "0 - Pruebas"), ("1", "1 - Producción")])
 
     # url_consulta_comprobante = fields.Char("Consulta Comprobante URL")
     # mensaje_representacion_impresa = fields.Html(
