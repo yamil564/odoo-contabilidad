@@ -97,8 +97,14 @@
                     <!-- <button name="generar_nota_credito" string="Generar Nota de Crédito" class="oe_highlight" type="object" attrs="{'invisible': ['|','|',('invoice_type_code','not in',['00','01','03']),('state','in',('cancel','draft'))]}"/>
                     <button name="generar_nota_debito" string="Generar Nota de Débito" class="oe_highlight" type="object" attrs="{'invisible': ['|','|',('invoice_type_code','not in',['00','01','03']),('state','in',('cancel','draft'))]}"/> -->
                 </xpath>
+                <xpath expr="//div[@name='button_box']" position="inside">
+                    <button name="action_view_guia_remision" type="object" class="oe_stat_button" icon="fa-truck" attrs="{'invisible': [('guia_remision_count', '=', 0)]}">
+                        <field name="guia_remision_count" widget="statinfo" string="GRE"/>
+                    </button>
+                </xpath>
                 <xpath expr="//button[@name='preview_invoice']" position="after">
                     <button name="btn_comunicacion_baja" string="Anular Comprobante" class="oe_highlight" type="object" attrs="{'invisible': [('estado_comprobante_electronico','=','2_ANULADO'),('state','not in',['draft','cancel'])]}"/>
+                    <button name="action_open_guia_remision" string="Generar Guía de Remisión" class="oe_highlight" type="object" attrs="{'invisible': [('guia_remision_count','!=',0)]}"/>
                 </xpath>
             </field>
         </record>

@@ -283,16 +283,24 @@ class AccountMove(models.Model):
         currency_field='company_currency_id')
 
     # monto_en_letras = fields.Char("Monto en letras",compute=_compute_monto_en_letras)
-    # tiene_guia_remision = fields.Boolean("Tienes guía de Remisión",default=False,copy=False)
+    tiene_guia_remision = fields.Boolean(
+        "Tienes guía de Remisión", default=False, copy=False)
     invoice_picking_id = fields.Many2one(
         "stock.picking", string="Documento de Envío", copy=False)
     stock_picking_id = fields.Many2one(
         "stock.picking", string="Documento de Envío", copy=False)
-    # numero_guia = fields.Char("Número de Guía",related="invoice_picking_id.numero_guia",copy=False)
-    # numero_guia_remision =  fields.Char("Número de Guía de Remisión",copy=False)
+    numero_guia = fields.Char(
+        "Número de Guía", related="invoice_picking_id.numero_guia", copy=False)
+    numero_guia_remision = fields.Char(
+        "Número de Guía de Remisión", copy=False)
+    guia_remision_ids = fields.Many2many(
+        "gestionit.guia_remision", string="Guía de Remisión")
+    guia_remision_count = fields.Integer(
+        "Cantidad de GRE", compute="_compute_guia_remision_count")
 
-    # guia_remision_ids = fields.Many2many("efact.guia_remision",string="Guía de Remisión")
-    # guia_remision_count = fields.Integer("Cantidad de GRE",compute="_compute_guia_remision_count")
+    def _compute_guia_remision_count(self):
+        for record in self:
+            record.guia_remision_count = len(record.guia_remision_ids)
 
     @api.depends(
         'line_ids.debit',
@@ -568,9 +576,6 @@ class AccountMove(models.Model):
                 #     {"name": cdr_fname, "type": "binary", "datas": datas, "mimetype": "text/xml", "datas_fname": cdr_fname}).id)
                 ctx["default_attachment_ids"].append(self.env["ir.attachment"].create(
                     {"name": cdr_fname, "type": "binary", "datas": datas, "mimetype": "text/xml"}).id)
-
-        _logger.info("Mail logger")
-        _logger.info(ctx)
 
         return {
             'name': _('Send Invoice'),
@@ -919,8 +924,6 @@ class AccountMove(models.Model):
         # if self.estado_comprobante_electronico in ["-",False,"0_NO_EXISTE"]:
         # self.btn_consulta_validez_comprobante()
 
-        _logger.info(True if self.documento_baja_id else False)
-
         if self.estado_comprobante_electronico == "2_ANULADO":
             raise UserError("Este comprobante ha sido Anulado.")
 
@@ -970,6 +973,60 @@ class AccountMove(models.Model):
                             "default_account_invoice_id": self.id
                     }
                 }
+
+    def action_context_default_guia_remision(self):
+        return {
+            "default_documento_asociado": "comprobante_pago",
+            "default_fecha_emision": fields.Date.today(),
+            "default_fecha_inicio_traslado": fields.Date.today(),
+            # "default_modalidad_transporte":"02",
+            "default_motivo_traslado": "01",
+            "default_comprobante_pago_ids": [(6, 0, [self.id])],
+            "default_destinatario_partner_id": self.partner_id.id,
+            "default_company_partner_id": self.partner_id.id
+        }
+
+    def action_open_guia_remision(self):
+        action = {
+            "type": "ir.actions.act_window",
+            "res_model": "gestionit.guia_remision",
+            "context": self.action_context_default_guia_remision(),
+            "target": "self",
+            "view_mode": "form"
+        }
+        return action
+
+    def action_view_guia_remision(self):
+        context = {
+            "default_documento_asociado": "comprobante_pago",
+            "default_fecha_emision": fields.Date.today(),
+            "default_fecha_inicio_traslado": fields.Date.today(),
+            "default_modalidad_transporte": "02",
+            "default_motivo_traslado": "01",
+            "default_comprobante_pago_ids": [(6, 0, [self.id])],
+            "default_destinatario_partner_id": self.partner_id.id,
+            "default_company_partner_id": self.partner_id.id
+        }
+        if len(self.guia_remision_ids) == 1:
+            action = {
+                "type": "ir.actions.act_window",
+                "res_model": "gestionit.guia_remision",
+                "target": "self",
+                "view_mode": "form",
+                "res_id": self.guia_remision_ids.id,
+                "context": context
+            }
+        elif len(self.guia_remision_ids) > 1:
+            action = {
+                "type": "ir.actions.act_window",
+                "res_model": "gestionit.guia_remision",
+                "target": "self",
+                "view_mode": "tree",
+                "domain": [("id", "in", self.guia_remision_ids.ids)],
+                "context": context
+            }
+
+        return action
 
 
 class AccountMoveReversal(models.TransientModel):

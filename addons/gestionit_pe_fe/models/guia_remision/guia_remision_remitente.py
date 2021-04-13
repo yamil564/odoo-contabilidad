@@ -405,7 +405,7 @@ class GuiaRemision(models.Model):
                                                 "product_id": mls.product_id.id,
                                                 "description": mls.product_id.name,
                                                 "qty": mls.quantity_done,
-                                                "uom_id": mls.product_uom.id,
+                                                "uom_id": mls.uom_id.id,
                                                 "stock_picking_id": movimiento_stock_id.id,
                                                 } for mls in move_lines]
 
@@ -430,8 +430,6 @@ class GuiaRemision(models.Model):
             guia_remision_lines = []
             guia_remision_lines_temp = {}
 
-            _logger.info(record.documento_asociado)
-
             if record.documento_asociado == "comprobante_pago":
                 record.guia_remision_line_ids = [(6, 0, [])]
                 for comprobante_pago in record.comprobante_pago_ids:
@@ -440,7 +438,7 @@ class GuiaRemision(models.Model):
                                                 "product_id": inv_line.product_id.id,
                                                 "description": inv_line.name,
                                                 "qty": inv_line.quantity,
-                                                "uom_id": inv_line.uom_id.id,
+                                                "uom_id": inv_line.product_uom_id.id,
                                                 "stock_picking_id": False,
                                                 } for inv_line in invoice_line]
 
@@ -451,9 +449,7 @@ class GuiaRemision(models.Model):
                         guia_remision_lines_temp[line["product_id"]
                                                  ]["qty"] += line["qty"]
 
-                _logger.info(guia_remision_lines)
                 guia_remision_lines = list(guia_remision_lines_temp.values())
-                _logger.info([(0, 0, grl) for grl in guia_remision_lines])
                 record.guia_remision_line_ids = [
                     (0, 0, grl) for grl in guia_remision_lines]
 
