@@ -18,7 +18,7 @@
                 </xpath>
                 <xpath expr="//field[@name='journal_id']" position="replace">
                     <field name="tipo_operacion" string="Tipo de Operación" attrs="{'readonly':[['state','not in',['draft']]]}" widget="radio" />
-                    <field name="journal_id" string="Serie" options="{'no_create': True,'no_open':True}" domain="[('invoice_type_code_id','=',invoice_type_code),('type','=','sale')]"/>
+                    <field name="journal_id" string="Serie" options="{'no_create': True,'no_open':True}" />
                 </xpath>
             </field>
         </record>
@@ -34,7 +34,7 @@
                     <field name="journal_ids" widget="many2many_tags" string="Series Permitidas" groups="base.group_no_one"/>
                 </xpath>
                 <xpath expr="//field[@name='journal_id']" position="attributes">
-                    <attribute name="domain">[('invoice_type_code_id','=',invoice_type_code), ('id','in',journal_ids)]</attribute>
+                    <attribute name="domain">[('invoice_type_code_id','=',invoice_type_code), ('id','in',journal_ids), ('type','=','sale')]</attribute>
                 </xpath>
             </field>
         </record>

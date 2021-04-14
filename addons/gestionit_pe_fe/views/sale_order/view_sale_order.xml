@@ -6,13 +6,8 @@
             <field name="model">sale.order</field>
             <field name="inherit_id" ref="sale.view_order_form"/>
             <field name="arch" type="xml">
-                <field name='partner_id' position="after">
-                    <field name="tipo_documento_identidad"/>
-                    <field name="tipo_documento" widget="radio" required="1"/>
-                </field>
-                <!-- <xpath expr="//field[@name='partner_id']" position="attribute">
-                    <attribute name="context">{default_}</attribute>
-                </xpath> -->
+                <xpath expr="//button[@name='%(sale.action_view_sale_advance_payment_inv)d']" position="replace">
+                </xpath>
                 <!-- <xpath expr="//kanban//templates//div" position="inside">
                     <a t-if="!read_only_mode" type="delete" class="fa fa-times pull-right"/>
                 </xpath>

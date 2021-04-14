@@ -65,23 +65,24 @@ class AccountMove(models.Model):
             if len(warehouse_ids) > 0:
                 for wh in warehouse_ids:
                     for whj in wh.journal_ids:
-                        if whj.invoice_type_code_id == self._context.get("default_invoice_type_code"):
-                            res.update({
-                                "warehouse_id": wh.id,
-                                "journal_id": whj.id
-                            })
-                            return res
+                        if whj.type == 'sale':
+                            if whj.invoice_type_code_id == self._context.get("default_invoice_type_code"):
+                                res.update({
+                                    "warehouse_id": wh.id,
+                                    "journal_id": whj.id
+                                })
+                                return res
         if refund_id:
             refund_obj = self.env["account.move"].browse(refund_id)
             domain += [['tipo_comprobante_a_rectificar',
                         'in', [refund_obj.invoice_type_code]]]
 
-        domain += [['invoice_type_code_id', '=',
-                    self._context.get("default_invoice_type_code")], ["type", "=", "sale"]]
+        # domain += [['invoice_type_code_id', '=',
+        #             self._context.get("default_invoice_type_code")], ["type", "=", "sale"]]
 
-        journal_id = self.env['account.journal'].search(domain, limit=1)
+        # journal_id = self.env['account.journal'].search(domain, limit=1)
 
-        res["journal_id"] = journal_id.id
+        # res["journal_id"] = journal_id.id
 
         return res
 
@@ -524,70 +525,6 @@ class AccountMove(models.Model):
         oauth.enviar_doc(self)
 
         return obj
-
-    def action_invoice_sent(self):
-        """ Open a window to compose an email, with the edi invoice template
-            message loaded by default
-        """
-        self.ensure_one()
-        template = self.env.ref(
-            'account.email_template_edi_invoice', raise_if_not_found=False)
-        lang = get_lang(self.env)
-        if template and template.lang:
-            lang = template._render_template(
-                template.lang, 'account.move', self.id)
-        else:
-            lang = lang.code
-        compose_form = self.env.ref(
-            'account.account_invoice_send_wizard_form', raise_if_not_found=False)
-        ctx = dict(
-            default_model='account.move',
-            default_res_id=self.id,
-            # For the sake of consistency we need a default_res_model if
-            # default_res_id is set. Not renaming default_model as it can
-            # create many side-effects.
-            default_res_model='account.move',
-            default_use_template=bool(template),
-            default_template_id=template and template.id or False,
-            default_composition_mode='comment',
-            mark_invoice_as_sent=True,
-            custom_layout="mail.mail_notification_paynow",
-            model_description=self.with_context(lang=lang).type_name,
-            force_email=True
-        )
-
-        fname = self.name+".xml"
-        cdr_fname = self.name+"_cdr.xml"
-        if len(self.account_log_status_ids) > 0:
-            log_status = self.account_log_status_ids[-1]
-            data_signed_xml = log_status.signed_xml_data_without_format
-            ctx["default_attachment_ids"] = []
-            if data_signed_xml:
-                datas = base64.b64encode(data_signed_xml.encode())
-                # ctx["default_attachment_ids"].append(self.env["ir.attachment"].create(
-                #     {"name": fname, "type": "binary", "datas": datas, "mimetype": "text/xml", "datas_fname": fname}).id)
-                ctx["default_attachment_ids"].append(self.env["ir.attachment"].create(
-                    {"name": fname, "type": "binary", "datas": datas, "mimetype": "text/xml"}).id)
-
-            response_xml = log_status.response_xml_without_format
-            if response_xml:
-                datas = base64.b64encode(response_xml.encode())
-                # ctx["default_attachment_ids"].append(self.env["ir.attachment"].create(
-                #     {"name": cdr_fname, "type": "binary", "datas": datas, "mimetype": "text/xml", "datas_fname": cdr_fname}).id)
-                ctx["default_attachment_ids"].append(self.env["ir.attachment"].create(
-                    {"name": cdr_fname, "type": "binary", "datas": datas, "mimetype": "text/xml"}).id)
-
-        return {
-            'name': _('Send Invoice'),
-            'type': 'ir.actions.act_window',
-            'view_type': 'form',
-            'view_mode': 'form',
-            'res_model': 'account.invoice.send',
-            'views': [(compose_form.id, 'form')],
-            'view_id': compose_form.id,
-            'target': 'new',
-            'context': ctx,
-        }
 
     @api.model
     def _validar_reference(self, obj):
@@ -1085,3 +1022,42 @@ class CustomPopMessage(models.TransientModel):
 
     name = fields.Char('Message')
     accion = fields.Text(string="Accion a realizar")
+
+
+class accountInvoiceSend(models.TransientModel):
+    _inherit = "account.invoice.send"
+
+    @api.onchange('template_id')
+    def onchange_template_id(self):
+        for wizard in self:
+            if wizard.composer_id:
+                wizard.composer_id.template_id = wizard.template_id.id
+                wizard._compute_composition_mode()
+                wizard.composer_id.onchange_template_id_wrapper()
+
+                invoice = self.invoice_ids[0]
+                attach_ids = []
+                fname = invoice.name+".xml"
+                cdr_fname = invoice.name+"_cdr.xml"
+                if len(invoice.account_log_status_ids) > 0:
+                    log_status = invoice.account_log_status_ids[-1]
+                    data_signed_xml = log_status.signed_xml_data_without_format
+
+                    if data_signed_xml:
+                        datas = base64.b64encode(data_signed_xml.encode())
+                        # ctx["default_attachment_ids"].append(invoice.env["ir.attachment"].create(
+                        #     {"name": fname, "type": "binary", "datas": datas, "mimetype": "text/xml", "datas_fname": fname}).id)
+                        attach_ids.append(invoice.env["ir.attachment"].create(
+                            {"name": fname, "type": "binary", "datas": datas, "mimetype": "text/xml", "res_model": "account.move", "res_id": invoice.id, "res_name": invoice.name}).id)
+
+                    response_xml = log_status.response_xml_without_format
+                    if response_xml:
+                        datas = base64.b64encode(response_xml.encode())
+                        # ctx["default_attachment_ids"].append(invoice.env["ir.attachment"].create(
+                        #     {"name": cdr_fname, "type": "binary", "datas": datas, "mimetype": "text/xml", "datas_fname": cdr_fname}).id)
+                        attach_ids.append(invoice.env["ir.attachment"].create(
+                            {"name": cdr_fname, "type": "binary", "datas": datas, "mimetype": "text/xml", "res_model": "account.move", "res_id": invoice.id, "res_name": invoice.name}).id)
+
+                wizard.attachment_ids = [
+                    (4, attach_id) for attach_id in attach_ids]
+                _logger.info("EMAIL SENT")

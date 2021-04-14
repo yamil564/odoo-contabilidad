@@ -1,6 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <data noupdate="0">
+
+
+
+    <data>
+        <record id="gestionit_pe_fe.button_debit_note" model="ir.ui.view">
+            <field name="name">Botón - Crear nota de débito</field>
+            <field name="model">account.move</field>
+            <field name="inherit_id" ref="account_debit_note.view_move_form_debit" />
+            <field name="arch" type="xml">
+                <xpath expr="//button[@name='%(account_debit_note.action_view_account_move_debit)d']" position="attributes">
+                    <attribute name="string">Generar nota de débito</attribute>
+                </xpath>
+            </field>
+        </record>
+        
         <record id="action_debit_note" model="ir.actions.act_window">
             <field name="name">NOTA DE DEBITO</field>
             <field name="res_model">account.move</field>
