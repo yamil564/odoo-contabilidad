@@ -10,6 +10,7 @@
         
         <record id ="base.main_company" model ="res.company">
             <field name="api_ruc_endpoint">https://k5ptgsq1o8.execute-api.us-east-1.amazonaws.com/Prod/empresa</field>
+            <field name="api_migo_endpoint"></field>
         </record>   
         
  

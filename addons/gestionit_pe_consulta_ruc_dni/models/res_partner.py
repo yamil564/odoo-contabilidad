@@ -21,10 +21,13 @@ class ResPartner(models.Model):
     def vat_change(self):
         self.update_document()
 
-    def get_person_name_v3(self, dni):
+    def request_migo_dni(self, dni):
+        user_id = self.env.context.get('uid', False)
+        if user_id:
+            user = self.env["res.users"].sudo().browse(user_id)
+            url = user.company_id.api_migo_endpoint + "dni"
+            token = user.company_id.api_migo_token
         try:
-            url = "https://api.migo.pe/api/v1/dni"
-            token = "YFWhSoBB9PrZLXtPp2N5YrNDXsfhFGLOH0WHVOa7JoqyV4RbgxUZL8jYn5Zt"
             headers = {
                 'Content-Type': 'application/json'
             }
@@ -43,23 +46,48 @@ class ResPartner(models.Model):
             return None
 
     @api.model
-    def consulta_ruc_api(self, vat):
+    def request_migo_ruc(self, ruc):
         user_id = self.env.context.get('uid', False)
+        errors = []
+
         if user_id:
             user = self.env["res.users"].sudo().browse(user_id)
-            api_ruc_endpoint = user.company_id.api_ruc_endpoint
-        errors = []
-        if not api_ruc_endpoint:
-            errors.append("Debe configurar el end-point del API RUC")
-        if len(errors) > 0:
-            raise UserError("\n".join(errors))
 
-        url = api_ruc_endpoint
-        data = {"ruc": vat.strip()}
-        response = requests.post(url, json=data).json()
-        if "success" not in response:
-            raise UserError(response['msg'])
-        return response
+            if not user.company_id.api_migo_endpoint:
+                errors.append("Debe configurar el end-point del API")
+            if not user.company_id.api_migo_token:
+                errors.append("Debe configurar el token del API")
+            if len(errors) > 0:
+                raise UserError("\n".join(errors))
+            else:
+                url = user.company_id.api_migo_endpoint + "ruc"
+                token = user.company_id.api_migo_token
+
+                try:
+                    headers = {
+                        'Content-Type': 'application/json'
+                    }
+                    data = {
+                        "token": token,
+                        "ruc": ruc
+                    }
+                    res = requests.request(
+                        "POST", url, headers=headers, data=json.dumps(data))
+                    res = res.json()
+
+                    if res.get("success", False):
+                        return res
+                    return None
+                except Exception as e:
+                    return None
+
+        return None
+        # url = api_ruc_endpoint
+        # data = {"ruc": vat.strip()}
+        # response = requests.post(url, json=data).json()
+        # if "success" not in response:
+        #     raise UserError(response['msg'])
+        # return response
 
     def _esrucvalido(self, dato):
         largo_dato = len(dato)
@@ -112,10 +140,10 @@ class ResPartner(models.Model):
                 self.vat = self.vat.strip()
             if self.vat and len(self.vat) != 8:
                 self.msg_error = 'El DNI debe tener 8 caracteres'
-            if not self._esrucvalido(self.vat):
-                self.msg_error = "El DNI no es Válido"
+            # if not self._esrucvalido(self.vat):
+            #     self.msg_error = "El DNI no es Válido"
             else:
-                nombre_entidad = self.get_person_name_v3(self.vat)
+                nombre_entidad = self.request_migo_dni(self.vat)
                 if nombre_entidad:
                     self.name = nombre_entidad
                     self.registration_name = nombre_entidad
@@ -142,16 +170,14 @@ class ResPartner(models.Model):
             if not self._esrucvalido(self.vat):
                 self.msg_error = "El RUC no es Válido"
             else:
-                d = self.consulta_ruc_api(self.vat)
+                d = self.request_migo_ruc(self.vat)
                 if not d:
                     self.name = " - "
                     return True
                 if not d["success"]:
                     self.name = " - "
                     return True
-                #d = d['data']
-                # ~ Busca el distrito
-                # _logger.info(d)
+
                 ditrict_obj = self.env['res.country.state']
                 prov_ids = ditrict_obj.search([('name', '=', d['provincia']),
                                                ('province_id', '=', False),
@@ -166,26 +192,12 @@ class ResPartner(models.Model):
                     self.state_id = dist_id.state_id.id
                     self.country_id = dist_id.country_id.id
 
-                # Si es HABIDO, caso contrario es NO HABIDO
-                # tstate = d['condicion_de_domicilio']
-                # if tstate == 'HABIDO':
-                #     tstate = 'habido'
-                # else:
-                #     tstate = 'nhabido'
-
                 tstate_contribuyente = d['estado_del_contribuyente']
 
-                # if tstate_contribuyente == "ACTIVO":
-                #     self.estado_contribuyente = "activo"
-                # else:
-                #     self.estado_contribuyente = "noactivo"
-
-                # self.state = tstate
-                self.name = d['nombre']
-                self.registration_name = d['nombre']
+                self.name = d['nombre_o_razon_social']
+                self.registration_name = d['nombre_o_razon_social']
                 self.ubigeo = d["ubigeo"]
-                self.street = d['direccion_completa']
-                # self.vat_subjected = True
+                self.street = d['direccion']
                 self.is_company = True
                 self.company_type = "company"
         else:

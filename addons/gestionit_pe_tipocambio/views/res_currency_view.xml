@@ -1,0 +1,33 @@
+<odoo>
+    <data>
+
+        <record model="ir.ui.view" id="tipo_cambio_tree_inherit">
+            <field name="name">Agregar tipo cambio compra venta tree</field>
+            <field name="model">res.currency.rate</field>
+            <field name="inherit_id" ref="base.view_currency_rate_tree"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='rate']" position="after">
+                    <field name="fecha"></field>
+                    <field name="cambio_venta"></field>
+                    <field name="cambio_compra"></field>
+                </xpath>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="tipo_cambio_form_inherit">
+            <field name="name">Agregar tipo cambio compra venta form</field>
+            <field name="model">res.currency.rate</field>
+            <field name="inherit_id" ref="base.view_currency_rate_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='rate']" position="after">
+                    <button name="actualizar_ratio_compra_venta" string="actualizar" type="object" class="oe_highlight"/>
+                    <group>
+                        <field name="fecha"></field>
+                        <field name="cambio_compra"></field>
+                        <field name="cambio_venta"></field>
+                    </group>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>
