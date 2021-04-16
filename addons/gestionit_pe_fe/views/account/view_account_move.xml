@@ -20,6 +20,34 @@
                     <field name="tipo_operacion" string="Tipo de Operación" attrs="{'readonly':[['state','not in',['draft']]]}" widget="radio" />
                     <field name="journal_id" string="Serie" options="{'no_create': True,'no_open':True}" />
                 </xpath>
+
+
+                <xpath expr="//header" position="after">
+                    <!--Estados cuando el documento esta de Baja-->
+                    <!-- <field name="estado_emision" invisible="1"/> -->
+                    <!-- <div class="alert alert-danger" role="alert" style="margin-bottom:0px;" attrs="{'invisible': [('estado_emision','!=','R')]}">
+                        Este documento <bold><a class="alert-link" href="#outstanding" role="button">HA SIDO DADO DE BAJA </a></bold> - Comunicación de Baja con estado <b>Rechazado por SUNAT - <field name="documento_baja_id" attrs="{'readonly':1}"/></b>.
+                    </div>
+                    <div class="alert alert-danger" role="alert" style="margin-bottom:0px;" attrs="{'invisible': [('estado_emision','!=','E')]}">
+                        Este documento <bold><a class="alert-link" href="#outstanding" role="button">HA SIDO DADO DE BAJA </a></bold> - Comunicación de Baja con estado <b>Baja Enviado a SUNAT - <field name="documento_baja_id" attrs="{'readonly':1}"/></b>.
+                    </div> -->
+                    <div class="alert alert-success" role="alert" style="margin-bottom:0px;" attrs="{'invisible': [('estado_emision','!=','A')]}">
+                        Este documento <bold><a class="alert-link" href="#outstanding" role="button">HA SIDO ENVIADO </a></bold> - Documento con estado: Aceptado por SUNAT.
+                    </div>
+                    <!-- <div class="alert alert-danger" role="alert" style="margin-bottom:0px;" attrs="{'invisible': [('estado_emision','!=','N')]}">
+                        Este documento <bold><a class="alert-link" href="#outstanding" role="button">HA SIDO DADO DE BAJA </a></bold> - Comunicación de Baja con estado <b>Baja con Envío Erroneo - <field name="documento_baja_id" attrs="{'readonly':1}"/></b>.
+                    </div>
+                    <div class="alert alert-danger" role="alert" style="margin-bottom:0px;" attrs="{'invisible': [('estado_emision','!=','O')]}">
+                        Este documento <bold><a class="alert-link" href="#outstanding" role="button">HA SIDO DADO DE BAJA </a></bold> - Comunicación de Baja con estado <b>Baja Aceptada con Observaciones - <field name="documento_baja_id" attrs="{'readonly':1}"/></b>.
+                    </div>
+                    <div class="alert alert-danger" role="alert" style="margin-bottom:0px;" attrs="{'invisible': [('estado_emision','!=','P')]}">
+                        Este documento <bold><a class="alert-link" href="#outstanding" role="button">HA SIDO DADO DE BAJA </a></bold> - Comunicación de Baja con estado <b>Baja Pendiente de envío a SUNAT - <field name="documento_baja_id" attrs="{'readonly':1}"/></b>.
+                    </div> -->
+                </xpath>
+
+
+
+
             </field>
         </record>
 

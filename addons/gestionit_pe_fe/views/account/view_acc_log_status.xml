@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <data noupdate="0">
+    <data>
 
         <record id="gestionit_pe_fe.view_tree_account_log_status" model="ir.ui.view">
             <field name="name">view.tree.account.log.status</field>

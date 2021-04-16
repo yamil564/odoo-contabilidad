@@ -48,7 +48,7 @@
             <field name="act_window_id" ref="gestionit_pe_fe.action_debit_note"/>
         </record>
 
-        <menuitem name="Nota de Débito" id="menu_nota_debito" action="gestionit_pe_fe.action_debit_note" parent="account.menu_finance_receivables" sequence="4"/>
+        <menuitem name="Nota de Débito" id="menu_nota_debito" action="gestionit_pe_fe.action_debit_note" parent="gestionit_pe_fe.menu_comprobantes_documentos" sequence="4"/>
 
     </data>
 </odoo>

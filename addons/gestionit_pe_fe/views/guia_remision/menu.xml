@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <data noupdate="0">
+    <data>
 
         <menuitem name="Guía de Remisión"
                     id="gestionit_pe_fe.menu_principal_guia_remision"
@@ -16,7 +16,6 @@
                             action="gestionit_pe_fe.action_view_guia_remision_electronica" 
                             parent="gestionit_pe_fe.menu_documentos" 
                             sequence="4" />
-
             <menuitem name="Datos Principales"
                         sequence="10" 
                         id="gestionit_pe_fe.menu_guia_remision_datos_principales"

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <data noupdate="0">
+    <data>
         <!-- BOLETA DE VENTA BEGIN -->
         <record id="action_boleta_venta" model="ir.actions.act_window">
             <field name="name">BOLETA DE VENTA</field>
@@ -35,7 +35,7 @@
             <field name="act_window_id" ref="gestionit_pe_fe.action_boleta_venta" />
         </record>
 
-        <menuitem name="Boleta de Venta" id="menu_boleta_venta" action="action_boleta_venta" parent="account.menu_finance_receivables" sequence="2" />
+        <menuitem name="Boleta de Venta" id="menu_boleta_venta" action="action_boleta_venta" parent="gestionit_pe_fe.menu_comprobantes_documentos" sequence="2" />
         <!-- BOLETA DE VENTA START -->
     </data>
 </odoo>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <data noupdate="0">
+    <data>
         <record id='uom.product_uom_cm' model='uom.uom'><field name='code'>CMT</field><field name='description'>Centimeter</field></record>
         <record id='uom.product_uom_qt' model='uom.uom'><field name='code'>GLL</field><field name='description'>gallon (US)</field></record>
         <record id='uom.product_uom_day' model='uom.uom'><field name='code'>DAY</field><field name='description'>day</field></record>

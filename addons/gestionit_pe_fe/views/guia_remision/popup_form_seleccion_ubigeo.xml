@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <data noupdate="0">
+    <data>
         <record id="gestionit_pe_fe.view_popup_form_seleccion_ubigeo" model="ir.ui.view">
             <field name="name">popup.form.seleccion.ubigeo</field>    
             <field name="model">gestionit.popup_form_seleccion_ubigeo</field>    

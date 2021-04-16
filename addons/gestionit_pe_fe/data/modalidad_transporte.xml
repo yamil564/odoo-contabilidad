@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <data noupdate="0">
+    <data>
         
         <record id="modalidad_transporte_01" model="gestionit.modalidad_transporte">
             <field name="name">Transporte Público</field>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <data noupdate="0">
+    <data>
         <record id="gestionit_pe_fe.view_tree_motivo_traslado_cat_20" model="ir.ui.view">
             <field name="name">gestionit.view.tree.motivo.traslado</field>
             <field name="model">gestionit.motivo_traslado</field>

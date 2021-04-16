@@ -1,5 +1,5 @@
 <odoo>
-    <data noupdate="0">
+    <data>
         <!--ACCESO DE LECTURA DE TABLA DE PARÁMETROS DE FACTURACIÓN ELECTRÓNICA PARA EMPLEADOS-->
         <!-- <record model="ir.model.access" id="gestionit_pe_fe.access_model_tipo_afectacion">
             <field name="name">gestionit_pe_fe.access.model.tipo.afectacion</field>

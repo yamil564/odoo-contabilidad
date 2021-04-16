@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <data noupdate="0">
+    <data>
         <record id="gestionit_pe_fe.view_tree_comprobantes_venta" model="ir.ui.view">
             <field name="name">view.tree.comprobantes.venta</field>
             <field name="model">account.move</field>
@@ -79,7 +79,7 @@
         <menuitem name="Comprobantes de Venta" 
                     id="menu_mis_comprobantes_venta" 
                     action="action_mis_comprobantes_venta" 
-                    parent="account.menu_finance_receivables" sequence="0" />
+                    parent="gestionit_pe_fe.menu_principal_comprobantes" sequence="0" />
         <!-- MIS COMPROBANTES DE VENTA START -->
     </data>
 </odoo>

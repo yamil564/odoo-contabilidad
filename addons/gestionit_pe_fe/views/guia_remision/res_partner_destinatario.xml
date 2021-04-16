@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <data noupdate="0">
+    <data>
         <record id="gestionit_pe_fe.view_form_destinatario_res_partner" model="ir.ui.view">
             <field name="name">gestionit.view.form.destinatario.res.partner</field>
             <field name="model">res.partner</field>

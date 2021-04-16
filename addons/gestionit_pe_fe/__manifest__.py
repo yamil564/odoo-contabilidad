@@ -5,6 +5,7 @@
     "depends": ["base", "account", "sale_management", "stock", "l10n_pe", "account_debit_note", "gestionit_pe_ubicaciones", "gestionit_pe_consulta_ruc_dni"],
     "category": "invoicing",
     "data": [
+        'views/account/menu.xml',
         'views/product/view_product_uom.xml',
         'views/sale_order/view_sale_order.xml',
         'views/account/view_account_journal.xml',

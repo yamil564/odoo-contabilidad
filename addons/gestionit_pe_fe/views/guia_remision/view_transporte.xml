@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <data noupdate="0">
+    <data>
 
         <record id="gestionit_pe_fe.view_form_res_parter_transportista_tab" model="ir.ui.view">
             <field name="name">view.form.res.partner.transportista.tab</field>

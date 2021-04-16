@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <data noupdate="0">
+    <data>
         <record id="gestionit_pe_fe.view_tree_guia_remision" model="ir.ui.view">
             <field name="name">gestionit.view.tree.guia.remision</field>
             <field name="model">gestionit.guia_remision</field>

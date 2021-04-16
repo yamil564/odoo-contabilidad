@@ -100,7 +100,7 @@
             <field name="view_mode">tree</field>
             <field name="act_window_id" ref="gestionit_pe_fe.action_baja_document"/>
         </record>
-        <menuitem name="Comunicación de baja" id="menu_document_baja" action="gestionit_pe_fe.action_baja_document" parent="account.menu_finance_receivables"/>
+        <menuitem name="Comunicación de baja" id="menu_document_baja" action="gestionit_pe_fe.action_baja_document" parent="gestionit_pe_fe.menu_comprobantes_documentos"/>
 
     </data>
 </odoo>

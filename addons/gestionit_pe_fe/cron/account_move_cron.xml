@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <data noupdate="0">
+    <data>
         <record id="gestionit_pe_fe.ir_cron_envio_comprobante_electronico" model="ir.cron">
             <field name="name">CRON Envío de Comprobantes Electrónicos a SUNAT</field>
             <field name="model_id" ref="account.model_account_move"/>

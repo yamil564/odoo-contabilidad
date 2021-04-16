@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <data noupdate="0">
+    <data>
         <record id="gestionit_pe_fe.view_tree_summary" model ="ir.ui.view">
             <field name="name">gestionit_pe_fe.view.tree.summary</field>
             <field name="model">account.summary</field>
@@ -104,6 +104,6 @@
             <field name="view_mode">tree,form</field>
         </record>
 
-        <menuitem name="Resumen Diario" id="menu_summary" action="action_view_form_summary" parent="account.menu_finance_receivables"/>
+        <menuitem name="Resumen Diario" id="menu_summary" action="action_view_form_summary" parent="gestionit_pe_fe.menu_comprobantes_documentos"/>
     </data>
 </odoo>

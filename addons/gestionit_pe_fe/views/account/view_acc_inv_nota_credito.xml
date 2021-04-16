@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <data noupdate="0">
+    <data>
         <record id="action_credit_note" model="ir.actions.act_window">
             <field name="name">NOTA DE CRÉDITO</field>
             <field name="res_model">account.move</field>
@@ -34,6 +34,6 @@
             <field name="act_window_id" ref="gestionit_pe_fe.action_credit_note"/>
         </record>
 
-        <menuitem name="Nota de Crédito" id="menu_nota_credito" action="action_credit_note" parent="account.menu_finance_receivables" sequence="3"/>
+        <menuitem name="Nota de Crédito" id="menu_nota_credito" action="action_credit_note" parent="gestionit_pe_fe.menu_comprobantes_documentos" sequence="3"/>
     </data>
 </odoo>
