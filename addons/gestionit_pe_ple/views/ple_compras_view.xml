@@ -40,6 +40,6 @@
         </record>
 
         <!-- REGISTRO DE COMPRAS -->
-        <menuitem id="menu_print_reporte_compras" action="reporte_compras" sequence="210" parent="account.menu_finance_receivables" />
+        <menuitem id="menu_print_reporte_compras" action="reporte_compras" sequence="210" parent="gestionit_pe_fe.menu_reportes_documentos" />
     </data>
 </odoo>
