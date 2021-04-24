@@ -1,7 +1,8 @@
 {
     "name": "GIT - Creación de Factura/Boleta desde Ventas",
     "depends": [
-        "base", "gestionit_pe_fe"
+        "base",
+        "sale_management",
     ],
     "data": [
         "views/views.xml"

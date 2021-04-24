@@ -9,10 +9,13 @@
                     <page name="credentials" string="Credenciales de API FE">
                         <group>
                             <field name="tipo_envio" required="1"/>
-                            <field name="sunat_user" />
+                            <field name="cert_id" />
+                            <group>
+                                <field name="sunat_user" />
+                            </group>
+                            <group>
                             <field name="sunat_pass" />
-                            <field name="key_private"/>
-                            <field name="key_public"/>
+                            </group>
                         </group>
                     </page>
                 </xpath>

@@ -17,6 +17,12 @@ class ResPartner(models.Model):
         'activo', 'Activo'), ('noactivo', 'No Activo')], string='Estado del Contribuyente')
     msg_error = fields.Char(readonly=True)
 
+    l10n_latam_identification_type_id = fields.Many2one('l10n_latam.identification.type',
+                                                        string="Tipo de documento de identificación", index=True, auto_join=True,
+                                                        default=lambda self: self.env.ref(
+                                                            'l10n_pe.it_RUC', raise_if_not_found=False),
+                                                        help="Tipo de documento de identificación")
+
     @api.onchange('l10n_latam_identification_type_id', 'vat')
     def vat_change(self):
         self.update_document()
@@ -82,12 +88,6 @@ class ResPartner(models.Model):
                     return None
 
         return None
-        # url = api_ruc_endpoint
-        # data = {"ruc": vat.strip()}
-        # response = requests.post(url, json=data).json()
-        # if "success" not in response:
-        #     raise UserError(response['msg'])
-        # return response
 
     def _esrucvalido(self, dato):
         largo_dato = len(dato)

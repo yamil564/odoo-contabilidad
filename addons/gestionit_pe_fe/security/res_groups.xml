@@ -5,7 +5,7 @@
             <field name="name">gestionit_pe_fe.access.model.tipo.afectacion</field>
             <field name="model_id" ref="gestionit_pe_fe.model_tipo_afectacion"/>
             <field name="perm_read">1</field>
-            <field name="perm_write">0</field>
+            <field name="perm_write">1</field>
             <field name="perm_unlink">0</field>
             <field name="perm_create">0</field>
             <field name="group_id" ref="base.group_user"/>
@@ -95,6 +95,16 @@
             <field name="perm_write">0</field>
             <field name="perm_unlink">0</field>
             <field name="perm_create">0</field>
+            <field name="group_id" ref="base.group_user"/>
+        </record>
+
+        <record model="ir.model.access" id="gestionit_pe_fe.access_model_gestionit_cert_sunat">
+            <field name="name">gestionit.access.model.gestionit.cert.sunat</field>
+            <field name="model_id" ref="gestionit_pe_fe.model_cert_sunat"/>
+            <field name="perm_read">1</field>
+            <field name="perm_write">1</field>
+            <field name="perm_unlink">1</field>
+            <field name="perm_create">1</field>
             <field name="group_id" ref="base.group_user"/>
         </record>
     </data>

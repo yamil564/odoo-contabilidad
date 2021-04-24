@@ -400,8 +400,8 @@ class AccountSummary(models.Model):
                 "nombreEmisor": nombreEmisor,
                 "SUNAT_user": self.company_id.sunat_user,
                 "SUNAT_pass": self.company_id.sunat_pass,
-                "key_private": self.company_id.key_private,
-                "key_public": self.company_id.key_public,
+                "key_private": self.company_id.cert_id.key_private,
+                "key_public": self.company_id.cert_id.key_public,
             }
             resumen_diario_json["resumen"] = {
                 "numDocEmisor": record.company_id.partner_id.vat,
@@ -515,8 +515,8 @@ class AccountSummary(models.Model):
                 "nombreEmisor": nombreEmisor,
                 "SUNAT_user": self.company_id.sunat_user,
                 "SUNAT_pass": self.company_id.sunat_pass,
-                "key_private": self.company_id.key_private,
-                "key_public": self.company_id.key_public,
+                "key_private": self.company_id.cert_id.key_private,
+                "key_public": self.company_id.cert_id.key_public,
             },
             "ticket": self.ticket,
             "tipoEnvio": int(self.company_id.tipo_envio)
