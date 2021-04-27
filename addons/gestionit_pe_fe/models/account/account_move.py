@@ -245,13 +245,11 @@ class AccountMove(models.Model):
     total_tax_discount = fields.Monetary(
         string="Total Descuento Impuesto",
         default=0.0,
-        compute="_compute_amount",
-        currency_field='company_currency_id')
+        compute="_compute_amount")
     total_venta_gravado = fields.Monetary(
         string="Gravado",
         default=0.0,
-        compute="_compute_amount",
-        currency_field='company_currency_id')
+        compute="_compute_amount")
     total_venta_inafecto = fields.Monetary(
         string="Inafecto",
         default=0.0,
@@ -259,29 +257,24 @@ class AccountMove(models.Model):
     total_venta_exonerada = fields.Monetary(
         string="Exonerado",
         default=0.0,
-        compute="_compute_amount",
-        currency_field='company_currency_id')
+        compute="_compute_amount")
     total_venta_gratuito = fields.Monetary(
         string="Gratuita",
         default=0.0,
-        compute="_compute_amount",
-        currency_field='company_currency_id')
+        compute="_compute_amount")
 
     amount_igv = fields.Monetary(
         string="IGV",
         default=0.0,
-        compute="_compute_amount",
-        currency_field='company_currency_id')
+        compute="_compute_amount")
     total_descuentos = fields.Monetary(
         string="Total Descuentos",
         default=0.0,
-        compute="_compute_amount",
-        currency_field='company_currency_id')
+        compute="_compute_amount")
     total_descuento_global = fields.Monetary(
         string="Total Descuentos Global",
         default=0.0,
-        compute="_compute_amount",
-        currency_field='company_currency_id')
+        compute="_compute_amount")
 
     # monto_en_letras = fields.Char("Monto en letras",compute=_compute_monto_en_letras)
     tiene_guia_remision = fields.Boolean(

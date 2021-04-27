@@ -5,20 +5,10 @@ from odoo import api, models, fields
 class ResCompany(models.Model):
     _inherit = "res.company"
 
-    # type_endpoint = fields.Selection(
-    #     selection=[
-    #         ("production", "Producción"),
-    #         ("devlopment", "Desarrollo")
-    #     ],
-    #     string="Tipo de Endpoint"
-    # )
-    # endpoint = fields.Char("Endpoint")
     sunat_user = fields.Char("USUARIO SOL")
     sunat_pass = fields.Char("CLAVE SOL")
-    # key_public = fields.Text("Cert. PUBLIC")
-    # key_private = fields.Text("Cert. PRIVATE")
     tipo_envio = fields.Selection(selection=[(
-        "0", "0 - Pruebas"), ("1", "1 - Producción")])
+        "0", "0 - Pruebas"), ("1", "1 - Producción")], default=0)
 
     cert_id = fields.Many2one(
         "cert.sunat", string="Certificados digitales")
