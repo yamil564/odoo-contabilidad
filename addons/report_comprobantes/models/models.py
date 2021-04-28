@@ -30,7 +30,7 @@ class WizardComprobantesReport(models.TransientModel):
     fecha_inicio = fields.Date("Fecha de Inicio")
     fecha_fin = fields.Date("Fecha Fin")
 
-    supplier_id = fields.Many2one("res.partner", "Proveedor")
+    # supplier_id = fields.Many2one("res.partner", "Proveedor")
 
     @api.onchange("periodo")
     def _onchange_periodo(self):
@@ -48,107 +48,11 @@ class WizardComprobantesReport(models.TransientModel):
         return res
 
     def btn_generate_xlsx(self):
+        _logger.info("Button")
         report_obj = self.env.ref(
             "report_comprobantes.comprobantes_report_xlsx")
-        return report_obj.report_action([], {"fecha_inicio": self.fecha_inicio, "fecha_fin": self.fecha_fin})
-
-    def btn_reporte_por_proveedor(self):
-        report_obj = self.env.ref("report_comprobantes.compr_report_xlsx_prov")
-        return report_obj.report_action([], {"fecha_inicio": self.fecha_inicio, "fecha_fin": self.fecha_fin, "supplier_id": self.supplier_id.id})
-
-
-class ComprobanteXLSXporProveedor(models.AbstractModel):
-    _name = 'report.report_comprobantes.compr_report_xlsx_prov'
-    _inherit = "report.report_xlsx.abstract"
-
-    def create_xlsx_report(self, docids, data):
-        objs = self._get_objs_for_report(docids, data)
-        file_data = BytesIO()
-        #workbook = xlsxwriter.Workbook(file_data, self.get_workbook_options())
-        workbook = pd.ExcelWriter(file_data, engine='xlsxwriter')
-        self.generate_xlsx_report(workbook, data, objs)
-        # workbook.close()
-        workbook.save()
-        file_data.seek(0)
-        return file_data.read(), 'xlsx'
-
-    def generate_xlsx_report(self, workbook, data, records):
-        fecha_inicio = data.get("fecha_inicio", False)
-        fecha_fin = data.get("fecha_fin", False)
-        supplier_id = data.get("supplier_id", False)
-
-        if not supplier_id:
-            raise UserError("El proveedor es obligatorio")
-
-        domain = [['invoice_id.state', 'in', ['open', 'paid']], ['invoice_id.invoice_type_code', 'in', [
-            '00', '01', '03', '07']], ['supplier_id', '=', supplier_id]]
-        if fecha_fin:
-            domain.append(["invoice_id.invoice_date", "<=", fecha_fin])
-        if fecha_inicio:
-            domain.append(["invoice_id.invoice_date", ">=", fecha_inicio])
-
-        invoice_obj_lines = self.env["account.invoice.line"].search(domain)
-
-        def row_line(inv_line):
-            VENDEDOR = inv_line.invoice_id.user_id.name if inv_line.invoice_id.user_id else "-"
-            FECHA = datetime.strptime(inv_line.invoice_id.invoice_date, "%Y-%m-%d").strftime(
-                "%d/%m/%Y") if inv_line.invoice_id.invoice_date else "-"
-            CLIENTE = inv_line.invoice_id.partner_id.name if inv_line.invoice_id.partner_id else "-"
-            DIRECCION = inv_line.invoice_id.direccion_completa if inv_line.invoice_id.direccion_completa else "-"
-            cli = inv_line.invoice_id.partner_id
-            if cli:
-                ZONA = cli.zona_id.name if cli.zona_id else "-"
-                RUTA = cli.ruta_id.name if cli.ruta_id else "-"
-            else:
-                ZONA = "-"
-                RUTA = "-"
-            TIPO = inv_line.invoice_id.journal_id.invoice_type_code_id if inv_line.invoice_id.journal_id else "-"
-            SERIE_NUMERO = inv_line.invoice_id.number if inv_line.invoice_id.number else "-"
-            CANTIDAD = inv_line.quantity*(-1 if TIPO == "07" else 1)
-            PRODUCTO = inv_line.product_id.name if inv_line.product_id else "-"
-            CODIGO_PRODUCTO = inv_line.product_id.default_code if inv_line.product_id.default_code else "-"
-            UND_DE_VENTA = inv_line.uom_id.name if inv_line.uom_id else "-"
-            PRECIO = inv_line.price_unit
-            TOTAL = inv_line.price_total*(-1 if TIPO == "07" else 1)
-            PROVEEDOR = inv_line.supplier_id.name if inv_line.supplier_id else "-"
-
-            row = {
-                "VENDEDOR": VENDEDOR,
-                "FECHA": FECHA,
-                "CLIENTE": CLIENTE,
-                "DIRECCION": DIRECCION,
-                "ZONA": ZONA,
-                "RUTA": RUTA,
-                "TIPO": TIPO,
-                "SERIE NUMERO": SERIE_NUMERO,
-                "CANTIDAD": CANTIDAD,
-                "PRODUCTO": PRODUCTO,
-                "CÓDIGO DE PRODUCTO": CODIGO_PRODUCTO,
-                "UND DE VENTA": UND_DE_VENTA,
-                "PRECIO": PRECIO,
-                "TOTAL": TOTAL,
-                "PROVEEDOR": PROVEEDOR
-            }
-            return row
-
-        invoice_lines = [row_line(inv_line) for inv_line in invoice_obj_lines]
-        df_states = pd.DataFrame(invoice_lines, columns=["VENDEDOR",
-                                                         "FECHA",
-                                                         "CLIENTE",
-                                                         "DIRECCION",
-                                                         "ZONA",
-                                                         "RUTA",
-                                                         "TIPO",
-                                                         "SERIE NUMERO",
-                                                         "CANTIDAD",
-                                                         "PRODUCTO",
-                                                         "CÓDIGO DE PRODUCTO",
-                                                         "UND DE VENTA",
-                                                         "PRECIO",
-                                                         "TOTAL",
-                                                         "PROVEEDOR"])
-        df_states.to_excel(
-            workbook, sheet_name=self.env["res.partner"].browse(supplier_id).name)
+        _logger.info(dir(report_obj))
+        return report_obj.report_action(self, data={"fecha_inicio": self.fecha_inicio, "fecha_fin": self.fecha_fin})
 
 
 class ComprobantesXlsx(models.AbstractModel):
@@ -156,6 +60,8 @@ class ComprobantesXlsx(models.AbstractModel):
     _inherit = 'report.report_xlsx.abstract'
 
     def create_xlsx_report(self, docids, data):
+        _logger.info("DATA CREATE")
+        _logger.info(data)
         objs = self._get_objs_for_report(docids, data)
         file_data = BytesIO()
         #workbook = xlsxwriter.Workbook(file_data, self.get_workbook_options())
@@ -181,7 +87,7 @@ class ComprobantesXlsx(models.AbstractModel):
         if fecha_inicio:
             domain.append(["invoice_date", ">=", fecha_inicio])
 
-        comprobante_ids = self.env["account.invoice"].search(domain)
+        comprobante_ids = self.env["account.move"].search(domain)
 
         def get_serie_correlativo(numero):
             numero_comp = numero.strip()
@@ -327,7 +233,7 @@ class ComprobantesXlsx(models.AbstractModel):
                              'Estado comprobante electrónico': "",
                              'Anulación de comprobante': "",
                              'Vendedor': ""}
-                    inv = self.env["account.invoice"].search(
+                    inv = self.env["account.move"].search(
                         [["move_name", "=", number]])
                     if len(inv) == 0:
                         row_d.update({"Observacion": "No Existe"})
@@ -428,7 +334,7 @@ class ComprobantesXlsx(models.AbstractModel):
                     
                     if  correlativo_actual != df_states.loc[cnt]["Correlativo Comp."]:
                         
-                        inv = self.env["account.invoice"].search([["move_name", "=", number]])
+                        inv = self.env["account.move"].search([["move_name", "=", number]])
                         if len(inv) == 0:
                             row_d = {"Estado":"",
                                         "Fecha de emisión":"",
