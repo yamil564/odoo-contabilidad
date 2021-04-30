@@ -6,8 +6,8 @@
             <field name="model">account.move</field>
             <field name="inherit_id" ref="account.view_move_form"/>
             <field name="arch" type="xml">
-                <xpath expr="//field[@name='team_id']" position="after">
-                    <field name="tipo_cambio" attrs="{'readonly':[['state','not in',['draft']]] }"/>
+                <xpath expr="//field[@name='ref']" position="after">
+                    <field name="tipo_cambio" readonly="1"/>
                 </xpath>
             </field>
         </record>
@@ -19,7 +19,7 @@
             <field name="inherit_id" ref="account.invoice_supplier_form"/>
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='currency_id']" position="after">
-                    <field name="tipo_cambio"  attrs="{'readonly':[['state','not in',['draft']]] }"></field>
+                    <field name="tipo_cambio" attrs="{'readonly':[['state','not in',['draft']]] }"></field>
                 </xpath>
             </field>
         </record> -->

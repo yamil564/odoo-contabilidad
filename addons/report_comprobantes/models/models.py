@@ -48,10 +48,10 @@ class WizardComprobantesReport(models.TransientModel):
         return res
 
     def btn_generate_xlsx(self):
-        _logger.info("Button")
+        # _logger.info("Button")
         report_obj = self.env.ref(
             "report_comprobantes.comprobantes_report_xlsx")
-        _logger.info(dir(report_obj))
+        # _logger.info(dir(report_obj))
         return report_obj.report_action(self, data={"fecha_inicio": self.fecha_inicio, "fecha_fin": self.fecha_fin})
 
 
@@ -60,8 +60,8 @@ class ComprobantesXlsx(models.AbstractModel):
     _inherit = 'report.report_xlsx.abstract'
 
     def create_xlsx_report(self, docids, data):
-        _logger.info("DATA CREATE")
-        _logger.info(data)
+        # _logger.info("DATA CREATE")
+        # _logger.info(data)
         objs = self._get_objs_for_report(docids, data)
         file_data = BytesIO()
         #workbook = xlsxwriter.Workbook(file_data, self.get_workbook_options())
@@ -87,7 +87,9 @@ class ComprobantesXlsx(models.AbstractModel):
         if fecha_inicio:
             domain.append(["invoice_date", ">=", fecha_inicio])
 
+        _logger.info(domain)
         comprobante_ids = self.env["account.move"].search(domain)
+        _logger.info(comprobante_ids)
 
         def get_serie_correlativo(numero):
             numero_comp = numero.strip()
@@ -234,7 +236,7 @@ class ComprobantesXlsx(models.AbstractModel):
                              'Anulación de comprobante': "",
                              'Vendedor': ""}
                     inv = self.env["account.move"].search(
-                        [["move_name", "=", number]])
+                        [["name", "=", number]])
                     if len(inv) == 0:
                         row_d.update({"Observacion": "No Existe"})
                         df = df.append(row_d, ignore_index=True)

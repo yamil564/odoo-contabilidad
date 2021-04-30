@@ -61,10 +61,10 @@ class invoice_period(models.Model):
         else:
             raise UserError("No existe el periodo")
 
-    @api.onchange('period_id')
-    def forzar_periodo_moveline(self):
-        for line in self.move_id.line_ids:
-            line.period_id = self.period_id
+    # @api.onchange('period_id')
+    # def forzar_periodo_moveline(self):
+    #     for line in self.move_id.line_ids:
+    #         line.period_id = self.period_id
 
     def copiar_moneda(self):
         for line in self.move_id.line_ids:
