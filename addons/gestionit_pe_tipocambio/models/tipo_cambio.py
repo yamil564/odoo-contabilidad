@@ -88,29 +88,26 @@ class invoice(models.Model):
     @api.onchange('invoice_date')
     def get_ratio(self, fecha=False):
         # actualizar_ratio_compra_venta
-        rate_obj = self.env['res.currency.rate']
-        if fecha:
-            rate = rate_obj.search([('name', "=", fecha)])
-        else:
-            rate = rate_obj.search([('name', "=", self.invoice_date)])
-
-        if rate.exists():
-            if self.type == "in_invoice" or self.type == "in_refund":
-                self.tipo_cambio = rate[0].cambio_venta
-
-            if self.type == "out_invoice" or self.type == "out_refund":
-                self.tipo_cambio = rate[0].cambio_compra
-        else:
-            gr = rate_obj.actualizar_ratio_compra_venta(
-                str(self.invoice_date))
-            if gr != None:
-                self.get_ratio()
+        if self.invoice_date:
+            rate_obj = self.env['res.currency.rate']
+            if fecha:
+                rate = rate_obj.search([('name', "=", fecha)])
             else:
-                current_date_temp = datetime.datetime.strptime(
-                    str(self.invoice_date), "%Y-%m-%d")
-                newdate = current_date_temp + datetime.timedelta(days=-1)
-                self.get_ratio(newdate)
-                # _logger.info(newdate.strftime('%Y-%m-%d'))
+                rate = rate_obj.search([('name', "=", self.invoice_date)])
 
-                # if not self.tipo_cambio:
-                #     self.tipo_cambio == 0
+            if rate.exists():
+                if self.type == "in_invoice" or self.type == "in_refund":
+                    self.tipo_cambio = rate[0].cambio_venta
+
+                if self.type == "out_invoice" or self.type == "out_refund":
+                    self.tipo_cambio = rate[0].cambio_compra
+            else:
+                gr = rate_obj.actualizar_ratio_compra_venta(
+                    str(self.invoice_date))
+                if gr != None:
+                    self.get_ratio()
+                else:
+                    current_date_temp = datetime.datetime.strptime(
+                        str(self.invoice_date), "%Y-%m-%d")
+                    newdate = current_date_temp + datetime.timedelta(days=-1)
+                    self.get_ratio(newdate)

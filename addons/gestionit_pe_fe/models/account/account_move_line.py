@@ -55,9 +55,9 @@ class AccountMoveLine(models.Model):
                 line.price_subtotal = price_subtotal_signed = 0
                 line.price_total = 0
 
-            if line.move_id.currency_id and line.move_id.currency_id != line.move_id.company_id.currency_id:
-                price_subtotal_signed = line.move_id.currency_id.with_context(date=line.move_id._get_currency_rate_date(
-                )).compute(price_subtotal_signed, line.move_id.company_id.currency_id)
+            # if line.move_id.currency_id and line.move_id.currency_id != line.move_id.company_id.currency_id:
+            #     price_subtotal_signed = line.move_id.currency_id.with_context(date=line.move_id._get_currency_rate_date(
+            #     )).compute(price_subtotal_signed, line.move_id.company_id.currency_id)
             sign = line.move_id.type in ['in_refund', 'out_refund'] and -1 or 1
             line.price_subtotal_signed = price_subtotal_signed * sign
             line.price_subtotal2 = line.quantity * \
