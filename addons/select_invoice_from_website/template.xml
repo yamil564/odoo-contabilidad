@@ -1,0 +1,66 @@
+<odoo>
+    <template id="checkout_select_invoice_type" inherit_id="website_sale.address">
+        <xpath expr="//div[hasclass('form-row')]" position="before">
+            <div class="d-flex flex-row  pt-2  pb-2">
+                <span class="pr-4"><b>Tipo de Comprobante</b></span>
+                <div class="form-check pr-4">
+                    <input class="form-check-input" type="radio" name="invoice_type_code" value="01"/>
+                    <label class="form-check-label" for="Factura Electrónica" style="font-weight:100 !important">
+                        Factura Electŕonica
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="invoice_type_code"  value="03" checked="1"/>
+                    <label class="form-check-label" for="Boleta Electrónica" style="font-weight:100 !important">
+                        Boleta Electrónica
+                    </label>
+                </div>
+            </div>
+        </xpath>
+        
+        <xpath expr="//input[@name='field_required']" position="attributes">
+            <attribute name="t-att-value">'phone,name,l10n_latam_identification_type_id,invoice_type_code,vat'</attribute>
+        </xpath>
+        
+    </template>
+
+   <template id="website_sale.address_b2b" inherit_id="website_sale.address" name="Show b2b fields" customize_show="True">
+        <xpath expr="//div[@id='div_phone']" position="after">
+            <div class="col-6">
+                <label class="col-form-label" for="vat">Tipo de documento de identidad </label>
+                <div class="d-flex flex-row justify-content-between">
+                    <t t-foreach="request.env['l10n_latam.identification.type'].sudo().search([])" t-as="idt">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="l10n_latam_identification_type_id" t-att-value="idt.id"  t-att-checked="'l10n_latam_identification_type_id' in checkout and checkout['l10n_latam_identification_type_id'] == idt.id or idt.name=='DNI'" />
+                            <label class="form-check-label" t-att-for="idt.name" style="font-weight:100 !important">
+                                <t t-esc="idt.name"/>
+                            </label>
+                        </div>
+                    </t>
+                </div>
+            </div>
+            <div class="w-100 pt-2"/>
+            <t t-if="mode == ('new', 'billing') or (mode == ('edit', 'billing') and (can_edit_vat or 'vat' in checkout and checkout['vat']))">
+                <div t-attf-class="form-group #{error.get('vat') and 'o_has_error' or ''} col-lg-6 div_vat">
+                    <label class="col-form-label" for="vat">Número de documento </label>
+                    <input type="text" name="vat" 
+                            t-attf-class="form-control #{error.get('vat') and 'is-invalid' or ''}"
+                            t-att-value="'vat' in checkout and checkout['vat']" t-att-readonly="'1' if 'vat' in checkout and checkout['vat'] and not can_edit_vat else None" t-att-title="'Changing VAT number is not allowed once document(s) have been issued for your account. Please contact us directly for this operation.' if 'vat' in checkout and checkout['vat'] and not can_edit_vat else None" />
+                </div>
+                <div t-attf-class="form-group #{error.get('company_name') and 'o_has_error' or ''} col-lg-6">
+                    <label class="col-form-label" for="company_name">Nombre o razón social</label>
+                    <input type="text" name="company_name" 
+                            t-attf-class="form-control #{error.get('company_name') and 'is-invalid' or ''}" 
+                            t-att-value="'commercial_company_name' in checkout and checkout['commercial_company_name'] or 'company_name' in checkout and checkout['company_name']" 
+                            t-att-readonly="'1' if 'vat' in checkout and checkout['vat'] and not can_edit_vat else None" 
+                            t-att-title="'Changing company name is not allowed once document(s) have been issued for your account. Please contact us directly for this operation.' if 'vat' in checkout and checkout['vat'] and not can_edit_vat else None" />
+                </div>
+            </t>
+        </xpath>
+    </template>
+
+    <function model="ir.model.fields" name="formbuilder_whitelist">
+        <value>res.partner</value>
+        <value eval="['name', 'phone', 'email','city', 'zip', 'street', 'street2', 'state_id', 'country_id','vat','l10n_latam_identification_type_id']"/>
+    </function>
+</odoo>
