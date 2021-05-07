@@ -50,7 +50,6 @@ class Tipocambio(models.Model):
                 tipo_cambio = 1/tipo_cambio if tipo_cambio != 0.0 else 0.0
                 fecha_cambio = res.get("fecha", False)
                 return self.env['res.currency.rate'].create({
-                    # 'name': fields.Datetime.now(),
                     'name': fecha_cambio,
                     'currency_id': currency_usd.id,
                     'rate': tipo_cambio,
@@ -62,15 +61,6 @@ class Tipocambio(models.Model):
             return None
         except Exception as e:
             return None
-            # curr_id = self.env['res.currency.rate'].search([])[0]
-            # return self.env['res.currency.rate'].create({
-            #     'name': fields.Datetime.now(),
-            #     'currency_id': curr_id.currency_id.id,
-            #     'rate': curr_id.rate,
-            #     'fecha': date.today(),
-            #     'cambio_compra': curr_id.cambio_compra,
-            #     'cambio_venta': curr_id.cambio_venta
-            # })
 
 
 class invoice(models.Model):
@@ -102,11 +92,15 @@ class invoice(models.Model):
                 if self.type == "out_invoice" or self.type == "out_refund":
                     self.tipo_cambio = rate[0].cambio_compra
             else:
-                gr = rate_obj.actualizar_ratio_compra_venta(
-                    str(self.invoice_date))
-                if gr != None:
-                    self.get_ratio()
+                if fecha:
+                    gr = rate_obj.actualizar_ratio_compra_venta(
+                        datetime.datetime.strptime(str(fecha), "%Y-%m-%d"))
                 else:
+                    gr = rate_obj.actualizar_ratio_compra_venta(
+                        str(self.invoice_date))
+
+                _logger.info(gr)
+                if gr is None:
                     current_date_temp = datetime.datetime.strptime(
                         str(self.invoice_date), "%Y-%m-%d")
                     newdate = current_date_temp + datetime.timedelta(days=-1)

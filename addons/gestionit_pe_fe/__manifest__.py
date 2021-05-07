@@ -49,6 +49,7 @@
         'data/account_journal.xml',
         'data/motivo_traslado.xml',
         'data/modalidad_transporte.xml',
+        'data/account_tax_data.xml',
         'security/res_groups.xml',
         'cron/account_move_cron.xml',
         'cron/account_summary_cron.xml',
