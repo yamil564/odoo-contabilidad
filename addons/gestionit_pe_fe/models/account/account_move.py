@@ -964,6 +964,24 @@ class AccountMove(models.Model):
 class AccountMoveReversal(models.TransientModel):
     _inherit = 'account.move.reversal'
 
+    tipo_comprobante_a_rectificar = fields.Selection(
+        selection=[("00", "Otros"), ("01", "Factura"), ("03", "Boleta")])
+
+    @api.model
+    def default_get(self, fields):
+        res = super(AccountMoveReversal, self).default_get(fields)
+        move_ids = self.env['account.move'].browse(self.env.context['active_ids']) if self.env.context.get(
+            'active_model') == 'account.move' else self.env['account.move']
+        res['refund_method'] = (
+            len(move_ids) > 1 or move_ids.type == 'entry') and 'cancel' or 'refund'
+        res['residual'] = len(move_ids) == 1 and move_ids.amount_residual or 0
+        res['currency_id'] = len(
+            move_ids.currency_id) == 1 and move_ids.currency_id.id or False
+        res['move_type'] = len(move_ids) == 1 and move_ids.type or False
+        res['move_id'] = move_ids[0].id if move_ids else False
+        res['tipo_comprobante_a_rectificar'] = move_ids[0].invoice_type_code if move_ids else False
+        return res
+
     def _prepare_default_reversal(self, move):
         return {
             'ref': _('Nota de crédito de: %s, %s') % (move.name, self.reason) if self.reason else _('Nota de crédito de: %s') % (move.name),

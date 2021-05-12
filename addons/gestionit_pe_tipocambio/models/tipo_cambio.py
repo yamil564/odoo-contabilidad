@@ -66,7 +66,12 @@ class Tipocambio(models.Model):
 class invoice(models.Model):
     _inherit = "account.move"
 
-    tipo_cambio = fields.Float("T/C", digits=(1, 3))
+    tipo_cambio = fields.Float(string="T/C", digits=(1, 3))
+    fecha_cambio = fields.Date(string="Fecha de cambio")
+
+    @api.onchange("invoice_date")
+    def _change_fecha_cambio(self):
+        self.fecha_cambio = self.invoice_date
 
     @api.constrains('tipo_cambio')
     def _check_tipo_cambio(self):
@@ -75,15 +80,11 @@ class invoice(models.Model):
                 raise ValidationError(
                     "Valor del tipo de Cambio incorrecto. Debe actualizar el tipo de cambio.")
 
-    @api.onchange('invoice_date')
-    def get_ratio(self, fecha=False):
-        # actualizar_ratio_compra_venta
-        if self.invoice_date:
+    @api.onchange("invoice_date", "fecha_cambio")
+    def get_ratio(self):
+        if self.fecha_cambio:
             rate_obj = self.env['res.currency.rate']
-            if fecha:
-                rate = rate_obj.search([('name', "=", fecha)])
-            else:
-                rate = rate_obj.search([('name', "=", self.invoice_date)])
+            rate = rate_obj.search([('name', "=", self.fecha_cambio)])
 
             if rate.exists():
                 if self.type == "in_invoice" or self.type == "in_refund":
@@ -92,16 +93,24 @@ class invoice(models.Model):
                 if self.type == "out_invoice" or self.type == "out_refund":
                     self.tipo_cambio = rate[0].cambio_compra
             else:
-                if fecha:
-                    gr = rate_obj.actualizar_ratio_compra_venta(
-                        datetime.datetime.strptime(str(fecha), "%Y-%m-%d"))
-                else:
-                    gr = rate_obj.actualizar_ratio_compra_venta(
-                        str(self.invoice_date))
+                self.fecha_cambio = self.fecha_cambio + \
+                    datetime.timedelta(days=-1)
+                self.get_ratio()
+                # _logger.info(self.fecha_cambio)
+                # current_date_temp = datetime.datetime.strptime(
+                #     str(self.fecha_cambio), "%Y-%m-%d")
+                # newdate = current_date_temp + datetime.timedelta(days=-1)
+                # self.get_ratio(newdate)
+                # else:
+                #     if fecha:
+                #         gr = rate_obj.actualizar_ratio_compra_venta(str(fecha))
+                #     else:
+                #         gr = rate_obj.actualizar_ratio_compra_venta(
+                #             str(self.fecha_cambio))
 
-                _logger.info(gr)
-                if gr is None:
-                    current_date_temp = datetime.datetime.strptime(
-                        str(self.invoice_date), "%Y-%m-%d")
-                    newdate = current_date_temp + datetime.timedelta(days=-1)
-                    self.get_ratio(newdate)
+                #     _logger.info(gr)
+                #     if gr is None:
+                #         current_date_temp = datetime.datetime.strptime(
+                #             str(self.fecha_cambio), "%Y-%m-%d")
+                #         newdate = current_date_temp + datetime.timedelta(days=-1)
+                #         self.get_ratio(newdate)

@@ -8,6 +8,7 @@
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='ref']" position="after">
                     <field name="tipo_cambio" readonly="1" force_save="1"/>
+                    <field name="fecha_cambio" invisible="1" />
                 </xpath>
             </field>
         </record>
