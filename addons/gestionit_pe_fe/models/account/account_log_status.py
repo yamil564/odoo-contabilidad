@@ -34,7 +34,7 @@ class AccountLogStatus(models.Model):
     account_summary_id = fields.Many2one(
         "account.summary", string="Resumen Diario")
     guia_remision_id = fields.Many2one(
-        "efact.guia_remision", string="Guía de Remisión")
+        "gestionit.guia_remision", string="Guía de Remisión")
     company_id = fields.Many2one("res.company",
                                  string="Compañia",
                                  default=lambda self: self.env.user.company_id.id)

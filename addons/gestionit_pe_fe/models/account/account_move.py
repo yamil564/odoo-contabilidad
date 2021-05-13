@@ -883,7 +883,7 @@ class AccountMove(models.Model):
                         'default_issue_date': datetime.now().strftime("%Y-%m-%d")
                     }
                 }
-        elif re.match("^B\w{3}-\d{1,8}$", self.move_name):
+        elif re.match("^B\w{3}-\d{1,8}$", self.name):
             if self.resumen_anulacion_id:
                 return {
                     "type": "ir.actions.act_window",

@@ -38,6 +38,7 @@
         'views/guia_remision/view_catalogo_motivo_traslado.xml',
         'views/guia_remision/view_transporte.xml',
         'views/guia_remision/menu.xml',
+        'views/guia_remision/email_template.xml',
         'views/user/view_users.xml',
         'views/stock/view_stock_warehouse.xml',
         'views/company/view_cert_sunat.xml',

@@ -78,7 +78,7 @@ class invoice(models.Model):
         for record in self:
             if record.tipo_cambio <= 0:
                 raise ValidationError(
-                    "Valor del tipo de Cambio incorrecto. Debe actualizar el tipo de cambio.")
+                    "Valor del tipo de Cambio incorrecto. Debe actualizar la fecha de facturación.")
 
     @api.onchange("invoice_date", "fecha_cambio")
     def get_ratio(self):
