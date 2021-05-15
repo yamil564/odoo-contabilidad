@@ -2,8 +2,7 @@
 <odoo>
     <template id="external_layout_background_gestionit">
         <t t-set="o" t-value="o.with_context(lang=lang)"/>
-        <!-- <div t-attf-class="o_company_#{company.id}_layout header" t-att-style="report_header_style"> -->
-        <div t-attf-class="o_company_#{company.id}_layout header">
+        <!-- <div t-attf-class="o_company_#{company.id}_layout header">
             <div class="o_background_header">
                 <div class="row">
                     <div class="col-3">
@@ -63,7 +62,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> -->
 
         <div t-attf-class="o_company_#{company.id}_layout article o_report_layout_background" t-att-data-oe-model="o and o._name" t-att-data-oe-id="o and o.id" t-att-data-oe-lang="o and o.env.context.get('lang')">
             <t t-call="web.address_layout"/>

@@ -226,6 +226,9 @@ class GuiaRemision(models.Model):
     response_json = fields.Text("Respuesta JSON", states={
                                 'validado': [('readonly', True)]}, copy=False)
 
+    # def print_report_guia(self):
+    #     return self.env.ref('gestionit_pe_fe.print_report_pdf').report_action(self)
+# python3 ./odoo-bin --config=/etc/odoov12.conf --db-filter=^odooperuv12$
     def action_send_email(self):
         self.ensure_one()
         ir_model_data = self.env['ir.model.data']
@@ -242,8 +245,16 @@ class GuiaRemision(models.Model):
             compose_form_id = False
 
         attach_ids = []
-        fname = self.numero+".xml"
+        xml_fname = self.numero+".xml"
         cdr_fname = self.numero+"_cdr.xml"
+        pdf_fname = self.numero+".pdf"
+
+        pdf = self.env.ref(
+            'gestionit_pe_fe.report_guia_remision').render_qweb_pdf(self.ids)
+        datas = base64.b64encode(pdf[0])
+        attach_ids.append(self.env["ir.attachment"].create(
+            {"name": pdf_fname, "type": "binary", "datas": datas, "mimetype": "application/x-pdf", "res_model": "gestionit.guia_remision", "res_id": self.id, "res_name": self.numero}).id)
+
         if len(self.account_log_status_ids) > 0:
             log_status = self.account_log_status_ids[-1]
             # data_signed_xml = log_status.signed_xml_data_without_format
@@ -252,7 +263,7 @@ class GuiaRemision(models.Model):
             if data_signed_xml:
                 datas = base64.b64encode(data_signed_xml.encode())
                 attach_ids.append(self.env["ir.attachment"].create(
-                    {"name": fname, "type": "binary", "datas": datas, "mimetype": "text/xml", "res_model": "gestionit.guia_remision", "res_id": self.id, "res_name": self.numero}).id)
+                    {"name": xml_fname, "type": "binary", "datas": datas, "mimetype": "text/xml", "res_model": "gestionit.guia_remision", "res_id": self.id, "res_name": self.numero}).id)
 
             # response_xml = log_status.response_xml_without_format
             response_xml = log_status.response_xml

@@ -26,6 +26,7 @@
                 <form>
                     <header>
                         <button name="action_send_email" string="Send by email" type="object"/>
+                        <!-- <button name="print_report_guia" string="Print" type="object"/> -->
                         <button name="btn_validar_comprobante" string="Validar" type="object" help="Emitir Guía de Remisión" class="oe_highlight" attrs="{'invisible':[('state','=','validado')]}" confirm="¿Está seguro que desea validar la Guía de Remisión Remitente?"/>
                         <button name="btn_enviar_comprobante" string="Enviar a Sunat" type="object" help="Enviar Guía de Remisión a Sunat" class="oe_highlight" attrs="{'invisible':[('state','==','validado'),('estado_emision','!=','P')]}"/>
                         <button name="convertir_a_borrador" string="Convertir a Borrador" type="object" class="oe_highlight" attrs="{'invisible':['|',('state','=','borrador'),('estado_emision','not in',['P','E'])]}"/>
