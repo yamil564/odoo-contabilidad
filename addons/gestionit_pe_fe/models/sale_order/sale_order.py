@@ -39,7 +39,30 @@ class SaleOrder(models.Model):
         else:
             self.tipo_documento = "03"
 
+    def order_lines_layouted(self):
+        """
+        Returns this order lines classified by sale_layout_category and separated in
+        pages according to the category pagebreaks. Used to render the report.
+        """
+        self.ensure_one()
+        report_pages = [[]]
+        #print(list(groupby(self.order_line, lambda l: l.layout_category_id)))
+        for category, lines in groupby(self.order_line, lambda l: l.layout_category_id):
+
+            if report_pages[-1] and report_pages[-1][-1]['pagebreak']:
+                report_pages.append([])
+            report_pages[-1].append({
+                'parent': category.parent.name,
+                'name': category and category.name or _('Uncategorized'),
+                'subtotal': category and category.subtotal,
+                'pagebreak': category and category.pagebreak,
+                'lines': list(lines)
+            })
+
+        return report_pages
+
     # Create invoice
+
     def _prepare_invoice(self):
         """
         Prepare the dict of values to create the new invoice for a sales order. This method may be

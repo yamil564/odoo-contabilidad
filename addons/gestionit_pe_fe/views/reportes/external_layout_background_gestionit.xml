@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <template id="external_layout_background_gestionit">
-        <t t-set="o" t-value="o.with_context(lang=lang)"/>
+        <!-- <t t-set="o" t-value="o.with_context(lang=lang)"/> -->
         <!-- <div t-attf-class="o_company_#{company.id}_layout header">
             <div class="o_background_header">
                 <div class="row">

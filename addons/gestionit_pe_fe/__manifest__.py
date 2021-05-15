@@ -47,6 +47,7 @@
         'views/reportes/report_invoice_document.xml',
         'reports/report_guia_remision.xml',
         'reports/report.xml',
+        'reports/report_saleorder_document.xml',
         'data/product_uom.xml',
         'data/tax_group.xml',
         'data/account_journal.xml',
