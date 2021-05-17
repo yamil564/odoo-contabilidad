@@ -29,10 +29,10 @@
     </record>
 
     <!-- Para modificar la estructura de la dirección para Perú-->
-    <record id="base.pe" model="res.country">
+    <!-- <record id="base.pe" model="res.country">
         <field name="name">Peru</field>
         <field name="code">pe</field>
         <field name="currency_id" ref="base.PEN"/>
         <field name="address_format" eval="'%(street)s\n%(street2)s\n%(state_name)s-%(province_name)s-%(district_code)s %(zip)s\n%(country_name)s'" />
-    </record>
+    </record> -->
 </odoo>

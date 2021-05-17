@@ -3,7 +3,7 @@
     'version': '1.0.0',
     'author': 'Gestión IT',
     'description': 'Tabla paramétrica de Ubicaciones de Perú: Departamentos, Provincias y distritos.',
-    'depends': [],
+    'depends': ['base'],
     'data': [
         'views/res_partner_view.xml',
         'views/res_country_view.xml',
