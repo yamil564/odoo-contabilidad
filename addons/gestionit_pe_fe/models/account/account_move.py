@@ -883,7 +883,7 @@ class AccountMove(models.Model):
                         'default_issue_date': datetime.now().strftime("%Y-%m-%d")
                     }
                 }
-        elif re.match("^B\w{3}-\d{1,8}$", self.move_name):
+        elif re.match("^B\w{3}-\d{1,8}$", self.name):
             if self.resumen_anulacion_id:
                 return {
                     "type": "ir.actions.act_window",
@@ -964,6 +964,24 @@ class AccountMove(models.Model):
 class AccountMoveReversal(models.TransientModel):
     _inherit = 'account.move.reversal'
 
+    tipo_comprobante_a_rectificar = fields.Selection(
+        selection=[("00", "Otros"), ("01", "Factura"), ("03", "Boleta")])
+
+    @api.model
+    def default_get(self, fields):
+        res = super(AccountMoveReversal, self).default_get(fields)
+        move_ids = self.env['account.move'].browse(self.env.context['active_ids']) if self.env.context.get(
+            'active_model') == 'account.move' else self.env['account.move']
+        res['refund_method'] = (
+            len(move_ids) > 1 or move_ids.type == 'entry') and 'cancel' or 'refund'
+        res['residual'] = len(move_ids) == 1 and move_ids.amount_residual or 0
+        res['currency_id'] = len(
+            move_ids.currency_id) == 1 and move_ids.currency_id.id or False
+        res['move_type'] = len(move_ids) == 1 and move_ids.type or False
+        res['move_id'] = move_ids[0].id if move_ids else False
+        res['tipo_comprobante_a_rectificar'] = move_ids[0].invoice_type_code if move_ids else False
+        return res
+
     def _prepare_default_reversal(self, move):
         return {
             'ref': _('Nota de crédito de: %s, %s') % (move.name, self.reason) if self.reason else _('Nota de crédito de: %s') % (move.name),
@@ -1024,12 +1042,23 @@ class accountInvoiceSend(models.TransientModel):
     def onchange_template_id(self):
         for wizard in self:
             if wizard.composer_id:
+                attach_ids = []
+                invoice = self.invoice_ids[0]
                 wizard.composer_id.template_id = wizard.template_id.id
                 wizard._compute_composition_mode()
                 wizard.composer_id.onchange_template_id_wrapper()
 
-                invoice = self.invoice_ids[0]
-                attach_ids = []
+                if wizard.template_id.report_template:
+                    report = wizard.template_id.report_template
+
+                    if report.report_type in ['qweb-html', 'qweb-pdf']:
+                        result, format = report.render_qweb_pdf([invoice.id])
+
+                    fname = invoice.name+".pdf"
+                    result = base64.b64encode(result)
+                    attach_ids.append(self.env["ir.attachment"].create(
+                        {"name": fname, "type": "binary", "datas": result, "mimetype": "application/pdf", "res_model": "account.move", "res_id": invoice.id, "res_name": invoice.name}).id)
+
                 fname = invoice.name+".xml"
                 cdr_fname = invoice.name+"_cdr.xml"
                 if len(invoice.account_log_status_ids) > 0:
@@ -1051,6 +1080,78 @@ class accountInvoiceSend(models.TransientModel):
                         attach_ids.append(invoice.env["ir.attachment"].create(
                             {"name": cdr_fname, "type": "binary", "datas": datas, "mimetype": "text/xml", "res_model": "account.move", "res_id": invoice.id, "res_name": invoice.name}).id)
 
-                wizard.attachment_ids = [
-                    (4, attach_id) for attach_id in attach_ids]
-                _logger.info("EMAIL SENT")
+                wizard.attachment_ids = [(4, attach_id)
+                                         for attach_id in attach_ids]
+
+
+# class MailComposer(models.TransientModel):
+#     _inherit = 'mail.compose.message'
+
+#     def onchange_template_id(self, template_id, composition_mode, model, res_id):
+#         if template_id and composition_mode == 'mass_mail':
+#             template = self.env['mail.template'].browse(template_id)
+#             fields = ['subject', 'body_html',
+#                       'email_from', 'reply_to', 'mail_server_id']
+#             values = dict((field, getattr(template, field))
+#                           for field in fields if getattr(template, field))
+#             if template.attachment_ids:
+#                 values['attachment_ids'] = [
+#                     att.id for att in template.attachment_ids]
+#             if template.mail_server_id:
+#                 values['mail_server_id'] = template.mail_server_id.id
+#             if template.user_signature and 'body_html' in values:
+#                 signature = self.env.user.signature
+#                 values['body_html'] = tools.append_content_to_html(
+#                     values['body_html'], signature, plaintext=False)
+#         elif template_id:
+#             values = self.generate_email_for_composer(
+#                 template_id, [res_id])[res_id]
+#             # transform attachments into attachment_ids; not attached to the document because this will
+#             # be done further in the posting process, allowing to clean database if email not send
+#             attachment_ids = []
+#             Attachment = self.env['ir.attachment']
+#             for attach_fname, attach_datas in values.pop('attachments', []):
+#                 data_attach = {
+#                     'name': attach_fname,
+#                     'datas': attach_datas,
+#                     'res_model': 'mail.compose.message',
+#                     'res_id': 0,
+#                     'type': 'binary',  # override default_type from context, possibly meant for another model!
+#                 }
+#                 attachment_ids.append(Attachment.create(data_attach).id)
+#             if values.get('attachment_ids', []) or attachment_ids:
+#                 values['attachment_ids'] = [
+#                     (6, 0, values.get('attachment_ids', []) + attachment_ids)]
+#             #####
+#             invoice = self.invoice_ids[0]
+#             attach_ids = []
+#             fname = invoice.name+".xml"
+#             cdr_fname = invoice.name+"_cdr.xml"
+#             if len(invoice.account_log_status_ids) > 0:
+#                 log_status = invoice.account_log_status_ids[-1]
+#                 data_signed_xml = log_status.signed_xml_data_without_format
+
+#                 if data_signed_xml:
+#                     datas = base64.b64encode(data_signed_xml.encode())
+#                     attach_ids.append(invoice.env["ir.attachment"].create(
+#                         {"name": fname, "type": "binary", "datas": datas, "mimetype": "text/xml", "res_model": "account.move", "res_id": invoice.id, "res_name": invoice.name}).id)
+
+#                 response_xml = log_status.response_xml_without_format
+#                 if response_xml:
+#                     datas = base64.b64encode(response_xml.encode())
+#                     attach_ids.append(invoice.env["ir.attachment"].create(
+#                         {"name": cdr_fname, "type": "binary", "datas": datas, "mimetype": "text/xml", "res_model": "account.move", "res_id": invoice.id, "res_name": invoice.name}).id)
+#             #####
+#         else:
+#             default_values = self.with_context(default_composition_mode=composition_mode, default_model=model, default_res_id=res_id).default_get(
+#                 ['composition_mode', 'model', 'res_id', 'parent_id', 'partner_ids', 'subject', 'body', 'email_from', 'reply_to', 'attachment_ids', 'mail_server_id'])
+#             values = dict((key, default_values[key]) for key in [
+#                           'subject', 'body', 'partner_ids', 'email_from', 'reply_to', 'attachment_ids', 'mail_server_id'] if key in default_values)
+
+#         if values.get('body_html'):
+#             values['body'] = values.pop('body_html')
+
+#         # This onchange should return command instead of ids for x2many field.
+#         values = self._convert_to_write(values)
+
+#         return {'value': values}

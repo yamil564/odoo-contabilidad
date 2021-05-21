@@ -7,6 +7,7 @@ from odoo import models, api, fields
 from odoo.exceptions import UserError, ValidationError, Warning
 import requests
 import os
+import base64
 import re
 import json
 import re
@@ -207,6 +208,8 @@ class GuiaRemision(models.Model):
 
     company_partner_id = fields.Many2one(
         "res.partner", related="company_id.partner_id", readonly=True)
+    account_log_status_ids = fields.One2many(
+        "account.log.status", "guia_remision_id", string="Registro de Envíos", copy=False)
 
     # SERIE Y CORRELATIVO
     journal_id = fields.Many2one("account.journal", string="Serie", states={
@@ -222,6 +225,76 @@ class GuiaRemision(models.Model):
                                'validado': [('readonly', True)]}, copy=False)
     response_json = fields.Text("Respuesta JSON", states={
                                 'validado': [('readonly', True)]}, copy=False)
+
+    # def print_report_guia(self):
+    #     return self.env.ref('gestionit_pe_fe.print_report_pdf').report_action(self)
+# python3 ./odoo-bin --config=/etc/odoov12.conf --db-filter=^odooperuv12$
+    def action_send_email(self):
+        self.ensure_one()
+        ir_model_data = self.env['ir.model.data']
+        try:
+            template_id = ir_model_data.get_object_reference(
+                'gestionit_pe_fe', 'email_template')[1]
+        except ValueError:
+            template_id = False
+
+        try:
+            compose_form_id = ir_model_data.get_object_reference(
+                'mail', 'email_compose_message_wizard_form')[1]
+        except ValueError:
+            compose_form_id = False
+
+        attach_ids = []
+        xml_fname = self.numero+".xml"
+        cdr_fname = self.numero+"_cdr.xml"
+        pdf_fname = self.numero+".pdf"
+
+        pdf = self.env.ref(
+            'gestionit_pe_fe.report_guia_remision').render_qweb_pdf(self.ids)
+        datas = base64.b64encode(pdf[0])
+        attach_ids.append(self.env["ir.attachment"].create(
+            {"name": pdf_fname, "type": "binary", "datas": datas, "mimetype": "application/x-pdf", "res_model": "gestionit.guia_remision", "res_id": self.id, "res_name": self.numero}).id)
+
+        if len(self.account_log_status_ids) > 0:
+            log_status = self.account_log_status_ids[-1]
+            # data_signed_xml = log_status.signed_xml_data_without_format
+            data_signed_xml = log_status.signed_xml_data
+
+            if data_signed_xml:
+                datas = base64.b64encode(data_signed_xml.encode())
+                attach_ids.append(self.env["ir.attachment"].create(
+                    {"name": xml_fname, "type": "binary", "datas": datas, "mimetype": "text/xml", "res_model": "gestionit.guia_remision", "res_id": self.id, "res_name": self.numero}).id)
+
+            # response_xml = log_status.response_xml_without_format
+            response_xml = log_status.response_xml
+            if response_xml:
+                datas = base64.b64encode(response_xml.encode())
+                attach_ids.append(self.env["ir.attachment"].create(
+                    {"name": cdr_fname, "type": "binary", "datas": datas, "mimetype": "text/xml", "res_model": "gestionit.guia_remision", "res_id": self.id, "res_name": self.numero}).id)
+
+        # wizard.attachment_ids = [(4, attach_id)
+        #                             for attach_id in attach_ids]
+        # _logger.info("Attachments")
+        # _logger.info(attach_ids)
+
+        ctx = {
+            'default_model': 'gestionit.guia_remision',
+            'default_res_id': self.ids[0],
+            'default_use_template': bool(template_id),
+            'default_template_id': template_id,
+            'default_composition_mode': 'comment',
+            'default_attachment_ids': [(6, 0, attach_ids)],
+        }
+        return {
+            'name': 'Compose Email',
+            'type': 'ir.actions.act_window',
+            'view_mode': 'form',
+            'res_model': 'mail.compose.message',
+            'views': [(compose_form_id, 'form')],
+            'view_id': compose_form_id,
+            'target': 'new',
+            'context': ctx,
+        }
 
     @api.model
     def default_get(self, flds):
@@ -305,26 +378,26 @@ class GuiaRemision(models.Model):
         "res.partner", string="Destinatario", states={'validado': [('readonly', True)]})
     destinatario_tipo_documento_identidad = fields.Char(
         string="Tipo de Documento", related="destinatario_partner_id.l10n_latam_identification_type_id.name")
-    #destinatario_tipo_documento_identidad_id = fields.Many2one("einvoice.catalog.06",string="Tipo de Documento",related="destinatario_partner_id.catalog_06_id")
+    # destinatario_tipo_documento_identidad_id = fields.Many2one("einvoice.catalog.06",string="Tipo de Documento",related="destinatario_partner_id.catalog_06_id")
     destinatario_numero_documento_identidad = fields.Char(
         string="Número de Documento", related="destinatario_partner_id.vat")
     destinatario_direccion = fields.Char(
         string="Dirección", related="destinatario_partner_id.street")
     destinatario_ubigeo = fields.Char(
         string="Ubigeo", related="destinatario_partner_id.ubigeo")
-    #destinatario_ubigeo_code = fields.Many2one("res.country.state",string="Ubigeo Destinatario Code")
+    # destinatario_ubigeo_code = fields.Many2one("res.country.state",string="Ubigeo Destinatario Code")
 
     proveedor_partner_id = fields.Many2one("res.partner", string="Proveedor")
     proveedor_tipo_documento_identidad = fields.Char(
         string="Tipo de Documento", related="proveedor_partner_id.l10n_latam_identification_type_id.name")
-    #proveedor_tipo_documento_identidad_id = fields.Many2one("einvoice.catalog.06",string="Tipo de Documento",related="proveedor_partner_id.catalog_06_id")
+    # proveedor_tipo_documento_identidad_id = fields.Many2one("einvoice.catalog.06",string="Tipo de Documento",related="proveedor_partner_id.catalog_06_id")
     proveedor_numero_documento_identidad = fields.Char(
         string="Número de Documento", related="proveedor_partner_id.vat")
     proveedor_direccion = fields.Char(
         string="Dirección", related="proveedor_partner_id.street")
     proveedor_ubigeo = fields.Char(
         string="Ubigeo", related="proveedor_partner_id.ubigeo")
-    #proveedor_ubigeo_code = fields.Many2one("res.country.state",string="Ubigeo Proveedor Code")
+    # proveedor_ubigeo_code = fields.Many2one("res.country.state",string="Ubigeo Proveedor Code")
 
     @api.onchange("destinatario_partner_id")
     def _onchange_destinatario_partner(self):
@@ -333,7 +406,7 @@ class GuiaRemision(models.Model):
             # 01 - VENTA
             # 09 - EXPORTACIÓN
             # 19 - TRASLADO A ZONA PRIMARIA
-            #13 - OTROS
+            # 13 - OTROS
             if record.motivo_traslado in ['01', '09', '19', '13']:
                 # record.direccion_llegada_id = False
                 record.partner_direccion_llegada_id = record.destinatario_partner_id.id
@@ -357,7 +430,7 @@ class GuiaRemision(models.Model):
     @api.onchange("proveedor_partner_id")
     def _onchange_proveedor_partner(self):
         for record in self:
-            #record.destinatario_partner_id = False
+            # record.destinatario_partner_id = False
             # 02-COMPRA
             if record.motivo_traslado in ['02']:
                 record.direccion_partida_id = False
@@ -479,15 +552,22 @@ class GuiaRemision(models.Model):
                 guia_remision_lines = list(guia_remision_lines_temp.values())
                 record.guia_remision_line_ids = guia_remision_lines
 
-    # ENVÍO
+    def _compute_peso_bruto(self):
+        peso_total = 0
+        # for record in self:
+        for line in self.guia_remision_line_ids:
+            peso_total += line.product_id.weight
+        self.peso_bruto_total = peso_total
+
+        # ENVÍO
     fecha_emision = fields.Date(string="Fecha de Emisión", states={
                                 'validado': [('readonly', True)]})
     fecha_inicio_traslado = fields.Date(string="Fecha inicio de traslado", states={
                                         'validado': [('readonly', True)]})
-    #peso_bruto_total_uom_id = fields.Many2one("product.uom",string="UM",default="_default_peso_bruto_total_uom")
+    # peso_bruto_total_uom_id = fields.Many2one("product.uom",string="UM",default="_default_peso_bruto_total_uom")
 
     peso_bruto_total = fields.Float(string="Peso Bruto Total (KGM)", states={
-                                    'validado': [('readonly', True)]})
+                                    'validado': [('readonly', True)]}, compute="_compute_peso_bruto")
 
     # modalidad_transporte = fields.Selection(selection="_list_modalidad_transporte", string="Modalidad de Transporte", states={'validado': [('readonly', True)]})
     modalidad_transporte = fields.Selection(

@@ -1,6 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
     <data>
+        <record id="gestionit_pe_fe.view_account_move_reversal" model="ir.ui.view">
+            <field name="name">Wizard - Nota de crédito</field>
+            <field name="model">account.move.reversal</field>
+            <field name="inherit_id" ref="account.view_account_move_reversal"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='journal_id']" position="after">
+                    <field name="tipo_comprobante_a_rectificar" invisible="1"/>
+                </xpath>
+                <xpath expr="//field[@name='journal_id']" position="attributes">
+                    <attribute name="domain">[('invoice_type_code_id','=','07'), ('tipo_comprobante_a_rectificar','=',tipo_comprobante_a_rectificar)]</attribute>
+                    <attribute name="options">{'no_create': True, 'no_open': True}</attribute>
+                </xpath>
+            </field>
+        </record>
         <record id="action_credit_note" model="ir.actions.act_window">
             <field name="name">NOTA DE CRÉDITO</field>
             <field name="res_model">account.move</field>

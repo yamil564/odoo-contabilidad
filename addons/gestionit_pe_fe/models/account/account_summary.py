@@ -573,20 +573,20 @@ class AccountSummary(models.Model):
         fecha_ayer = datetime.strptime(fields.Date.today(), '%Y-%m-%d')
         fecha_ayer = datetime.strftime(fecha_ayer, '%Y-%m-%d')
 
-        invoices = self.env["account.invoice"].search([("estado_comprobante_electronico", "in", ["0_NO_EXISTE", "-"]),
-                                                       ("account_summary_id",
+        invoices = self.env["account.move"].search([("estado_comprobante_electronico", "in", ["0_NO_EXISTE", "-"]),
+                                                    ("account_summary_id",
                                                         "=", False),
-                                                       ("move_name", "!=", False),
-                                                       ("state", "in", [
+                                                    ("name", "!=", False),
+                                                    ("state", "in", [
                                                         "open", "paid"]),
-                                                       ("date_invoice",
+                                                    ("date_invoice",
                                                         "<", fecha_ayer),
-                                                       ('journal_id.invoice_type_code_id', 'in', ['03', '07', '08'])]).sorted(key=lambda r: r.date_invoice)
+                                                    ('journal_id.invoice_type_code_id', 'in', ['03', '07', '08'])]).sorted(key=lambda r: r.date_invoice)
 
         try:
             for company in invoices.mapped("company_id"):
                 invoices_by_company = invoices.filtered(
-                    lambda inv: inv.company_id == company and re.match("^B\w{3}-\d{1,8}$", inv.move_name))
+                    lambda inv: inv.company_id == company and re.match("^B\w{3}-\d{1,8}$", inv.name))
                 date_invoices = list(
                     set(invoices_by_company.mapped("date_invoice")))
 
@@ -620,7 +620,7 @@ class AccountSummaryAnularComprobante(models.TransientModel):
     _description = 'Anular Comprobante'
 
     account_invoice_id = fields.Many2one(
-        "account.invoice", string="Comprobante Electŕonico")
+        "account.move", string="Comprobante Electrónico")
 
     def btn_anular_comprobante(self):
         """

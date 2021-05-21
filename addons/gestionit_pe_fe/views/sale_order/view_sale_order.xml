@@ -8,7 +8,7 @@
             <field name="arch" type="xml">
                 <xpath expr="//button[@name='%(sale.action_view_sale_advance_payment_inv)d']" position="replace">
                 </xpath>
-                <!-- <xpath expr="//kanban//templates//div" position="inside">
+                <xpath expr="//kanban//templates//div" position="inside">
                     <a t-if="!read_only_mode" type="delete" class="fa fa-times pull-right"/>
                 </xpath>
                 <field name="amount_tax" position="replace"/>
@@ -21,11 +21,11 @@
                     <field name="total_descuento_global"/>
                     <field name="total_descuentos"/>
                     <field name="amount_tax" string="Total Impuestos"/>
-                </field> -->
+                </field>
             </field>
-        </record> 
-<!-- 
-        <record id="view_form_add_btn_guia_remision" model="ir.ui.view">
+        </record>
+
+        <!-- <record id="view_form_add_btn_guia_remision" model="ir.ui.view">
             <field name="name">view.for.add.btn.guia.remision</field>
             <field name="model">sale.order</field>
             <field name="inherit_id" ref="sale_management.sale_order_view_form"/>
@@ -34,6 +34,6 @@
                     <button string="Guía de Remisión" name="so_action_open_guia_remision" class="oe_highlight" type="object"/>
                 </xpath>
             </field>
-        </record>  -->
+        </record> -->
     </data>
 </odoo>
