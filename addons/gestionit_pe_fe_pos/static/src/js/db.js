@@ -60,13 +60,13 @@ odoo.define("gestionit_pe_fe_pos.DB",[
 
             var sequences = this.load('sequences') || {};
             if (sequences[sequence_id]) {
-                if (this.sequence_by_id[sequence_id].all_number_increment > sequences[sequence_id]) {
-                    return this.sequence_by_id[sequence_id].all_number_increment;
+                if (this.sequence_by_id[sequence_id].number_next_actual > sequences[sequence_id]) {
+                    return this.sequence_by_id[sequence_id].number_next_actual;
                 } else {
                     return sequences[sequence_id];
                 }
             } else {
-                return this.sequence_by_id[sequence_id].all_number_increment;
+                return this.sequence_by_id[sequence_id].number_next_actual;
             }
         },
         set_credit_note_types:function(credit_note_types){

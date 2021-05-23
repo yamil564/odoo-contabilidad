@@ -1,7 +1,7 @@
 <odoo>
     <template id="assets" inherit_id="point_of_sale.assets">
         <xpath expr="//script[last()]" position="after">
-            <script type="text/javascript" src="/gestionit_pe_fe_pos/static/src/lib/underscore.string.min.js" />
+            <script type="text/javascript" src="/gestionit_pe_fe_pos/static/src/lib/String.js" />
             <script type="text/javascript" src="/gestionit_pe_fe_pos/static/src/js/db.js" />
             <script type="text/javascript" src="/gestionit_pe_fe_pos/static/src/js/models.js" />
             <script type="text/javascript" src="/gestionit_pe_fe_pos/static/src/js/screens.js" />
