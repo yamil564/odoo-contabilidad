@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="SaleInvoiceJournal">
+        <div class="sale_invoice_journal">
+			<t t-if='widget.pos.config.module_account_invoicing'>
+				<t t-foreach="widget.pos.db.journal_ids" t-as="journal_id">
+					<t t-if="widget.pos.get_order().sale_type == 'sale'">
+						<t t-if="['01','03'].indexOf(journal_id.invoice_type_code_id)>=0">
+							<div  class='button js_sale_journal' t-att-data-id="journal_id.id">
+								<i class='fa fa-file-text-o' /> <t t-esc="journal_id.name" />
+							</div>
+						</t>
+					</t>
+                    <t t-if="widget.pos.get_order().sale_type == 'refund'">
+						<t t-if="journal_id.invoice_type_code_id == '07'">
+							<div  class='button js_sale_journal' t-att-data-id="journal_id.id">
+								<i class='fa fa-file-text-o' /> <t t-esc="journal_id.name" />
+							</div>
+						</t>
+					</t>
+				</t>
+			</t>
+        </div>
+    </t>
+</templates>

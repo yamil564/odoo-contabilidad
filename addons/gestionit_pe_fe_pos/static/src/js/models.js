@@ -4,6 +4,7 @@ odoo.define("gestionit_pe_fe_pos.models",[
 ],function(require){
     "use strict";
     var models = require("point_of_sale.models")
+    var PosDB = require("gestionit_pe_fe_pos.DB")
     var PosModelSuper = models.PosModel;
     var OrderSuper = models.Order
     var exports = {}
@@ -126,56 +127,57 @@ odoo.define("gestionit_pe_fe_pos.models",[
     
     models.Order = models.Order.extend({
         initialize: function(attributes, options) {
-            this.invoice_type = "out_invoice"
+            this.sale_type = "sale"
             var res = OrderSuper.prototype.initialize.apply(this, arguments);
             this.number = false;
-            this.journal_id = false;
+            this.invoice_journal_id = undefined;
             this.sequence_number = 0;
             this.set("credit_note_type",undefined)
             this.save_to_db(); 
         },
-        set_invoice_type: function(invoice_type){
+        set_sale_type: function(sale_type){
             var self = this;
             this.assert_editable();
-            if(['out_invoice','out_refund'].indexOf(invoice_type)){
-                self.invoice_type = invoice_type
+            if(['sale','refund'].indexOf(sale_type)){
+                self.sale_type = sale_type
             }else{
                 self.gui.show_popup('error', {
                     'title': "Error",
-                    'body': "El tipo de operación de comprobante no esta permitido. Tipos de operaciones permitidas 'out_invoice', 'out_refund'",
+                    'body': "El tipo de venta no esta permitido. Tipos de ventas permitidas 'sale', 'refund'",
                 });
             }
         },
-        get_invoice_type: function(){
-            return this.invoice_type
+        get_sale_type: function(){
+            return this.sale_type
         },
-        set_sale_journal: function(journal_id) {
+        set_invoice_journal_id: function(invoice_journal_id) {
             this.assert_editable();
-            this.to_invoice = journal_id?true:false
-            this.journal_id = journal_id;
+            this.to_invoice = invoice_journal_id?true:false
+            this.invoice_journal_id = invoice_journal_id;
         },
-        get_sale_journal: function() {
-            return this.journal_id;
+        get_invoice_journal_id: function() {
+            return this.invoice_journal_id;
         },
         
         export_as_JSON: function() {
             var res = OrderSuper.prototype.export_as_JSON.apply(this, arguments);
-            var journal = this.pos.db.get_journal_by_id(this.journal_id);
-            res['invoice_journal'] = this.journal_id;
+            var journal = this.pos.db.get_journal_by_id(this.invoice_journal_id);
+            res['invoice_journal_id'] = this.invoice_journal_id;
             res['number'] = this.number;
             res['sequence_number'] = this.sequence_number;
-            res['invoice_type_code_id'] = (typeof journal === "undefined") ? journal : journal.invoice_type_code_id;
-            res["invoice_type"] = this.invoice_type
-            res["credit_note_type"] = this.credit_note_type
-            res["refund_invoice"] = this.refund_invoice
-            res["refund_invoice_type_code"] = this.refund_invoice_type_code
-            res["credit_note_comment"] = this.credit_note_comment
+            res['invoice_type_code_id'] = (typeof journal === 'undefined') ? journal : journal.invoice_type_code_id;
+            res['invoice_type'] = this.invoice_type
+            res['credit_note_type'] = this.credit_note_type
+            res['credit_note_comment'] = this.credit_note_comment
+            res['refund_invoice'] = this.refund_invoice
+            res['refund_invoice_type_code'] = this.refund_invoice_type_code
             return res;
         },
         init_from_JSON: function(json) {
             OrderSuper.prototype.init_from_JSON.apply(this, arguments);
-            this.invoice_type = json.invoice_type || "out_invoice"
+            this.sale_type = json.sale_type || "sale"
             this.credit_note_type = json.credit_note_type
+            this.invoice_journal_id = json.invoice_journal_id
             this.refund_invoice = json.refund_invoice
             this.refund_invoice_type_code = json.refund_invoice_type_code
             this.credit_note_comment = json.credit_note_comment
