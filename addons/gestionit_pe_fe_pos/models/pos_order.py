@@ -28,4 +28,9 @@ class PosOrder(models.Model):
 
         _logger.info(vals)
         return vals
-    
+
+
+class l10nLatamIdentificationType(models.Model):
+    _inherit = "l10n_latam.identification.type"
+
+    available_in_pos = fields.Boolean("Disponible en POS",default=False)

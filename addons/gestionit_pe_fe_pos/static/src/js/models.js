@@ -47,6 +47,14 @@ odoo.define("gestionit_pe_fe_pos.models",[
                 return tax
             })
         }
+    },{
+        model:'l10n_latam.identification.type',
+        fields: ['id','name','l10n_pe_vat_code','available_in_pos'],
+        domain:['|',['active','=',true],['active','=',false]],
+        loaded:function(self,identification_types){
+            self.identification_types = identification_types
+            self.db.add_identification_types(identification_types)
+        }
     });
 
 
@@ -79,6 +87,22 @@ odoo.define("gestionit_pe_fe_pos.models",[
             this.db.set_sequence_next(sequence.id, number_increment);
             this.db.add_invoice_numbers(number);
 
+        },
+        rucValido: function(ruc) {
+            var ex_regular_ruc;
+            ex_regular_ruc = /^\d{11}(?:[-\s]\d{4})?$/;
+            if (ex_regular_ruc.test(ruc)) {
+                return true
+            }
+            return false;
+        },
+        dniValido: function(dni) {
+            var ex_regular_dni;
+            ex_regular_dni = /^\d{8}(?:[-\s]\d{4})?$/;
+            if (ex_regular_dni.test(dni)) {
+                return true
+            }
+            return false;
         },
         // _save_to_server: function(orders, options) {
         //     if (!orders || !orders.length) {

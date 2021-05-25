@@ -6,7 +6,7 @@ odoo.define('gestionit_pe_fe_pos.screens',[
     var core = require('web.core');
     var QWeb = core.qweb;
     var exports = {}
-
+    var DomCache = screens.DomCache
     
     screens.PaymentScreenWidget.include({
         validate_order: function(force_validation) {
@@ -91,22 +91,7 @@ odoo.define('gestionit_pe_fe_pos.screens',[
             }
             return res;
         },
-        rucValido: function(ruc) {
-            var ex_regular_ruc;
-            ex_regular_ruc = /^\d{11}(?:[-\s]\d{4})?$/;
-            if (ex_regular_ruc.test(ruc)) {
-                return true
-            }
-            return false;
-        },
-        dniValido: function(dni) {
-            var ex_regular_dni;
-            ex_regular_dni = /^\d{8}(?:[-\s]\d{4})?$/;
-            if (ex_regular_dni.test(dni)) {
-                return true
-            }
-            return false;
-        },
+
         // validate_order: function(force_validation) {
         //     self = this;
         //     var order = this.pos.get_order();
@@ -277,6 +262,58 @@ odoo.define('gestionit_pe_fe_pos.screens',[
 
         // },
     });
+
+    screens.ClientListScreenWidget.include({
+        events:_.extend({},screens.ClientListScreenWidget.prototype.events,{
+            'change input[name="radio_l10n_latam_identification_type_id"]':"change_l10n_latam_identification_type_id",
+            'click .btn_get_datos':'get_datos',
+        }),
+        init: function(parent, options){
+            this._super(parent, options);
+            this.integer_client_details.push("l10n_latam_identification_type_id")
+        },
+        change_l10n_latam_identification_type_id:function(ev){
+            var l10n_latam_identification_type_id = $(ev.currentTarget).val()
+            this.set_l10n_latam_identification_type_id(l10n_latam_identification_type_id)
+        },
+        set_l10n_latam_identification_type_id:function(l10n_latam_identification_type_id){
+            $(this.$el).find("input[name='l10n_latam_identification_type_id']").val(l10n_latam_identification_type_id)
+            var vat = $(this.$el).find("input[name='vat']").val()
+            var identification_code = this.pos.db.identification_type_by_id[parseInt(l10n_latam_identification_type_id)].l10n_pe_vat_code
+
+            if(vat == undefined || vat == '' && identification_code == '0'){
+                $(this.$el).find("input[name='vat']").val('0')
+                $(this.$el).find("div.btn_get_datos").css("display","none")
+            }else if(identification_code == '0'){
+                $(this.$el).find("div.btn_get_datos").css("display","none")
+            }else if(identification_code != '0'){
+                $(this.$el).find("div.btn_get_datos").css("display","block")
+            }
+        },
+        get_datos:function(ev){
+            var self = this;
+            var numero_document = $(this.$el).find("input[name='vat']").val()
+            var l10n_latam_identification_type_id = $(this.$el).find("input[name='l10n_latam_identification_type_id']").val()
+            if( l10n_latam_identification_type_id  == undefined){
+                return false
+            }
+            var identification_code = this.pos.db.identification_type_by_id[parseInt(l10n_latam_identification_type_id)].l10n_pe_vat_code
+
+            this._rpc({
+                model:"res.company",
+                method:"request_number_identificacion_partner",
+                args:[],
+                kwargs:{
+                    tipo_doc:identification_code,
+                    num_doc:numero_document
+                }
+            }).then(function(result){
+                for(const att in result){
+                    $(self.$el).find(`input[name='${att}']`).val(result[att])
+                }
+            })
+        }
+    })
 
     exports.screens = screens
 

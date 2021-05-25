@@ -1,16 +1,17 @@
 odoo.define("gestionit_pe_fe_pos.DB",[
-    "point_of_sale.DB"
+    "point_of_sale.DB",
 ],function(require){
     "use strict";
     var PosDB = require("point_of_sale.DB")
     var PosDBSuper = PosDB.prototype
-
+    
     
     PosDB = PosDB.extend({
         init: function(options) {
             this.journal_ids = []
             this.journal_by_id = {};
             this.sequence_by_id = {};
+            this.identification_type_by_id = {};
             this.journal_sequence_by_id = {};
             this.invoice_numbers=[];
             return PosDBSuper.init.apply(this, arguments);
@@ -41,6 +42,11 @@ odoo.define("gestionit_pe_fe_pos.DB",[
             }
             for (var i = 0, len = sequences.length; i < len; i++) {
                 this.sequence_by_id[sequences[i].id] = sequences[i];
+            }
+        },
+        add_identification_types: function(identification_types){
+            for (var i = 0, len = identification_types.length; i < len; i++) {
+                this.identification_type_by_id[identification_types[i].id] = identification_types[i];
             }
         },
         get_journal_sequence_id: function(journal_id) {
@@ -80,7 +86,7 @@ odoo.define("gestionit_pe_fe_pos.DB",[
         },
         get_credit_note_type_by_id:function(id){
             return _.find(this.credit_note_types,function(el){return el.id == id})
-        }
+        },
     });
 
     return PosDB
