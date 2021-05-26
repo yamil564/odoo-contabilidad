@@ -67,8 +67,8 @@ odoo.define("gestionit_pe_fe_pos.models",[
         generate_order_number: function(journal_id) {
             var sequence = this.db.get_journal_sequence_id(journal_id);
             var num = "%0" + sequence.padding + "d";
-            var prefix = sequence.interpolated_prefix || "";
-            var suffix = sequence.interpolated_suffix || "";
+            var prefix = sequence.prefix || "";
+            var suffix = sequence.suffix || "";
             var increment = this.db.get_sequence_next(journal_id);
             var number = prefix + num.sprintf(parseInt(increment)) + suffix;
             return { 'number': number, 'sequence_number': increment };
@@ -82,9 +82,24 @@ odoo.define("gestionit_pe_fe_pos.models",[
             }
             return numbers;
         },
+        get_client_identification_type_code:function(){
+            var client = this.get_client()
+            var identification_type = undefined
+            if(client.l10n_latam_identification_type_id){
+                identification_type = this.db.identification_type_by_id[client.l10n_latam_identification_type_id[0]]
+                var client_identification_type_code = identification_type.l10n_pe_vat_code
+            }else{
+                var client_identification_type_code = undefined
+            }
+            return client_identification_type_code
+        },
         get_client_display_name:function(){
             var client = this.get_client()
-            var client_name = client.name
+            if(client){
+                var client_name = client.name
+            }else{
+                return false
+            }
             var identification_type = undefined;
             if(client.l10n_latam_identification_type_id){
                 identification_type = this.db.identification_type_by_id[client.l10n_latam_identification_type_id[0]]
@@ -193,6 +208,36 @@ odoo.define("gestionit_pe_fe_pos.models",[
                     'body': "El tipo de venta no esta permitido. Tipos de ventas permitidas 'sale', 'refund'",
                 });
             }
+        },
+        export_for_printing:function(){
+            var res = OrderSuper.prototype.export_for_printing.apply(this, arguments);
+            var self = this;
+            var client = self.pos.get_client()
+            var client_identification_type_code = undefined;
+            var identification_type = undefined;
+            if(client){
+                if(client.l10n_latam_identification_type_id){
+                    identification_type = self.pos.db.identification_type_by_id[client.l10n_latam_identification_type_id[0]]
+                    var client_identification_type_code = identification_type.l10n_pe_vat_code
+                }
+            } 
+            var journal = self.get_invoice_journal_id()?self.pos.db.journal_by_id[self.get_invoice_journal_id()]:undefined;
+            console.log(res);
+            
+            // var texto_qr = self.pos.company.vat + "|" + tipo_doc + "|" + serie + "|" + numero + "|" + igv.toString() + "|" + order.get_total_with_tax().toString() + "|" + FECHA_EMISION + "|" + TIPO_DOC_REC + "|" + client.vat + "|";
+            if(client && journal){
+                res["qr_string"] = [res.company.vat, //RUC de emisor
+                                    journal.invoice_type_code_id, //Tipo de comprobante electrónico
+                                    journal.code, //Serie de comprobante
+                                    self.sequence_number,//Número correlativo
+                                    res.total_tax,//Total IGV
+                                    res.total_with_tax,//Monto Totales
+                                    res.date.localestring.substr(0,10),//Fecha de Emisión
+                                    client_identification_type_code,//Tipo de documento de identidad de Receptor
+                                    client.vat //Número de documento de identidad de Receptor
+                                    ].join("|")
+            }
+            return res
         },
         get_sale_type: function(){
             return this.sale_type

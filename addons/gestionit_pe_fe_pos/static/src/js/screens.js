@@ -44,18 +44,19 @@ odoo.define('gestionit_pe_fe_pos.screens',[
         customer_changed: function() {
             var client = this.pos.get_client();
             console.log(this.pos.get_client_display_name())
-            this.$('.js_customer_name').text( client ? this.pos.get_client_display_name() : _t('Customer') );
+            this.$('.js_customer_name').text( client ? this.pos.get_client_display_name() : "Cliente" );
         },
         order_is_valid: function(force_validation) {
             var self = this;
             var order = self.pos.get_order();
             var client = order.get_client();
             var identification_type = undefined;
-            if(client.l10n_latam_identification_type_id){
-                identification_type = this.pos.db.identification_type_by_id[client.l10n_latam_identification_type_id[0]]
-                var client_identification_type_code = identification_type.l10n_pe_vat_code
-            }else{
-                var client_identification_type_code = undefined
+            var client_identification_type_code = undefined;
+            if(client){
+                if(client.l10n_latam_identification_type_id){
+                    identification_type = this.pos.db.identification_type_by_id[client.l10n_latam_identification_type_id[0]]
+                    var client_identification_type_code = identification_type.l10n_pe_vat_code
+                }
             }
             var journal = order.get_invoice_journal_id()?self.pos.db.journal_by_id[order.get_invoice_journal_id()]:undefined;
             
@@ -133,7 +134,7 @@ odoo.define('gestionit_pe_fe_pos.screens',[
                                     });
                                     return false
                                 }
-                                if (!self.dniValido(client.vat)) {
+                                if (!self.pos.dniValido(client.vat)) {
                                     self.gui.show_popup('confirm', {
                                         'title': 'Error',
                                         'body': 'El DNI del cliente tiene un formato incorrecto.',
@@ -186,7 +187,7 @@ odoo.define('gestionit_pe_fe_pos.screens',[
                                 });
                                 return false
                             }
-                            if (!self.rucValido(client.vat)) {
+                            if (!self.pos.rucValido(client.vat)) {
                                 self.gui.show_popup('confirm', {
                                     'title': 'Datos del Cliente Incorrectos',
                                     'body': 'El Número de documento de identidad del cliente (RUC) no es válido.',
@@ -281,6 +282,13 @@ odoo.define('gestionit_pe_fe_pos.screens',[
         }
     })
 
+    screens.ReceiptScreenWidget.include({
+        get_receipt_render_env:function(){
+            var res = this._super()
+            console.log(res)
+            return res 
+        }
+    })
     exports.screens = screens
 
     return screens;
