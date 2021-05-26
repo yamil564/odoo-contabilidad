@@ -82,6 +82,27 @@ odoo.define("gestionit_pe_fe_pos.models",[
             }
             return numbers;
         },
+        get_client_display_name:function(){
+            var client = this.get_client()
+            var client_name = client.name
+            var identification_type = undefined;
+            if(client.l10n_latam_identification_type_id){
+                identification_type = this.db.identification_type_by_id[client.l10n_latam_identification_type_id[0]]
+                var client_identification_type_code = identification_type.l10n_pe_vat_code
+            }else{
+                var client_identification_type_code = undefined
+            }
+            console.log(client_identification_type_code)
+            console.log(client.vat)
+            if(['1','6'].indexOf(client_identification_type_code) >=0 && Boolean(client.vat)){
+                client_name += " [" +identification_type.name+"-"+client.vat+"]" 
+            }else if(['1','6'].indexOf(client_identification_type_code) >=0 && Boolean(~client.vat) ){
+                client_name += " [" +identification_type.name+"- N/A]" 
+            }else{
+                client_name += " [N/A]"
+            }
+            return client_name
+        },
         set_sequence: function(journal_id, number, number_increment) {
             var sequence = this.db.get_journal_sequence_id(journal_id);
             this.db.set_sequence_next(sequence.id, number_increment);

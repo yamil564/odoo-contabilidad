@@ -8,6 +8,7 @@
     ],
     "qweb":[
         "static/src/xml/show_journals.xml",
-        "static/src/xml/client_screen.xml"
+        "static/src/xml/client_screen.xml",
+        "static/src/xml/payment_screen.xml"
     ]
 }
