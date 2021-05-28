@@ -7,6 +7,8 @@ import json
 import requests
 import os
 import logging
+from odoo.addons.gestionit_pe_fe.models.account.api_facturacion import api_models
+
 _logger = logging.getLogger(__name__)
 
 
@@ -262,20 +264,19 @@ class AccountComunicacionBaja(models.Model):
 
     def enviar_comunicacion_baja(self):
         data_doc = self.crear_json_baja()
-        response_env = oauth.enviar_doc_baja_url(
-            data_doc, self.company_id.tipo_envio)
-        _logger.info("RESPONSE ENV")
-        _logger.info(response_env)
+        try:
+            response_env = oauth.enviar_doc_baja_url(data_doc, self.company_id.tipo_envio)
+        except Exception as e:
+            raise UserError(e)
+        except NewConnectionError as e:
+            raise UserError("Error en la conexión con sunat, pruebe su conexión de internet o inténtelo más tarde.")
+
         self.json_comprobante = json.dumps(data_doc, indent=4)
         self.json_respuesta = json.dumps(response_env, indent=4)
 
         if response_env["success"]:
-            response = response_env
-            result = response.get("result", {})
-            if result.get("sunat_status"):
-                self.state = result['sunat_status']
-            if result.get("ticket"):
-                self.ticket = result['ticket']
+            self.state = response_env['sunat_status']
+            self.ticket = response_env['ticket']
         else:
             recepcionado, state, msg_error = oauth.extraer_error(response_env)
             if recepcionado:
@@ -306,8 +307,7 @@ class AccountComunicacionBaja(models.Model):
 
     def crear_json_baja(self):
         nombreEmisor = self.company_id.partner_id.registration_name.strip()
-        numDocEmisor = self.company_id.partner_id.vat.strip(
-        ) if self.company_id.partner_id.vat else ""
+        numDocEmisor = self.company_id.partner_id.vat.strip() if self.company_id.partner_id.vat else ""
         data = {
             "company": {
                 "numDocEmisor": numDocEmisor,
@@ -335,7 +335,7 @@ class AccountComunicacionBaja(models.Model):
             data_detalle.append({
                 "serie": document.name[0:4],
                 "correlativo": int(document.name[5:len(document.name)]),
-                "tipoDocumento": document.invoice_type_code,
+                "tipoDocumento": document.journal_id.invoice_type_code_id,
                 "motivo": self.motivo
             })
 
@@ -345,27 +345,31 @@ class AccountComunicacionBaja(models.Model):
 
     def consulta_estado_comunicacion_baja(self):
         # token = generate_token_by_company(self.company_id,100000)
-        endpoint = self.company_id.endpoint
+        if not self.ticket:
+            raise UserError("El campo de Ticket esta vacío")
+
+        nombreEmisor = self.company_id.partner_id.registration_name.strip()
+        numDocEmisor = self.company_id.partner_id.vat.strip() if self.company_id.partner_id.vat else ""
+
         data = {
-            "method": "Factura.consultaResumen",
-            "kwargs": {
-                "data": {
-                    "ticket": self.ticket,
-                    "tipoEnvio": int(self.company_id.tipo_envio),
-                }
-            }
+            "company": {
+                "numDocEmisor": numDocEmisor,
+                "nombreEmisor": nombreEmisor,
+                "SUNAT_user": self.company_id.sunat_user,
+                "SUNAT_pass": self.company_id.sunat_pass,
+                "key_private": self.company_id.cert_id.key_private,
+                "key_public": self.company_id.cert_id.key_public,
+            },
+            "ticket": self.ticket,
+            "tipoEnvio": int(self.company_id.tipo_envio)
         }
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": token
-        }
-        r = requests.post(endpoint, headers=headers, data=json.dumps(data))
+        try:
+            result = api_models.consultaResumen(data)
+        except Exception as e:
+            raise UserError(e)
 
-        # os.system("echo '%s'"%(json.dumps(data)))
-
-        response = r.json()
-        self.json_estado_comunicacion_baja = json.dumps(response, indent=4)
-        result = response.get("result", False)
+        self.json_estado_comunicacion_baja = json.dumps(result, indent=4)
+        # result = response.get("result", False)
 
         # os.system("echo '%s'"%(json.dumps(response,indent=4)))
 
@@ -373,12 +377,12 @@ class AccountComunicacionBaja(models.Model):
             status = result.get("status", False)
             code = result.get("code", False)
             if code == "env:Server":
-                raise UserError(response["result"]["description"])
+                raise UserError(result["description"])
 
             if status:
-                self.state = response["result"]["status"]
-                self.descripcion_estado_com_baja = response["result"]["description"]
+                self.state = result["status"]
+                self.descripcion_estado_com_baja = result["description"]
             else:
-                raise UserError(json.dumps(response))
+                raise UserError(json.dumps(result))
         else:
-            raise UserError(json.dumps(response))
+            raise UserError(json.dumps(result))

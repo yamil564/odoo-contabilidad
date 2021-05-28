@@ -4,6 +4,10 @@ from .lista_errores import errores
 import random
 from xml.dom import minidom
 import logging
+import base64
+import zipfile
+import io
+import os
 _logger = logging.getLogger(__name__)
 
 

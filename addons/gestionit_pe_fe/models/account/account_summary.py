@@ -26,7 +26,6 @@ class AccountInvoice(models.Model):
                                          ondelete="set null",
                                          default=False)
 
-
 class AccountSummaryLine(models.Model):
     _name = "account.summary.line"
 
@@ -82,8 +81,10 @@ class AccountSummary(models.Model):
 
     cod_operacion = fields.Selection(string="Código Operación", selection=[(
         "1", "Adicionar"), ("2", "Modificar"), ("3", "Anular")], required="True", default="1")
+        
     account_invoice_ids = fields.One2many(
         "account.move", "account_summary_id", string="Comprobantes")
+    
     ticket = fields.Char("Ticket")
     estado = fields.Selection(selection=[("borrador", "Borrador"),
                                          ("enviado", "Enviado"),
@@ -141,7 +142,7 @@ class AccountSummary(models.Model):
                 "id": invoice.id,
                 "serie": invoice.name.split("-")[0],
                 "correlativo":int(invoice.name.split("-")[1]),
-                "tipo_documento":invoice.invoice_type_code,
+                "tipo_documento":invoice.journal_id.invoice_type_code_id,
                 "tipo_doc_receptor":invoice.partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code,
                 "numero_doc_receptor":invoice.partner_id.vat,
                 "tipo_moneda":invoice.currency_id.name,
@@ -205,51 +206,45 @@ class AccountSummary(models.Model):
 
     # @api.one
     def cargar_comprobantes(self):
-        if self.cod_operacion == "1":
-            domain_status_comprobante = ("estado_comprobante_electronico", "in", [
-                                         "-", False, "0_NO_EXISTE"])
-        elif self.cod_operacion in ["2", "3"]:
-            domain_status_comprobante = (
-                "estado_comprobante_electronico", "in", ["1_ACEPTADO"])
-
+        if self.cod_operacion in ["2","3"]:
+            raise UserError("La carga de comprobantes solo esta disponible para el código de operación 1-Adicionar")
+        if not self.fecha_emision_documentos:
+            raise UserError("La fecha de emisión de los documentos es obligatoria.")
         if not self.company_id:
             raise UserError("Debe seleccionar una compañía")
 
         # Boletas de Venta
-        account_invoices = self.env["account.move"].search([("invoice_date", "=", self.fecha_emision_documentos),
-                                                            ("state", "in", [
-                                                                "posted"]),
-                                                            ("invoice_type_code",
-                                                                "=", "03"),
-                                                            ("company_id", "=",
-                                                                self.company_id.id),
-                                                            domain_status_comprobante])
+        account_invoices = self.env["account.move"].search([("invoice_date","=",self.fecha_emision_documentos),
+                                                                ("state","in",["posted"]),
+                                                                ("journal_id.invoice_type_code_id","=","03"),
+                                                                ("partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code","in",["0","1","6"]),
+                                                                ("partner_id.vat","!=",False),
+                                                                ("company_id","=",self.company_id.id),
+                                                                ("estado_comprobante_electronico", "in", ["-", False, "0_NO_EXISTE"])])
 
         account_invoices = [b for b in account_invoices]
 
         # Listar las notas de Crédito
-        nota_credito_ids = self.env["account.move"].search([("invoice_date", "=", self.fecha_emision_documentos),
-                                                            ("state", "in", [
-                                                                "posted"]),
-                                                            ("invoice_type_code",
-                                                                "=", "07"),
-                                                            ("reversed_entry_id.estado_comprobante_electronico", "=", "1_ACEPTADO"),
-                                                            domain_status_comprobante])
+        nota_credito_ids = self.env["account.move"].search([("invoice_date","=",self.fecha_emision_documentos),
+                                                                    ("state","in",["posted"]),
+                                                                    ("journal_id.invoice_type_code_id","=","07"),
+                                                                    ("partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code","in",["0","1","6"]),
+                                                                    ("partner_id.vat","!=",False),
+                                                                    ("reversed_entry_id","!=",False),
+                                                                    ("company_id","=",self.company_id.id),
+                                                                    ("reversed_entry_id.estado_comprobante_electronico","=","1_ACEPTADO")])
 
-        nota_credito_ids = [
-            nc for nc in nota_credito_ids if nc.reversed_entry_id.invoice_type_code == "03"]
+        nota_credito_ids = [nc for nc in nota_credito_ids if nc.reversed_entry_id.invoice_type_code == "03"]
 
         # Listar las notas de Débito
-        nota_debito_ids = self.env["account.move"].search([("invoice_date", "=", self.fecha_emision_documentos),
-                                                           ("state", "in", [
-                                                               "posted"]),
-                                                           ("invoice_type_code",
-                                                               "=", "08"),
-                                                           ("reversed_entry_id.estado_comprobante_electronico", "=", "1_ACEPTADO"),
-                                                           domain_status_comprobante])
+        nota_debito_ids = self.env["account.move"].search([("invoice_date","=",self.fecha_emision_documentos),
+                                                                    ("state","in",["posted"]),
+                                                                    ("journal_id.invoice_type_code_id","=","08"),
+                                                                    ("partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code","in",["0","1","6"]),
+                                                                    ("partner_id.vat","!=",False),
+                                                                    ("reversed_entry_id.estado_comprobante_electronico","=","1_ACEPTADO")])
 
-        nota_debito_ids = [
-            nd for nd in nota_debito_ids if nd.reversed_entry_id.invoice_type_code == "03"]
+        nota_debito_ids = [nd for nd in nota_debito_ids if nd.reversed_entry_id.invoice_type_code == "03"]
 
         # Consolidado Boleta y Notas Asociadas
         account_invoices = account_invoices + nota_credito_ids + nota_debito_ids
@@ -258,7 +253,7 @@ class AccountSummary(models.Model):
             "invoice_id": invoice.id,
             "serie": invoice.name.split("-")[0],
             "correlativo":int(invoice.name.split("-")[1]),
-            "tipo_documento":invoice.invoice_type_code,
+            "tipo_documento":invoice.journal_id.invoice_type_code_id,
             "tipo_doc_receptor":invoice.partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code,
             "numero_doc_receptor":invoice.partner_id.vat,
             "tipo_moneda":invoice.currency_id.name,
@@ -315,7 +310,7 @@ class AccountSummary(models.Model):
             "id": invoice.id,
             "serie": invoice.name.split("-")[0],
             "correlativo":int(invoice.name.split("-")[1]),
-            "tipo_documento":invoice.invoice_type_code,
+            "tipo_documento":invoice.journal_id.invoice_type_code_id,
             "tipo_doc_receptor":invoice.partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code,
             "numero_doc_receptor":invoice.partner_id.vat,
             "tipo_moneda":invoice.currency_id.name,
@@ -566,45 +561,62 @@ class AccountSummary(models.Model):
             raise UserError(json.dumps(response))
 
     def cron_crear_resumenes_diarios(self):
-        date_order_utc = datetime.strptime(fields.Datetime.now(
-        ), "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone("UTC"))
-        date_order = date_order_utc.astimezone(
-            timezone("America/Lima")).strftime("%Y-%m-%d")
-        fecha_ayer = datetime.strptime(fields.Date.today(), '%Y-%m-%d')
+        tz = self.env.user.tz or "America/Lima"
+        fecha_ayer = datetime.strptime(datetime.now(tz=timezone(tz)), '%Y-%m-%d')
         fecha_ayer = datetime.strftime(fecha_ayer, '%Y-%m-%d')
 
-        invoices = self.env["account.move"].search([("estado_comprobante_electronico", "in", ["0_NO_EXISTE", "-"]),
-                                                    ("account_summary_id",
-                                                        "=", False),
-                                                    ("name", "!=", False),
-                                                    ("state", "in", [
-                                                        "open", "paid"]),
-                                                    ("date_invoice",
-                                                        "<", fecha_ayer),
-                                                    ('journal_id.invoice_type_code_id', 'in', ['03', '07', '08'])]).sorted(key=lambda r: r.date_invoice)
+        invoices = self.env["account.move"].search([("estado_comprobante_electronico","in",["0_NO_EXISTE","-"]),
+                                                            ("move_name","!=",False),
+                                                            ("state","in",["open","paid"]),
+                                                            ("partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code","in",["0","1","6"]),
+                                                            ("partner_id.vat","!=",False),
+                                                            ("invoice_date","<",fecha_ayer),
+                                                            ("account_summary_id.cod_operacion","in",[False,"3"]),
+                                                            ('invoice_type_code','=','03')]).sorted(key=lambda r:r.invoice_date)
+
+        invoices += self.env["account.move"].search([("invoice_date","<",fecha_ayer),
+                                                        ("state","in",["open","paid"]),
+                                                        ("invoice_type_code","=","07"),
+                                                        ("partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code","in",["0","1","6"]),
+                                                        ("partner_id.vat","!=",False),
+                                                        ("reversed_entry_id","!=",False),
+                                                        ("estado_comprobante_electronico","in",["0_NO_EXISTE","-"]),
+                                                        ("reversed_entry_id.invoice_type_code","=","03"),
+                                                        ("account_summary_id.cod_operacion","in",[False,"3"]),
+                                                        ("reversed_entry_id.estado_comprobante_electronico","=","1_ACEPTADO")])
+        
+        invoices += self.env["account.move"].search([("invoice_date","<",fecha_ayer),
+                                                        ("state","in",["open","paid"]),
+                                                        ("invoice_type_code","=","08"),
+                                                        ("partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code","in",["0","1","6"]),
+                                                        ("partner_id.vat","!=",False),
+                                                        ("reversed_entry_id","!=",False),
+                                                        ("estado_comprobante_electronico","in",["0_NO_EXISTE","-"]),
+                                                        ("reversed_entry_id.invoice_type_code","=","03"),
+                                                        ("account_summary_id.cod_operacion","in",[False,"3"]),
+                                                        ("reversed_entry_id.estado_comprobante_electronico","=","1_ACEPTADO")])
 
         try:
             for company in invoices.mapped("company_id"):
                 invoices_by_company = invoices.filtered(
                     lambda inv: inv.company_id == company and re.match("^B\w{3}-\d{1,8}$", inv.name))
-                date_invoices = list(
-                    set(invoices_by_company.mapped("date_invoice")))
+                invoice_dates = list(
+                    set(invoices_by_company.mapped("invoice_date")))
 
-                for date_invoice in date_invoices:
+                for invoice_date in invoice_dates:
                     invoices_by_company_by_date = invoices_by_company.filtered(
-                        lambda inv: inv.date_invoice == date_invoice)
+                        lambda inv: inv.invoice_date == invoice_date)
                     chunks = [invoices_by_company_by_date[x:x+300]
                               for x in range(0, len(invoices_by_company_by_date), 300)]
                     for invs in chunks:
                         resumen = {
-                            "fecha_generacion": date_order,
-                            "fecha_emision_documentos": date_invoice,
+                            "fecha_generacion": datetime.now(tz=tz),
+                            "fecha_emision_documentos": invoice_date,
                             "cod_operacion": "1",
                             "account_invoice_ids": [(6, 0, invs.mapped("id"))],
                             "company_id": company.id
                         }
-                        resumen_obj = self.env["account.summary"].sudo().create(
-                            resumen)
+                        resumen_obj = self.env["account.summary"].sudo().create(resumen)
                         resumen_obj.cargar_resumen_lineas()
                         resumen_obj.generar_identificador_resumen()
                         resumen_obj.generar_resumen_diario()
@@ -623,30 +635,16 @@ class AccountSummaryAnularComprobante(models.TransientModel):
         "account.move", string="Comprobante Electrónico")
 
     def btn_anular_comprobante(self):
-        """
-        user = self.env["res.users"].sudo().browse(self.env.uid)
-        today = fields.Date.today()
-        local = pytz.timezone(user.tz)
-        local_dt = local.localize(today)
-        utc_dt = local_dt.astimezone(pytz.utc)
-        date_order = utc_dt.strftime ("%Y-%m-%d")
-        """
-        # os.system("echo '%s'"%(json.dumps()))
-        date_order_utc = datetime.strptime(
-            fields.Date.today(), "%Y-%m-%d").replace(tzinfo=timezone("UTC"))
-        date_order = date_order_utc.astimezone(
-            timezone("America/Lima")).strftime("%Y-%m-%d")
-
         resumen = {
             "fecha_generacion": fields.Date.today(),
-            "fecha_emision_documentos": self.account_invoice_id.date_invoice,
+            "fecha_emision_documentos": self.account_invoice_id.invoice_date,
             "cod_operacion": "3",
             "account_invoice_ids": [(6, 0, [self.account_invoice_id.id])]
         }
-        # os.system("echo '%s'"%(json.dumps(resumen)))
         resumen_obj = self.env["account.summary"].create(resumen)
         self.account_invoice_id.resumen_anulacion_id = resumen_obj.id
         resumen_obj.generar_identificador_resumen()
-        # resumen_obj.cargar_resumen_lineas()
+        resumen_obj.cargar_resumen_lineas()
+        resumen_obj.generar_resumen_diario()
 
         resumen_obj.btn_enviar_resumen_diario()

@@ -7,7 +7,7 @@
             </t>
         </t>
     </template> -->
-    <template id="report_guia_remision">
+    <template id="gestionit_pe_fe.report_guia_remision_template">
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="o">
                 <!-- <h2 t-field="doc.numero"/>

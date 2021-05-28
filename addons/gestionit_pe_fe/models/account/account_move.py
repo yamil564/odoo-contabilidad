@@ -6,7 +6,7 @@ from odoo.http import request
 from odoo.tools.misc import get_lang
 from odoo.addons.gestionit_pe_fe.models.parameters.catalogs import tnc
 from odoo.addons.gestionit_pe_fe.models.parameters.catalogs import tnd
-
+from pytz import timezone
 from datetime import datetime, timedelta
 from . import oauth
 import base64
@@ -57,6 +57,7 @@ class AccountMove(models.Model):
         refund_id = self._context.get("default_refund_invoice_id", False)
         domain = []
         array_journal = []
+        
 
         user_id = res.get("invoice_user_id", False)
         if user_id:
@@ -65,13 +66,13 @@ class AccountMove(models.Model):
             if len(warehouse_ids) > 0:
                 for wh in warehouse_ids:
                     for whj in wh.journal_ids:
-                        if whj.type == 'sale':
+                        if whj.type == self._context.get("journal_type"):
                             if whj.invoice_type_code_id == self._context.get("default_invoice_type_code"):
                                 res.update({
                                     "warehouse_id": wh.id,
                                     "journal_id": whj.id
                                 })
-                                return res
+                                # return res
         if refund_id:
             refund_obj = self.env["account.move"].browse(refund_id)
             domain += [['tipo_comprobante_a_rectificar',
@@ -519,19 +520,22 @@ class AccountMove(models.Model):
 
         return obj
 
+    def enviar_comprobante(self):
+        oauth.enviar_doc(self)
+
     @api.model
     def _validar_reference(self, obj):
-        reference = obj.ref
-        if reference:
-            if len(reference) == 13:
-                if reference[4:5] == "-" and reference[5:13].isdigit():
-                    return True
-                else:
-                    raise UserError(
-                        "La referencia debe tener el formato XXXX-########")
-            else:
-                raise UserError(
-                    "La referencia debe tener el formato XXXX-########")
+        # reference = obj.ref
+        if obj.ref:
+            if not re.match("^F\w{3}-\d{1,8}$", obj.ref):
+                raise UserError("La referencia debe tener el formato XXXX-########")
+                # if reference[4:5] == "-" and reference[5:13].isdigit():
+                #     return True
+                # else:
+                #     raise UserError(
+                #         "La referencia debe tener el formato XXXX-########")
+            # else:
+                
         else:
             raise UserError("Debe colocar la Referencia del proveedor")
 
@@ -785,6 +789,7 @@ class AccountMove(models.Model):
             })
         return action
 
+
     def _reverse_moves(self, default_values_list=None, cancel=False):
         ''' Reverse a recordset of account.move.
         If cancel parameter is true, the reconcilable or liquidity lines
@@ -852,15 +857,15 @@ class AccountMove(models.Model):
         return reverse_moves
 
     def btn_comunicacion_baja(self):
-        ref = self.env.ref("gestionit_pe_fe.view_comunicacion_baja_form")
-        # if self.estado_comprobante_electronico in ["-",False,"0_NO_EXISTE"]:
-        # self.btn_consulta_validez_comprobante()
+        
+        tz = self.env.user.tz or "America/Lima"
 
         if self.estado_comprobante_electronico == "2_ANULADO":
             raise UserError("Este comprobante ha sido Anulado.")
 
         elif re.match("^F\w{3}-\d{1,8}$", self.name):
             if self.documento_baja_id:
+                ref = self.env.ref("gestionit_pe_fe.view_comunicacion_baja_form")
                 return {
                     "type": "ir.actions.act_window",
                     "res_model": "account.comunicacion_baja",
@@ -870,17 +875,19 @@ class AccountMove(models.Model):
                     "view_id": ref.id,
                 }
             else:
+                ref = self.env.ref("gestionit_pe_fe.view_comunicacion_baja_form_simple")
                 return {
                     "type": "ir.actions.act_window",
                     "res_model": "account.comunicacion_baja",
-                    "target": "self",
+                    "name":"Comunicación de baja o Anulación de comprobante",
+                    "target": "new",
                     "view_id": ref.id,
                     "view_mode": "form",
                     "context": {
                         'default_invoice_ids': [self.id],
-                        'default_invoice_type_code_id': self.invoice_type_code,
+                        'default_invoice_type_code_id': self.journal_id.invoice_type_code_id,
                         'default_date_invoice': self.invoice_date,
-                        'default_issue_date': datetime.now().strftime("%Y-%m-%d")
+                        'default_issue_date': datetime.now(tz=timezone(tz))
                     }
                 }
         elif re.match("^B\w{3}-\d{1,8}$", self.name):
@@ -970,8 +977,7 @@ class AccountMoveReversal(models.TransientModel):
     @api.model
     def default_get(self, fields):
         res = super(AccountMoveReversal, self).default_get(fields)
-        move_ids = self.env['account.move'].browse(self.env.context['active_ids']) if self.env.context.get(
-            'active_model') == 'account.move' else self.env['account.move']
+        move_ids = self.env['account.move'].browse(self.env.context['active_ids']) if self.env.context.get('active_model') == 'account.move' else self.env['account.move']
         res['refund_method'] = (
             len(move_ids) > 1 or move_ids.type == 'entry') and 'cancel' or 'refund'
         res['residual'] = len(move_ids) == 1 and move_ids.amount_residual or 0
@@ -979,7 +985,9 @@ class AccountMoveReversal(models.TransientModel):
             move_ids.currency_id) == 1 and move_ids.currency_id.id or False
         res['move_type'] = len(move_ids) == 1 and move_ids.type or False
         res['move_id'] = move_ids[0].id if move_ids else False
-        res['tipo_comprobante_a_rectificar'] = move_ids[0].invoice_type_code if move_ids else False
+        res['tipo_comprobante_a_rectificar'] = move_ids[0].journal_id.invoice_type_code_id if move_ids else False
+        journals = self.env["account.journal"].search([('tipo_comprobante_a_rectificar','=',res['tipo_comprobante_a_rectificar'])]).ids
+        res['journal_id'] = journals[0] if len(journals)>0 else False
         return res
 
     def _prepare_default_reversal(self, move):
