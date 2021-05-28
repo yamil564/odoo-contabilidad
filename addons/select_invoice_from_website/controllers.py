@@ -16,4 +16,5 @@ class WebsiteSaleExtend(WebsiteSale):
         error, error_message  = super(WebsiteSaleExtend,self).checkout_form_validate(mode, all_form_values, data)
         _logger.info(all_form_values)
         _logger.info(data)
+        # Se valida el tipo de docuemnto de identidad con el tipo de comprobante
         return error, error_message

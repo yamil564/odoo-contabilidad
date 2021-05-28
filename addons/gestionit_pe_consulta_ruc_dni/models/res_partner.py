@@ -13,8 +13,7 @@ class ResPartner(models.Model):
     _inherit = 'res.partner'
 
     registration_name = fields.Char('Name', size=128, index=True)
-    estado_contribuyente = fields.Selection(selection=[(
-        'activo', 'Activo'), ('noactivo', 'No Activo')], string='Estado del Contribuyente')
+    estado_contribuyente = fields.Char(string='Estado del Contribuyente')
     msg_error = fields.Char(readonly=True)
 
     l10n_latam_identification_type_id = fields.Many2one('l10n_latam.identification.type',
@@ -22,11 +21,12 @@ class ResPartner(models.Model):
                                                         default=lambda self: self.env.ref(
                                                             'l10n_pe.it_RUC', raise_if_not_found=False),
                                                         help="Tipo de documento de identificación")
-
+    
     @api.onchange('l10n_latam_identification_type_id', 'vat')
     def vat_change(self):
         self.update_document()
 
+    @api.model
     def request_migo_dni(self, dni):
         user_id = self.env.context.get('uid', False)
         if user_id:
@@ -171,6 +171,7 @@ class ResPartner(models.Model):
                 self.msg_error = "El RUC no es Válido"
             else:
                 d = self.request_migo_ruc(self.vat)
+                _logger.info(d)           
                 if not d:
                     self.name = " - "
                     return True
@@ -192,7 +193,8 @@ class ResPartner(models.Model):
                     self.state_id = dist_id.state_id.id
                     self.country_id = dist_id.country_id.id
 
-                tstate_contribuyente = d['estado_del_contribuyente']
+                
+                self.estado_contribuyente = d['estado_del_contribuyente']
 
                 self.name = d['nombre_o_razon_social']
                 self.registration_name = d['nombre_o_razon_social']

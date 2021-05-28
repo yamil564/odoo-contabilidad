@@ -69,9 +69,10 @@
             <field name="warehouses_allowed_ids" widget="many2many_tags" groups="base.group_no_one"/>
             <field name="warehouse_id" domain="[('id','in',warehouses_allowed_ids)]" string="Almacén" options="{'no_create': True, 'no_create_edit':True, 'no_open': True}"/>
             <field name="journal_ids" widget="many2many_tags" string="Series Permitidas" groups="base.group_no_one"/>
+            <!-- <field name="journal_type"/> -->
         </xpath>
         <xpath expr="//field[@name='journal_id']" position="attributes">
-            <attribute name="domain">[('invoice_type_code_id','=',invoice_type_code), ('id','in',journal_ids), ('type','=','sale')]</attribute>
+            <attribute name="domain">[('invoice_type_code_id','=',invoice_type_code), ('id','in',journal_ids)]</attribute>
         </xpath>
     </field>
 </record>
@@ -108,6 +109,8 @@
                     <field name="json_comprobante" attrs="{'readonly':[['state','not in',['draft']]]}"/>
                     <field name="json_respuesta"/>
                     <field name="status_envio" attrs="{'readonly':[['state','not in',['draft']]]}"/>
+                    <!-- <field name="reversal_move_id"/>
+                    <field name="reversed_entry_id"/> -->
                 </group>
                 <group string = "Status">
                     <field name="account_log_status_ids" mode="tree" attrs="{'readonly':[['state','not in',['draft']]]}">
@@ -140,6 +143,7 @@
             </button>
         </xpath>
         <xpath expr="//button[@name='preview_invoice']" position="after">
+            <button name="enviar_comprobante" string="Enviar comprobante" class="oe_highlight" type="object"/>
             <button name="btn_comunicacion_baja" string="Anular Comprobante" class="oe_highlight" type="object" attrs="{'invisible': [('estado_comprobante_electronico','=','2_ANULADO'),('state','not in',['draft','cancel'])]}"/>
             <button name="action_open_guia_remision" string="Generar Guía de Remisión" class="oe_highlight" type="object" attrs="{'invisible': [('guia_remision_count','!=',0)]}"/>
         </xpath>

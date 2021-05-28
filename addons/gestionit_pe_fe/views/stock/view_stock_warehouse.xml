@@ -6,7 +6,9 @@
             <field name="inherit_id" ref="stock.view_warehouse"/>
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='code']" position="after">
-                    <field name="journal_ids" widget="many2many_tags" options="{'no_create': True, 'no_open': True}" domain="[('invoice_type_code_id','=',['01','03','07','08'])]"/>
+                    <field name="journal_ids" widget="many2many_tags" 
+                            options="{'no_create': True, 'no_open': True}" 
+                            domain="[('type','in',['sale','purchase']),('invoice_type_code_id','in',['01','03','07'])]"/>
                 </xpath>
             </field>
         </record>
