@@ -76,7 +76,8 @@
             <field name="invoice_type_code_id">01</field>
             <field name="code">F001</field>
             <field name="tipo_envio">0</field>
-            <field name="formato_comprobante">electronico</field>
+            <!-- <field name="formato_comprobante">electronico</field> -->
+            <field name="electronic_invoice" eval="1"/>
             <field name="sequence_id" ref="gestionit_pe_fe.gestionit_sequence_factura"/>
             <field name="refund_sequence">False</field>
         </record>
@@ -88,7 +89,8 @@
             <field name="code">FC01</field>
             <field name="tipo_envio">0</field>
             <field name="tipo_comprobante_a_rectificar">01</field>
-            <field name="formato_comprobante">electronico</field>
+            <!-- <field name="formato_comprobante">electronico</field> -->
+            <field name="electronic_invoice" eval="1"/>
             <field name="sequence_id" ref="gestionit_pe_fe.gestionit_sequence_credit_note"/>
             <field name="refund_sequence">False</field>
         </record>
@@ -100,7 +102,8 @@
             <field name="code">FD01</field>
             <field name="tipo_envio">0</field>
             <field name="tipo_comprobante_a_rectificar">01</field>
-            <field name="formato_comprobante">electronico</field>
+            <!-- <field name="formato_comprobante">electronico</field> -->
+            <field name="electronic_invoice" eval="1"/>
             <field name="sequence_id" ref="gestionit_pe_fe.gestionit_sequence_debit_note"/>
             <field name="refund_sequence">False</field>
         </record>
@@ -111,7 +114,8 @@
             <field name="invoice_type_code_id">03</field>
             <field name="code">B001</field>
             <field name="tipo_envio">0</field>
-            <field name="formato_comprobante">electronico</field>
+            <!-- <field name="formato_comprobante">electronico</field> -->
+            <field name="electronic_invoice" eval="1"/>
             <field name="sequence_id" ref="gestionit_pe_fe.gestionit_sequence_boleta_venta"/>
             <field name="refund_sequence">False</field>
         </record>
@@ -123,7 +127,8 @@
             <field name="code">BCT1</field>
             <field name="tipo_envio">0</field>
             <field name="tipo_comprobante_a_rectificar">03</field>
-            <field name="formato_comprobante">electronico</field>
+            <!-- <field name="formato_comprobante">electronico</field> -->
+            <field name="electronic_invoice" eval="1"/>
             <field name="sequence_id" ref="gestionit_pe_fe.gestionit_sequence_nota_credito_boleta"/>
             <field name="refund_sequence">False</field>
         </record>
@@ -135,7 +140,8 @@
             <field name="code">BDT1</field>
             <field name="tipo_envio">0</field>
             <field name="tipo_comprobante_a_rectificar">03</field>
-            <field name="formato_comprobante">electronico</field>
+            <!-- <field name="formato_comprobante">electronico</field> -->
+            <field name="electronic_invoice" eval="1"/>
             <field name="sequence_id" ref="gestionit_pe_fe.gestionit_sequence_nota_debito_boleta"/>
             <field name="refund_sequence">False</field>
         </record>
@@ -146,7 +152,8 @@
             <field name="invoice_type_code_id">09</field>
             <field name="code">T001</field>
             <field name="tipo_envio">0</field>
-            <field name="formato_comprobante">electronico</field>
+            <!-- <field name="formato_comprobante">electronico</field> -->
+            <field name="electronic_invoice" eval="1"/>
             <field name="sequence_id" ref="gestionit_pe_fe.gestionit_sequence_guia_remision"/>
             <field name="refund_sequence">False</field>
         </record>

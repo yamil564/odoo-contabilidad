@@ -481,6 +481,9 @@ def crear_json_fac_bol(self):
                 "montoDescuento": round((item.price_subtotal*item.discount/100.0)/(1-item.discount/100.0), 2),
                 "montoBase": round(item.price_subtotal/(1-item.discount/100.0), 2)
             }
+            datac.update({
+                "montoItem":round(item.price_subtotal,2)
+            })
 
         data_detalle.append(datac)
 
@@ -838,3 +841,5 @@ def extraer_error(response_env):
         i_error = i_error + 1
 
     return recepcionado, estado_emision, msg_error
+
+

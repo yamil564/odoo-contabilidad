@@ -2,15 +2,13 @@
 from odoo import fields,models,api,_
 from odoo.exceptions import UserError,ValidationError
 from odoo.addons.gestionit_pe_fe.models.parameters.catalogs import tdc
-
+import re
 
 class AccountJournal(models.Model):
     _inherit = "account.journal"
-    codigo_documento = fields.Char("Codigo de tipo de Documento")
     tipo_envio = fields.Selection(selection=[("0","0 - Pruebas"),("1","1 - Producción")])
-    
-    resumen = fields.Boolean("Resumen Diario de Boleta",default=False)
-    formato_comprobante = fields.Selection(selection=[("fisico","Físico"),("electronico","Electrónico")],default="electronico")
+    send_async = fields.Boolean("Envío asíncrono",default=False)
+    electronic_invoice = fields.Boolean("Documento de emisión electrónica",default=False)
 
     invoice_type_code_id=fields.Selection(
         string="Tipo de Documento",
@@ -21,17 +19,30 @@ class AccountJournal(models.Model):
     
     tipo_comprobante_a_rectificar = fields.Selection(selection=[("00","Otros"),("01","Factura"),("03","Boleta")])
 
-    # @api.constrains("code")
-    # def constrains_code(self):
-    #     for record in self:
-    #         if record.formato_comprobante == "electronico":
-    #             if record.code and record.invoice_type_code_id in ["07","08"]:
-    #                 if record.code[0] == "B" and record.tipo_comprobante_a_rectificar == "03":
-    #                     return 
-    #                 if record.code[0] == "F" and record.tipo_comprobante_a_rectificar == "01" :
-    #                     return 
-    #                 raise ValidationError("Error: El campo 'código corto' o 'Comprobante a rectificar' son Erróneos")
+    @api.onchange("invoice_type_code_id","tipo_envio","code")
+    def onchange_name(self):
+        name = ""
+        d = {"01":"Factura de venta","03":"Boleta de venta","07":"Nota de crédito","08":"Nota de débito"}
+        if self.invoice_type_code_id in ["01","03","07","08"]:
+            self.name = "{} {}{}".format(d[self.invoice_type_code_id],self.code or "*"," [test]" if self.tipo_envio == "0" else "")
         
+    @api.constrains("code")
+    def constrains_code(self):
+        for record in self:
+            if record.electronic_invoice:
+                if record.code and record.invoice_type_code_id in ["07","08"]:
+                    if re.match("^B\w{3}$", record.code) and record.tipo_comprobante_a_rectificar == "03":
+                        return 
+                    if re.match("^F\w{3}$", record.code) and record.tipo_comprobante_a_rectificar == "01" :
+                        return 
+                    raise ValidationError("Error: El campo 'Serie' o 'Comprobante a rectificar' son incorrectos.")
+                
+                if re.match("^B\w{3}$", record.code) and record.invoice_type_code_id == "03":
+                    return
+                if re.match("^F\w{3}$", record.code) and record.invoice_type_code_id == "01":
+                    return
+                
+                raise ValidationError("Error: El campo 'Serie' o el 'Tipo de comprobante' son incorrectos. ")
 
     # @api.model
     # def _get_sequence_prefix(self, code, refund=False):

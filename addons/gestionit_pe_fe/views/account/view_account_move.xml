@@ -69,10 +69,10 @@
             <field name="warehouses_allowed_ids" widget="many2many_tags" groups="base.group_no_one"/>
             <field name="warehouse_id" domain="[('id','in',warehouses_allowed_ids)]" string="Almacén" options="{'no_create': True, 'no_create_edit':True, 'no_open': True}"/>
             <field name="journal_ids" widget="many2many_tags" string="Series Permitidas" groups="base.group_no_one"/>
-            <!-- <field name="journal_type"/> -->
+            <field name="journal_type" invisible="1"/>
         </xpath>
         <xpath expr="//field[@name='journal_id']" position="attributes">
-            <attribute name="domain">[('invoice_type_code_id','=',invoice_type_code), ('id','in',journal_ids)]</attribute>
+            <attribute name="domain">[('invoice_type_code_id','=',invoice_type_code), ('id','in',journal_ids),('type','=',journal_type)]</attribute>
         </xpath>
     </field>
 </record>
@@ -105,7 +105,14 @@
         <xpath expr="//page[@name='other_info']" position="after">
             <page string="Comprobante" groups="base.group_no_one">
                 <group>
-                    <field name="estado_comprobante_electronico" />
+                    <group>
+                        <field name="estado_comprobante_electronico" />
+                        <field name="estado_contribuyente_ruc" />
+                    </group>
+                    <group>
+                        <field name="condicion_domicilio_contribuyente" />
+                        <field name="consulta_validez_observaciones" />
+                    </group>
                     <field name="json_comprobante" attrs="{'readonly':[['state','not in',['draft']]]}"/>
                     <field name="json_respuesta"/>
                     <field name="status_envio" attrs="{'readonly':[['state','not in',['draft']]]}"/>
@@ -160,7 +167,10 @@
             <field name="reason" required="1" />
         </xpath>
         <xpath expr="//field[@name='journal_id']" position="replace">
-            <field name="journal_id" domain="[('type', '=', journal_type),('invoice_type_code_id', '=', '08'),('tipo_comprobante_a_rectificar', '=', '01')]" />
+            <field name="journal_id" 
+                    domain="[('type', '=', journal_type),('invoice_type_code_id', '=', '08'),('tipo_comprobante_a_rectificar', '=', '01')]" 
+                    options="{'no_open':True,'no_create':True,'no_quick_create':True}"
+                    required="1"/>
         </xpath>
         <xpath expr="//field[@name='journal_id']" position="attributes">
             <attribute name="string">Serie</attribute>

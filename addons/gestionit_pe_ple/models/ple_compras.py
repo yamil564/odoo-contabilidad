@@ -118,7 +118,7 @@ class PrintReportTextCompras(models.TransientModel):
                     + "|"
                     + str(dd)
                     + "|"
-                    + str(line.invoice_type_code)
+                    + str(line.journal_id.invoice_type_code_id)
                     + "|"
                     + str(reference.split("-")[0])
                     + "|"

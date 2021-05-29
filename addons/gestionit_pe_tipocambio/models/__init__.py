@@ -1,2 +1,2 @@
 # -*- coding: utf-8 -*-
-from . import tipo_cambio
+from . import res_currency

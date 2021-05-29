@@ -13,6 +13,8 @@ class ResCompany(models.Model):
     cert_id = fields.Many2one(
         "cert.sunat", string="Certificados digitales")
 
+    # validez_comprobantes_client_id = fields.Char("Cliente Id")
+    # validez_comprobantes_client_secret = fields.Char("Cliente Secret")
     # url_consulta_comprobante = fields.Char("Consulta Comprobante URL")
     # mensaje_representacion_impresa = fields.Html(
     #     "Mensaje de Representación Impresa")

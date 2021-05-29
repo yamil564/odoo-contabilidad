@@ -11,6 +11,7 @@ from datetime import datetime, timedelta
 from . import oauth
 import base64
 import re
+import urllib
 
 import logging
 _logger = logging.getLogger(__name__)
@@ -40,7 +41,30 @@ codigo_unidades_de_medida = [
 codigos_tipo_afectacion_igv = [
     "10", "11", "12", "13", "14", "15", "16", "20", "30", "31", "34", "35", "36", "40"
 ]
+estado_comprobante_electronico = {
+                                    "0":"0_NO_EXISTE",
+                                    "1":"1_ACEPTADO",
+                                    "2":"2_ANULADO",
+                                    "3":"3_AUTORIZADO",
+                                    "4":"4_NO_AUTORIZADO"
+                                }
+estado_contribuyente_ruc = {
+                            "00":"00_ACTIVO",
+                            "01":"01_BAJA_PROVISIONAL",
+                            "02":"02_BAJA_PROV_POR_OFICIO",
+                            "03":"03_SUSPENSION_TEMPORAL",
+                            "10":"10_BAJA_DEFINITIVA",
+                            "11":"11_BAJA_DE_OFICIO",
+                            "22":"22_INHABILITADO-VENT.UNICA"
+                        }
 
+condicion_domicilio_contribuyente = {
+                                        "00":"00_HABIDO",
+                                        "09":"09_PENDIENTE",
+                                        "11":"11_POR_VERIFICAR",
+                                        "12":"12_NO_HABIDO",
+                                        "20":"20_NO_HALLADO"
+                                    }
 
 class AccountMove(models.Model):
     _inherit = "account.move"
@@ -50,6 +74,8 @@ class AccountMove(models.Model):
         "stock.warehouse", string="Almacenes Permitidos", related="user_id.warehouse_ids")
     journal_ids = fields.Many2many(
         "account.journal", string="Series permitidas", related="warehouse_id.journal_ids")
+    
+    journal_type = fields.Selection(selection=[("sale","Venta"),("purchase","compra")])
 
     @api.model
     def default_get(self, fields_list):
@@ -142,41 +168,30 @@ class AccountMove(models.Model):
         return tnd
 
     estado_comprobante_electronico = fields.Selection(selection=[("0_NO_EXISTE", "NO EXISTE"),
-                                                                 ("1_ACEPTADO",
-                                                                  "ACEPTADO"),
-                                                                 ("2_ANULADO",
-                                                                  "ANULADO"),
-                                                                 ("3_AUTORIZADO",
-                                                                  "AUTORIZADO"),
-                                                                 ("4_NO_AUTORIZADO",
-                                                                  "NO AUTORIZADO"),
+                                                                 ("1_ACEPTADO","ACEPTADO"),
+                                                                 ("2_ANULADO","ANULADO"),
+                                                                 ("3_AUTORIZADO","AUTORIZADO"),
+                                                                 ("4_NO_AUTORIZADO","NO AUTORIZADO"),
                                                                  ("-", "-")], default="-")
 
     estado_contribuyente_ruc = fields.Selection(selection=[("00_ACTIVO", "ACTIVO"),
-                                                           ("01_BAJA_PROVISIONAL",
-                                                            "BAJA PROVISIONAL"),
-                                                           ("02_BAJA_PROV_POR_OFICIO",
-                                                            "BAJA PROV. POR OFICIO"),
-                                                           ("03_SUSPENSION_TEMPORAL",
-                                                            "SUSPENSION TEMPORAL"),
-                                                           ("10_BAJA_DEFINITIVA",
-                                                            "BAJA DEFINITIVA"),
-                                                           ("11_BAJA_DE_OFICIO",
-                                                            "BAJA DE OFICIO"),
-                                                           ("22_INHABILITADO-VENT.UNICA",
-                                                            "INHABILITADO-VENT.UNICA"),
+                                                           ("01_BAJA_PROVISIONAL","BAJA PROVISIONAL"),
+                                                           ("02_BAJA_PROV_POR_OFICIO","BAJA PROV. POR OFICIO"),
+                                                           ("03_SUSPENSION_TEMPORAL","SUSPENSION TEMPORAL"),
+                                                           ("10_BAJA_DEFINITIVA","BAJA DEFINITIVA"),
+                                                           ("11_BAJA_DE_OFICIO","BAJA DE OFICIO"),
+                                                           ("22_INHABILITADO-VENT.UNICA","INHABILITADO-VENT.UNICA"),
                                                            ("-", "-")], default="-")
 
     condicion_domicilio_contribuyente = fields.Selection(selection=[("00_HABIDO", "HABIDO"),
-                                                                    ("09_PENDIENTE",
-                                                                     "PENDIENTE"),
-                                                                    ("11_POR_VERIFICAR",
-                                                                     "POR VERIFICAR"),
-                                                                    ("12_NO_HABIDO",
-                                                                     "NO HABIDO"),
-                                                                    ("20_NO_HALLADO",
-                                                                     "NO HALLADO"),
+                                                                    ("09_PENDIENTE","PENDIENTE"),
+                                                                    ("11_POR_VERIFICAR","POR VERIFICAR"),
+                                                                    ("12_NO_HABIDO","NO HABIDO"),
+                                                                    ("20_NO_HALLADO","NO HALLADO"),
                                                                     ("-", "-")], default="-")
+
+    consulta_validez_observaciones = fields.Text("Consulta Validez - Observaciones")
+
     documento_baja_id = fields.Many2one(
         "account.comunicacion_baja", copy=False)
     documento_baja_state = fields.Selection(
@@ -486,7 +501,7 @@ class AccountMove(models.Model):
                     "La Referencia de Proveedor de la Factura de compra es obligatoria")
             return super(AccountMove, self).post()
 
-        if self.journal_id.formato_comprobante == 'fisico':
+        if not self.journal_id.electronic_invoice:
             obj = super(AccountMove, self).post()
             return obj
         # Validaciones cuando el comprobante es factura
@@ -513,7 +528,7 @@ class AccountMove(models.Model):
 
         obj = super(AccountMove, self).post()
 
-        if self.journal_id.resumen:
+        if self.journal_id.invoice_type_code_id == "03" or self.journal_id.tipo_comprobante_a_rectificar == "03":
             return obj
 
         oauth.enviar_doc(self)
@@ -525,17 +540,9 @@ class AccountMove(models.Model):
 
     @api.model
     def _validar_reference(self, obj):
-        # reference = obj.ref
         if obj.ref:
             if not re.match("^F\w{3}-\d{1,8}$", obj.ref):
                 raise UserError("La referencia debe tener el formato XXXX-########")
-                # if reference[4:5] == "-" and reference[5:13].isdigit():
-                #     return True
-                # else:
-                #     raise UserError(
-                #         "La referencia debe tener el formato XXXX-########")
-            # else:
-                
         else:
             raise UserError("Debe colocar la Referencia del proveedor")
 
@@ -967,6 +974,98 @@ class AccountMove(models.Model):
 
         return action
 
+    def cron_actualizacion_estado_emision_sunat(self):
+        comprobantes = self.env["account.move"].sudo().search([["estado_comprobante_electronico","=","1_ACEPTADO"],["estado_emision","in",[False,"N"]]])
+        comprobantes.sudo().write({"estado_emision" : "A"})
+        return True
+
+    def get_token_validez_comprobante(self):
+        client_id = self.env["ir.config_parameter"].get_param("sunat.validez.comprobante.client_id")
+        client_secret = self.env["ir.config_parameter"].get_param("sunat.validez.comprobante.client_secret")
+
+        if not (client_id and client_secret):
+            raise UserError("Las credenciales del api de CONSULTA VALIDEZ DE COMPROBANTE no estan configuradas para este usuario.")
+        
+        url = "https://api-seguridad.sunat.gob.pe/v1/clientesextranet/{}/oauth2/token/".format(client_id)
+
+        data = {"grant_type":"client_credentials",
+                "scope":"https://api.sunat.gob.pe/v1/contribuyente/contribuyentes",
+                "client_id":client_id,
+                "client_secret":client_secret}
+        payload = urllib.parse.urlencode(data)
+        headers = {'Content-Type': "application/x-www-form-urlencoded"}
+
+        try:
+            response = requests.request("POST",url, data=payload, headers=headers)
+        except Exception as e:
+            raise UserError("Error al consultar el Web Service de SUNAT {}".format(e))
+        
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return {}
+
+    def action_validez_comprobante(self):
+        token = False
+        response = self.get_token_validez_comprobante()
+        if "access_token" in response:
+            token = response.get("access_token")
+        else:
+            raise UserError("Sunat consulta de validez de comprobante - La respuesta no posee un access_token")
+
+        company_ids = self.mapped("company_id")
+        for company in company_ids:
+            url = "https://api.sunat.gob.pe/v1/contribuyente/contribuyentes/{}/validarcomprobante".format(company.vat)
+
+            invs = self.filtered(lambda inv: inv.company_id == company and inv.journal_id.electronic_invoice and re.match("^F\w{3}-\d{1,8}$", move_name) or re.match("^B\w{3}-\d{1,8}$", move_name))
+            data_invs = invs.mapped(lambda inv:{
+                "nume_ruc":company.vat,
+                "tipo_comprobante":inv.journal_id.invoice_type_code_id,
+                "serie":inv.move_name.split("-")[0],
+                "numero_comprobante":int(inv.move_name.split("-")[1]),
+                "fecha_emision":inv.invoice_date.strftime("%d/%m/%Y"),
+                "monto": str(round(inv.amount_total,2)) 
+            })
+            for comp in data_invs:
+                headers = {
+                    'Authorization': "Bearer {}".format(token),
+                    'Content-Type': "application/json"
+                    }
+                try:
+                    response = requests.request("POST", url, data=json.dumps(comp), headers=headers)
+                    res = response.json()
+                    if "data" in response:
+                        data = response["data"]
+                        if "estadoCp" in data:
+                            comp.estado_comprobante_electronico = estado_comprobante_electronico[data["estadoCp"]]
+                        if "estadoRuc" in data:
+                            comp.estado_contribuyente_ruc = estado_contribuyente_ruc[data["estadoCp"]]
+                        if "condDomiRuc" in data:
+                            comp.condicion_domicilio_contribuyente = condicion_domicilio_contribuyente[data["estadoCp"]]
+                        if "Observaciones" in data:
+                            comp.consulta_validez_observaciones += data["Observaciones"]
+                except Exception as e:
+                    comp.consulta_validez_observaciones += str(e)
+    
+    @api.model
+    def cron_action_validez_comprobante(self):
+        tz = timezone("America/Lima")
+        today = datetime.now(tz=tz).strftime("%Y-%m-%d")
+        invoices = self.env["account.move"].sudo().search([("journal_id.electronic_invoice","=",True),
+                                                            ("state","not in",["draft","cancel"]),
+                                                            ("move_name","!=",False),
+                                                            ("date_invoice","<",today),
+                                                            ("journal_id.invoice_type_code_id","=",True),
+                                                            ("estado_comprobante_electronico","=","-")])
+        step = 20
+        for cnt in range(0,len(invoices),step):
+            invs = invoices[cnt:cnt+step]
+            if len(invs)>=1:
+                try:
+                    invs.sudo().action_validez_comprobante()
+                except Exception as e:
+                    pass
+            self.env.cr.commit()
 
 class AccountMoveReversal(models.TransientModel):
     _inherit = 'account.move.reversal'
