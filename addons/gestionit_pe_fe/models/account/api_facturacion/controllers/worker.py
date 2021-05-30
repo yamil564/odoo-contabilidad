@@ -84,7 +84,7 @@ def add_task_ticket(prev_ans, user, data, signer, ticket):
     url = main.urls[tipo_envio]
 
     xml = generate_ticket_request_xml(user.ruc+signer['sunat_usuario'], signer['sunat_password'], ticket)
-    xml = xml.toxml(encoding="ISO-8859-1").decode()
+    xml = xml.toxml(encoding="ISO-8859-1").decode("ISO-8859-1")
 
     message = {
         "request_id": prev_ans['request_id'],

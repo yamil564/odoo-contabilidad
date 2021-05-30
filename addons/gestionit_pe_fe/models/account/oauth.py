@@ -16,8 +16,8 @@ from requests.exceptions import (
     TooManyRedirects, HTTPError, ConnectionError,
     FileModeWarning, ConnectTimeout, ReadTimeout
 )
-
-from .api_facturacion import api_models
+from odoo.addons.gestionit_pe_fe.models.account.api_facturacion.controllers.main import handle
+from odoo.addons.gestionit_pe_fe.models.account.api_facturacion import api_models
 
 import logging
 _logger = logging.getLogger(__name__)
@@ -30,6 +30,40 @@ def enviar_doc_url(data_doc, tipoEnvio):
 
     return r
 
+
+def generate_and_signed_xml(invoice):
+    invoice.invoice_type_code = invoice.journal_id.invoice_type_code_id
+    data_doc = {"tipoEnvio":int(invoice.company_id.tipo_envio)}
+
+    if invoice.invoice_type_code == "01" or invoice.invoice_type_code == "03":
+        data_doc.update(crear_json_fac_bol(invoice))
+    elif invoice.invoice_type_code == "07" or invoice.invoice_type_code == "08":
+        data_doc.updat(crear_json_not_cred_deb(invoice))
+    else:
+        raise UserError("Tipo de documento no valido")
+
+    invoice.json_comprobante = json.dumps(data_doc, indent=4)
+
+    credentials = {
+        "ruc": data_doc["company"]["numDocEmisor"],
+        'razon_social': data_doc["company"]["nombreEmisor"],
+        'usuario': data_doc["company"]["SUNAT_user"],
+        'password': data_doc["company"]["SUNAT_pass"],
+        'key_private': data_doc["company"]["key_private"],
+        'key_public': data_doc["company"]["key_public"],
+    }
+
+    # data = {
+    #     "request_json": invoice.json_comprobante,
+    #     "name": invoice.name,
+    #     "date_request": fields.Datetime.now(),
+    #     "date_issue": invoice.invoice_date,
+    #     "account_move_id": invoice.id
+    # }
+    result = handle(data_doc,credentials)
+
+    _logger.info(result)
+    return result
 
 def enviar_doc(self):
     self.invoice_type_code = self.journal_id.invoice_type_code_id

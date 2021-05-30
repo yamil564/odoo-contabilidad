@@ -136,8 +136,9 @@ class AccountMove(models.Model):
     #         elif record.invoice_type_code == "08":
     #             record.invoice_type_code_str = "Nota de débito Electrónica"
 
-    account_log_status_ids = fields.One2many(
-        "account.log.status", "account_move_id", string="Registro de Envíos", copy=False)
+    account_log_status_ids = fields.One2many("account.log.status", "account_move_id", string="Registro de Envíos", copy=False)
+    current_log_status_id = fields.Many2one("account.log.status")
+
     # tipo_comprobante_elect_ref = fields.Selection(
     #     related="refund_invoice_id.invoice_type_code")
     estado_emision = fields.Selection(
@@ -528,6 +529,7 @@ class AccountMove(models.Model):
 
         obj = super(AccountMove, self).post()
 
+        
         if self.journal_id.invoice_type_code_id == "03" or self.journal_id.tipo_comprobante_a_rectificar == "03":
             return obj
 
@@ -536,7 +538,8 @@ class AccountMove(models.Model):
         return obj
 
     def enviar_comprobante(self):
-        oauth.enviar_doc(self)
+        # oauth.enviar_doc(self)
+        oauth.generate_and_signed_xml(self)
 
     @api.model
     def _validar_reference(self, obj):

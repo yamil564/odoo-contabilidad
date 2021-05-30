@@ -10,6 +10,7 @@ class AccountLogStatus(models.Model):
     _order = "create_date desc"
 
     name = fields.Char("Nombre")
+    is_last_log = fields.Boolean("Activo",default=False)
     api_user_id = fields.Char("API User id")
     content_xml = fields.Text("Respuesta de SUNAT base64 ZIP")
     description = fields.Char("Descripción")
@@ -38,6 +39,13 @@ class AccountLogStatus(models.Model):
     company_id = fields.Many2one("res.company",
                                  string="Compañia",
                                  default=lambda self: self.env.user.company_id.id)
+
+    def action_set_last_log(self):
+        self.ensure_one()
+        if self.account_move_id:
+            self.account_move_id.account_log_status_ids.filtered(lambda log:log!=self).write({'is_last_log':False})
+            self.is_last_log = True
+            self.account_move_id.current_log_status_id = self.id
 
     def update_request_response_xml(self):
         for log in self:

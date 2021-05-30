@@ -44,14 +44,7 @@ class AccountJournal(models.Model):
                 
                 raise ValidationError("Error: El campo 'Serie' o el 'Tipo de comprobante' son incorrectos. ")
 
-    # @api.model
-    # def _get_sequence_prefix(self, code, refund=False):
-    #     prefix = code.upper()
-    #     if refund and (self.formato_comprobante == 'electronico'):
-    #         prefix=prefix[0]+'R'+prefix[2:]
-    #     elif refund:
-    #         prefix="R"+prefix
-    #     return prefix + '-'
+
 
     # @api.model
     # def create(self, vals):
@@ -106,20 +99,28 @@ class AccountJournal(models.Model):
     #                 if len(self.code)!=4:
     #                     raise UserError("La serie debe contener 4 carácteres. Si es Factura inicia con 'F' y si es boleta inicia con 'B'")
 
-                    
-    # @api.model
-    # def _create_sequence(self, vals, refund=False):
-    #     """ Create new no_gap entry sequence for every new Journal"""
-    #     prefix = self._get_sequence_prefix(vals['code'], refund)
-    #     seq = {
-    #         'name': refund and vals['name'] + _(': Refund') or vals['name'],
-    #         'implementation': 'no_gap',
-    #         'prefix': prefix,
-    #         'padding': 8,
-    #         'number_increment': 1,
-    #         'use_date_range': False,
-    #         'invoice_type_code_id':'08'
-    #     }
-    #     if 'company_id' in vals:
-    #         seq['company_id'] = vals['company_id']
-    #     return self.env['ir.sequence'].create(seq)
+    @api.model
+    def _get_sequence_prefix(self, code, refund=False):
+        prefix = code.upper()
+        if refund and self.electronic_invoice:
+            prefix=prefix[0]+'R'+prefix[2:]
+        elif refund:
+            prefix="R"+prefix
+        return prefix + '-'
+         
+    @api.model
+    def _create_sequence(self, vals, refund=False):
+        """ Create new no_gap entry sequence for every new Journal"""
+        prefix = self._get_sequence_prefix(vals['code'], refund)
+        seq_name = refund and vals['code'] + _(': Refund') or vals['code']
+        seq = {
+            'name': _('%s Sequence') % seq_name,
+            'implementation': 'no_gap',
+            'prefix': prefix,
+            'padding': 8,
+            'number_increment': 1,
+            'use_date_range': False,
+        }
+        if 'company_id' in vals:
+            seq['company_id'] = vals['company_id']
+        return self.env['ir.sequence'].create(seq)

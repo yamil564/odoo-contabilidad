@@ -6,7 +6,7 @@ import logging
 _logger = logging.getLogger(__name__)
 
 
-class buscador(http.Controller):
+class Buscador(http.Controller):
     @http.route('/consulta', auth='public')
     def index(self, **kwargs):
         return request.render('gestionit_pe_fe_consulta_web.form')
@@ -78,6 +78,7 @@ class buscador(http.Controller):
         else:
             return request.redirect('/')
 
+
     @http.route("/consulta/comprobante/v2/pdf/<compId>", type='http', method=["GET"], csrf=False, auth='public')
     def comprobante_pdf_v2(self, compId):
         invoice = request.env["account.move"].sudo().browse(int(compId))
@@ -92,18 +93,3 @@ class buscador(http.Controller):
             return request.make_response(pdf, headers=pdfhttpheaders)
         else:
             return request.redirect('/')
-
-        #    ['|', ["vat", "=", identificador], ["codigo", "=", identificador], ["es_comensal", "=", True]])
-
-#     @http.route('/json/json/objects/', auth='public')
-#     def list(self, **kw):
-#         return http.request.render('json.listing', {
-#             'root': '/json/json',
-#             'objects': http.request.env['json.json'].search([]),
-#         })
-
-#     @http.route('/json/json/objects/<model("json.json"):obj>/', auth='public')
-#     def object(self, obj, **kw):
-#         return http.request.render('json.object', {
-#             'object': obj
-#         })

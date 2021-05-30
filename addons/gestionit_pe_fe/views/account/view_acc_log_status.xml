@@ -12,7 +12,8 @@
                     <field name="date_issue"/>
                     <field name="create_date" invisible="1"/>
                     <field name="status"/>
-                    <field name="account_move_id"/>
+                    <field name="account_move_id"/> 
+                    <field name="is_last_log"/>
                 </tree>
             </field>
         </record>

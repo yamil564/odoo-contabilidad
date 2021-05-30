@@ -110,39 +110,41 @@
                         <group string="Documentos Asociados">
                             <field name="documento_asociado" widget="radio"/>
                             <field name="movimiento_stock_ids" attrs="{'invisible':[('documento_asociado','!=','movimiento_stock')]}" widget="many2many_tags" options="{'no_create': True, 'no_open': True, 'no_create_edit': True}" domain="[ ('partner_id','=',destinatario_partner_id), ('partner_id','!=',False), ('state','!=','draft')]"/>
-
-                            <field name="comprobante_pago_ids" string="Factura/Boleta" attrs="{'invisible':[('documento_asociado','!=','comprobante_pago')]}" options="{'no_create': True, 'no_open': True, 'no_create_edit': True}" domain="[ ('partner_id','=',destinatario_partner_id), ('partner_id','!=',False), ('state','!=','draft')]" mode="tree">
-                                <tree>
-                                    <field name="user_id"/>
-                                    <field name="state"/>
-                                    <!-- <field name="move_name"/> -->
-                                    <field name="name"/>
-                                    <field name="partner_id"/>
-                                    <field name="amount_total"/>
-                                </tree>
-                            </field>
-                            <field name="sale_order_ids" string="Ventas" attrs="{'invisible':[('documento_asociado','!=','orden_venta')]}" options="{'no_create': True, 'no_open': True, 'no_create_edit': True}" domain="[ ('partner_id','=',destinatario_partner_id), ('partner_id','!=',False), ('state','!=','draft')]" mode="tree">
-                                <tree>
-                                    <field name="user_id"/>
-                                    <field name="state"/>
-                                    <!-- <field name="move_name"/> -->
-                                    <field name="partner_id"/>
-                                    <field name="amount_total"/>
-                                </tree>
-                            </field>
                         </group>
 
-                        <group string="Detalle de Envío">
-                            <field name="guia_remision_line_ids" mode="tree" nolabel="True">
-                                <tree editable="bottom">
-                                    <field name="sequence" widget="handle"/>
-                                    <field name="product_id" string="Producto" options="{'no_create_edit': True,'no_quick_create':True}"/>
-                                    <field name="description" string="Descripción"/>
-                                    <field name="uom_id" string="UM" options="{'no_create_edit': True,'no_quick_create':True,'no_open':True}" />
-                                    <field name="qty" string="Cantidad"/>
-                                </tree>
-                            </field>
-                        </group>
+                        <label for="comprobante_pago_ids"/>
+                        <field name="comprobante_pago_ids" string="Factura/Boleta" attrs="{'invisible':[('documento_asociado','!=','comprobante_pago')]}" options="{'no_create': True, 'no_open': True, 'no_create_edit': True}" domain="[ ('partner_id','=',destinatario_partner_id), ('partner_id','!=',False), ('state','!=','draft')]" mode="tree">
+                            <tree>
+                                <field name="user_id"/>
+                                <field name="state"/>
+                                <!-- <field name="move_name"/> -->
+                                <field name="name"/>
+                                <field name="partner_id"/>
+                                <field name="amount_total"/>
+                            </tree>
+                        </field>
+                        <label for="sale_order_ids"/>
+                        <field name="sale_order_ids" string="Ventas" attrs="{'invisible':[('documento_asociado','!=','orden_venta')]}" options="{'no_create': True, 'no_open': True, 'no_create_edit': True}" domain="[ ('partner_id','=',destinatario_partner_id), ('partner_id','!=',False), ('state','!=','draft')]" mode="tree">
+                            <tree>
+                                <field name="user_id"/>
+                                <field name="state"/>
+                                <!-- <field name="move_name"/> -->
+                                <field name="partner_id"/>
+                                <field name="amount_total"/>
+                            </tree>
+                        </field>
+                    
+
+                        <label for="guia_remision_line_ids"/>
+                        <field name="guia_remision_line_ids" mode="tree" >
+                            <tree editable="bottom">
+                                <field name="sequence" widget="handle"/>
+                                <field name="product_id" string="Producto" options="{'no_create_edit': True,'no_quick_create':True}"/>
+                                <field name="description" string="Descripción"/>
+                                <field name="uom_id" string="UM" options="{'no_create_edit': True,'no_quick_create':True,'no_open':True}" />
+                                <field name="qty" string="Cantidad"/>
+                            </tree>
+                        </field>
 
                         <group string="Envío">
                             <group>
