@@ -30,7 +30,7 @@ def firmar(document, signer, key, cert):
         if k:
             namespaces[k] = v
     data_unsigned = ET.fromstring(
-        data_document.toxml(encoding="utf8").decode())
+        data_document.toxml(encoding="utf8").decode("ISO-8859-1"))
 
     # try:
     #     XMLSigner(

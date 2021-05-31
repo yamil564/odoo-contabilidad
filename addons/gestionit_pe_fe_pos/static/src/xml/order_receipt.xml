@@ -180,6 +180,8 @@
 						});
 						qrcode.makeCode("<t t-esc="receipt.qr_string"/>");
 					</script>
+					<br/>
+					<t t-esc="order.get_digest_value()"/>
 				</t>
 
 				<t t-if="widget.pos.config.is_header_or_footer">

@@ -52,7 +52,7 @@ def build_factura(data):
     documento = data.get('documento', False)
     detalle = data.get('detalle', False)
     descuento = data.get('descuento', False)
-    tipoEnvio = data.get('tipoEnvio', -1)
+    # tipoEnvio = data.get('tipoEnvio', -1)
     # anticipos = data.get('anticipos', [])
     # facturaGuia = data.get("facturaGuia", {})
     indicadores = data.get('indicadores', False)
@@ -93,14 +93,14 @@ def build_factura(data):
             "detail": "No se ha encontrado el atributo 'indicadores'."
         })
 
-    if tipoEnvio < 0 or tipoEnvio > 2:
-        flag_error = True
-        errors.append({
-            "status": 400,
-            "code": "51",
-            "detail": validacion.error_list[
-                "51"] + " Tipo de Envio (tipoEnvio) no válido (0=Desarrollo, 1=Producción)."
-        })
+    # if tipoEnvio < 0 or tipoEnvio > 2:
+    #     flag_error = True
+    #     errors.append({
+    #         "status": 400,
+    #         "code": "51",
+    #         "detail": validacion.error_list[
+    #             "51"] + " Tipo de Envio (tipoEnvio) no válido (0=Desarrollo, 1=Producción)."
+    #     })
 
     if not fechaEmision:
         flag_error = True

@@ -12,7 +12,7 @@ from . import oauth
 import base64
 import re
 import urllib
-
+import json
 import logging
 _logger = logging.getLogger(__name__)
 
@@ -137,7 +137,7 @@ class AccountMove(models.Model):
     #             record.invoice_type_code_str = "Nota de débito Electrónica"
 
     account_log_status_ids = fields.One2many("account.log.status", "account_move_id", string="Registro de Envíos", copy=False)
-    current_log_status_id = fields.Many2one("account.log.status")
+    current_log_status_id = fields.Many2one("account.log.status",copy=False)
 
     # tipo_comprobante_elect_ref = fields.Selection(
     #     related="refund_invoice_id.invoice_type_code")
@@ -150,9 +150,16 @@ class AccountMove(models.Model):
             ('R', 'Rechazado'),
             ('P', 'Pendiente de envió a SUNAT'),
         ],
-        string="Estado Emisión a SUNAT",
-        copy=False
+        string = "Estado Emisión a SUNAT",
+        related = "current_log_status_id.status"
+        # compute="_compute_current_log_status"
     )
+
+    # @api.depends("current_log_status_id")
+    # def _compute_current_log_status(self):
+    #     for record in self:
+    #         if record.current_log_status_id:
+    #             record.estado_emision = record.current_log_status_id.status if record.current_log_status_id.status else False
 
     sustento_nota = fields.Text(string="Sustento de nota", readonly=True, states={
                                 'draft': [('readonly', False)]}, copy=False)
@@ -224,7 +231,8 @@ class AccountMove(models.Model):
     json_comprobante = fields.Text(string="JSON Comprobante", copy=False)
     json_respuesta = fields.Text(string="JSON Respuesta", copy=False)
     # cdr_sunat = fields.Binary(string="CDR", copy=False)
-    digest_value = fields.Char(string="Digest Value", copy=False, default="*")
+    digest_value = fields.Char(string="Digest Value", copy=False, default="*",related="current_log_status_id.digest_value")
+
     status_envio = fields.Boolean(
         string="Estado del envio del documento",
         default=False,
@@ -530,16 +538,31 @@ class AccountMove(models.Model):
         obj = super(AccountMove, self).post()
 
         
+        self.action_generate_and_signed_xml()
         if self.journal_id.invoice_type_code_id == "03" or self.journal_id.tipo_comprobante_a_rectificar == "03":
             return obj
 
-        oauth.enviar_doc(self)
+        if not self.journal_id.send_async:
+            self.action_send_invoice()
 
         return obj
 
-    def enviar_comprobante(self):
-        # oauth.enviar_doc(self)
-        oauth.generate_and_signed_xml(self)
+    # def action_send_invoice(self):
+    #     oauth.enviar_doc(self)
+        
+    def action_generate_and_signed_xml(self):
+        if not self.current_log_status_id:
+            vals = oauth.generate_and_signed_xml(self)
+            account_log_status = self.env["account.log.status"].create(vals)
+            account_log_status.action_set_last_log()
+
+
+    def action_send_invoice(self):
+        if self.current_log_status_id and (self.journal_id.invoice_type_code_id == "01" or self.journal_id.tipo_comprobante_a_rectificar == "01"):
+            if self.current_log_status_id.status == "P":
+                vals = oauth.send_invoice_xml(self)
+                self.current_log_status_id.write(vals)
+
 
     @api.model
     def _validar_reference(self, obj):
@@ -669,9 +692,9 @@ class AccountMove(models.Model):
         elif len(self.partner_id.vat) != 11:
             errors.append(
                 "* El RUC del cliente selecionado debe tener 11 dígitos")
-        if not self.partner_id.ubigeo:
-            errors.append(
-                "* El cliente selecionado no tiene configurado el Ubigeo.")
+        # if not self.partner_id.ubigeo:
+        #     errors.append(
+        #         "* El cliente selecionado no tiene configurado el Ubigeo.")
         """
         if not self.partner_id.email:
             errors.append("* El cliente selecionado no tiene email.")

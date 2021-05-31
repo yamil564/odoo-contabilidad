@@ -6,7 +6,7 @@ odoo.define("gestionit_pe_fe_pos.models",[
     "use strict";
     var models = require("point_of_sale.models")
     var PosDB = require("gestionit_pe_fe_pos.DB")
-    var rpc = require("web.rpc")
+    
     var PosModelSuper = models.PosModel;
     var OrderSuper = models.Order
     var exports = {}
@@ -56,7 +56,6 @@ odoo.define("gestionit_pe_fe_pos.models",[
             self.db.add_identification_types(identification_types)
         }
     });
-
 
     models.PosModel = models.PosModel.extend({
         initialize: function(session, attributes) {
@@ -140,51 +139,6 @@ odoo.define("gestionit_pe_fe_pos.models",[
             }
             return false;
         },
-        // _save_to_server: function(orders, options) {
-        //     if (!orders || !orders.length) {
-        //         var result = $.Deferred();
-        //         result.resolve([]);
-        //         return result;
-        //     }
-        //     options = options || {};
-        //     var self = this;
-        //     var order_ids_to_sync = _.pluck(orders, 'id');
-            
-        //     return rpc.query({
-        //         model: "pos.order",
-        //         method: "create_from_ui",
-        //         args: [_.map(orders, function(order) {
-        //             order.to_invoice = options.to_invoice || false;
-        //             return order;
-        //         })]
-        //     }).then(function(server_ids) {
-        //         _.each(order_ids_to_sync, function(order_id) {
-        //             self.db.remove_order(order_id);
-        //         });
-        //         self.set('failed', false);
-        //         return server_ids;
-        //     }).catch(function(error, event) {
-        //         if (error.code === 200) { // Business Logic Error, not a connection problem
-        //             //if warning do not need to display traceback!!
-        //             if (error.data.exception_type == 'warning') {
-        //                 delete error.data.debug;
-        //             }
-
-        //             // Hide error if already shown before ...
-        //             if ((!self.get('failed') || options.show_error) && !options.to_invoice) {
-        //                 self.gui.show_popup('error-traceback', {
-        //                     'title': error.data.message,
-        //                     'body': error.data.debug
-        //                 });
-        //             }
-        //             self.set('failed', error)
-        //         }
-        //         // prevent an error popup creation by the rpc failure
-        //         // we want the failure to be silent as we send the orders in the background
-        //         event.preventDefault();
-        //         console.error('Failed to send orders:', orders);
-        //     });
-        // }
     });
     
     models.Order = models.Order.extend({
@@ -222,7 +176,7 @@ odoo.define("gestionit_pe_fe_pos.models",[
                 }
             } 
             var journal = self.get_invoice_journal_id()?self.pos.db.journal_by_id[self.get_invoice_journal_id()]:undefined;
-            console.log(res);
+            // console.log(res);
             
             // var texto_qr = self.pos.company.vat + "|" + tipo_doc + "|" + serie + "|" + numero + "|" + igv.toString() + "|" + order.get_total_with_tax().toString() + "|" + FECHA_EMISION + "|" + TIPO_DOC_REC + "|" + client.vat + "|";
             if(client && journal){
@@ -234,10 +188,17 @@ odoo.define("gestionit_pe_fe_pos.models",[
                                     res.total_with_tax,//Monto Totales
                                     res.date.localestring.substr(0,10),//Fecha de Emisión
                                     client_identification_type_code,//Tipo de documento de identidad de Receptor
-                                    client.vat //Número de documento de identidad de Receptor
+                                    client.vat, //Número de documento de identidad de Receptor
+                                    this.get_digest_value()
                                     ].join("|")
             }
             return res
+        },
+        set_digest_value:function(digest_value){
+            this.digest_value = digest_value
+        },
+        get_digest_value:function(){
+            return this.digest_value || "*"
         },
         get_sale_type: function(){
             return this.sale_type

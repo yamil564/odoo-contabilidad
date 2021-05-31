@@ -154,11 +154,12 @@ def handle(data, user_credentials, self_signed=False):
     #     ruc = creds["ruc"]
 
     # print(document.get_document().toxml())
-
+    # _logger.info(document)
     signed = firma.firmar(document, user_credentials,
                           user_credentials['key_private'],
                           user_credentials['key_public'])
 
+    # _logger.info(signed)
     digest_value = firma.get_digest_value(signed)
 
     doc_zip = firma.zipear(signed, file_name + ".xml")
@@ -355,6 +356,7 @@ def send_xml_sunat(prev_sign, data):
         raise Exception("bad tipoEnvio")
     headers = {"Content-Type": "application/xml"}
 
+    # _logger.info(url)
     resp = requests.post(
         url,
         data=prev_sign['final_xml'],

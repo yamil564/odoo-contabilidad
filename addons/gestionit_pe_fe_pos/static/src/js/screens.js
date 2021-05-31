@@ -1,9 +1,11 @@
 odoo.define('gestionit_pe_fe_pos.screens',[
     'point_of_sale.screens',
-    'web.core'
+    'web.core',
+    'web.rpc'
 ],function(require){
     var screens = require('point_of_sale.screens');
     var core = require('web.core');
+    var rpc = require("web.rpc")
     var QWeb = core.qweb;
     var exports = {}
     // var DomCache = screens.DomCache
@@ -227,7 +229,36 @@ odoo.define('gestionit_pe_fe_pos.screens',[
                 this.pos.set_sequence(order.get_invoice_journal_id(), order.get_number(), order.get_sequence_number())
             }
             this._super()
-        }
+        },
+        post_push_order_resolve: function (order, server_ids) {
+            // if (this.pos.is_french_country()) {
+                var _super = this._super;
+                var args = arguments;
+                var self = this;
+                var get_hash_prom = new Promise (function (resolve, reject) {
+                    rpc.query({
+                            model: 'pos.order',
+                            method: 'get_current_invoice',
+                            args: [server_ids],
+                            kwargs: {}
+                        }).then(function (res) {
+                            order.set_digest_value(res.digest_value || false);
+                            // order.set_number(res.name);
+                            // order.set_sequence(res.name);
+                        }).finally(function () {
+                            _super.apply(self, args).then(function () {
+                                resolve();
+                            }).catch(function (error) {
+                                reject(error);
+                            });
+                        });
+                });
+                return get_hash_prom;
+            // }
+            // else {
+            //     return this._super(order, server_ids);
+            // }
+        },
     });
 
     screens.ClientListScreenWidget.include({

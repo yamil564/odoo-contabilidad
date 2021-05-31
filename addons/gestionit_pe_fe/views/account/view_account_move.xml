@@ -98,7 +98,7 @@
 </record>
 
 <record model="ir.ui.view" id="gestionit_pe_fe.view_account_invoice_form_json_page">
-    <field name="name">Json page</field>
+    <field name="name">account.move.form.logs</field>
     <field name="model">account.move</field>
     <field name="inherit_id" ref="account.view_move_form"/>
     <field name="arch" type="xml">
@@ -113,15 +113,6 @@
                         <field name="condicion_domicilio_contribuyente" />
                         <field name="consulta_validez_observaciones" />
                     </group>
-                    <!-- <label for="json_comprobante"  style="font-weight:bold;"/>
-                    <field name="json_comprobante" attrs="{'readonly':[['state','not in',['draft']]]}"/>
-                    <label for="json_respuesta"  style="font-weight:bold;"/>
-                    <field name="json_respuesta"/> -->
-
-                    <!-- <label for="status_envio"/>
-                    <field name="status_envio" attrs="{'readonly':[['state','not in',['draft']]]}"/> -->
-                    <!-- <field name="reversal_move_id"/>
-                    <field name="reversed_entry_id"/> -->
                 </group>
                 <label for="current_log_status_id" string="Actual registro de envío" style="font-weight:bold;"/>
                 <field name="current_log_status_id"/>
@@ -131,11 +122,12 @@
                     <tree decoration-bf="is_last_log == True" decoration-muted="is_last_log == False">
                         <field name="name"/>
                         <field name="account_move_id"/>
-                        <field name="api_request_id"/>
                         <field name="status"/>
                         <field name="create_date"/>
                         <field name="is_last_log" invisible="1"/>
                         <button name="action_set_last_log" type="object" string="Registro actual" attrs="{'invisible':[('is_last_log','=',True)]}"/>
+                        <button name="action_set_last_log_unlink" type="object" string="Dejar" attrs="{'invisible':[('is_last_log','=',False)]}" />
+                        
                     </tree>
                 </field>
             </page>
@@ -172,7 +164,8 @@
             </button>
         </xpath>
         <xpath expr="//button[@name='preview_invoice']" position="after">
-            <button name="enviar_comprobante" string="Enviar comprobante" class="oe_highlight" type="object"/>
+            <button name="action_generate_and_signed_xml" string="Generar XML" class="oe_highlight" type="object" groups="base.group_no_one"/>
+            <button name="action_send_invoice" string="Envíar XML" class="oe_highlight" type="object" groups="base.group_no_one"/>
             <button name="btn_comunicacion_baja" string="Anular Comprobante" class="oe_highlight" type="object" attrs="{'invisible': [('estado_comprobante_electronico','=','2_ANULADO'),('state','not in',['draft','cancel'])]}"/>
             <button name="action_open_guia_remision" string="Generar Guía de Remisión" class="oe_highlight" type="object" attrs="{'invisible': [('guia_remision_count','!=',0)]}"/>
         </xpath>
