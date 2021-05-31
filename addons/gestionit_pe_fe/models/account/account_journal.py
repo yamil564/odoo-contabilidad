@@ -3,6 +3,8 @@ from odoo import fields,models,api,_
 from odoo.exceptions import UserError,ValidationError
 from odoo.addons.gestionit_pe_fe.models.parameters.catalogs import tdc
 import re
+import logging
+_logger = logging.getLogger(__name__)
 
 class AccountJournal(models.Model):
     _inherit = "account.journal"
@@ -40,6 +42,9 @@ class AccountJournal(models.Model):
                 if re.match("^B\w{3}$", record.code) and record.invoice_type_code_id == "03":
                     return
                 if re.match("^F\w{3}$", record.code) and record.invoice_type_code_id == "01":
+                    return
+                
+                if re.match("^T\w{3}$", record.code) and record.invoice_type_code_id == "09":
                     return
                 
                 raise ValidationError("Error: El campo 'Serie' o el 'Tipo de comprobante' son incorrectos. ")
