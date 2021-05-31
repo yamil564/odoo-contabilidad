@@ -45,7 +45,7 @@ odoo.define('gestionit_pe_fe_pos.screens',[
         },
         customer_changed: function() {
             var client = this.pos.get_client();
-            console.log(this.pos.get_client_display_name())
+            // console.log(this.pos.get_client_display_name())
             this.$('.js_customer_name').text( client ? this.pos.get_client_display_name() : "Cliente" );
         },
         order_is_valid: function(force_validation) {
@@ -316,7 +316,7 @@ odoo.define('gestionit_pe_fe_pos.screens',[
     screens.ReceiptScreenWidget.include({
         get_receipt_render_env:function(){
             var res = this._super()
-            console.log(res)
+            // console.log(res)
             return res 
         }
     })

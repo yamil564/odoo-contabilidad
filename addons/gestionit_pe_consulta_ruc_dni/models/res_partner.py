@@ -19,7 +19,7 @@ class ResPartner(models.Model):
     l10n_latam_identification_type_id = fields.Many2one('l10n_latam.identification.type',
                                                         string="Tipo de documento de identificación", index=True, auto_join=True,
                                                         default=lambda self: self.env.ref(
-                                                            'l10n_pe.it_RUC', raise_if_not_found=False),
+                                                            'gestionit_pe_consulta_ruc_dni.it_RUC', raise_if_not_found=False),
                                                         help="Tipo de documento de identificación")
     
     @api.onchange('l10n_latam_identification_type_id', 'vat')

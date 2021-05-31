@@ -14,7 +14,7 @@
                     decoration-success="estado_emision == 'E'" 
                     decoration-bf="estado_emision in ['A','O']">
                     <field name="partner_id" groups="base.group_user" string="Cliente"/>
-                    <field name="invoice_date" string="Fecha de la factura"/>
+                    
                     <field name="name" string="Número"/>
                     <field name="reversed_entry_id" string="Nota de Crédito"/>
                     <field name="debit_origin_id" string="Nota de Débito"/>
@@ -25,16 +25,17 @@
                     <field name="journal_id" invisible="1"/>
                     <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}" string="Empresa"/>
                     <field name="user_id" string="Vendedor"/>
-                    <field name="invoice_date_due" string="Fecha de Vencimiento"/>
+                    <field name="invoice_date" string="F.Emisión"/>
+                    <field name="invoice_date_due" string="F.Venc"/>
                     <!-- <field name="origin" string="Origen"/> -->
                     <field name="amount_total_signed" string="Total" sum="Total"/>
                     <!-- <field name="residual_signed" string="Monto adeudado" sum="Amount Due"/> -->
                     <field name="currency_id" invisible="1" string="Moneda"/>
                     <field name="company_currency_id" invisible="1"/>
                     <field name="state" string="Estado"/>
-                    <field name="estado_emision" invisible="1"/>
-                    <field name="estado_comprobante_electronico" />
-                    <field name="anulacion_comprobante" />
+                    <field name="estado_emision"/>
+                    <field name="estado_comprobante_electronico" string="Validez Comp."/>
+                    <field name="anulacion_comprobante" string="Anulado?"/>
                     <field name="type" invisible="context.get('type',True)" string="Tipo"/>
                 </tree>
             </field>

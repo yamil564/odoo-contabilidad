@@ -82,21 +82,24 @@ class Tipocambio(models.Model):
             headers = {
                 'Content-Type': 'application/json'
             }
+            result = requests.request("POST", url, headers=headers, data=json.dumps(data))
 
-            res = requests.request("POST", url, headers=headers, data=json.dumps(data))
-            res = res.json()
-            _logger.info(res)
-            if res.get("success", False):
-                rate = float(res.get("precio_venta", False))
-                rate = 1/rate if rate != 0.0 else 0.0
-                # self.name =  res.get("fecha"),
-                # self.currency_id =  currency_usd[0].id,
-                self.rate =  rate
-                self.cambio_compra =  float(res.get("precio_compra", False))
-                self.cambio_venta =  float(res.get("precio_venta", False))
-                self.company_id = company.id
-            else:
-                raise UserError(json.dumps(res))
+            if result.status_code == 200:
+                res = result.json()
+                if res.get("success", False):
+                    rate = float(res.get("precio_venta", False))
+                    rate = 1/rate if rate != 0.0 else 0.0
+                    # self.name =  res.get("fecha"),
+                    # self.currency_id =  currency_usd[0].id,
+                    self.rate =  rate
+                    self.cambio_compra =  float(res.get("precio_compra", False))
+                    self.cambio_venta =  float(res.get("precio_venta", False))
+                    self.company_id = company.id
+                else:
+                    raise UserError(json.dumps(res))
+            elif result.status_code == 404:
+                raise UserError("No se ha encontrado un tipo de cambio para el día de hoy. Puede actualizarlo de forma manual.")
+
         except Exception as e:
             raise UserError(e)
 

@@ -106,8 +106,8 @@ odoo.define("gestionit_pe_fe_pos.models",[
             }else{
                 var client_identification_type_code = undefined
             }
-            console.log(client_identification_type_code)
-            console.log(client.vat)
+            // console.log(client_identification_type_code)
+            // console.log(client.vat)
             if(['1','6'].indexOf(client_identification_type_code) >=0 && Boolean(client.vat)){
                 client_name += " [" +identification_type.name+"-"+client.vat+"]" 
             }else if(['1','6'].indexOf(client_identification_type_code) >=0 && Boolean(~client.vat) ){
