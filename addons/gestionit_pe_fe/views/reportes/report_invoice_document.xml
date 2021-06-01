@@ -22,14 +22,24 @@
                         </div>
                         <div class="col-5">
                             <div>
-                                <h3>
-                                    <span t-field="company.name"/>
-                                </h3>
+                                <t t-if="company.name != company.partner_id.registration_name">
+                                    <h1>
+                                        <span t-field="company.name"/>
+                                    </h1>
+                                    <h3>
+                                        <span t-field="company.partner_id.registration_name"/>
+                                    </h3>
+                                </t>
+                                <t t-else="">
+                                    <h3>
+                                        <span t-field="company.name"/>
+                                    </h3>
+                                </t>
                             </div>
                             <div>
                                 <span t-field="company.street"/>
                             </div>
-                            <br/>
+                            
                             <div t-if="company.email">
                                 <b> Email: </b>
                                 <span t-field="company.email"/>
@@ -168,6 +178,10 @@
                     <t t-if="o.ref">
                         <strong>Referencia:</strong>
                         <span t-field="o.ref"/>
+                    </t>
+                    <t t-if="o.inv_supplier_ref">
+                        <strong>Comprobante de Proveedor:</strong>
+                        <span t-field="o.inv_supplier_ref"/>
                     </t>
                     <t t-if="o.sustento_nota">
                         <br/>
@@ -340,16 +354,25 @@
                     </t>
                 </div>
             </div>
+            <br/>
+            <br/>
             <div class="row">
                 <div class="col-12 text-center">
                     <span t-if="o.type == 'out_invoice' and (o.state == 'posted' or o.state == 'paid') and o.invoice_type_code=='01'">
-									Representación impresa de la <b>FACTURA ELECTRÓNICA</b>
+									Representación impresa de la <b>FACTURA ELECTRÓNICA</b> <t t-if="company.website_invoice_search">, comprobante emitido desde sistemas del contribuyente, puede consultar este comprobante ingresando a <t t-esc="company.website_invoice_search"/></t>
                     </span>
                     <span t-if="o.type == 'out_invoice' and (o.state == 'posted' or o.state == 'paid') and o.invoice_type_code=='03'">
-									Representación impresa de la <b>BOLETA ELECTRÓNICA</b>
+									Representación impresa de la <b>BOLETA ELECTRÓNICA</b><t t-if="company.website_invoice_search">, comprobante emitido desde sistemas del contribuyente, puede consultar este comprobante ingresando a <t t-esc="company.website_invoice_search"/></t>
+                    </span>
+                    <span t-if="o.type == 'out_invoice' and (o.state == 'posted' or o.state == 'paid') and o.invoice_type_code=='07'">
+									Representación impresa de la <b>NOTA DE CRÉDITO ELECTRÓNICA</b><t t-if="company.website_invoice_search">, comprobante emitido desde sistemas del contribuyente, puede consultar este comprobante ingresando a <t t-esc="company.website_invoice_search"/></t>
+                    </span>
+                    <span t-if="o.type == 'out_invoice' and (o.state == 'posted' or o.state == 'paid') and o.invoice_type_code=='08'">
+									Representación impresa de la <b>NOTA DE DÉBITO ELECTRÓNICA</b><t t-if="company.website_invoice_search">, comprobante emitido desde sistemas del contribuyente, puede consultar este comprobante ingresando a <t t-esc="company.website_invoice_search"/></t>
                     </span>
                 </div>
             </div>
+
         </xpath>
     </template>
 </odoo>

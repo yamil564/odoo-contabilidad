@@ -26,6 +26,11 @@
                 <xpath expr="//field[@name='vat']" position="attributes">
                     <attribute name="string">RUC</attribute>
                 </xpath>
+                
+                <xpath expr="//field[@name='website']" position="after">
+                    <field name="website_invoice_search"/>
+                </xpath>
+                
             </field>
         </record>
     </data>

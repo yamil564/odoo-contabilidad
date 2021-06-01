@@ -56,6 +56,7 @@
         'data/account_tax_data.xml',
         'data/ir_config_parameter.xml',
         'data/res_currency.xml',
+        'data/res_company.xml',
         'security/res_groups.xml',
         'cron/account_move_cron.xml',
         'cron/account_summary_cron.xml',

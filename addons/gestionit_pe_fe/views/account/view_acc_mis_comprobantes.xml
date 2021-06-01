@@ -16,8 +16,8 @@
                     <field name="partner_id" groups="base.group_user" string="Cliente"/>
                     
                     <field name="name" string="Número"/>
-                    <field name="reversed_entry_id" string="Nota de Crédito"/>
-                    <field name="debit_origin_id" string="Nota de Débito"/>
+                    <!-- <field name="reversed_entry_id" string="Comprobante"/>
+                    <field name="debit_origin_id" string="Nota de Débito"/> -->
                     <!-- <field name="refund_invoice_id" string="Comprobante a rectificar"/> -->
                     <field name="commercial_partner_id" invisible="1" />
                     <field name="ref" invisible="1"/>
