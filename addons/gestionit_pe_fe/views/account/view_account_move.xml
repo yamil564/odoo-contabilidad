@@ -24,7 +24,7 @@
                 </xpath>
                 <xpath expr="//field[@name='ref']" position="replace">
                     <field name="ref"/>
-                    <field name="inv_supplier_ref" attrs="{'invisible': [('type','not in',['in_invoice','out_invoice'])],'required':[('type','not in',['in_invoice','out_invoice'])]}"/>
+                    <field name="inv_supplier_ref" attrs="{'invisible': [('type','in',['out_refund','out_invoice'])],'required':[('type','in',['in_invoice','in_refund'])]}"/>
                     <field name="tipo_nota_credito" attrs="{'invisible': [('invoice_type_code','!=','07')],'required':[('invoice_type_code','=','07')]}"/>
                     <field name="tipo_nota_debito" attrs="{'invisible': [('invoice_type_code','!=','08')],'required':[('invoice_type_code','=','08')]}"/>
                     <field name="sustento_nota" attrs="{'invisible': [('invoice_type_code','!=','07'),('invoice_type_code','!=','08')],'required':[('invoice_type_code','in',['07', '08'])]}"/>
@@ -132,7 +132,7 @@
                 <label for="current_log_status_id" string="Actual registro de envío" style="font-weight:bold;"/>
                 <field name="current_log_status_id" readonly="1" force_save="1"/>
                 <br/>
-                <label for="account_log_status_ids" string = "Registro de envíos"  style="font-weight:bold;"/>
+                <label for="account_log_status_ids" string = "Registro de envíos" style="font-weight:bold;"/>
                 <field name="account_log_status_ids" mode="tree" attrs="{'readonly':[['state','not in',['draft']]]}">
                     <tree decoration-bf="is_last_log == True" decoration-muted="is_last_log == False">
                         <field name="name"/>
@@ -142,7 +142,7 @@
                         <field name="is_last_log" invisible="1"/>
                         <button name="action_set_last_log" type="object" string="Registro actual" attrs="{'invisible':[('is_last_log','=',True)]}"/>
                         <button name="action_set_last_log_unlink" type="object" string="Dejar" attrs="{'invisible':[('is_last_log','=',False)]}" />
-                        
+
                     </tree>
                 </field>
             </page>
@@ -160,7 +160,7 @@
             <!-- <button name="generar_nota_credito" string="Generar Nota de Crédito" class="oe_highlight" type="object" attrs="{'invisible': ['|','|',('invoice_type_code','not in',['00','01','03']),('state','in',('cancel','draft'))]}"/>
                     <button name="generar_nota_debito" string="Generar Nota de Débito" class="oe_highlight" type="object" attrs="{'invisible': ['|','|',('invoice_type_code','not in',['00','01','03']),('state','in',('cancel','draft'))]}"/> -->
         </xpath>
-        
+
         <xpath expr="//button[@name='button_draft']" position="after">
             <button name="action_validez_comprobante" string="Validez de comprobante" type="object" class="oe_highlight" attrs="{'invisible': ['|','|',('invoice_type_code','not in',['01','03','07','08']),('state','in',('cancel','draft'))]}"/>
         </xpath>
@@ -199,10 +199,7 @@
             <field name="journal_type" invisible="1"/>
         </xpath>
         <xpath expr="//field[@name='journal_id']" position="replace">
-            <field name="journal_id" 
-                    domain="[('type', '=', journal_type),('invoice_type_code_id', '=', '08'),('tipo_comprobante_a_rectificar', '=', tipo_comprobante_a_rectificar)]" 
-                    options="{'no_open':True,'no_create':True,'no_quick_create':True}"
-                    required="1"/>
+            <field name="journal_id" domain="[('type', '=', journal_type),('invoice_type_code_id', '=', '08'),('tipo_comprobante_a_rectificar', '=', tipo_comprobante_a_rectificar)]" options="{'no_open':True,'no_create':True,'no_quick_create':True}" required="1"/>
         </xpath>
         <xpath expr="//field[@name='journal_id']" position="attributes">
             <attribute name="string">Serie</attribute>

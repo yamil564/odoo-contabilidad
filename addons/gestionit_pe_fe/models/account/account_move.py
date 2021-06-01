@@ -1176,6 +1176,8 @@ class AccountDebitNote(models.TransientModel):
 
     def _prepare_default_values(self, move):
         res = super(AccountDebitNote, self)._prepare_default_values(move)
+        res.update({'sustento_nota': self.reason,'tipo_nota_debito': self.debit_note_type,'invoice_type_code': '08'})
+        return res
 
         # if move.type in ('in_refund', 'out_refund'):
         #     type = 'in_invoice' if move.type == 'in_refund' else 'out_invoice'
@@ -1208,8 +1210,8 @@ class AccountDebitNote(models.TransientModel):
         # if not self.copy_lines or move.type in [('in_refund', 'out_refund')]:
         #     default_values['line_ids'] = [(5, 0, 0)]
         
-        _logger.info(res)
-        return res
+        # _logger.info(res)
+        # return res
 
 
 class CustomPopMessage(models.TransientModel):

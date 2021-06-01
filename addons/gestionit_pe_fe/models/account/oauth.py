@@ -126,7 +126,7 @@ def send_invoice_xml(invoice):
                             headers=headers,
                             timeout=20)
 
-    # _logger.info(response.text)
+    _logger.info(response.text)
     result = sunat_response_handle.get_response(response.text)
     # _logger.info(result)
     data = {
