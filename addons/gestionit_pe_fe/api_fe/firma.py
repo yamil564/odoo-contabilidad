@@ -48,7 +48,7 @@ def firmar(document, signer, key, cert):
         ET.register_namespace(k, v)
         if k:
             namespaces[k] = v
-    data_unsigned = ET.fromstring(data_document.toxml(encoding="utf8").decode())
+    data_unsigned = ET.fromstring(data_document.toxml(encoding="utf8").decode("ISO-8859-1"))
     
     signed_root = XMLSigner(
         method=methods.enveloped,
@@ -67,7 +67,7 @@ def firmar(document, signer, key, cert):
 
 def get_digest_value(xml_binary_content):
     try:
-        doc = minidom.parseString(xml_binary_content.decode())
+        doc = minidom.parseString(xml_binary_content.decode("ISO-8859-1"))
         digestvaluenode = doc.getElementsByTagName("ds:DigestValue")
         if digestvaluenode:
             digestvalue = digestvaluenode[0].firstChild.data

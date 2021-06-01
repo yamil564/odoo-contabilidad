@@ -12,7 +12,8 @@
                     <field name="date_issue"/>
                     <field name="create_date" invisible="1"/>
                     <field name="status"/>
-                    <field name="account_move_id"/>
+                    <field name="account_move_id"/> 
+                    <field name="is_last_log"/>
                 </tree>
             </field>
         </record>
@@ -36,28 +37,22 @@
                             <group>
                                 <field name="status"/>
                                 <field name="account_move_id"/>
-                                <field name="api_request_id"/>
                                 <field name="digest_value"/>
                             </group>
                         </group>
                         <notebook>
                             <page string="Comprobante XML Firmado">
                                 <group>
-                                    <field name="signed_xml_data" widget="ace"/>
                                     <field name="request_json"/>
+                                    <field name="signed_xml_data" widget="ace"/>
+                                    <field name="signed_xml_with_creds" widget="ace"/>
                                 </group>
                             </page>
                             <page string="Respuesta de SUNAT">
                                 <group>
-                                    <field name="response_xml" widget="ace"/>
                                     <field name="response_json"/>
-                                    <field name="content_xml" widget="ace"/>
-                                </group>
-                            </page>
-                            <page string="Log SUNAT">
-                                <group>
-                                    <field name="signed_xml_data_without_format" widget="ace"/>
                                     <field name="response_xml_without_format" widget="ace"/>
+                                    <field name="response_content_xml" widget="ace"/>
                                 </group>
                             </page>
                         </notebook>

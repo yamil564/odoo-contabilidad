@@ -28,7 +28,7 @@ def build_nota_credito(data):
 
     detalle = data.get('detalle', False)
     descuento = data.get('descuento', False)
-    tipoEnvio = data.get('tipoEnvio', -1)
+    # tipoEnvio = data.get('tipoEnvio', -1)
     indicadores = data.get('indicadores', False)
     referencia = data.get('referencia', False)
     errors = []

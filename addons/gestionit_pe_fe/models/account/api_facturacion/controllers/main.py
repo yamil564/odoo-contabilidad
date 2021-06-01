@@ -142,11 +142,11 @@ def handle(data, user_credentials, self_signed=False):
             "api_observaciones": obs
         }
 
-    if self_signed:
-        signer_credentials = user_credentials
-        ruc = signer_credentials["ruc"]
-        usuario = signer_credentials["usuario"]
-        password = signer_credentials["password"]
+    # if self_signed:
+    #     signer_credentials = user_credentials
+    ruc = user_credentials["ruc"]
+    usuario = user_credentials["usuario"]
+    password = user_credentials["password"]
     # else:
     #     signer_credentials = creds
     #     usuario = creds["sunat_usuario"]
@@ -154,12 +154,14 @@ def handle(data, user_credentials, self_signed=False):
     #     ruc = creds["ruc"]
 
     # print(document.get_document().toxml())
+    # _logger.info(document)
+    signed = firma.firmar(document, user_credentials,
+                          user_credentials['key_private'],
+                          user_credentials['key_public'])
 
-    signed = firma.firmar(document, signer_credentials,
-                          signer_credentials['key_private'],
-                          signer_credentials['key_public'])
-
+    # _logger.info(signed)
     digest_value = firma.get_digest_value(signed)
+
     doc_zip = firma.zipear(signed, file_name + ".xml")
 
     if document_type in ["01", "03", "07", "08", "09"]:
@@ -182,7 +184,7 @@ def handle(data, user_credentials, self_signed=False):
         "signed_xml": signed.decode("ISO-8859-1"),
         "final_xml": final_xml,
         "document_type": document_type,
-        "signer": signer_credentials
+        "signer": user_credentials
     }
 
 
@@ -332,8 +334,8 @@ def send_consulta(consulta_xml, data, user, consulta=False):
 
 
 def send_xml_sunat(prev_sign, data):
-    _logger.info("PREV SIGN")
-    _logger.info(prev_sign)
+    # _logger.info("PREV SIGN")
+    # _logger.info(prev_sign)
     tipo_envio = data.get("tipoEnvio", 0)
 
     if tipo_envio in [1, 3]:
@@ -354,6 +356,7 @@ def send_xml_sunat(prev_sign, data):
         raise Exception("bad tipoEnvio")
     headers = {"Content-Type": "application/xml"}
 
+    # _logger.info(url)
     resp = requests.post(
         url,
         data=prev_sign['final_xml'],

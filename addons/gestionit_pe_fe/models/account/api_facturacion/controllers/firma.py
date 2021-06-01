@@ -9,6 +9,7 @@ import base64
 from xml.dom import minidom
 import os
 import logging
+from odoo.exceptions import UserError
 _logger = logging.getLogger(__name__)
 
 
@@ -29,7 +30,7 @@ def firmar(document, signer, key, cert):
         if k:
             namespaces[k] = v
     data_unsigned = ET.fromstring(
-        data_document.toxml(encoding="utf8").decode())
+        data_document.toxml(encoding="utf8").decode("ISO-8859-1"))
 
     # try:
     #     XMLSigner(
@@ -60,7 +61,7 @@ def firmar(document, signer, key, cert):
 
 def get_digest_value(xml_binary_content):
     try:
-        doc = minidom.parseString(xml_binary_content.decode())
+        doc = minidom.parseString(xml_binary_content.decode('ISO-8859-1'))
         digestvaluenode = doc.getElementsByTagName("ds:DigestValue")
         if digestvaluenode:
             digestvalue = digestvaluenode[0].firstChild.data

@@ -38,7 +38,10 @@ class ResCurrency(models.Model):
         if res_id.exists():
             action.update({"res_id":res_id[0].id})
         else: 
-            action.update({"context":{"default_currency_id":self.id,"default_name":today.strftime("%Y-%m-%d"),"default_fecha":today}})
+            action.update({"context":{"default_currency_id":self.id,
+                                        "default_name":today.strftime("%Y-%m-%d"),
+                                        "default_fecha":today,
+                                        "company_id":self.env.user.company_id.id}})
         return action
 
 
@@ -49,7 +52,60 @@ class Tipocambio(models.Model):
     cambio_compra = fields.Float("T/C Compra", digits=(1, 4))
     cambio_venta = fields.Float("T/C Venta", digits=(1, 4))
 
-    def actualizar_ratio_compra_venta_pen_usd(self,company_id):
+
+
+    def action_update_rate_sale_purchase_pen_usd(self):
+        currency_usd = self.env['res.currency'].search([['name', '=', 'USD']]).exists()
+        if not currency_usd:
+            raise ValueError("La Moneda USD no existe.")
+            
+        company = self.env.user.company_id
+        token = company.api_migo_token
+        endpoint = company.api_migo_endpoint
+        fecha_hoy = datetime.now(tz=timezone("America/Lima")).strftime("%Y-%m-%d")
+        # currency_rate_exists = self.env["res.currency.rate"].sudo().search([("currency_id","=",currency_usd.id),("name","=",fecha_hoy),("company_id","=",company.id)]).exists()
+        # if currency_rate_exists:
+        #     return None
+
+        if not endpoint:
+            return None
+        else:
+            endpoint = endpoint.strip()
+            endpoint = endpoint if endpoint[-1] == "/" else "{}/".format(endpoint)
+            
+        url = "{}exchange/date".format(endpoint)
+        
+        data = {
+            "token": token,
+            "fecha": fecha_hoy
+        }
+        
+        try:
+            headers = {
+                'Content-Type': 'application/json'
+            }
+            result = requests.request("POST", url, headers=headers, data=json.dumps(data))
+
+            if result.status_code == 200:
+                res = result.json()
+                if res.get("success", False):
+                    rate = float(res.get("precio_venta", False))
+                    rate = 1/rate if rate != 0.0 else 0.0
+                    # self.name =  res.get("fecha"),
+                    # self.currency_id =  currency_usd[0].id,
+                    self.rate =  rate
+                    self.cambio_compra =  float(res.get("precio_compra", False))
+                    self.cambio_venta =  float(res.get("precio_venta", False))
+                    self.company_id = company.id
+                else:
+                    raise UserError(json.dumps(res))
+            elif result.status_code == 404:
+                raise UserError("No se ha encontrado un tipo de cambio para el día de hoy. Puede actualizarlo de forma manual.")
+
+        except Exception as e:
+            raise UserError(e)
+
+    def cron_update_ratio_sale_purchase_pen_usd(self,company_id):
         currency_usd = self.env['res.currency'].search([['name', '=', 'USD']])
         company = self.env["res.company"].sudo().browse(company_id)
         token = company.api_migo_token
@@ -80,12 +136,12 @@ class Tipocambio(models.Model):
             res = requests.request("POST", url, headers=headers, data=json.dumps(data))
             res = res.json()
             if res.get("success", False):
-                tipo_cambio = float(res.get("precio_venta", False))
-                tipo_cambio = 1/tipo_cambio if tipo_cambio != 0.0 else 0.0
+                rate = float(res.get("precio_venta", False))
+                rate = 1/rate if rate != 0.0 else 0.0
                 currency_rate = self.env['res.currency.rate'].sudo().create({
                     'name': fecha_hoy,
                     'currency_id': currency_usd.id,
-                    'rate': tipo_cambio,
+                    'rate': rate,
                     'cambio_compra': float(res.get("precio_compra", False)),
                     'cambio_venta': float(res.get("precio_venta", False)),
                     'company_id':company.id
@@ -96,7 +152,8 @@ class Tipocambio(models.Model):
             return None
 
     def save(self):
-        return
+        if(self.cambio_venta>0):
+            self.rate = 1/self.cambio_venta
 
 class AccountMove(models.Model):
     _inherit = "account.move"
@@ -130,12 +187,6 @@ class AccountMove(models.Model):
 
         super(AccountMove, self).post()
 
-    # @api.constrains('tipo_cambio')
-    # def _check_tipo_cambio(self):
-    #     for record in self:
-    #         if record.tipo_cambio <= 0:
-    #             raise ValidationError(
-    #                 "Valor del tipo de Cambio incorrecto. Debe actualizar la fecha de facturación.")
 
     @api.onchange("invoice_date","currency_id")
     def get_ratio(self):

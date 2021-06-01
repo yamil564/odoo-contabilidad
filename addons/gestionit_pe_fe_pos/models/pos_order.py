@@ -1,7 +1,8 @@
-from odoo import fields,models
+from odoo import fields,models,api
 from odoo.exceptions import ValidationError
 import logging
 _logger = logging.getLogger(__name__)
+
 
 class PosOrder(models.Model):
     _inherit = "pos.order"
@@ -16,7 +17,8 @@ class PosOrder(models.Model):
             raise ValidationError("La creación del comprobante requiere de la selección de una Serie.")
 
         vals.update({
-            "journal_id":self.invoice_journal_id.id
+            "journal_id":self.invoice_journal_id.id,
+            "invoice_type_code":self.invoice_journal_id.invoice_type_code_id
         })
 
         return vals
@@ -25,10 +27,41 @@ class PosOrder(models.Model):
         vals = super(PosOrder, self)._order_fields(ui_order)
         if ui_order.get("invoice_journal_id",False):
             vals.update({'invoice_journal_id':ui_order.get("invoice_journal_id")})
-
-        _logger.info(vals)
         return vals
 
+    def get_current_invoice(self):
+        res = {"digest_value":"*"}
+        for order in self:
+            invoice = order.account_move
+            if invoice:
+                res.update({"digest_value":invoice.digest_value if invoice.digest_value else "*","name":invoice.name})
+            
+            return res
+
+    
+    def get_invoice_name(self):
+        self.ensure_one()
+        invoice_type_names = {"01":"Factura Electrónica","03":"Boleta Electrónica","07":"Nota de Crédito"}
+        invoice = self.account_move
+        if invoice:
+            invoice_type_name = invoice_type_names.get(invoice.invoice_type_code) or ""
+            name = invoice.name
+            return "{} {}".format(invoice_type_name, name)
+        return ""
+
+
+    # @api.model
+    # def create_from_ui(self,orders,draft=False):
+    #     orders = super(PosOrder, self).create_from_ui(orders,draft)
+    #     for order in orders:
+    #         order["digest_value"] = "*"
+    #         order_obj = self.browse(order.get("id"))
+    #         invoice = order_obj.account_move
+    #         if invoice:
+    #             order.update({"digest_value":invoice.digest_value if invoice.digest_value else "*"})
+        
+    #     return orders
+        
 
 class l10nLatamIdentificationType(models.Model):
     _inherit = "l10n_latam.identification.type"

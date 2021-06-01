@@ -1,0 +1,29 @@
+<odoo>
+    <template id="portal_record_sidebar_unbrand" inherit_id="portal.portal_record_sidebar">
+        <xpath expr="//div[hasclass('card-footer')]" position="replace">
+        </xpath>
+    </template>
+    
+    <template id="portal_invoice_page_ei_xml_cdr" inherit_id="account.portal_invoice_page">
+        <xpath expr="//div[hasclass('o_download_pdf')]" position="inside">
+            <div class="btn-group flex-grow-1 mb-1 mr-1 ml-1" t-if="invoice.has_ei_xml()">
+                <a class="btn btn-secondary btn-block o_print_btn o_portal_ei_xml" 
+                    t-att-href="invoice.get_portal_url(suffix='/ei/xml')" 
+                    id="download_ei_xml" 
+                    title="XML" 
+                    target="_blank">
+                    <i class="fa fa-code"/> XML
+                </a>
+            </div>
+            <div class="btn-group flex-grow-1 mb-1 mr-1" t-if="invoice.has_ei_cdr()">
+                <a class="btn btn-secondary btn-block o_print_btn o_portal_ei_cdr" 
+                    t-att-href="invoice.get_portal_url(suffix='/ei/cdr')" 
+                    id="dowload_ei_cdr" 
+                    title="CRD" 
+                    target="_blank">
+                    <i class="fa fa-code"/> CDR
+                </a>
+            </div>
+        </xpath>
+    </template>
+</odoo>

@@ -36,10 +36,10 @@ class CountryState(models.Model):
     province_name = fields.Char(related = "province_id.name")
     
     
-    @api.model
-    def default_get(self, fields):
-        res = super(CountryState, self).default_get(fields)
-        return res
+    # @api.model
+    # def default_get(self, fields):
+    #     res = super(CountryState, self).default_get(fields)
+    #     return res
         
     
     # @api.multi

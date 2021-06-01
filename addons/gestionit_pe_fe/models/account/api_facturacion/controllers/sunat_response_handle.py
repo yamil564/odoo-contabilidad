@@ -40,7 +40,7 @@ def get_response(xml_response):
             zip_file = zipfile.ZipFile(io.BytesIO(zip_decode))
             name = zip_file.infolist()[-1].filename
             xml_read = zip_file.read(name)
-            xml_content = xml_read.decode()
+            xml_content = xml_read.decode("ISO-8859-1")
             doc_xml = minidom.parseString(xml_content)
 
             if doc_xml.getElementsByTagName("cac:Response"):

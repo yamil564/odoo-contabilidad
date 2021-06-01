@@ -4,6 +4,7 @@ import json
 import os
 import base64
 import datetime
+from datetime import datetime
 from bs4 import BeautifulSoup
 import jwt
 import time
@@ -16,12 +17,32 @@ from requests.exceptions import (
     TooManyRedirects, HTTPError, ConnectionError,
     FileModeWarning, ConnectTimeout, ReadTimeout
 )
-
-from .api_facturacion import api_models
+from odoo.addons.gestionit_pe_fe.models.account.api_facturacion.controllers import xml_validation, sunat_response_handle, main,firma
+from odoo.addons.gestionit_pe_fe.models.account.api_facturacion import api_models
+from pytz import timezone
 
 import logging
 _logger = logging.getLogger(__name__)
 
+invoice_type_code = {
+    "01":"Factura Electrónica",
+    "03":"Boleta Electrónica",
+    "07":"Nota de Crédito",
+    "08":"Nota de Débito"
+}
+# Pruebas
+urls_test = [
+    "https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService",  # Fact
+    "https://e-beta.sunat.gob.pe/ol-ti-itemision-guia-gem-beta/billService",  # Guia
+    "https://e-beta.sunat.gob.pe/ol-ti-itemision-otroscpe-gem-beta/billService",  # REte
+]
+
+# Produccion
+urls_production = [
+    "https://e-factura.sunat.gob.pe/ol-ti-itcpfegem/billService",  # Fact
+    "https://e-guiaremision.sunat.gob.pe/ol-ti-itemision-guia-gem/billService",  # Guia
+    "https://e-factura.sunat.gob.pe/ol-ti-itemision-otroscpe-gem/billService",  # REte
+]
 
 def enviar_doc_url(data_doc, tipoEnvio):
     data_doc["tipoEnvio"] = int(tipoEnvio)
@@ -29,6 +50,95 @@ def enviar_doc_url(data_doc, tipoEnvio):
     r = api_models.lamdba(data_doc)
 
     return r
+
+
+def generate_and_signed_xml(invoice):
+    invoice.invoice_type_code = invoice.journal_id.invoice_type_code_id
+    request_json = {}
+    # request_json = {"tipoEnvio":int(invoice.company_id.tipo_envio)}
+
+    if invoice.invoice_type_code == "01" or invoice.invoice_type_code == "03":
+        request_json.update(crear_json_fac_bol(invoice))
+    elif invoice.invoice_type_code == "07" or invoice.invoice_type_code == "08":
+        request_json.update(crear_json_not_cred_deb(invoice))
+    else:
+        raise UserError("Tipo de documento no valido")
+
+    credentials = {
+        "ruc": request_json["company"]["numDocEmisor"],
+        'razon_social': request_json["company"]["nombreEmisor"],
+        'usuario': request_json["company"]["SUNAT_user"],
+        'password': request_json["company"]["SUNAT_pass"],
+        'key_private': request_json["company"]["key_private"],
+        'key_public': request_json["company"]["key_public"],
+    }
+
+    result = main.handle(request_json,credentials)
+    data = {
+        "request_json":json.dumps(request_json,indent=4),
+        "signed_xml_data_without_format":result.get("signed_xml"),
+        "signed_xml_with_creds":result.get("final_xml"),
+        "signed_xml_data":parseString(result.get("signed_xml")).toprettyxml(),
+        "name":"{} {}".format(invoice_type_code[request_json.get("tipoDocumento")],invoice.name),
+        "date_issue":invoice.invoice_date,
+        "account_move_id":invoice.id,
+        "digest_value":result.get("digest_value"),
+        "status":"P"
+    }
+    return data
+
+
+def send_invoice_xml(invoice):
+    signed_xml_with_creds = invoice.current_log_status_id.signed_xml_with_creds
+    creds = {
+        "ruc":invoice.company_id.vat,
+        "sunat_user":invoice.company_id.sunat_user,
+        "sunat_password":invoice.company_id.sunat_pass
+    }
+    tipo_envio = invoice.journal_id.tipo_envio
+    invoice_type_code = invoice.journal_id.invoice_type_code_id
+
+    if int(tipo_envio) == 0:
+        if invoice_type_code in ["01","03","07","08"]:
+            endpoint = urls_test[0]
+        elif invoice_type_code == "09":
+            endpoint = urls_test[1]
+
+    elif int(tipo_envio) == 1: 
+        if invoice_type_code in ["01","03","07","08"]:
+            endpoint = urls_production[0]
+        elif invoice_type_code == "09":
+            endpoint = urls_production[1]
+    else:
+        raise Exception("Tipo de envio incorrecto. Tipos de envío posibles: 0 - Pruebas u 1- Producción")
+
+    headers = {"Content-Type": "application/xml"}
+
+    
+    user = "{}{}".format(creds.get("ruc"),creds.get("sunat_user"))
+    password = creds.get("sunat_password")
+    file_name = "{}.zip".format(invoice.current_log_status_id.name)
+    
+    doc_zip = firma.zipear(signed_xml_with_creds, file_name + ".xml")
+
+    response = requests.post(endpoint,
+                            data=signed_xml_with_creds,
+                            headers=headers,
+                            timeout=20)
+
+    _logger.info(response.text)
+    result = sunat_response_handle.get_response(response.text)
+    # _logger.info(result)
+    data = {
+        "response_json":json.dumps(result,indent=4),
+        "response_xml_without_format":response.text,
+        "response_content_xml":parseString(result.get("xml_content")).toprettyxml(),
+        "date_request":datetime.now(tz=timezone(invoice.user_id.tz or "America/Lima")),
+        "status":result.get("status")
+    }
+    
+    return data
+
 
 
 def enviar_doc(self):
@@ -481,6 +591,9 @@ def crear_json_fac_bol(self):
                 "montoDescuento": round((item.price_subtotal*item.discount/100.0)/(1-item.discount/100.0), 2),
                 "montoBase": round(item.price_subtotal/(1-item.discount/100.0), 2)
             }
+            datac.update({
+                "montoItem":round(item.price_subtotal,2)
+            })
 
         data_detalle.append(datac)
 
@@ -838,3 +951,5 @@ def extraer_error(response_env):
         i_error = i_error + 1
 
     return recepcionado, estado_emision, msg_error
+
+
