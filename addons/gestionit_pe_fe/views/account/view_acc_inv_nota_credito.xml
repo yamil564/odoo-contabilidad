@@ -8,14 +8,20 @@
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='journal_id']" position="after">
                     <field name="tipo_comprobante_a_rectificar" invisible="1"/>
-                    
+                    <field name="journal_type" invisible="1"/>
+                    <field name="credit_note_type" required="1"/>
                 </xpath>
+                <field name="reason" position="attributes">
+                    <attribute name="required">1</attribute>
+                </field>
                 <xpath expr="//field[@name='journal_id']" position="attributes">
-                    <attribute name="domain">[('invoice_type_code_id','=','07'), ('tipo_comprobante_a_rectificar','=',tipo_comprobante_a_rectificar)]</attribute>
+                    <attribute name="domain">[('invoice_type_code_id','=','07'), ('tipo_comprobante_a_rectificar','=',tipo_comprobante_a_rectificar),('type','=',journal_type)]</attribute>
                     <attribute name="options">{'no_create': True, 'no_open': True}</attribute>
+                    <attribute name="required">1</attribute>
                 </xpath>
             </field>
         </record>
+
         <record id="action_credit_note" model="ir.actions.act_window">
             <field name="name">NOTA DE CRÉDITO</field>
             <field name="res_model">account.move</field>

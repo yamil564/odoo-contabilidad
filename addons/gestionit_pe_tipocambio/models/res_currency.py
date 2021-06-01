@@ -52,6 +52,8 @@ class Tipocambio(models.Model):
     cambio_compra = fields.Float("T/C Compra", digits=(1, 4))
     cambio_venta = fields.Float("T/C Venta", digits=(1, 4))
 
+
+
     def action_update_rate_sale_purchase_pen_usd(self):
         currency_usd = self.env['res.currency'].search([['name', '=', 'USD']]).exists()
         if not currency_usd:
@@ -150,7 +152,8 @@ class Tipocambio(models.Model):
             return None
 
     def save(self):
-        return
+        if(self.cambio_venta>0):
+            self.rate = 1/self.cambio_venta
 
 class AccountMove(models.Model):
     _inherit = "account.move"

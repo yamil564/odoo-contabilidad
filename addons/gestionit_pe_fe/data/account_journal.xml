@@ -76,7 +76,6 @@
             <field name="invoice_type_code_id">01</field>
             <field name="code">F001</field>
             <field name="tipo_envio">0</field>
-            <!-- <field name="formato_comprobante">electronico</field> -->
             <field name="electronic_invoice" eval="1"/>
             <field name="sequence_id" ref="gestionit_pe_fe.gestionit_sequence_factura"/>
             <field name="refund_sequence">False</field>
@@ -89,7 +88,6 @@
             <field name="code">FC01</field>
             <field name="tipo_envio">0</field>
             <field name="tipo_comprobante_a_rectificar">01</field>
-            <!-- <field name="formato_comprobante">electronico</field> -->
             <field name="electronic_invoice" eval="1"/>
             <field name="sequence_id" ref="gestionit_pe_fe.gestionit_sequence_credit_note"/>
             <field name="refund_sequence">False</field>
@@ -102,7 +100,6 @@
             <field name="code">FD01</field>
             <field name="tipo_envio">0</field>
             <field name="tipo_comprobante_a_rectificar">01</field>
-            <!-- <field name="formato_comprobante">electronico</field> -->
             <field name="electronic_invoice" eval="1"/>
             <field name="sequence_id" ref="gestionit_pe_fe.gestionit_sequence_debit_note"/>
             <field name="refund_sequence">False</field>
@@ -114,7 +111,6 @@
             <field name="invoice_type_code_id">03</field>
             <field name="code">B001</field>
             <field name="tipo_envio">0</field>
-            <!-- <field name="formato_comprobante">electronico</field> -->
             <field name="electronic_invoice" eval="1"/>
             <field name="sequence_id" ref="gestionit_pe_fe.gestionit_sequence_boleta_venta"/>
             <field name="refund_sequence">False</field>
@@ -127,7 +123,6 @@
             <field name="code">BCT1</field>
             <field name="tipo_envio">0</field>
             <field name="tipo_comprobante_a_rectificar">03</field>
-            <!-- <field name="formato_comprobante">electronico</field> -->
             <field name="electronic_invoice" eval="1"/>
             <field name="sequence_id" ref="gestionit_pe_fe.gestionit_sequence_nota_credito_boleta"/>
             <field name="refund_sequence">False</field>
@@ -140,7 +135,6 @@
             <field name="code">BDT1</field>
             <field name="tipo_envio">0</field>
             <field name="tipo_comprobante_a_rectificar">03</field>
-            <!-- <field name="formato_comprobante">electronico</field> -->
             <field name="electronic_invoice" eval="1"/>
             <field name="sequence_id" ref="gestionit_pe_fe.gestionit_sequence_nota_debito_boleta"/>
             <field name="refund_sequence">False</field>
@@ -152,13 +146,52 @@
             <field name="invoice_type_code_id">09</field>
             <field name="code">T001</field>
             <field name="tipo_envio">0</field>
-            <!-- <field name="formato_comprobante">electronico</field> -->
             <field name="electronic_invoice" eval="1"/>
             <field name="sequence_id" ref="gestionit_pe_fe.gestionit_sequence_guia_remision"/>
             <field name="refund_sequence">False</field>
         </record>
         <!--DIARIOS END-->
 
+        <!--COMPROBANTES DE PROVEDOR-->
 
+        <record model="ir.sequence" id="gestionit_sequence_nota_credito_proveedor">
+            <field name="name">Nota de Crédito de Proveedor - seq - NCP</field>
+            <field name="implementation">no_gap</field>
+            <field name="prefix">NCP-</field>
+            <field name="padding">8</field>
+            <field name="use_date_range" eval="False"/>
+            <field name="number_increment">1</field>
+        </record>
+
+        <record model="account.journal" id="gestionit_account_journal_proveedor_nota_credito_ncp1">
+            <field name="name">Nota de Crédito de Proveedor - NCP</field>
+            <field name="type">purchase</field>
+            <field name="invoice_type_code_id">07</field>
+            <field name="code">NCP</field>
+            <field name="tipo_comprobante_a_rectificar">01</field>
+            <field name="electronic_invoice" eval="0"/>
+            <field name="sequence_id" ref="gestionit_pe_fe.gestionit_sequence_nota_credito_proveedor"/>
+            <field name="refund_sequence">False</field>
+        </record>
+
+        <record model="ir.sequence" id="gestionit_sequence_nota_debito_proveedor">
+            <field name="name">Nota de Débito de Proveedor - seq - NDP</field>
+            <field name="implementation">no_gap</field>
+            <field name="prefix">NDP-</field>
+            <field name="padding">8</field>
+            <field name="use_date_range" eval="False"/>
+            <field name="number_increment">1</field>
+        </record>
+
+        <record model="account.journal" id="gestionit_account_journal_proveedor_nota_credito_ndp1">
+            <field name="name">Nota de Débito de Proveedor - NCP</field>
+            <field name="type">purchase</field>
+            <field name="invoice_type_code_id">08</field>
+            <field name="code">NDP</field>
+            <field name="tipo_comprobante_a_rectificar">01</field>
+            <field name="electronic_invoice" eval="0"/>
+            <field name="sequence_id" ref="gestionit_pe_fe.gestionit_sequence_nota_debito_proveedor"/>
+            <field name="refund_sequence">False</field>
+        </record>
     </data>
 </odoo>

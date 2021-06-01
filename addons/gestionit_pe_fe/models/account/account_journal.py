@@ -49,7 +49,11 @@ class AccountJournal(models.Model):
                 
                 raise ValidationError("Error: El campo 'Serie' o el 'Tipo de comprobante' son incorrectos. ")
 
-
+    @api.model
+    def default_get(self,fields):
+        res = super(AccountJournal, self).default_get(fields)
+        res.update({"refund_sequence":False})
+        return res
 
     # @api.model
     # def create(self, vals):
@@ -129,3 +133,14 @@ class AccountJournal(models.Model):
         if 'company_id' in vals:
             seq['company_id'] = vals['company_id']
         return self.env['ir.sequence'].create(seq)
+
+
+    def action_create_new(self):
+        res = super(AccountJournal,self).action_create_new()
+        context = res.get("context",{})
+        if self.type in ["sale","purchase"]:
+            context.update({"default_journal_type":self.type,"default_invoice_type_code":self.invoice_type_code_id})
+        
+        res.update({"context":context})
+
+        return res

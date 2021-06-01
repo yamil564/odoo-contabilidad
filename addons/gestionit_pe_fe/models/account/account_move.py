@@ -98,6 +98,11 @@ class AccountMove(models.Model):
                                     "warehouse_id": wh.id,
                                     "journal_id": whj.id
                                 })
+            else:
+                res.update({
+                    "warehouse_id": False,
+                    "journal_id": False
+                })
                                 # return res
         if refund_id:
             refund_obj = self.env["account.move"].browse(refund_id)
@@ -271,6 +276,7 @@ class AccountMove(models.Model):
         string="Total Descuento Impuesto",
         default=0.0,
         compute="_compute_amount")
+        
     total_venta_gravado = fields.Monetary(
         string="Gravado",
         default=0.0,
@@ -320,6 +326,13 @@ class AccountMove(models.Model):
     def _compute_guia_remision_count(self):
         for record in self:
             record.guia_remision_count = len(record.guia_remision_ids)
+
+    # Forzar eliminación de un comprobante
+    def unlink(self):
+        cancelled_moves = self.filtered(lambda m: m.state == "cancel")
+        super(AccountMove, cancelled_moves.with_context(force_delete=True)).unlink()
+        return super(AccountMove, self - cancelled_moves).unlink()
+
 
     @api.depends(
         'line_ids.debit',
@@ -502,12 +515,12 @@ class AccountMove(models.Model):
         if self.journal_id.invoice_type_code_id not in ['01', '03', '08', '09']:
             return super(AccountMove, self).post()
 
-        if self.type == "in_invoice":
-            if self.ref:
-                self._validar_reference(self)
+        if self.type in ["in_invoice","in_refund"]:
+            if self.inv_supplier_ref:
+                self._validate_inv_supplier_ref(self)
             else:
                 raise UserError(
-                    "La Referencia de Proveedor de la Factura de compra es obligatoria")
+                    "El número de comprobante del proveedor es obligatorio")
             return super(AccountMove, self).post()
 
         if not self.journal_id.electronic_invoice:
@@ -563,14 +576,15 @@ class AccountMove(models.Model):
                 vals = oauth.send_invoice_xml(self)
                 self.current_log_status_id.write(vals)
 
+    inv_supplier_ref = fields.Char("Número de comprobante")
 
-    @api.model
-    def _validar_reference(self, obj):
-        if obj.ref:
-            if not re.match("^F\w{3}-\d{1,8}$", obj.ref):
+    # @api.model
+    def _validate_inv_supplier_ref(self, obj):
+        if obj.inv_supplier_ref:
+            if not re.match("^F\w{3}-\d{1,8}$", obj.inv_supplier_ref) or not re.match("^B\w{3}-\d{1,8}$", obj.inv_supplier_ref):
                 raise UserError("La referencia debe tener el formato XXXX-########")
         else:
-            raise UserError("Debe colocar la Referencia del proveedor")
+            raise UserError("Debe colocar el número de comprobante.")
 
     def validar_datos_compania(self):
         errors = []
@@ -1096,13 +1110,19 @@ class AccountMove(models.Model):
 class AccountMoveReversal(models.TransientModel):
     _inherit = 'account.move.reversal'
 
-    tipo_comprobante_a_rectificar = fields.Selection(
-        selection=[("00", "Otros"), ("01", "Factura"), ("03", "Boleta")])
+    tipo_comprobante_a_rectificar = fields.Selection(selection=[("00", "Otros"), ("01", "Factura"), ("03", "Boleta")])
+    journal_type = fields.Selection(selection=[("sale","Ventas"),("purchase","Compras")],string="Tipo de diario")
+    
+    credit_note_type = fields.Selection(string='Tipo de Nota de Crédito',selection="_selection_credit_note_type")
+
+    def _selection_credit_note_type(self):
+        return tnc
 
     @api.model
     def default_get(self, fields):
         res = super(AccountMoveReversal, self).default_get(fields)
         move_ids = self.env['account.move'].browse(self.env.context['active_ids']) if self.env.context.get('active_model') == 'account.move' else self.env['account.move']
+        
         res['refund_method'] = (
             len(move_ids) > 1 or move_ids.type == 'entry') and 'cancel' or 'refund'
         res['residual'] = len(move_ids) == 1 and move_ids.amount_residual or 0
@@ -1111,54 +1131,85 @@ class AccountMoveReversal(models.TransientModel):
         res['move_type'] = len(move_ids) == 1 and move_ids.type or False
         res['move_id'] = move_ids[0].id if move_ids else False
         res['tipo_comprobante_a_rectificar'] = move_ids[0].journal_id.invoice_type_code_id if move_ids else False
-        journals = self.env["account.journal"].search([('tipo_comprobante_a_rectificar','=',res['tipo_comprobante_a_rectificar'])]).ids
-        res['journal_id'] = journals[0] if len(journals)>0 else False
+        res['journal_type'] = move_ids[0].journal_id.type if move_ids else False
+
+        if move_ids.exists():
+            journals = self.env["account.journal"].sudo().search([('tipo_comprobante_a_rectificar','=',res['tipo_comprobante_a_rectificar']),
+                                                            ("type","=",res['journal_type'])]).ids
+            res['journal_id'] = journals[0] if len(journals)>0 else False
+        else:
+            res['journal_id'] = False
+
         return res
 
     def _prepare_default_reversal(self, move):
-        return {
-            'ref': _('Nota de crédito de: %s, %s') % (move.name, self.reason) if self.reason else _('Nota de crédito de: %s') % (move.name),
-            'date': move.date,
-            'invoice_date': move.is_invoice(include_receipts=True) and (self.date or move.date) or False,
-            'journal_id': self.journal_id and self.journal_id.id or move.journal_id.id,
-            'invoice_payment_term_id': None,
-            'auto_post': False,
-            'invoice_user_id': move.invoice_user_id.id,
-        }
+        res = super(AccountMoveReversal,self)._prepare_default_reversal(move)
+        res.update({"sustento_nota":self.reason,"tipo_nota_credito":self.credit_note_type,"invoice_type_code":"07"})
+        return res
 
 
 class AccountDebitNote(models.TransientModel):
     _inherit = 'account.debit.note'
 
-    tipo_nota_debito = fields.Selection(
-        string='Tipo de Nota de Débito', selection="_selection_tipo_nota_debito")
-    copy_lines = fields.Boolean("Copy Lines",
-                                help="In case you need to do corrections for every line, it can be in handy to copy them.  "
-                                     "We won't copy them for debit notes from credit notes. ", default=True)
 
-    def _selection_tipo_nota_debito(self):
+    debit_note_type = fields.Selection(string='Tipo de Nota de Débito', selection="_selection_debit_note_type")
+    tipo_comprobante_a_rectificar = fields.Selection(selection=[("00", "Otros"), ("01", "Factura"), ("03", "Boleta")])
+    journal_type = fields.Selection(selection=[("sale","Ventas"),("purchase","Compras")],string="Tipo de diario")
+
+    def _selection_debit_note_type(self):
         return tnd
 
+    @api.model
+    def default_get(self,fields):
+        res = super(AccountDebitNote, self).default_get(fields)
+        move_ids = self.env['account.move'].browse(self.env.context['active_ids']) if self.env.context.get('active_model') == 'account.move' else self.env['account.move']
+        if move_ids.exists():
+            _logger.info(move_ids)
+            res.update({"journal_type":move_ids[0].journal_id.type,
+                        "tipo_comprobante_a_rectificar":move_ids[0].journal_id.invoice_type_code_id})
+
+            journals = self.env["account.journal"].sudo().search([('tipo_comprobante_a_rectificar','=',res['tipo_comprobante_a_rectificar']),
+                                                            ("type","=",res['journal_type'])]).ids
+            res['journal_id'] = journals[0] if len(journals)>0 else False
+
+        return res
+
     def _prepare_default_values(self, move):
-        if move.type in ('in_refund', 'out_refund'):
-            type = 'in_invoice' if move.type == 'in_refund' else 'out_invoice'
-        else:
-            type = move.type
-        default_values = {
-            'ref': '%s, %s' % (move.name, self.reason) if self.reason else move.name,
-            'sustento_nota': self.reason,
-            'tipo_nota_debito': self.tipo_nota_debito,
-            'invoice_type_code': '08',
-            'date': self.date or move.date,
-            'invoice_date': move.is_invoice(include_receipts=True) and (self.date or move.date) or False,
-            'journal_id': self.journal_id and self.journal_id.id or move.journal_id.id,
-            'invoice_payment_term_id': None,
-            'debit_origin_id': move.id,
-            'type': type,
-        }
-        if not self.copy_lines or move.type in [('in_refund', 'out_refund')]:
-            default_values['line_ids'] = [(5, 0, 0)]
-        return default_values
+        res = super(AccountDebitNote, self)._prepare_default_values(move)
+
+        # if move.type in ('in_refund', 'out_refund'):
+        #     type = 'in_invoice' if move.type == 'in_refund' else 'out_invoice'
+        # else:
+        #     type = move.type
+        # default_values = {
+        #     'ref': '%s, %s' % (move.name, self.reason) if self.reason else move.name,
+        #     'sustento_nota': self.reason,
+        #     'tipo_nota_debito': self.tipo_nota_debito,
+        #     'invoice_type_code': '08',
+        #     'date': self.date or move.date,
+        #     'invoice_date': move.is_invoice(include_receipts=True) and (self.date or move.date) or False,
+        #     # 'journal_id': self.journal_id and self.journal_id.id or move.journal_id.id,
+        #     'invoice_payment_term_id': None,
+        #     'debit_origin_id': move.id,
+        #     'tipo_comprobante_a_rectificar':move.journal_id.invoice_type_code_id,
+        #     # 'journal_type':move.journal_id.type,
+        #     'type': type,
+        # }
+        # _logger.info(move)
+        # _logger.info(move)
+        # if move.exists():
+        #     journals = self.env["account.journal"].sudo().search([('tipo_comprobante_a_rectificar','=',res['tipo_comprobante_a_rectificar']),
+        #                                                     ("type","=",res['journal_type'])]).ids
+        #     _logger.info(journals)
+        #     default_values['journal_id'] = journals[0] if len(journals)>0 else False
+        # else:
+        #     default_values['journal_id'] = False
+
+        # if not self.copy_lines or move.type in [('in_refund', 'out_refund')]:
+        #     default_values['line_ids'] = [(5, 0, 0)]
+        
+        _logger.info(res)
+        return res
 
 
 class CustomPopMessage(models.TransientModel):

@@ -7,15 +7,30 @@
             <field name="inherit_id" ref="account.view_move_form"/>
             <field name="arch" type="xml">
                 <xpath expr="//span[hasclass('o_form_label')]//field[@name='type']" position="replace">
-                    <field name="type" />
-                    <field name="invoice_type_code"/>
+                    <field name="type" invisible ="1"/>
+                    <field name="invoice_type_code" invisible ="1"/>
                 </xpath>
-                <xpath expr="//field[@name='ref']" position="after">
+                <xpath expr="//h1" position="replace">
+                    <h1>
+                        <span attrs="{'invisible': ['|','|',('type', '!=', 'out_invoice'),('invoice_type_code','!=','01'),('state', '!=', 'draft')]}">Factura de venta- Borrador</span>
+                        <span attrs="{'invisible': ['|','|',('type', '!=', 'out_invoice'),('invoice_type_code','!=','03'),('state', '!=', 'draft')]}">Boleta de venta - Borrador</span>
+                        <span attrs="{'invisible': ['|','|',('type', '!=', 'out_refund'), ('invoice_type_code','!=','07'),('state', '!=', 'draft')]}">Nota de crédito - Borrador</span>
+                        <span attrs="{'invisible': ['|','|',('type', '!=', 'out_refund'), ('invoice_type_code','!=','08'),('state', '!=', 'draft')]}">Nota de débito - Borrador</span>
+                        <span attrs="{'invisible': ['|','|',('type', '!=', 'in_invoice'),('invoice_type_code','not in',['01','03']), ('state', '!=', 'draft')]}">Factura o Boleta de proveedor - Borrador</span>
+                        <span attrs="{'invisible': ['|','|',('type', '!=', 'in_refund'), ('invoice_type_code','!=','07'), ('state', '!=', 'draft')]}">Nota de cŕedito de proveedor - Borrador</span>
+                        <span attrs="{'invisible': ['|', '|', ('type', '!=', 'out_receipt'), ('state', '!=', 'draft'), ('name', '!=', '/')]}">Draft Sales Receipt</span>
+                        <span attrs="{'invisible': ['|', '|', ('type', '!=', 'in_receipt'), ('state', '!=', 'draft'), ('name', '!=', '/')]}">Draft Purchase Receipt</span>
+                    </h1>
+                </xpath>
+                <xpath expr="//field[@name='ref']" position="replace">
+                    <field name="ref"/>
+                    <field name="inv_supplier_ref" attrs="{'invisible': [('type','not in',['in_invoice','out_invoice'])],'required':[('type','not in',['in_invoice','out_invoice'])]}"/>
                     <field name="tipo_nota_credito" attrs="{'invisible': [('invoice_type_code','!=','07')],'required':[('invoice_type_code','=','07')]}"/>
                     <field name="tipo_nota_debito" attrs="{'invisible': [('invoice_type_code','!=','08')],'required':[('invoice_type_code','=','08')]}"/>
                     <field name="sustento_nota" attrs="{'invisible': [('invoice_type_code','!=','07'),('invoice_type_code','!=','08')],'required':[('invoice_type_code','in',['07', '08'])]}"/>
                     <field name="estado_emision" readonly="1" force_save="1"/>
-                    <!-- <field name="reversed_entry_id" invisible="1" /> -->
+                    <field name="reversed_entry_id" attrs="{'invisible': [('invoice_type_code','!=','07')],'required':[('invoice_type_code','=','07')]}"/>
+                    <field name="debit_origin_id" attrs="{'invisible': [('invoice_type_code','!=','08')],'required':[('invoice_type_code','=','08')]}"/>
                     <field name="account_summary_id" attrs="{'invisible': [('invoice_type_code','!=','03')]}" />
                 </xpath>
                 <xpath expr="//field[@name='journal_id']" position="replace">
@@ -115,7 +130,7 @@
                     </group>
                 </group>
                 <label for="current_log_status_id" string="Actual registro de envío" style="font-weight:bold;"/>
-                <field name="current_log_status_id"/>
+                <field name="current_log_status_id" readonly="1" force_save="1"/>
                 <br/>
                 <label for="account_log_status_ids" string = "Registro de envíos"  style="font-weight:bold;"/>
                 <field name="account_log_status_ids" mode="tree" attrs="{'readonly':[['state','not in',['draft']]]}">
@@ -147,7 +162,7 @@
         </xpath>
         
         <xpath expr="//button[@name='button_draft']" position="after">
-            <button name="action_validez_comprobante" string="Validez de comprobante" type="object" class="oe_highlight"/>
+            <button name="action_validez_comprobante" string="Validez de comprobante" type="object" class="oe_highlight" attrs="{'invisible': ['|','|',('invoice_type_code','not in',['01','03','07','08']),('state','in',('cancel','draft'))]}"/>
         </xpath>
         <xpath expr="//button[@name='button_draft']" position="attributes">
             <attribute name="string">Convertir a borrador</attribute>
@@ -164,9 +179,9 @@
             </button>
         </xpath>
         <xpath expr="//button[@name='preview_invoice']" position="after">
-            <button name="action_generate_and_signed_xml" string="Generar XML" class="oe_highlight" type="object" groups="base.group_no_one"/>
-            <button name="action_send_invoice" string="Envíar XML" class="oe_highlight" type="object" groups="base.group_no_one"/>
-            <button name="btn_comunicacion_baja" string="Anular Comprobante" class="oe_highlight" type="object" attrs="{'invisible': [('estado_comprobante_electronico','=','2_ANULADO'),('state','not in',['draft','cancel'])]}"/>
+            <button name="action_generate_and_signed_xml" string="Generar XML" class="oe_highlight" type="object" groups="base.group_no_one" attrs="{'invisible': [('state','=','post')]}"/>
+            <button name="action_send_invoice" string="Enviar XML" class="oe_highlight" type="object" groups="base.group_no_one" attrs="{'invisible': [('state','=','post')]}"/>
+            <button name="btn_comunicacion_baja" string="Anular Comprobante" class="oe_highlight" type="object" attrs="{'invisible': ['|',('estado_comprobante_electronico','=','2_ANULADO'),('state','not in',['post'])]}"/>
             <button name="action_open_guia_remision" string="Generar Guía de Remisión" class="oe_highlight" type="object" attrs="{'invisible': [('guia_remision_count','!=',0)]}"/>
         </xpath>
     </field>
@@ -178,12 +193,14 @@
     <field name="inherit_id" ref="account_debit_note.view_account_debit_note"/>
     <field name="arch" type="xml">
         <xpath expr="//field[@name='reason']" position="replace">
-            <field name="tipo_nota_debito" required="1" />
+            <field name="debit_note_type" required="1" />
             <field name="reason" required="1" />
+            <field name="tipo_comprobante_a_rectificar" invisible="1"/>
+            <field name="journal_type" invisible="1"/>
         </xpath>
         <xpath expr="//field[@name='journal_id']" position="replace">
             <field name="journal_id" 
-                    domain="[('type', '=', journal_type),('invoice_type_code_id', '=', '08'),('tipo_comprobante_a_rectificar', '=', '01')]" 
+                    domain="[('type', '=', journal_type),('invoice_type_code_id', '=', '08'),('tipo_comprobante_a_rectificar', '=', tipo_comprobante_a_rectificar)]" 
                     options="{'no_open':True,'no_create':True,'no_quick_create':True}"
                     required="1"/>
         </xpath>
