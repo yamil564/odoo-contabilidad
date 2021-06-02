@@ -35,5 +35,4 @@
             <field name="currency_id" ref="base.PEN"/>
             <field name="address_format" eval="'%(street)s\n%(street2)s\n%(state_name)s-%(province_name)s-%(district_code)s %(zip)s\n%(country_name)s'" />
         </record> -->
-    </data>
 </odoo>
