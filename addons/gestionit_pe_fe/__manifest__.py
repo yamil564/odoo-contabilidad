@@ -9,6 +9,8 @@
         "stock",
         "l10n_pe",
         "account_debit_note",
+        "gestionit_pe_ubicaciones",
+        "sale_stock"
     ],
     # "gestionit_pe_ubicaciones",
     # "gestionit_pe_consulta_ruc_dni",
