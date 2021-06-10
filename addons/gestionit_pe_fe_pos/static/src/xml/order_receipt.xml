@@ -189,6 +189,14 @@
 						<t t-esc="widget.pos.config.receipt_footer" />
 					</div>
 				</t>
+				<br/>
+				<br/>
+				<span t-if="order.invoice_type_code_id == '01'" style="font-size:14px">
+					Representación impresa de la FACTURA ELECTRÓNICA <t t-if="widget.pos.company.website_invoice_search">, comprobante emitido desde sistemas del contribuyente, puede consultar este comprobante ingresando a <t t-esc="widget.pos.company.website_invoice_search"/></t>
+				</span>
+				<span t-if="order.invoice_type_code_id == '03'" style="font-size:14px">
+					Representación impresa de la BOLETA ELECTRÓNICA <t t-if="widget.pos.company.website_invoice_search">, comprobante emitido desde sistemas del contribuyente, puede consultar este comprobante ingresando a <t t-esc="widget.pos.company.website_invoice_search"/></t>
+				</span>
 			</div>
         </t>
     </t>
