@@ -12,7 +12,7 @@ odoo.define("gestionit_pe_fe_pos.models",[
     var exports = {}
 
     _.find(PosModelSuper.prototype.models,function(el){return el.model == 'res.partner'}).fields.push('l10n_latam_identification_type_id');
-    _.find(PosModelSuper.prototype.models,function(el){return el.model == 'res.company'}).fields.push('logo','street','phone');
+    _.find(PosModelSuper.prototype.models,function(el){return el.model == 'res.company'}).fields.push('logo','street','phone','website_invoice_search');
     _.find(PosModelSuper.prototype.models,function(el){return el.model == 'account.tax'}).fields.push('tax_group_id')
 
     PosModelSuper.prototype.models.push({
@@ -237,14 +237,14 @@ odoo.define("gestionit_pe_fe_pos.models",[
             this.invoice_type_code_id = json.invoice_type_code_id
         },
         set_number: function(number) {
-            this.assert_editable();
+            // this.assert_editable();
             this.number = number;
         },
         get_number: function() {
             return this.number;
         },
         set_sequence_number: function(number) {
-            this.assert_editable();
+            // this.assert_editable();
             this.sequence_number = number;
         },
         get_sequence_number: function() {

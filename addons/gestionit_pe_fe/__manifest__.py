@@ -9,6 +9,8 @@
         "stock",
         "l10n_pe",
         "account_debit_note",
+        "gestionit_pe_ubicaciones",
+        "sale_stock"
     ],
     # "gestionit_pe_ubicaciones",
     # "gestionit_pe_consulta_ruc_dni",
@@ -56,6 +58,7 @@
         'data/account_tax_data.xml',
         'data/ir_config_parameter.xml',
         'data/res_currency.xml',
+        'data/res_company.xml',
         'security/res_groups.xml',
         'cron/account_move_cron.xml',
         'cron/account_summary_cron.xml',
