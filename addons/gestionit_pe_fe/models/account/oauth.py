@@ -126,9 +126,7 @@ def send_invoice_xml(invoice):
                             headers=headers,
                             timeout=20)
 
-    _logger.info(response.text)
     result = sunat_response_handle.get_response(response.text)
-    # _logger.info(result)
     data = {
         "response_json":json.dumps(result,indent=4),
         "response_xml_without_format":response.text,
@@ -242,7 +240,6 @@ def enviar_doc(self):
         }
     except ConnectionError as e:
         self.estado_emision = "P"
-        _logger.info(e)
         return {
             'name': 'Error en la conexión',
             'type': 'ir.actions.act_window',
@@ -770,7 +767,7 @@ def crear_json_not_cred_deb(self):
         # tasaIgv = item.invoice_line_tax_ids[0].amount / \
         #     100 if len(item.invoice_line_tax_ids) else ""
         montoImpuestoUni = 0
-        montoItem = round((price_unit) * item.quantity, 2)
+        # montoItem = round((price_unit) * item.quantity, 2)
         nombreItem = item.name.strip().replace("\n", "")
         montoIgv = round(item.price_total-item.price_subtotal, 2)
         data_detalle.append({
@@ -779,8 +776,10 @@ def crear_json_not_cred_deb(self):
             "codItem": str(item.product_id.id),
             "nombreItem": nombreItem[0:250].strip().replace("\n", " "),
             "precioItem": round(price_unit, 2),
-            "precioItemSinIgv": round(price_unit, 2),
-            "montoItem": round(item.product_id.lst_price*item.quantity, 2) if montoItem == 0 else montoItem,
+            # "precioItemSinIgv": round(price_unit, 2),
+            # "montoItem": round(item.product_id.lst_price*item.quantity, 2) if montoItem == 0 else montoItem,
+            "precioItemSinIgv": round(item.price_subtotal/item.quantity, 2),
+            "montoItem": round(item.price_subtotal, 2),
             # "descuentoMonto": item.discount * precioItem / 100,  # solo factura y boleta
             "codAfectacionIgv":  item.tax_ids[0].tax_group_id.tipo_afectacion if len(item.tax_ids) else "",
             # "tasaIgv": round(tasaIgv*100, 2),
@@ -910,7 +909,6 @@ def extaer_estado_emision(response_env):
 
 
 def extraer_error(response_env):
-
     if not response_env.get("success"):
         raise UserError(json.dumps(response_env))
 
@@ -920,7 +918,8 @@ def extraer_error(response_env):
         else:
             raise UserError(json.dumps(response_env["result"]))
     else:
-        raise UserError(json.dumps(response_env))
+        errors = response_env.get("sunat_errors")
+        # raise UserError(json.dumps(response_env["request_id"]))
 
     #errors = response_env["result"]['errors']
     msg_error = ""

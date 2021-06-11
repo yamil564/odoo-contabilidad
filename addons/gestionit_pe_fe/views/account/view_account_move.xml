@@ -36,9 +36,9 @@
                 <xpath expr="//field[@name='journal_id']" position="replace">
                     <field name="tipo_operacion" string="Tipo de Operación" attrs="{'readonly':[['state','not in',['draft']]]}" widget="radio" />
                     <field name="journal_id" string="Serie" options="{'no_create': True,'no_open':True}" />
+                    <field name="documento_baja_id" />
+                    <field name="documento_baja_state" />
                 </xpath>
-
-
                 <xpath expr="//header" position="after">
                     <!--Estados cuando el documento esta de Baja-->
                     <!-- <field name="estado_emision" invisible="1"/> -->
@@ -49,194 +49,211 @@
                         Este documento <bold><a class="alert-link" href="#outstanding" role="button">HA SIDO DADO DE BAJA </a></bold> - Comunicación de Baja con estado <b>Baja Enviado a SUNAT - <field name="documento_baja_id" attrs="{'readonly':1}"/></b>.
                     </div> -->
                     <div class="alert alert-success" role="alert" style="margin-bottom:0px;" attrs="{'invisible': [('estado_emision','!=','A')]}">
-                        Este documento <bold>
-                        <a class="alert-link" href="#outstanding" role="button">HA SIDO ENVIADO </a>
-                    </bold> - Documento con estado: Aceptado por SUNAT.
-                </div>
-                <div class="alert alert-warning" role="alert" style="margin-bottom:0px;" attrs="{'invisible': [('estado_emision','!=','N')]}">
-                        Este documento <bold>
-                    <a class="alert-link" href="#outstanding" role="button">HA SIDO ENVIADO </a>
-                </bold> - Documento con estado: Envío erróneo.
-            </div>
-            <!-- <div class="alert alert-danger" role="alert" style="margin-bottom:0px;" attrs="{'invisible': [('estado_emision','!=','N')]}">
-                        Este documento <bold><a class="alert-link" href="#outstanding" role="button">HA SIDO DADO DE BAJA </a></bold> - Comunicación de Baja con estado <b>Baja con Envío Erroneo - <field name="documento_baja_id" attrs="{'readonly':1}"/></b>.
+                        Este documento
+                        <bold>
+                            <a class="alert-link" href="#outstanding" role="button">HA SIDO ENVIADO </a>
+                        </bold> - Documento con estado: Aceptado por SUNAT.
                     </div>
-                    <div class="alert alert-danger" role="alert" style="margin-bottom:0px;" attrs="{'invisible': [('estado_emision','!=','O')]}">
-                        Este documento <bold><a class="alert-link" href="#outstanding" role="button">HA SIDO DADO DE BAJA </a></bold> - Comunicación de Baja con estado <b>Baja Aceptada con Observaciones - <field name="documento_baja_id" attrs="{'readonly':1}"/></b>.
+                    <div class="alert alert-warning" role="alert" style="margin-bottom:0px;" attrs="{'invisible': [('estado_emision','!=','N')]}">
+                        Este documento
+                        <bold>
+                            <a class="alert-link" href="#outstanding" role="button">HA SIDO ENVIADO </a>
+                        </bold> - Documento con estado: Envío erróneo.
                     </div>
-                    <div class="alert alert-danger" role="alert" style="margin-bottom:0px;" attrs="{'invisible': [('estado_emision','!=','P')]}">
-                        Este documento <bold><a class="alert-link" href="#outstanding" role="button">HA SIDO DADO DE BAJA </a></bold> - Comunicación de Baja con estado <b>Baja Pendiente de envío a SUNAT - <field name="documento_baja_id" attrs="{'readonly':1}"/></b>.
-                    </div> -->
+                    <div class="alert alert-danger" role="alert" style="margin-bottom:0px;" attrs="{'invisible': [('documento_baja_state','!=','A')]}">
+                        Este documento
+                        <bold>
+                            <a class="alert-link" href="#outstanding" role="button">HA SIDO DADO DE BAJA </a>
+                        </bold> - Comunicación de Baja con estado
+                        <b>Baja Aceptada -
+                            <field name="documento_baja_id" readonly="1"/>
+                        </b>.
+                    </div>
+                    <div class="alert alert-danger" role="alert" style="margin-bottom:0px;" attrs="{'invisible': [('documento_baja_state','!=','N')]}">
+                        Este documento
+                        <bold>
+                            <a class="alert-link" href="#outstanding" role="button">HA SIDO DADO DE BAJA </a>
+                        </bold> - Comunicación de Baja con estado
+                        <b>Baja con Envío Erroneo -
+                            <field name="documento_baja_id" readonly="1"/>
+                        </b>.
+                    </div>
+                    <div class="alert alert-danger" role="alert" style="margin-bottom:0px;" attrs="{'invisible': [('documento_baja_state','!=','O')]}">
+                        Este documento
+                        <bold>
+                            <a class="alert-link" href="#outstanding" role="button">HA SIDO DADO DE BAJA </a>
+                        </bold> - Comunicación de Baja con estado
+                        <b>Baja Aceptada con Observaciones -
+                            <field name="documento_baja_id" readonly="1"/>
+                        </b>.
+                    </div>
+                    <div class="alert alert-danger" role="alert" style="margin-bottom:0px;" attrs="{'invisible': [('documento_baja_state','!=','P')]}">
+                        Este documento
+                        <bold>
+                            <a class="alert-link" href="#outstanding" role="button">HA SIDO DADO DE BAJA </a>
+                        </bold> - Comunicación de Baja con estado
+                        <b>Baja Pendiente de envío a SUNAT -
+                            <field name="documento_baja_id" readonly="1"/>
+                        </b>.
+                    </div>
+                </xpath>
+            </field>
+        </record>
+        <record id="gestionit_pe_fe.view_account_move_almacenes_series_permitidas" model="ir.ui.view">
+            <field name="name">Almacenes y series permitidas</field>
+            <field name="model">account.move</field>
+            <field name="inherit_id" ref="account.view_move_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='journal_id']" position="before">
+                    <field name="warehouses_allowed_ids" widget="many2many_tags" groups="base.group_no_one"/>
+                    <field name="warehouse_id" domain="[('id','in',warehouses_allowed_ids)]" string="Almacén" options="{'no_create': True, 'no_create_edit':True, 'no_open': True}"/>
+                    <field name="journal_ids" widget="many2many_tags" string="Series Permitidas" groups="base.group_no_one"/>
+                    <field name="journal_type" invisible="1"/>
+                </xpath>
+                <xpath expr="//field[@name='journal_id']" position="attributes">
+                    <attribute name="domain">[('invoice_type_code_id','=',invoice_type_code), ('id','in',journal_ids),('type','=',journal_type)]</attribute>
+                </xpath>
+            </field>
+        </record>
+        <record model="ir.ui.view" id="gestionit_pe_fe.view_account_invoice_form_desglose_venta">
+            <field name="name">Totales de venta</field>
+            <field name="model">account.move</field>
+            <field name="inherit_id" ref="account.view_move_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='amount_untaxed']" position="replace">
+                    <field name="descuento_global" string="Descuento Global (%)"/>
+                    <field name="total_venta_gravado" string="Monto Gravado"/>
+                    <field name="amount_igv"/>
+                    <field name="total_venta_inafecto" string="Monto Inafecto"/>
+                    <field name="total_venta_exonerada" string="Monto Exonerado"/>
+                    <field name="total_venta_gratuito" string="Monto Gratuito"/>
+                    <field name="total_descuento_global" attrs="{'invisible':[('invoice_type_code','not in',['01','03'])]}" string="Descuento Global"/>
+                    <field name="total_descuentos" string="Total de Descuentos"/>
+                </xpath>
+                <xpath expr="//field[@name='amount_by_group']" position="replace">
         </xpath>
-
-
-
-
-    </field>
-</record>
-
-<record id="gestionit_pe_fe.view_account_move_almacenes_series_permitidas" model="ir.ui.view">
-    <field name="name">Almacenes y series permitidas</field>
-    <field name="model">account.move</field>
-    <field name="inherit_id" ref="account.view_move_form"/>
-    <field name="arch" type="xml">
-        <xpath expr="//field[@name='journal_id']" position="before">
-            <field name="warehouses_allowed_ids" widget="many2many_tags" groups="base.group_no_one"/>
-            <field name="warehouse_id" domain="[('id','in',warehouses_allowed_ids)]" string="Almacén" options="{'no_create': True, 'no_create_edit':True, 'no_open': True}"/>
-            <field name="journal_ids" widget="many2many_tags" string="Series Permitidas" groups="base.group_no_one"/>
-            <field name="journal_type" invisible="1"/>
-        </xpath>
-        <xpath expr="//field[@name='journal_id']" position="attributes">
-            <attribute name="domain">[('invoice_type_code_id','=',invoice_type_code), ('id','in',journal_ids),('type','=',journal_type)]</attribute>
-        </xpath>
-    </field>
-</record>
-
-<record model="ir.ui.view" id="gestionit_pe_fe.view_account_invoice_form_desglose_venta">
-    <field name="name">Totales de venta</field>
-    <field name="model">account.move</field>
-    <field name="inherit_id" ref="account.view_move_form"/>
-    <field name="arch" type="xml">
-        <xpath expr="//field[@name='amount_untaxed']" position="replace">
-            <field name="descuento_global" string="Descuento Global (%)"/>
-            <field name="total_venta_gravado" string="Monto Gravado"/>
-            <field name="amount_igv"/>
-            <field name="total_venta_inafecto" string="Monto Inafecto"/>
-            <field name="total_venta_exonerada" string="Monto Exonerado"/>
-            <field name="total_venta_gratuito" string="Monto Gratuito"/>
-            <field name="total_descuento_global" attrs="{'invisible':[('invoice_type_code','not in',['01','03'])]}" string="Descuento Global"/>
-            <field name="total_descuentos" string="Total de Descuentos"/>
-        </xpath>
-        <xpath expr="//field[@name='amount_by_group']" position="replace">
-        </xpath>
-    </field>
-</record>
-
-<record model="ir.ui.view" id="gestionit_pe_fe.view_account_invoice_form_json_page">
-    <field name="name">account.move.form.logs</field>
-    <field name="model">account.move</field>
-    <field name="inherit_id" ref="account.view_move_form"/>
-    <field name="arch" type="xml">
-        <xpath expr="//page[@name='other_info']" position="after">
-            <page string="Comprobante" groups="base.group_no_one">
-                <group>
-                    <group>
-                        <field name="estado_comprobante_electronico" />
-                        <field name="estado_contribuyente_ruc" />
-                    </group>
-                    <group>
-                        <field name="condicion_domicilio_contribuyente" />
-                        <field name="consulta_validez_observaciones" />
-                    </group>
-                </group>
-                <label for="current_log_status_id" string="Actual registro de envío" style="font-weight:bold;"/>
-                <field name="current_log_status_id" readonly="1" force_save="1"/>
-                <br/>
-                <label for="account_log_status_ids" string = "Registro de envíos" style="font-weight:bold;"/>
-                <field name="account_log_status_ids" mode="tree" attrs="{'readonly':[['state','not in',['draft']]]}">
-                    <tree decoration-bf="is_last_log == True" decoration-muted="is_last_log == False">
-                        <field name="name"/>
-                        <field name="account_move_id"/>
-                        <field name="status"/>
-                        <field name="create_date"/>
-                        <field name="is_last_log" invisible="1"/>
-                        <button name="action_set_last_log" type="object" string="Registro actual" attrs="{'invisible':[('is_last_log','=',True)]}"/>
-                        <button name="action_set_last_log_unlink" type="object" string="Dejar" attrs="{'invisible':[('is_last_log','=',False)]}" />
-
-                    </tree>
-                </field>
-            </page>
-        </xpath>
-    </field>
-</record>
-
-<record model="ir.ui.view" id="gestionit_pe_fe.view_account_invoice_form_buttons">
-    <field name="name">Acciones de Comprobante electrónico</field>
-    <field name="model">account.move</field>
-    <field name="inherit_id" ref="account.view_move_form"/>
-    <field name="arch" type="xml">
-        <xpath expr="//button[@name='action_reverse']" position="attributes">
-            <attribute name="string">Generar nota de crédito</attribute>
-            <!-- <button name="generar_nota_credito" string="Generar Nota de Crédito" class="oe_highlight" type="object" attrs="{'invisible': ['|','|',('invoice_type_code','not in',['00','01','03']),('state','in',('cancel','draft'))]}"/>
+            </field>
+        </record>
+        <record model="ir.ui.view" id="gestionit_pe_fe.view_account_invoice_form_json_page">
+            <field name="name">account.move.form.logs</field>
+            <field name="model">account.move</field>
+            <field name="inherit_id" ref="account.view_move_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//page[@name='other_info']" position="after">
+                    <page string="Comprobante" groups="base.group_no_one">
+                        <group>
+                            <group>
+                                <field name="estado_comprobante_electronico" />
+                                <field name="estado_contribuyente_ruc" />
+                            </group>
+                            <group>
+                                <field name="condicion_domicilio_contribuyente" />
+                                <field name="consulta_validez_observaciones" />
+                            </group>
+                        </group>
+                        <label for="current_log_status_id" string="Actual registro de envío" style="font-weight:bold;"/>
+                        <field name="current_log_status_id" readonly="1" force_save="1"/>
+                        <br/>
+                        <label for="account_log_status_ids" string = "Registro de envíos" style="font-weight:bold;"/>
+                        <field name="account_log_status_ids" mode="tree" attrs="{'readonly':[['state','not in',['draft']]]}">
+                            <tree decoration-bf="is_last_log == True" decoration-muted="is_last_log == False">
+                                <field name="name"/>
+                                <field name="account_move_id"/>
+                                <field name="status"/>
+                                <field name="create_date"/>
+                                <field name="is_last_log" invisible="1"/>
+                                <button name="action_set_last_log" type="object" string="Registro actual" attrs="{'invisible':[('is_last_log','=',True)]}"/>
+                                <button name="action_set_last_log_unlink" type="object" string="Dejar" attrs="{'invisible':[('is_last_log','=',False)]}" />
+                            </tree>
+                        </field>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+        <record model="ir.ui.view" id="gestionit_pe_fe.view_account_invoice_form_buttons">
+            <field name="name">Acciones de Comprobante electrónico</field>
+            <field name="model">account.move</field>
+            <field name="inherit_id" ref="account.view_move_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//button[@name='action_reverse']" position="attributes">
+                    <attribute name="string">Generar nota de crédito</attribute>
+                    <!-- <button name="generar_nota_credito" string="Generar Nota de Crédito" class="oe_highlight" type="object" attrs="{'invisible': ['|','|',('invoice_type_code','not in',['00','01','03']),('state','in',('cancel','draft'))]}"/>
                     <button name="generar_nota_debito" string="Generar Nota de Débito" class="oe_highlight" type="object" attrs="{'invisible': ['|','|',('invoice_type_code','not in',['00','01','03']),('state','in',('cancel','draft'))]}"/> -->
-        </xpath>
-
-        <xpath expr="//button[@name='button_draft']" position="after">
-            <button name="action_validez_comprobante" string="Validez de comprobante" type="object" class="oe_highlight" attrs="{'invisible': ['|','|',('invoice_type_code','not in',['01','03','07','08']),('state','in',('cancel','draft'))]}"/>
-        </xpath>
-        <xpath expr="//button[@name='button_draft']" position="attributes">
-            <attribute name="string">Convertir a borrador</attribute>
-        </xpath>
-        <xpath expr="//button[@name='preview_invoice']" position="attributes">
-            <attribute name="string">Pre-visualización</attribute>
-        </xpath>
-        <xpath expr="//button[@name='action_invoice_sent']" position="attributes">
-            <attribute name="string">Enviar correo</attribute>
-        </xpath>
-        <xpath expr="//div[@name='button_box']" position="inside">
-            <button name="action_view_guia_remision" type="object" class="oe_stat_button" icon="fa-truck" attrs="{'invisible': [('guia_remision_count', '=', 0)]}">
-                <field name="guia_remision_count" widget="statinfo" string="GRE"/>
-            </button>
-        </xpath>
-        <xpath expr="//button[@name='preview_invoice']" position="after">
-            <button name="action_generate_and_signed_xml" string="Generar XML" class="oe_highlight" type="object" groups="base.group_no_one" attrs="{'invisible': [('state','=','post')]}"/>
-            <button name="action_send_invoice" string="Enviar XML" class="oe_highlight" type="object" groups="base.group_no_one" attrs="{'invisible': [('state','=','post')]}"/>
-            <button name="btn_comunicacion_baja" string="Anular Comprobante" class="oe_highlight" type="object" attrs="{'invisible': ['|',('estado_comprobante_electronico','=','2_ANULADO'),('state','not in',['post'])]}"/>
-            <button name="action_open_guia_remision" string="Generar Guía de Remisión" class="oe_highlight" type="object" attrs="{'invisible': [('guia_remision_count','!=',0)]}"/>
-        </xpath>
-    </field>
-</record>
-
-<record model="ir.ui.view" id="gestionit_pe_fe.view_popup_debit_note">
-    <field name="name">Pop-up nota de débito</field>
-    <field name="model">account.debit.note</field>
-    <field name="inherit_id" ref="account_debit_note.view_account_debit_note"/>
-    <field name="arch" type="xml">
-        <xpath expr="//field[@name='reason']" position="replace">
-            <field name="debit_note_type" required="1" />
-            <field name="reason" required="1" />
-            <field name="tipo_comprobante_a_rectificar" invisible="1"/>
-            <field name="journal_type" invisible="1"/>
-        </xpath>
-        <xpath expr="//field[@name='journal_id']" position="replace">
-            <field name="journal_id" domain="[('type', '=', journal_type),('invoice_type_code_id', '=', '08'),('tipo_comprobante_a_rectificar', '=', tipo_comprobante_a_rectificar)]" options="{'no_open':True,'no_create':True,'no_quick_create':True}" required="1"/>
-        </xpath>
-        <xpath expr="//field[@name='journal_id']" position="attributes">
-            <attribute name="string">Serie</attribute>
-            <attribute name="required">1</attribute>
-        </xpath>
-        <xpath expr="//field[@name='reason']" position="attributes">
-            <attribute name="string">Sustento de nota</attribute>
-            <attribute name="required">1</attribute>
-        </xpath>
-        <xpath expr="//field[@name='date']" position="attributes">
-            <attribute name="string">Fecha</attribute>
-        </xpath>
-        <xpath expr="//field[@name='copy_lines']" position="attributes">
-            <attribute name="string">Copiar detalle</attribute>
-            <attribute name="default">True</attribute>
-        </xpath>
-        <xpath expr="//button[@name='create_debit']" position="attributes">
-            <attribute name="string">Crear</attribute>
-        </xpath>
-    </field>
-</record>
-
-<record id="custom_pop_message_wizard_view_form" model="ir.ui.view">
-    <field name="name">custom.pop.message.form</field>
-    <field name="model">custom.pop.message</field>
-    <field name="arch" type="xml">
-        <form string="Mensaje Importante">
-            <div class="alert alert-danger" role="alert" style="margin-bottom:0px;">
-                <field name="name" readonly="1"/>
-                <field name="accion" readonly="1"/>
-                <!--Si desea enviar este documento debe ser <bold><a class="alert-link" href="#outstanding" role="button">DUPLICADO</a></bold>.-->
-            </div>
-            <footer>
-                <button string="Aceptar" class="btn-default" special="cancel"/>
-            </footer>
-        </form>
-    </field>
-</record>
-</data>
+                </xpath>
+                <xpath expr="//button[@name='button_draft']" position="after">
+                    <button name="action_validez_comprobante" string="Validez de comprobante" type="object" class="oe_highlight" attrs="{'invisible': ['|','|',('invoice_type_code','not in',['01','03','07','08']),('state','in',('cancel','draft'))]}"/>
+                </xpath>
+                <xpath expr="//button[@name='button_draft']" position="attributes">
+                    <attribute name="string">Convertir a borrador</attribute>
+                </xpath>
+                <xpath expr="//button[@name='preview_invoice']" position="attributes">
+                    <attribute name="string">Pre-visualización</attribute>
+                </xpath>
+                <xpath expr="//button[@name='action_invoice_sent']" position="attributes">
+                    <attribute name="string">Enviar correo</attribute>
+                </xpath>
+                <xpath expr="//div[@name='button_box']" position="inside">
+                    <button name="action_view_guia_remision" type="object" class="oe_stat_button" icon="fa-truck" attrs="{'invisible': [('guia_remision_count', '=', 0)]}">
+                        <field name="guia_remision_count" widget="statinfo" string="GRE"/>
+                    </button>
+                </xpath>
+                <xpath expr="//button[@name='preview_invoice']" position="after">
+                    <button name="action_generate_and_signed_xml" string="Generar XML" class="oe_highlight" type="object" groups="base.group_no_one" attrs="{'invisible': [('state','=','post')]}"/>
+                    <button name="action_send_invoice" string="Enviar XML" class="oe_highlight" type="object" groups="base.group_no_one" attrs="{'invisible': [('state','=','post')]}"/>
+                    <button name="btn_comunicacion_baja" string="Anular Comprobante" class="oe_highlight" type="object" attrs="{'invisible': ['|',('estado_comprobante_electronico','=','2_ANULADO'),('state','not in',['posted'])]}"/>
+                    <button name="action_open_guia_remision" string="Generar Guía de Remisión" class="oe_highlight" type="object" attrs="{'invisible': [('guia_remision_count','!=',0)]}"/>
+                </xpath>
+            </field>
+        </record>
+        <record model="ir.ui.view" id="gestionit_pe_fe.view_popup_debit_note">
+            <field name="name">Pop-up nota de débito</field>
+            <field name="model">account.debit.note</field>
+            <field name="inherit_id" ref="account_debit_note.view_account_debit_note"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='reason']" position="replace">
+                    <field name="debit_note_type" required="1" />
+                    <field name="reason" required="1" />
+                    <field name="tipo_comprobante_a_rectificar" invisible="1"/>
+                    <field name="journal_type" invisible="1"/>
+                </xpath>
+                <xpath expr="//field[@name='journal_id']" position="replace">
+                    <field name="journal_id" domain="[('type', '=', journal_type),('invoice_type_code_id', '=', '08'),('tipo_comprobante_a_rectificar', '=', tipo_comprobante_a_rectificar)]" options="{'no_open':True,'no_create':True,'no_quick_create':True}" required="1"/>
+                </xpath>
+                <xpath expr="//field[@name='journal_id']" position="attributes">
+                    <attribute name="string">Serie</attribute>
+                    <attribute name="required">1</attribute>
+                </xpath>
+                <xpath expr="//field[@name='reason']" position="attributes">
+                    <attribute name="string">Sustento de nota</attribute>
+                    <attribute name="required">1</attribute>
+                </xpath>
+                <xpath expr="//field[@name='date']" position="attributes">
+                    <attribute name="string">Fecha</attribute>
+                </xpath>
+                <xpath expr="//field[@name='copy_lines']" position="attributes">
+                    <attribute name="string">Copiar detalle</attribute>
+                    <attribute name="default">True</attribute>
+                </xpath>
+                <xpath expr="//button[@name='create_debit']" position="attributes">
+                    <attribute name="string">Crear</attribute>
+                </xpath>
+            </field>
+        </record>
+        <record id="custom_pop_message_wizard_view_form" model="ir.ui.view">
+            <field name="name">custom.pop.message.form</field>
+            <field name="model">custom.pop.message</field>
+            <field name="arch" type="xml">
+                <form string="Mensaje Importante">
+                    <div class="alert alert-danger" role="alert" style="margin-bottom:0px;">
+                        <field name="name" readonly="1"/>
+                        <field name="accion" readonly="1"/>
+                        <!--Si desea enviar este documento debe ser <bold><a class="alert-link" href="#outstanding" role="button">DUPLICADO</a></bold>.-->
+                    </div>
+                    <footer>
+                        <button string="Aceptar" class="btn-default" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+    </data>
 </odoo>
