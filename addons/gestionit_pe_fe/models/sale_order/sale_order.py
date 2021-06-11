@@ -82,7 +82,7 @@ class SaleOrder(models.Model):
         warehouse_id = self.picking_ids[0].picking_type_id.warehouse_id
 
         for whj in warehouse_id.journal_ids:
-            if whj.invoice_type_code_id == self.tipo_documento:
+            if whj.invoice_type_code_id == self.tipo_documento and whj.type == "sale":
                 journal = whj
                 break
 

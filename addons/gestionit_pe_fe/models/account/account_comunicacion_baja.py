@@ -274,11 +274,12 @@ class AccountComunicacionBaja(models.Model):
         self.json_comprobante = json.dumps(data_doc, indent=4)
         self.json_respuesta = json.dumps(response_env, indent=4)
 
-        if response_env["success"]:
+        if response_env["success"] and response_env['sunat_status'] != 'R':
             self.state = response_env['sunat_status']
             self.ticket = response_env['ticket']
         else:
             recepcionado, state, msg_error = oauth.extraer_error(response_env)
+
             if recepcionado:
                 self.state = state
                 return {
@@ -293,17 +294,18 @@ class AccountComunicacionBaja(models.Model):
                     }
                 }
             else:
-                return {
-                    'name': 'Message',
-                    'type': 'ir.actions.act_window',
-                    'view_type': 'form',
-                    'view_mode': 'form',
-                    'res_model': 'custom.pop.message',
-                    'target': 'new',
-                    'context': {
-                        'default_name': msg_error
-                    }
-                }
+                raise UserError("El servidor de SUNAT no está respondiendo correctamente. Inténtelo nuevamante en unos minutos.")
+                # return {
+                #     'name': 'Message',
+                #     'type': 'ir.actions.act_window',
+                #     'view_type': 'form',
+                #     'view_mode': 'form',
+                #     'res_model': 'custom.pop.message',
+                #     'target': 'new',
+                #     'context': {
+                #         'default_name': msg_error
+                #     }
+                # }
 
     def crear_json_baja(self):
         nombreEmisor = self.company_id.partner_id.registration_name.strip()

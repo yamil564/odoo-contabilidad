@@ -14,8 +14,8 @@ _logger = logging.getLogger(__name__)
 
 urls = [
     "https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService",
-    "https://www.sunat.gob.pe/ol-ti-itcpgem-sqa/billService",
     "https://e-factura.sunat.gob.pe/ol-ti-itcpfegem/billService",
+    "https://www.sunat.gob.pe/ol-ti-itcpgem-sqa/billService",
     "https://www.sunat.gob.pe/ol-it-wsconscpegem/billConsultService",
 ]
 
@@ -199,6 +199,7 @@ def send_consulta(consulta_xml, data, user, consulta=False):
             url = "https://e-factura.sunat.gob.pe/ol-ti-itcpfegem/billService"
         else:
             url = "https://e-factura.sunat.gob.pe/ol-it-wsconscpegem/billConsultService"
+
     # elif user.ose == "nubefact":
     #     if tipo_envio == 0:  # Beta
     #         url = urls_ose_nubefact["test"]["document"]
