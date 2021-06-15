@@ -50,19 +50,6 @@ class PosOrder(models.Model):
         return ""
 
 
-    # @api.model
-    # def create_from_ui(self,orders,draft=False):
-    #     orders = super(PosOrder, self).create_from_ui(orders,draft)
-    #     for order in orders:
-    #         order["digest_value"] = "*"
-    #         order_obj = self.browse(order.get("id"))
-    #         invoice = order_obj.account_move
-    #         if invoice:
-    #             order.update({"digest_value":invoice.digest_value if invoice.digest_value else "*"})
-        
-    #     return orders
-        
-
 class l10nLatamIdentificationType(models.Model):
     _inherit = "l10n_latam.identification.type"
 

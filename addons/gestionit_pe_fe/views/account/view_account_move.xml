@@ -23,8 +23,10 @@
                     </h1>
                 </xpath>
                 <xpath expr="//field[@name='ref']" position="replace">
-                    <field name="inv_supplier_ref" attrs="{'invisible': [('type','in',['out_refund','out_invoice'])],'required':[('type','in',['in_invoice','in_refund'])]}"/>
-                    <field name="ref"/>
+                    <field name="inv_supplier_ref" 
+                            attrs="{'invisible': [('type','in',['out_refund','out_invoice'])],'required':[('type','in',['in_invoice','in_refund'])]}"
+                            placeholder="Factura / Boleta / RHE"/>
+                    <field name="ref" placeholder="Ref. de Proveedor"/>
                     <field name="tipo_nota_credito" attrs="{'invisible': [('invoice_type_code','!=','07')],'required':[('invoice_type_code','=','07')]}"/>
                     <field name="tipo_nota_debito" attrs="{'invisible': [('invoice_type_code','!=','08')],'required':[('invoice_type_code','=','08')]}"/>
                     <field name="sustento_nota" attrs="{'invisible': [('invoice_type_code','!=','07'),('invoice_type_code','!=','08')],'required':[('invoice_type_code','in',['07', '08'])]}"/>
@@ -116,6 +118,7 @@
                     <field name="journal_type" invisible="1"/>
                 </xpath>
                 <xpath expr="//field[@name='journal_id']" position="attributes">
+                    <attribute name="widget">radio</attribute>
                     <attribute name="domain">[('invoice_type_code_id','=',invoice_type_code), ('id','in',journal_ids),('type','=',journal_type)]</attribute>
                 </xpath>
             </field>

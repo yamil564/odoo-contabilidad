@@ -3,8 +3,7 @@ FROM odoo:13.0
 LABEL MAINTAINER Daniel Moreno <danielvdmlfiis@gmail.com>
 USER root
 
-RUN pip3 install pyjwt
-
+# RUN pip3 install pyjwt
 
 RUN set -x; \
         apt-get update \
@@ -27,12 +26,12 @@ RUN set -x; \
 RUN apt-get clean && apt-get autoclean
 
 RUN pip3 install phonenumbers
-RUN pip3 install selenium
+# RUN pip3 install selenium
 
 
 RUN pip3 install boto3
 RUN pip3 install lxml
 RUN pip3 install flex
-RUN pip3 install pynamodb
+# RUN pip3 install pynamodb
 RUN pip3 install pandas
 RUN pip3 install numpy

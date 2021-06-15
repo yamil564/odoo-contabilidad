@@ -81,10 +81,10 @@ odoo.define('gestionit_pe_fe_pos.screens',[
 
             if (journal) {
                 if (client) {
-                    if (client_identification_type_code == undefined || ["1","6","0"].indexOf(String(client_identification_type_code)) == -1 || identification_type.available_in_pos == false) {
+                    if ( ["1","6","0"].indexOf(String(client_identification_type_code)) == -1 || identification_type.available_in_pos == false) {
                         self.gui.show_popup('confirm', {
                             'title': 'Datos del Cliente Incorrectos',
-                            'body': 'El cliente seleccionado no tiene un tipo de documento de identidad válido. Tipos de documentos de identidad válidos: DNI, RUC y "Sin Documento" para ventas Menores a S/.700.00 ',
+                            'body': 'El cliente seleccionado tiene un tipo de documento de identidad inválido o no permitido. Tipos de documentos de identidad válidos: DNI, RUC y "Sin Documento" para ventas Menores a S/.700.00. Configuración de Documentos de Identidad permitidos en Contactos -> Configuración -> Tipo de Identificación.',
                             confirm: function() {
                                 self.gui.show_screen('clientlist');
                             },
