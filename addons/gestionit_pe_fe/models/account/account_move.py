@@ -92,7 +92,7 @@ class AccountMove(models.Model):
             if len(warehouse_ids) > 0:
                 for wh in warehouse_ids:
                     for whj in wh.journal_ids:
-                        if whj.type == self._context.get("journal_type"):
+                        if whj.type == self._context.get("default_journal_type"):
                             if whj.invoice_type_code_id == self._context.get("default_invoice_type_code"):
                                 res.update({
                                     "warehouse_id": wh.id,
@@ -1135,6 +1135,7 @@ class AccountMoveReversal(models.TransientModel):
 
         if move_ids.exists():
             journals = self.env["account.journal"].sudo().search([('tipo_comprobante_a_rectificar','=',res['tipo_comprobante_a_rectificar']),
+                                                            ("invoice_type_code_id","=","07"),
                                                             ("type","=",res['journal_type'])]).ids
             res['journal_id'] = journals[0] if len(journals)>0 else False
         else:
@@ -1169,6 +1170,7 @@ class AccountDebitNote(models.TransientModel):
                         "tipo_comprobante_a_rectificar":move_ids[0].journal_id.invoice_type_code_id})
 
             journals = self.env["account.journal"].sudo().search([('tipo_comprobante_a_rectificar','=',res['tipo_comprobante_a_rectificar']),
+                                                            ("invoice_type_code_id","=","08"),
                                                             ("type","=",res['journal_type'])]).ids
             res['journal_id'] = journals[0] if len(journals)>0 else False
 

@@ -7,6 +7,7 @@
         "account",
         "sale_management",
         "stock",
+        "purchase",
         "l10n_pe",
         "account_debit_note",
         "gestionit_pe_ubicaciones",

@@ -6,4 +6,8 @@
         <field name='l10n_pe_vat_code'>6</field>
         <field name='sequence'>83</field>
     </record>
+
+    <record model='l10n_latam.identification.type' id='l10n_latam_base.it_vat'>
+        <field name='l10n_pe_vat_code'></field>
+    </record>
 </odoo>

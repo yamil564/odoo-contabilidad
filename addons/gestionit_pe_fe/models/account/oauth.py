@@ -6,7 +6,7 @@ import base64
 import datetime
 from datetime import datetime
 from bs4 import BeautifulSoup
-import jwt
+# import jwt
 import time
 # from ..utils.number_to_letter import to_word
 import re
