@@ -1,0 +1,12 @@
+<odoo>
+    <record id="view_form_add_invoice_type_code" model="ir.ui.view">
+        <field name="name">view.form.add.invoice_type_code</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <field name="validity_date" position="before">
+                <field name="invoice_type_code" string="Tipo de Documento"/>
+            </field>
+        </field>
+    </record>
+</odoo>

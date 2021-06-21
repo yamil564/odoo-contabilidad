@@ -11,27 +11,4 @@
         <field name='available_in_pos' eval="1"/>
     </record>
 
-    <record model='l10n_latam.identification.type' id='l10n_pe.it_TAM'>
-        <field name="active" eval="0"/>
-    </record>
-    
-    <record model='l10n_latam.identification.type' id='l10n_pe.it_IN'>
-        <field name="active" eval="0"/>
-    </record>
-
-    <record model='l10n_latam.identification.type' id='l10n_pe.it_TIN'>
-        <field name="active" eval="0"/>
-    </record>
-
-    <record model='l10n_latam.identification.type' id='l10n_pe.it_IDCR'>
-        <field name="active" eval="0"/>
-    </record>
-
-    <record model='l10n_latam.identification.type' id='l10n_pe.it_DIC'>
-        <field name="active" eval="0"/>
-    </record>
-
-    <record model='l10n_latam.identification.type' id='l10n_latam_base.it_vat'>
-        <field name="active" eval="0"/>
-    </record>
 </odoo>
