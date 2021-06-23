@@ -1,0 +1,7 @@
+<odoo>
+    <template id="assets_frontend" inherit_id="website_sale.assets_frontend">
+        <xpath expr="//script[last()]" position="after">
+            <script type="text/javascript" src="/select_invoice_from_website/static/src/js/website_sale.js"/>
+        </xpath>
+    </template>
+</odoo>

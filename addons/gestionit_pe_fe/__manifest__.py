@@ -9,6 +9,7 @@
         "stock",
         "purchase",
         "l10n_pe",
+        "l10n_latam_base",
         "account_debit_note",
         "gestionit_pe_ubicaciones",
         "sale_stock"
@@ -60,6 +61,7 @@
         'data/ir_config_parameter.xml',
         'data/res_currency.xml',
         'data/res_company.xml',
+        'data/identification_type.xml',
         'security/res_groups.xml',
         'cron/account_move_cron.xml',
         'cron/account_summary_cron.xml',
