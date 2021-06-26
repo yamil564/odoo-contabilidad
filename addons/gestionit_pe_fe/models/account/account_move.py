@@ -512,12 +512,12 @@ class AccountMove(models.Model):
 
     def post(self):
         # Validar journal
-        if self.journal_id.invoice_type_code_id not in ['01', '03', '08', '09']:
+        if self.journal_id.invoice_type_code_id not in ['01', '03', '07', '08', '09']:
             return super(AccountMove, self).post()
 
         if self.type in ["in_invoice","in_refund"]:
             if self.inv_supplier_ref:
-                self._validate_inv_supplier_ref(self)
+                self._validate_inv_supplier_ref()
             else:
                 raise UserError(
                     "El número de comprobante del proveedor es obligatorio")
@@ -526,6 +526,7 @@ class AccountMove(models.Model):
         if not self.journal_id.electronic_invoice:
             obj = super(AccountMove, self).post()
             return obj
+
         # Validaciones cuando el comprobante es factura
         msg_error = []
         msg_error += self.validar_datos_compania()
@@ -552,6 +553,7 @@ class AccountMove(models.Model):
 
         
         self.action_generate_and_signed_xml()
+
         if self.journal_id.invoice_type_code_id == "03" or self.journal_id.tipo_comprobante_a_rectificar == "03":
             return obj
 
@@ -579,9 +581,9 @@ class AccountMove(models.Model):
     inv_supplier_ref = fields.Char("Número de comprobante")
 
     # @api.model
-    def _validate_inv_supplier_ref(self, obj):
-        if obj.inv_supplier_ref:
-            if not re.match("^F\w{3}-\d{1,8}$", obj.inv_supplier_ref) or not re.match("^B\w{3}-\d{1,8}$", obj.inv_supplier_ref):
+    def _validate_inv_supplier_ref(self):
+        if self.inv_supplier_ref:
+            if not (re.match("^F\w{3}[-]\d{1,8}$", self.inv_supplier_ref) or re.match("^B\w{3}[-]\d{1,8}$", self.inv_supplier_ref)):
                 raise UserError("La referencia debe tener el formato XXXX-########")
         else:
             raise UserError("Debe colocar el número de comprobante.")
