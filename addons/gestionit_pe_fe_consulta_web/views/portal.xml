@@ -30,7 +30,7 @@
     <template id="sale_order_portal_template" inherit_id="sale.sale_order_portal_template">
         <xpath expr="//li[contains(@t-if,'sale_order.amount_undiscounted - sale_order.amount_untaxed')]" position="replace">
             <li t-if="sale_order.amount_undiscounted - sale_order.total_venta_gravado &gt; 0.01" class="list-group-item flex-grow-1">
-                <small><b class="text-muted">Your advantage</b></small>
+                <small><b class="text-muted">Tu Ahorro</b></small>
                 <small>
                     <b t-field="sale_order.amount_undiscounted"
                         t-options='{"widget": "monetary", "display_currency": sale_order.pricelist_id.currency_id}'
@@ -49,5 +49,13 @@
         </xpath>
     </template>
 
-    <template id="sale_order_portal_content" inherit_id="sale.sale_order_portal_content"></template>
+    <template id="sale_order_portal_content" inherit_id="sale.sale_order_portal_content">
+        <xpath expr="//span[contains(@data-id,'total_untaxed')]" position="replace">
+            <span
+                data-id="total_untaxed"
+                t-field="sale_order.total_venta_gravado"
+                t-options='{"widget": "monetary","display_currency": sale_order.pricelist_id.currency_id}'
+            />
+        </xpath>
+    </template>
 </odoo>
