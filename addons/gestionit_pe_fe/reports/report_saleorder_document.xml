@@ -228,7 +228,7 @@
                                         <strong>Subtotal</strong>
                                     </td>
                                     <td class="text-right">
-                                        <span t-field="docs.amount_untaxed" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: docs.pricelist_id.currency_id}"/>
+                                        <span t-field="docs.total_venta_gravado" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: docs.pricelist_id.currency_id}"/>
                                     </td>
                                 </tr>
                                 <!-- <t t-foreach="doc._get_tax_amount_by_group()" t-as="amount_by_group">
