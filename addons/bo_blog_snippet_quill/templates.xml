@@ -32,7 +32,7 @@
                 <t groups="website.group_website_designer">
                     <t t-set="perm_edit_save" t-value="1"/>
                 </t>
-                <div class="quill_text_editor" t-attf-data-blog-id="#{blog_post.id}">
+                <div t-attf-class="#{'quill_text_editor'  if perm_edit_save else ''}" t-attf-data-blog-id="#{blog_post.id}">
                     <div class="options" t-if="perm_edit_save">
                         <!-- <button class="btn btn-primary btn_blog_edit"><i class="bi bi-pencil"/> Editar</button> -->
                         <button class="btn btn-secondary btn_blog_save d-none"><i class="bi bi-save"/> Guardar</button>

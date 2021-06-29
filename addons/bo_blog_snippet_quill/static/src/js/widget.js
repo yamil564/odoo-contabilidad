@@ -1,14 +1,11 @@
 odoo.define("bo_blog_snippet_quill.widget", function(require){
     var widget = require("web.public.widget")
-    // var core = require("web.core")
-    // var ImageResize = require("quill-image-resize-module")
-    // Quill.import('core/module');
 
-    // Quill.register({'modules/imageResize': ImageResize});
     Quill.register("modules/imageUploader", ImageUploader);
 
     hljs.configure({
-        languages: ['shell', 'javascript', 'python','html']
+        useBR:false,
+        languages: ['bash', 'javascript', 'python','html']
     });
 
     widget.registry.QuillTextEditor = widget.Widget.extend({
@@ -21,13 +18,15 @@ odoo.define("bo_blog_snippet_quill.widget", function(require){
             $(this.$el).find(".btn_blog_save").removeClass("d-none")
 
             const fullToolbarOptions = [
-                [{ header: [1, 2, 3, false]},'align','direction','code-block'],
+                [{ 'header': 1 }, { 'header': 2 }], 
+                [{ 'align':['center','right','justify']},{ 'size': [ 'small', false, 'large', 'huge' ]},'direction'],
+                [{ 'indent': '-1'}, { 'indent': '+1' }], 
                 ['background','bold', 'italic', 'underline', 'strike','underline'],
                 ["clean"],
                 ["image"],
+                ['code-block']
             ];
             var options = {
-                // debug: 'info',
                 theme: 'snow',
                 modules:{
                     syntax: true,
@@ -63,18 +62,9 @@ odoo.define("bo_blog_snippet_quill.widget", function(require){
                                 }
                                 reader.readAsDataURL(file);
                             })
-                            // return new Promise((resolve, reject) => {
-                            //   setTimeout(() => {
-                            //     resolve(
-                            //       "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/JavaScript-logo.png/480px-JavaScript-logo.png"
-                            //     );
-                            //   }, 3500);
-                            // });
                         },
                     }
                 },
-                // readOnly: true,
-                
             };
             this.quill = new Quill(".blog_post_content",options); 
             this._super()
