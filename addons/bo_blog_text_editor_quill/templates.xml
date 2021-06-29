@@ -1,25 +1,4 @@
 <odoo>
-    <!-- <template id="snippets" inherit_id="website.snippets" name="Snippet Quill Text Editor">
-        <xpath expr="//div[@id='snippet_feature']//t[@t-snippet][last()]" position="after">
-            <t t-snippet="bo_blog_snippet_quill.templ_quill_text_editor" t-thumbnail="/bo_blog_snippet_quill/static/src/img/quill.jpeg"/>
-        </xpath>
-    </template>
-
-    <template id="bo_blog_snippet_quill.templ_quill_text_editor" name="Quill Text Editor">
-        <section >
-            <div class="quill_text_editor"/>
-        </section>
-    </template>
-
-    <template id="snippet_options_text_editor" inherit_id="website.snippet_options" name="Opciones para Quill">
-        <xpath expr="." position="inside">
-            <div data-js="QuillTextEditor" data-selector=".quill_text_editor">
-                <we-button data-no-preview="true" data-edit="">
-                    <i class="fa fa-pencil"/> Editar
-                </we-button>
-            </div>
-        </xpath>
-    </template> -->
 
     <template id="blog_post_content_quill" inherit_id="website_blog.blog_post_content">
         <xpath expr="//div[contains(@t-field,'blog_post.content')]" position="replace">

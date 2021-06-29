@@ -1,4 +1,4 @@
-odoo.define("bo_blog_snippet_quill.widget", function(require){
+odoo.define("bo_blog_text_editor_quill.widget", function(require){
     var widget = require("web.public.widget")
 
     Quill.register("modules/imageUploader", ImageUploader);
