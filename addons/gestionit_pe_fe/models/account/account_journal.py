@@ -8,7 +8,7 @@ _logger = logging.getLogger(__name__)
 
 class AccountJournal(models.Model):
     _inherit = "account.journal"
-    tipo_envio = fields.Selection(selection=[("0","0 - Pruebas"),("1","1 - Producción")])
+    tipo_envio = fields.Selection(selection=[("0","0 - Pruebas"),("1","1 - Producción")],default="0")
     send_async = fields.Boolean("Envío asíncrono",default=False)
     electronic_invoice = fields.Boolean("Documento de emisión electrónica",default=False)
 

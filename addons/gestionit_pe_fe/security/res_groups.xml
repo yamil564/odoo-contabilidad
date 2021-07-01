@@ -1,5 +1,5 @@
 <odoo>
-    <data>
+    
         <!--ACCESO DE LECTURA DE TABLA DE PARÁMETROS DE FACTURACIÓN ELECTRÓNICA PARA EMPLEADOS-->
         <!-- <record model="ir.model.access" id="gestionit_pe_fe.access_model_tipo_afectacion">
             <field name="name">gestionit_pe_fe.access.model.tipo.afectacion</field>
@@ -11,101 +11,106 @@
             <field name="group_id" ref="base.group_user"/>
         </record> -->
 
+    <record model="ir.model.access" id="gestionit_pe_fe.access_model_account_log_status">
+        <field name="name">gestionit_pe_fe.access.model.account.log.status</field>
+        <field name="model_id" ref="gestionit_pe_fe.model_account_log_status"/>
+        <field name="perm_read">1</field>
+        <field name="perm_write">1</field>
+        <field name="perm_unlink">0</field>
+        <field name="perm_create">1</field>
+        <field name="group_id" ref="base.group_user"/>
+    </record>
+    <record model="ir.model.access" id="gestionit_pe_fe.access_model_summary_line">
+        <field name="name">gestionit_pe_fe.access.model.summary.line</field>
+        <field name="model_id" ref="gestionit_pe_fe.model_account_summary_line"/>
+        <field name="perm_read">1</field>
+        <field name="perm_write">1</field>
+        <field name="perm_unlink">1</field>
+        <field name="perm_create">1</field>
+        <field name="group_id" ref="base.group_user"/>
+    </record>
+    <record model="ir.model.access" id="gestionit_pe_fe.access_model_summary">
+        <field name="name">gestionit_pe_fe.access.model.summary</field>
+        <field name="model_id" ref="gestionit_pe_fe.model_account_summary"/>
+        <field name="perm_read">1</field>
+        <field name="perm_write">1</field>
+        <field name="perm_unlink">1</field>
+        <field name="perm_create">1</field>
+        <field name="group_id" ref="base.group_user"/>
+    </record>
+    <record model="ir.model.access" id="gestionit_pe_fe.access_model_comunicacion_baja">
+        <field name="name">gestionit_pe_fe.access.model.account.comunicacion.baja</field>
+        <field name="model_id" ref="gestionit_pe_fe.model_account_comunicacion_baja"/>
+        <field name="perm_read">1</field>
+        <field name="perm_write">1</field>
+        <field name="perm_unlink">1</field>
+        <field name="perm_create">1</field>
+        <field name="group_id" ref="base.group_user"/>
+    </record>
 
-        <record model="ir.model.access" id="gestionit_pe_fe.access_model_account_log_status">
-            <field name="name">gestionit_pe_fe.access.model.account.log.status</field>
-            <field name="model_id" ref="gestionit_pe_fe.model_account_log_status"/>
-            <field name="perm_read">1</field>
-            <field name="perm_write">1</field>
-            <field name="perm_unlink">0</field>
-            <field name="perm_create">1</field>
-            <field name="group_id" ref="base.group_user"/>
-        </record>
-        <record model="ir.model.access" id="gestionit_pe_fe.access_model_summary_line">
-            <field name="name">gestionit_pe_fe.access.model.summary.line</field>
-            <field name="model_id" ref="gestionit_pe_fe.model_account_summary_line"/>
-            <field name="perm_read">1</field>
-            <field name="perm_write">1</field>
-            <field name="perm_unlink">1</field>
-            <field name="perm_create">1</field>
-            <field name="group_id" ref="base.group_user"/>
-        </record>
-        <record model="ir.model.access" id="gestionit_pe_fe.access_model_summary">
-            <field name="name">gestionit_pe_fe.access.model.summary</field>
-            <field name="model_id" ref="gestionit_pe_fe.model_account_summary"/>
-            <field name="perm_read">1</field>
-            <field name="perm_write">1</field>
-            <field name="perm_unlink">1</field>
-            <field name="perm_create">1</field>
-            <field name="group_id" ref="base.group_user"/>
-        </record>
-        <record model="ir.model.access" id="gestionit_pe_fe.access_model_comunicacion_baja">
-            <field name="name">gestionit_pe_fe.access.model.account.comunicacion.baja</field>
-            <field name="model_id" ref="gestionit_pe_fe.model_account_comunicacion_baja"/>
-            <field name="perm_read">1</field>
-            <field name="perm_write">1</field>
-            <field name="perm_unlink">1</field>
-            <field name="perm_create">1</field>
-            <field name="group_id" ref="base.group_user"/>
-        </record>
 
+    <record model="ir.model.access" id="gestionit_pe_fe.access_model_gestionit_guia_remision_remitente">
+        <field name="name">gestionit.access.model.gestionit.guia.remision.remitente</field>
+        <field name="model_id" ref="gestionit_pe_fe.model_gestionit_guia_remision"/>
+        <field name="perm_read">1</field>
+        <field name="perm_write">1</field>
+        <field name="perm_unlink">1</field>
+        <field name="perm_create">1</field>
+        <field name="group_id" ref="base.group_user"/>
+    </record>
+    
+    <record model="ir.model.access" id="gestionit_pe_fe.access_model_gestionit_guia_remision_line_remitente">
+        <field name="name">gestionit.access.model.gestionit.guia.remision.line.remitente</field>
+        <field name="model_id" ref="gestionit_pe_fe.model_gestionit_guia_remision_line"/>
+        <field name="perm_read">1</field>
+        <field name="perm_write">1</field>
+        <field name="perm_unlink">1</field>
+        <field name="perm_create">1</field>
+        <field name="group_id" ref="base.group_user"/>
+    </record>
+    <record model="ir.model.access" id="gestionit_pe_fe.access_model_gestionit_vehiculo">
+        <field name="name">gestionit.access.model.gestionit.vehiculo</field>
+        <field name="model_id" ref="gestionit_pe_fe.model_gestionit_vehiculo"/>
+        <field name="perm_read">1</field>
+        <field name="perm_write">1</field>
+        <field name="perm_unlink">1</field>
+        <field name="perm_create">1</field>
+        <field name="group_id" ref="base.group_user"/>
+    </record>
+    <record model="ir.model.access" id="gestionit_pe_fe.access_model_gestionit_modalidad_transporte">
+        <field name="name">gestionit.access.model.gestionit.modalidad.transporte</field>
+        <field name="model_id" ref="gestionit_pe_fe.model_gestionit_modalidad_transporte"/>
+        <field name="perm_read">1</field>
+        <field name="perm_write">0</field>
+        <field name="perm_unlink">0</field>
+        <field name="perm_create">0</field>
+        <field name="group_id" ref="base.group_user"/>
+    </record>
 
-        <record model="ir.model.access" id="gestionit_pe_fe.access_model_gestionit_guia_remision_remitente">
-            <field name="name">gestionit.access.model.gestionit.guia.remision.remitente</field>
-            <field name="model_id" ref="gestionit_pe_fe.model_gestionit_guia_remision"/>
-            <field name="perm_read">1</field>
-            <field name="perm_write">1</field>
-            <field name="perm_unlink">1</field>
-            <field name="perm_create">1</field>
-            <field name="group_id" ref="base.group_user"/>
-        </record>
-        
-        <record model="ir.model.access" id="gestionit_pe_fe.access_model_gestionit_guia_remision_line_remitente">
-            <field name="name">gestionit.access.model.gestionit.guia.remision.line.remitente</field>
-            <field name="model_id" ref="gestionit_pe_fe.model_gestionit_guia_remision_line"/>
-            <field name="perm_read">1</field>
-            <field name="perm_write">1</field>
-            <field name="perm_unlink">1</field>
-            <field name="perm_create">1</field>
-            <field name="group_id" ref="base.group_user"/>
-        </record>
-        <record model="ir.model.access" id="gestionit_pe_fe.access_model_gestionit_vehiculo">
-            <field name="name">gestionit.access.model.gestionit.vehiculo</field>
-            <field name="model_id" ref="gestionit_pe_fe.model_gestionit_vehiculo"/>
-            <field name="perm_read">1</field>
-            <field name="perm_write">1</field>
-            <field name="perm_unlink">1</field>
-            <field name="perm_create">1</field>
-            <field name="group_id" ref="base.group_user"/>
-        </record>
-        <record model="ir.model.access" id="gestionit_pe_fe.access_model_gestionit_modalidad_transporte">
-            <field name="name">gestionit.access.model.gestionit.modalidad.transporte</field>
-            <field name="model_id" ref="gestionit_pe_fe.model_gestionit_modalidad_transporte"/>
-            <field name="perm_read">1</field>
-            <field name="perm_write">0</field>
-            <field name="perm_unlink">0</field>
-            <field name="perm_create">0</field>
-            <field name="group_id" ref="base.group_user"/>
-        </record>
+    <record model="ir.model.access" id="gestionit_pe_fe.access_model_gestionit_motivo_traslado">
+        <field name="name">gestionit.access.model.gestionit.motivo.traslado</field>
+        <field name="model_id" ref="gestionit_pe_fe.model_gestionit_motivo_traslado"/>
+        <field name="perm_read">1</field>
+        <field name="perm_write">0</field>
+        <field name="perm_unlink">0</field>
+        <field name="perm_create">0</field>
+        <field name="group_id" ref="base.group_user"/>
+    </record>
 
-        <record model="ir.model.access" id="gestionit_pe_fe.access_model_gestionit_motivo_traslado">
-            <field name="name">gestionit.access.model.gestionit.motivo.traslado</field>
-            <field name="model_id" ref="gestionit_pe_fe.model_gestionit_motivo_traslado"/>
-            <field name="perm_read">1</field>
-            <field name="perm_write">0</field>
-            <field name="perm_unlink">0</field>
-            <field name="perm_create">0</field>
-            <field name="group_id" ref="base.group_user"/>
-        </record>
+    <record model="ir.model.access" id="gestionit_pe_fe.access_model_gestionit_cert_sunat">
+        <field name="name">gestionit.access.model.gestionit.cert.sunat</field>
+        <field name="model_id" ref="gestionit_pe_fe.model_cert_sunat"/>
+        <field name="perm_read">1</field>
+        <field name="perm_write">1</field>
+        <field name="perm_unlink">1</field>
+        <field name="perm_create">1</field>
+        <field name="group_id" ref="base.group_user"/>
+    </record>
 
-        <record model="ir.model.access" id="gestionit_pe_fe.access_model_gestionit_cert_sunat">
-            <field name="name">gestionit.access.model.gestionit.cert.sunat</field>
-            <field name="model_id" ref="gestionit_pe_fe.model_cert_sunat"/>
-            <field name="perm_read">1</field>
-            <field name="perm_write">1</field>
-            <field name="perm_unlink">1</field>
-            <field name="perm_create">1</field>
-            <field name="group_id" ref="base.group_user"/>
-        </record>
-    </data>
+    <record id="cert_sunat_by_company" model="ir.rule">
+        <field name="name">Certificado digital Sunat multi-company</field>
+        <field name="model_id" ref="gestionit_pe_fe.model_cert_sunat"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">['|',('company_id','=',False),('company_id','child_of',[user.company_id.id])]</field>
+    </record>
 </odoo>
