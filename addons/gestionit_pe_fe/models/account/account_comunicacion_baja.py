@@ -32,7 +32,7 @@ class AccountComunicacionBaja(models.Model):
         result = []
         for record in self:
             issue_date = datetime.strptime(
-                str(self.issue_date), "%Y-%m-%d").strftime("%Y%m%d")
+                str(record.issue_date), "%Y-%m-%d").strftime("%Y%m%d")
             name = 'RA-' + issue_date + "-"+str(record.contador)
             result.append((record.id, name))
         return result

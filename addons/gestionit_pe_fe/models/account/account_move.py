@@ -69,52 +69,83 @@ condicion_domicilio_contribuyente = {
 class AccountMove(models.Model):
     _inherit = "account.move"
 
+
+    @api.model
+    def _get_default_warehouse_ids(self):
+        if self._context.get("default_type","entry") in ['out_invoice','in_invoice','out_refund','in_refund']:
+            user = self.env.user
+            allowed_company_ids = self._context.get("allowed_company_ids")
+            wh_ids = user.sudo().warehouse_ids.filtered(lambda r:r.company_id.id in allowed_company_ids)
+            if len(wh_ids) > 0:
+                return wh_ids.ids
+            else:
+                raise UserError("Para crear un comprobante de venta/compra su usuario debe estar asociado a un almacén de la compañia. Comuníquese con su administrador.")
+        return False
+
     warehouse_id = fields.Many2one("stock.warehouse")
-    warehouses_allowed_ids = fields.Many2many(
-        "stock.warehouse", string="Almacenes Permitidos", related="user_id.warehouse_ids")
-    journal_ids = fields.Many2many(
-        "account.journal", string="Series permitidas", related="warehouse_id.journal_ids")
+
+    warehouses_allowed_ids = fields.Many2many("stock.warehouse", string="Almacenes Permitidos",default=_get_default_warehouse_ids)
+    
+    
+    # def _get_warehouses_allowed(self):
+    #     return [id for wh in self.user_id.sudo().warehouse_ids.filtered(lambda r:r.company_id.id == self.user_id.company_id.id)]
+    
+
+    journal_ids = fields.Many2many("account.journal", string="Series permitidas", related="warehouse_id.journal_ids")
     
     journal_type = fields.Selection(selection=[("sale","Venta"),("purchase","compra")])
+
+    credit_note_ids = fields.One2many("account.move","reversed_entry_id")
+
+    credit_note_count = fields.Integer("Número de notas de crédito",compute='_compute_credit_count')
+
+    @api.depends('credit_note_ids')
+    def _compute_credit_count(self):
+        self.env.cr.execute("select count(*) from account_move where reversed_entry_id = {}".format(self.id))
+        result = self.env.cr.fetchall()
+        for inv in self:
+            inv.credit_note_count = result[0][0]
+
+    def action_view_credit_notes(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Notas de Crédito',
+            'res_model': 'account.move',
+            'view_mode': 'tree,form',
+            'domain': [('reversed_entry_id', '=', self.id)],
+        }
 
     @api.model
     def default_get(self, fields_list):
         res = super(AccountMove, self).default_get(fields_list)
         refund_id = self._context.get("default_refund_invoice_id", False)
         domain = []
-        array_journal = []
-        
 
-        user_id = res.get("invoice_user_id", False)
-        if user_id:
-            warehouse_ids = self.env["res.users"].browse(user_id).warehouse_ids
+        _logger.info(res)
+        user = self.env.user
+        allowed_company_ids = self._context.get("allowed_company_ids")
+        warehouse_ids = user.warehouse_ids.filtered(lambda r:r.company_id.id in allowed_company_ids)
 
-            if len(warehouse_ids) > 0:
-                for wh in warehouse_ids:
-                    for whj in wh.journal_ids:
-                        if whj.type == self._context.get("default_journal_type"):
-                            if whj.invoice_type_code_id == self._context.get("default_invoice_type_code"):
-                                res.update({
-                                    "warehouse_id": wh.id,
-                                    "journal_id": whj.id
-                                })
+        if len(warehouse_ids) > 0:
+            res.update({"warehouse_id": warehouse_ids[0].id})
+            journal_ids = warehouse_ids[0].journal_ids.filtered(lambda r:r.invoice_type_code_id == res.get("invoice_type_code") and r.type == res.get("journal_type"))
+            # _logger.info(warehouse_ids[0].journal_ids.mapped("invoice_type_code_id"))
+            # _logger.info(journal_ids)
+            if len(journal_ids) > 0:
+                res.update({"journal_id":journal_ids[0].id})
             else:
-                res.update({
-                    "warehouse_id": False,
-                    "journal_id": False
-                })
-                                # return res
+                res.update({"journal_id":False})
+        else:
+            res.update({
+                "warehouse_id": False,
+                "journal_id": False
+            })
+
         if refund_id:
             refund_obj = self.env["account.move"].browse(refund_id)
             domain += [['tipo_comprobante_a_rectificar',
                         'in', [refund_obj.invoice_type_code]]]
-
-        # domain += [['invoice_type_code_id', '=',
-        #             self._context.get("default_invoice_type_code")], ["type", "=", "sale"]]
-
-        # journal_id = self.env['account.journal'].search(domain, limit=1)
-
-        # res["journal_id"] = journal_id.id
 
         return res
 
