@@ -21,10 +21,10 @@ class Users(models.Model):
     
     
     def write(self, values):
-        _logger.info(values)
-        company_ids = values.get("company_ids",False)
-        if company_ids:
-            warehouse_ids = self.env["stock.warehouse"].search([("company_id","in",company_ids[0][2])]).ids
+        # _logger.info(values)
+        company_ids = values.get("company_ids",[])
+        if len(company_ids) > 0:
+            warehouse_ids = self.env["stock.warehouse"].search([("company_id","in",company_ids[0])]).ids
             values["warehouse_ids"] = [(6,0,warehouse_ids)]
         return super(Users, self).write(values)
         
