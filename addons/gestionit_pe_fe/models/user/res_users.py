@@ -21,7 +21,7 @@ class Users(models.Model):
     
     
     def write(self, values):
-        _logger.info(values)
+        # _logger.info(values)
         company_ids = values.get("company_ids",[])
         if len(company_ids) > 0:
             warehouse_ids = self.env["stock.warehouse"].search([("company_id","in",company_ids[0])]).ids
