@@ -8,7 +8,7 @@ class ResCompany(models.Model):
     sunat_user = fields.Char("USUARIO SOL")
     sunat_pass = fields.Char("CLAVE SOL")
     tipo_envio = fields.Selection(selection=[(
-        "0", "0 - Pruebas"), ("1", "1 - Producción")], default=0)
+        "0", "0 - Pruebas"), ("1", "1 - Producción")], default="0")
 
     cert_id = fields.Many2one(
         "cert.sunat", string="Certificados digitales")

@@ -8,7 +8,7 @@
                 <xpath expr="//field[@name='code']" position="after">
                     <field name="journal_ids" widget="many2many_tags" 
                             options="{'no_create': True, 'no_open': True}" 
-                            domain="[('type','in',['sale','purchase']),('invoice_type_code_id','in',['01','03','07'])]"/>
+                            domain="[('company_id','=',company_id),('type','in',['sale','purchase']),('invoice_type_code_id','in',['01','03','07','08'])]"/>
                 </xpath>
             </field>
         </record>

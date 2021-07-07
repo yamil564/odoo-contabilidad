@@ -43,10 +43,14 @@
                 <xpath expr="//field[@name='journal_id']" position="replace">
                     <field name="tipo_operacion" string="Tipo de Operación" attrs="{'readonly':[['state','not in',['draft']]]}" widget="radio" />
                     <field name="journal_id" string="Serie" options="{'no_create': True,'no_open':True}" />
-                    <field name="documento_baja_id" />
-                    <field name="documento_baja_state" />
+                    <field name="documento_baja_id" readonly="1" attrs="{'invisible':[('documento_baja_id','=',False)]}"/>
+                    <field name="documento_baja_state" readonly="1" attrs="{'invisible':[('documento_baja_id','=',False)]}"/>
                 </xpath>
                 <xpath expr="//header" position="after">
+                    <!-- <div  class="alert alert-danger" role="alert" style="margin-bottom:0px;" attrs="{'invisible': [('warehouses_allowed_ids','=',False)]}">
+                        <bold>Este usuario no tiene almacénes permitidos, comuníquese con su administrador para que le brinde acceso.</bold>
+                    </div> -->
+
                     <!--Estados cuando el documento esta de Baja-->
                     <!-- <field name="estado_emision" invisible="1"/> -->
                     <!-- <div class="alert alert-danger" role="alert" style="margin-bottom:0px;" attrs="{'invisible': [('estado_emision','!=','R')]}">
@@ -112,7 +116,7 @@
             <field name="inherit_id" ref="account.view_move_form"/>
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='journal_id']" position="before">
-                    <field name="warehouses_allowed_ids" widget="many2many_tags" groups="base.group_no_one"/>
+                    <field name="warehouses_allowed_ids" widget="many2many_tags" groups="base.group_no_one" domain="[('company_id','=',company_id)]" readonly="1" force_save="1"/>
                     <field name="warehouse_id" domain="[('id','in',warehouses_allowed_ids)]" string="Almacén" options="{'no_create': True, 'no_create_edit':True, 'no_open': True}"/>
                     <field name="journal_ids" widget="many2many_tags" string="Series Permitidas" groups="base.group_no_one"/>
                     <field name="journal_type" invisible="1"/>
@@ -131,6 +135,7 @@
                 <xpath expr="//field[@name='amount_untaxed']" position="replace">
                     <field name="descuento_global" string="Descuento Global (%)"/>
                     <field name="total_venta_gravado" string="Monto Gravado"/>
+                    <field name="amount_tax"/>
                     <field name="amount_igv"/>
                     <field name="total_venta_inafecto" string="Monto Inafecto"/>
                     <field name="total_venta_exonerada" string="Monto Exonerado"/>
@@ -139,7 +144,15 @@
                     <field name="total_descuentos" string="Total de Descuentos"/>
                 </xpath>
                 <xpath expr="//field[@name='amount_by_group']" position="replace">
-        </xpath>
+                </xpath>
+                <div class="oe_button_box" position="inside">
+                    <button type="object" class="oe_stat_button" name="action_view_credit_notes" icon="fa-minus" attrs="{'invisible': [('credit_note_count', '=', 0)]}">
+                        <div class="o_field_widget o_stat_info">
+                            <span class="o_stat_value"><field name="credit_note_count"/></span>
+                            <span class="o_stat_text">Notas de Crédito</span>
+                        </div>
+                    </button>
+                </div>
             </field>
         </record>
         <record model="ir.ui.view" id="gestionit_pe_fe.view_account_invoice_form_json_page">

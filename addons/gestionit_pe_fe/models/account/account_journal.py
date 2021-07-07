@@ -4,11 +4,13 @@ from odoo.exceptions import UserError,ValidationError
 from odoo.addons.gestionit_pe_fe.models.parameters.catalogs import tdc
 import re
 import logging
+import ast
+import json
 _logger = logging.getLogger(__name__)
 
 class AccountJournal(models.Model):
     _inherit = "account.journal"
-    tipo_envio = fields.Selection(selection=[("0","0 - Pruebas"),("1","1 - Producción")])
+    tipo_envio = fields.Selection(selection=[("0","0 - Pruebas"),("1","1 - Producción")],default="0")
     send_async = fields.Boolean("Envío asíncrono",default=False)
     electronic_invoice = fields.Boolean("Documento de emisión electrónica",default=False)
 
@@ -31,11 +33,11 @@ class AccountJournal(models.Model):
     @api.constrains("code")
     def constrains_code(self):
         for record in self:
-            if record.electronic_invoice:
+            if record.electronic_invoice and record.type == "sale":
                 if record.code and record.invoice_type_code_id in ["07","08"]:
                     if re.match("^B\w{3}$", record.code) and record.tipo_comprobante_a_rectificar == "03":
                         return 
-                    if re.match("^F\w{3}$", record.code) and record.tipo_comprobante_a_rectificar == "01" :
+                    if re.match("^F\w{3}$", record.code) and record.tipo_comprobante_a_rectificar == "01":
                         return 
                     raise ValidationError("Error: El campo 'Serie' o 'Comprobante a rectificar' son incorrectos.")
                 

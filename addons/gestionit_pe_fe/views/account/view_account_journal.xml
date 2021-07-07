@@ -52,6 +52,7 @@
                 <field name="sequence_number_next" string="Siguiente número"/>
                 <field name="tipo_envio" string="Tipo de envío"/>
                 <field name="send_async" string="Envío asíncrono"/>
+                <field name="company_id" groups="base.group_multi_company"/>
             </tree>
         </field>
     </record>
