@@ -26,8 +26,8 @@ class AccountJournal(models.Model):
     @api.onchange("invoice_type_code_id","tipo_envio","code")
     def onchange_name(self):
         name = ""
-        d = {"01":"Factura de venta","03":"Boleta de venta","07":"Nota de crédito","08":"Nota de débito"}
-        if self.invoice_type_code_id in ["01","03","07","08"]:
+        d = {"01":"Factura de venta","03":"Boleta de venta","07":"Nota de crédito","08":"Nota de débito","09":"Guía de Remisión"}
+        if self.invoice_type_code_id in ["01","03","07","08","09"]:
             self.name = "{} {}{}".format(d[self.invoice_type_code_id],self.code or "*"," [test]" if self.tipo_envio == "0" else "")
         
     @api.constrains("code")
@@ -56,6 +56,17 @@ class AccountJournal(models.Model):
         res = super(AccountJournal, self).default_get(fields)
         res.update({"refund_sequence":False})
         return res
+    
+    
+    @api.model
+    def create(self, values):
+        result = super(AccountJournal, self).create(values)
+        code = values.get("code",False)
+        if code:
+            values["code"] = values.get("code").upper()
+
+        return result
+    
 
     # @api.model
     # def create(self, vals):

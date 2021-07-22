@@ -14,9 +14,10 @@ class Users(models.Model):
     
     @api.model
     def create(self, values):
-        company_ids = values.get("company_ids")
-        warehouse_ids = self.env["stock.warehouse"].search([("company_id","in",company_ids[0][2])]).ids
-        values["warehouse_ids"] = [(6,0,warehouse_ids)]
+        company_ids = values.get("company_ids",[])
+        if len(company_ids) > 0:
+            warehouse_ids = self.env["stock.warehouse"].search([("company_id","in",company_ids[0][2])]).ids
+            values["warehouse_ids"] = [(6,0,warehouse_ids)]
         return super(Users, self).create(values)
     
     
@@ -24,7 +25,7 @@ class Users(models.Model):
         # _logger.info(values)
         company_ids = values.get("company_ids",[])
         if len(company_ids) > 0:
-            warehouse_ids = self.env["stock.warehouse"].search([("company_id","in",company_ids[0])]).ids
+            warehouse_ids = self.env["stock.warehouse"].search([("company_id","in",company_ids[0][2])]).ids
             values["warehouse_ids"] = [(6,0,warehouse_ids)]
         return super(Users, self).write(values)
         

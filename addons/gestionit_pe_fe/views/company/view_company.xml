@@ -33,6 +33,10 @@
                     <field name="website_invoice_search"/>
                 </xpath>
                 
+                <xpath expr="//field[@name='vat']" position="after">
+                    <field name="default_national_bank_account_id"/>
+                </xpath>
+                
             </field>
         </record>
     </data>

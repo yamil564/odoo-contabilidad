@@ -4,8 +4,8 @@ from odoo.exceptions import UserError, AccessError
 from odoo import fields, models, api, _
 
 
-class resPartner(models.Model):
-    _inherit = "res.partner"
+# class resPartner(models.Model):
+#     _inherit = "res.partner"
 
-    def write():
-        return super(resPartner, self).write(values)
+#     def write():
+#         return super(resPartner, self).write(values)

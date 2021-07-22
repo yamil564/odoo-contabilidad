@@ -9,3 +9,4 @@ from . import stock
 from . import guia_remision
 from . import number_to_letter
 from . import report_invoice
+from . import partner
