@@ -79,7 +79,7 @@ class MercadoPagoController(http.Controller):
 
         return res
 
-    @http.route('/payment/mercadopago_pe/ipn/', type='http', auth='none')
+    @http.route('/payment/mercadopago_pe/ipn/', type='json', auth='none',methods=['POST','GET'])
     def mercadopago_pe_ipn(self):
         """ MercadoPago IPN. """
         # recibimo algo como http://www.yoursite.com/notifications?topic=payment&id=identificador-de-la-operación

@@ -14,6 +14,8 @@ class ResCompany(models.Model):
         "cert.sunat", string="Certificados digitales")
 
     website_invoice_search = fields.Char("Web de consulta de comprobante")
+    default_national_bank_account_id = fields.Many2one("res.partner.bank",string="Cuenta de detracciones del Banco de la Nación",domain=[("is_national_bank_detraction","=",True)])
+
     # validez_comprobantes_client_id = fields.Char("Cliente Id")
     # validez_comprobantes_client_secret = fields.Char("Cliente Secret")
     # url_consulta_comprobante = fields.Char("Consulta Comprobante URL")

@@ -1,0 +1,75 @@
+<odoo>
+    <!-- <record id="catalog_54_{}" model="sunat.catalog.54"><field name="name">{}</field><field name="code">{}</field><field name="rate">{}</field></record> -->
+    <record id="catalog_54_001" model="sunat.catalog.54"><field name="code">001</field><field name="name">Azúcar y melaza de caña</field><field name="rate" eval="10"/></record>
+    <record id="catalog_54_002" model="sunat.catalog.54"><field name="code">002</field><field name="name">Arroz</field><field name="rate" eval="0"/></record>
+    <record id="catalog_54_003" model="sunat.catalog.54"><field name="code">003</field><field name="name">Alcohol etílico</field><field name="rate" eval="10"/></record>
+    <record id="catalog_54_004" model="sunat.catalog.54"><field name="code">004</field><field name="name">Recursos hidrobiológicos</field><field name="rate" eval="4"/></record>
+    <record id="catalog_54_005" model="sunat.catalog.54"><field name="code">005</field><field name="name">Maíz amarillo duro</field><field name="rate" eval="4"/></record>
+    <record id="catalog_54_007" model="sunat.catalog.54"><field name="code">007</field><field name="name">Caña de azúcar</field><field name="rate" eval="10"/></record>
+    <record id="catalog_54_008" model="sunat.catalog.54"><field name="code">008</field><field name="name">Madera</field><field name="rate" eval="4"/></record>
+    <record id="catalog_54_009" model="sunat.catalog.54"><field name="code">009</field><field name="name">Arena y piedra.</field><field name="rate" eval="10"/></record>
+    <record id="catalog_54_010" model="sunat.catalog.54"><field name="code">010</field><field name="name">Residuos, subproductos, desechos, recortes y desperdicios</field><field name="rate" eval="15"/></record>
+    <record id="catalog_54_011" model="sunat.catalog.54"><field name="code">011</field><field name="name">Bienes gravados con el IGV, o renuncia a la exoneración</field><field name="rate" eval="0"/></record>
+    <record id="catalog_54_012" model="sunat.catalog.54"><field name="code">012</field><field name="name">Intermediación laboral y tercerización</field><field name="rate" eval="10"/></record>
+    <record id="catalog_54_013" model="sunat.catalog.54"><field name="code">013</field><field name="name">Animales vivos</field><field name="rate" eval="0"/></record>
+    <record id="catalog_54_014" model="sunat.catalog.54"><field name="code">014</field><field name="name">Carnes y despojos comestibles</field><field name="rate" eval="4"/></record>
+    <record id="catalog_54_015" model="sunat.catalog.54"><field name="code">015</field><field name="name">Abonos, cueros y pieles de origen animal</field><field name="rate" eval="0"/></record>
+    <record id="catalog_54_016" model="sunat.catalog.54"><field name="code">016</field><field name="name">Aceite de pescado</field><field name="rate" eval="0"/></record>
+    <record id="catalog_54_017" model="sunat.catalog.54"><field name="code">017</field><field name="name">Harina, polvo y “pellets” de pescado, crustáceos, moluscos y demás invertebrados acuáticos</field><field name="rate" eval="4"/></record>
+    <record id="catalog_54_019" model="sunat.catalog.54"><field name="code">019</field><field name="name">Arrendamiento de bienes muebles</field><field name="rate" eval="10"/></record>
+    <record id="catalog_54_020" model="sunat.catalog.54"><field name="code">020</field><field name="name">Mantenimiento y reparación de bienes muebles</field><field name="rate" eval="10"/></record>
+    <record id="catalog_54_021" model="sunat.catalog.54"><field name="code">021</field><field name="name">Movimiento de carga</field><field name="rate" eval="10"/></record>
+    <record id="catalog_54_022" model="sunat.catalog.54"><field name="code">022</field><field name="name">Otros servicios empresariales</field><field name="rate" eval="10"/></record>
+    <record id="catalog_54_024" model="sunat.catalog.54"><field name="code">024</field><field name="name">Comisión mercantil</field><field name="rate" eval="10"/></record>
+    <record id="catalog_54_025" model="sunat.catalog.54"><field name="code">025</field><field name="name">Fabricación de bienes por encargo</field><field name="rate" eval="10"/></record>
+    <record id="catalog_54_026" model="sunat.catalog.54"><field name="code">026</field><field name="name">Servicio de transporte de personas</field><field name="rate" eval="10"/></record>
+    <record id="catalog_54_027" model="sunat.catalog.54"><field name="code">027</field><field name="name">Servicio de transporte de carga</field><field name="rate" eval="4"/></record>
+    <record id="catalog_54_028" model="sunat.catalog.54"><field name="code">028</field><field name="name">Transporte de pasajeros</field><field name="rate" eval="0"/></record>
+    <record id="catalog_54_030" model="sunat.catalog.54"><field name="code">030</field><field name="name">Contratos de construcción</field><field name="rate" eval="4"/></record>
+    <record id="catalog_54_031" model="sunat.catalog.54"><field name="code">031</field><field name="name">Oro gravado con el IGV</field><field name="rate" eval="10"/></record>
+    <record id="catalog_54_034" model="sunat.catalog.54"><field name="code">034</field><field name="name">Minerales metálicos no auríferos</field><field name="rate" eval="10"/></record>
+    <record id="catalog_54_035" model="sunat.catalog.54"><field name="code">035</field><field name="name">Bienes exonerados del IGV</field><field name="rate" eval="1.5"/></record>
+    <record id="catalog_54_036" model="sunat.catalog.54"><field name="code">036</field><field name="name">Oro y demás minerales metálicos exonerados del IGV</field><field name="rate" eval="1.5"/></record>
+    <record id="catalog_54_037" model="sunat.catalog.54"><field name="code">037</field><field name="name">Demás servicios gravados con el IGV</field><field name="rate" eval="10"/></record>
+    <record id="catalog_54_039" model="sunat.catalog.54"><field name="code">039</field><field name="name">Minerales no metálicos</field><field name="rate" eval="10"/></record>
+    <record id="catalog_54_040" model="sunat.catalog.54"><field name="code">040</field><field name="name">Bien inmueble gravado con IGV</field><field name="rate" eval="4"/></record>
+
+</odoo>
+<!-- 
+lines = [['001','Azúcar y melaza de caña','10'],
+['002','Arroz',''],
+['003','Alcohol etílico','10'],
+['004','Recursos hidrobiológicos','4'],
+['005','Maíz amarillo duro','4'],
+['007','Caña de azúcar','10'],
+['008','Madera','4'],
+['009','Arena y piedra.','10'],
+['010','Residuos, subproductos, desechos, recortes y desperdicios','15'],
+['011','Bienes gravados con el IGV, o renuncia a la exoneración',''],
+['012','Intermediación laboral y tercerización','10'],
+['013','Animales vivos',''],
+['014','Carnes y despojos comestibles','4'],
+['015','Abonos, cueros y pieles de origen animal',''],
+['016','Aceite de pescado',''],
+['017','Harina, polvo y “pellets” de pescado, crustáceos, moluscos y demás invertebrados acuáticos','4'],
+['019','Arrendamiento de bienes muebles','10'],
+['020','Mantenimiento y reparación de bienes muebles','10'],
+['021','Movimiento de carga','10'],
+['022','Otros servicios empresariales','10'],
+['024','Comisión mercantil','10'],
+['025','Fabricación de bienes por encargo','10'],
+['026','Servicio de transporte de personas','10'],
+['027','Servicio de transporte de carga','4'],
+['028','Transporte de pasajeros',''],
+['030','Contratos de construcción','4'],
+['031','Oro gravado con el IGV','10'],
+['034','Minerales metálicos no auríferos','10'],
+['035','Bienes exonerados del IGV','1.5'],
+['036','Oro y demás minerales metálicos exonerados del IGV','1.5'],
+['037','Demás servicios gravados con el IGV','10'],
+['039','Minerales no metálicos','10'],
+['040','Bien inmueble gravado con IGV','4']]
+
+
+for l in lines:
+    print('<record id="catalog_54_{}" model="sunat.catalog.54"><field name="code">{}</field><field name="name">{}</field><field name="rate" eval="{}"/></record>'.format(l[0],l[0],l[1],l[2] if l[2] else 0)) -->

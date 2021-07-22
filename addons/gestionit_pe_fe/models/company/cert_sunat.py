@@ -15,7 +15,7 @@ class CertSunat(models.Model):
     def name_get(self):
         result = []
         for cert in self:
-            name = "Certificado Digital Emisión:{} - Exp:{}".format(self.issue_date,self.expiration_date) 
+            name = "Certificado Digital Emisión:{} - Exp:{}".format(cert.issue_date,cert.expiration_date) 
             result.append((cert.id,name))
             
         return result

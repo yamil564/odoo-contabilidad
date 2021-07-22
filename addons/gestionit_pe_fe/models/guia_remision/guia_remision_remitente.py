@@ -552,11 +552,12 @@ class GuiaRemision(models.Model):
                 guia_remision_lines = list(guia_remision_lines_temp.values())
                 record.guia_remision_line_ids = guia_remision_lines
 
+    @api.depends("guia_remision_line_ids")
     def _compute_peso_bruto(self):
         peso_total = 0
         # for record in self:
         for line in self.guia_remision_line_ids:
-            peso_total += line.product_id.weight
+            peso_total += line.product_id.weight*line.qty
         self.peso_bruto_total = peso_total
 
         # ENVÍO

@@ -69,7 +69,6 @@ condicion_domicilio_contribuyente = {
 class AccountMove(models.Model):
     _inherit = "account.move"
 
-
     @api.model
     def _get_default_warehouse_ids(self):
         if self._context.get("default_type","entry") in ['out_invoice','in_invoice','out_refund','in_refund']:
@@ -86,11 +85,6 @@ class AccountMove(models.Model):
 
     warehouses_allowed_ids = fields.Many2many("stock.warehouse", string="Almacenes Permitidos",default=_get_default_warehouse_ids)
     
-    
-    # def _get_warehouses_allowed(self):
-    #     return [id for wh in self.user_id.sudo().warehouse_ids.filtered(lambda r:r.company_id.id == self.user_id.company_id.id)]
-    
-
     journal_ids = fields.Many2many("account.journal", string="Series permitidas", related="warehouse_id.journal_ids")
     
     journal_type = fields.Selection(selection=[("sale","Venta"),("purchase","compra")])
@@ -256,13 +250,32 @@ class AccountMove(models.Model):
                 record.anulacion_comprobante = record.resumen_anulacion_state
             else:
                 record.anulacion_comprobante = "-"
-    # partner_id = fields.Many2one(
-    #     'res.partner',
-    #     string='Partner',
-    #     change_default=True,
-    #     readonly=True,
-    #     states={'draft': [('readonly', False)]},
-    #     track_visibility='always')
+    
+    @api.depends("amount_total")
+    def _compute_amount_detraction(self):
+        for record in self:
+            record.detraction_amount = round(record.amount_total*record.detraction_rate/100,2)
+
+    has_detraction = fields.Boolean("Detracción?")
+    type_detraction = fields.Many2one("sunat.catalog.54",string="Tipo de detracción")
+    account_journal_national_bank = fields.Many2one("res.partner.bank",domain=[("is_national_bank_detraction","=",True)],default=lambda self:self.env.company.default_national_bank_account_id.id)
+
+    detraction_rate = fields.Float("Tasa %",default=0)
+    detraction_code = fields.Char("Código")
+    bank_account_number_national = fields.Char("Banco de la nación")
+    detraction_amount = fields.Float("Monto de Detracción",compute="_compute_amount_detraction",store=True)
+
+    @api.onchange("type_detraction")
+    def change_type_detraction(self):
+        for record in self:
+            record.detraction_rate = record.type_detraction.rate
+            record.detraction_code = record.type_detraction.code
+    
+    @api.onchange("account_journal_national_bank")
+    def change_account_journal_national_bank(self):
+        for record in self:
+            record.bank_account_number_national = record.account_journal_national_bank.acc_number
+
 
     json_comprobante = fields.Text(string="JSON Comprobante", copy=False)
     json_respuesta = fields.Text(string="JSON Respuesta", copy=False)
