@@ -10,7 +10,7 @@ class CertSunat(models.Model):
     expiration_date = fields.Date(string='Fecha de expiración',required=True)
     issue_date = fields.Date(string='Fecha de emisión',required=True)
     active = fields.Boolean(string="Activo", default=True)
-    company_id = fields.Many2one("res.company",default=lambda self:self.env.user.company_id.id)
+    company_id = fields.Many2one("res.company",default=lambda self:self.env.company.id)
 
     def name_get(self):
         result = []

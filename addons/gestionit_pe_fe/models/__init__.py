@@ -2,6 +2,7 @@ from . import product
 from . import parameters
 from . import purchase
 from . import sale_order
+from . import partner
 from . import account
 from . import company
 from . import user
@@ -9,4 +10,3 @@ from . import stock
 from . import guia_remision
 from . import number_to_letter
 from . import report_invoice
-from . import partner

@@ -111,7 +111,7 @@
         <field name="name">Certificado digital Sunat multi-company</field>
         <field name="model_id" ref="gestionit_pe_fe.model_cert_sunat"/>
         <field name="global" eval="True"/>
-        <field name="domain_force">['|',('company_id','=',False),('company_id','child_of',[user.company_id.id])]</field>
+        <field name="domain_force">['|',('company_id','=',False),('company_id','in',company_ids)]</field>
     </record>
 
     <!-- Permisos de Facturación Electrónica -->

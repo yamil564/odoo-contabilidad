@@ -40,14 +40,14 @@
                             attrs="{'invisible': [('invoice_type_code','!=','03')]}" />
                     <field name="estado_emision" readonly="1" force_save="1"/>
                     <!-- Detracciones -->
-                    <field name="has_detraction" groups="gestionit_pe_fe.group_fe_detraction_user"/>
-                    <field name="type_detraction" options="{'no_open':True,'no_create':True,'no_quick_create':True}" groups="gestionit_pe_fe.group_fe_detraction_user" attrs="{'required':[('has_detraction','=',True)],'invisible':[('has_detraction','=',False)]}"/>
-                    <field name="detraction_rate" groups="gestionit_pe_fe.group_fe_detraction_user" attrs="{'required':[('has_detraction','=',True)],'invisible':[('has_detraction','=',False)]}"/>
-                    <field name="detraction_code" groups="gestionit_pe_fe.group_fe_detraction_user" attrs="{'required':[('has_detraction','=',True)],'invisible':[('has_detraction','=',False)]}"/>
+                    <field name="has_detraction" groups="gestionit_pe_fe.group_fe_detraction_user" attrs="{'readonly':[['state','not in',['draft']]]}"/>
+                    <field name="type_detraction" options="{'no_open':True,'no_create':True,'no_quick_create':True}" groups="gestionit_pe_fe.group_fe_detraction_user" attrs="{'required':[('has_detraction','=',True)],'invisible':[('has_detraction','=',False)],'readonly':[['state','not in',['draft']]]}" />
+                    <field name="detraction_rate" groups="gestionit_pe_fe.group_fe_detraction_user" attrs="{'required':[('has_detraction','=',True)],'invisible':[('has_detraction','=',False)],'readonly':[['state','not in',['draft']]]}"/>
+                    <field name="detraction_code" groups="gestionit_pe_fe.group_fe_detraction_user" attrs="{'required':[('has_detraction','=',True)],'invisible':[('has_detraction','=',False)],'readonly':[['state','not in',['draft']]]}"/>
 
-                    <field name="account_journal_national_bank" options="{'no_open':True,'no_create':True,'no_quick_create':True}" string="Número de cuenta del Banco de la Nación" groups="gestionit_pe_fe.group_fe_detraction_user" attrs="{'required':[('has_detraction','=',True)],'invisible':[('has_detraction','=',False)]}"/>
-                    <field name="bank_account_number_national" groups="gestionit_pe_fe.group_fe_detraction_user" attrs="{'required':[('has_detraction','=',True)],'invisible':[('has_detraction','=',False)]}"/>
-                    <field name="detraction_amount" groups="gestionit_pe_fe.group_fe_detraction_user" attrs="{'required':[('has_detraction','=',True)],'invisible':[('has_detraction','=',False)]}"/>
+                    <field name="account_journal_national_bank" options="{'no_open':True,'no_create':True,'no_quick_create':True}" string="Número de cuenta del Banco de la Nación" groups="gestionit_pe_fe.group_fe_detraction_user" attrs="{'required':[('has_detraction','=',True)],'invisible':[('has_detraction','=',False)],'readonly':[['state','not in',['draft']]]}"/>
+                    <field name="bank_account_number_national" groups="gestionit_pe_fe.group_fe_detraction_user" attrs="{'required':[('has_detraction','=',True)],'readonly':[['state','not in',['draft']]]}" invisible="1"/>
+                    <field name="detraction_amount" groups="gestionit_pe_fe.group_fe_detraction_user" attrs="{'required':[('has_detraction','=',True)],'invisible':[('has_detraction','=',False)],'readonly':[['state','not in',['draft']]]}"/>
                 </xpath>
                 <xpath expr="//field[@name='journal_id']" position="replace">
                     <field name="tipo_operacion" string="Tipo de Operación" attrs="{'readonly':[['state','not in',['draft']]]}" widget="radio" />
@@ -126,7 +126,7 @@
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='journal_id']" position="before">
                     <field name="warehouses_allowed_ids" widget="many2many_tags" groups="base.group_no_one" domain="[('company_id','=',company_id)]" readonly="1" force_save="1"/>
-                    <field name="warehouse_id" domain="[('id','in',warehouses_allowed_ids)]" string="Almacén" options="{'no_create': True, 'no_create_edit':True, 'no_open': True}"/>
+                    <field name="warehouse_id" domain="[('id','in',warehouses_allowed_ids)]" string="Almacén" options="{'no_create': True, 'no_create_edit':True, 'no_open': True}" attrs="{'readonly':[['state','not in',['draft']]]}"/>
                     <field name="journal_ids" widget="many2many_tags" string="Series Permitidas" groups="base.group_no_one"/>
                     <field name="journal_type" invisible="1"/>
                 </xpath>

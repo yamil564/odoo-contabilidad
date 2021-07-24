@@ -16,12 +16,15 @@
                     <field name="commercial_partner_id" invisible="1"/>
                     <field name="ref" invisible="1"/>
                     <field name="name" invisible="1"/>
+                    <field name="reversed_entry_id" string="Comp. Ref."/>
+                    <field name="debit_origin_id" string="Comp. Ref."/>
                     <field name="journal_id" invisible="1"/>
                     <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/>
                     <field name="user_id"/>
                     <field name="invoice_date_due"/>
                     <field name="invoice_origin"/>
                     <field name="amount_total_signed" string="Total" />
+                    <field name="detraction_amount" string="Detracción" groups="gestionit_pe_fe.group_fe_detraction_user"/>
                     <field name="amount_residual_signed" string="Amount Due" />
                     <field name="currency_id" invisible="1"/>
                     <field name="company_currency_id" invisible="1"/>
