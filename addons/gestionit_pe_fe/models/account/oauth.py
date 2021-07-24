@@ -400,7 +400,13 @@ def crear_json_fac_bol(self):
             "mntTotalOtrosCargos": 0.0,
             # "mntTotalAnticipos" : 0.0, #solo factura y boleta
             "tipoFormatoRepresentacionImpresa": "GENERAL",
-            # "mntTotalLetras": to_word(round(self.amount_total, 2), self.currency_id.name)
+            # "mntTotalLetras": to_word(round(self.amount_total, 2), self.currency_id.name),
+        },
+        "detraccion":{
+            "tasa":self.detraction_rate,
+            "codigo":self.detraction_code,
+            "monto":self.detraction_amount,
+            "numero_cuenta_banco_nacion":self.bank_account_number_national,
         },
         "descuento": {
             "mntDescuentoGlobal": round(self.total_descuento_global, 2),

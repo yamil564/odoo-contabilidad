@@ -16,9 +16,8 @@
                     <field name="partner_id" groups="base.group_user" string="Cliente"/>
                     
                     <field name="name" string="Número"/>
-                    <!-- <field name="reversed_entry_id" string="Comprobante"/>
-                    <field name="debit_origin_id" string="Nota de Débito"/> -->
-                    <!-- <field name="refund_invoice_id" string="Comprobante a rectificar"/> -->
+                    <field name="reversed_entry_id" string="Comp. Ref."/>
+                    <field name="debit_origin_id" string="Comp. Ref."/>
                     <field name="commercial_partner_id" invisible="1" />
                     <field name="ref" invisible="1"/>
                     <!-- <field name="name" invisible="1"/> -->
@@ -29,6 +28,7 @@
                     <field name="invoice_date_due" string="F.Venc"/>
                     <!-- <field name="origin" string="Origen"/> -->
                     <field name="amount_total_signed" string="Total" sum="Total"/>
+                    <field name="detraction_amount" string="Detracción"/>
                     <!-- <field name="residual_signed" string="Monto adeudado" sum="Amount Due"/> -->
                     <field name="currency_id" invisible="1" string="Moneda"/>
                     <field name="company_currency_id" invisible="1"/>

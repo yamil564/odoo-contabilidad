@@ -22,9 +22,15 @@ class Users(models.Model):
     
     
     def write(self, values):
-        # _logger.info(values)
+        _logger.info(self._context)
         company_ids = values.get("company_ids",[])
+        if self._context.get("params",False):
+            if self._context["params"].get("model",False) != "res.users":
+                return super(Users, self).write(values)
+
+
         if len(company_ids) > 0:
+            _logger.info(company_ids)
             warehouse_ids = self.env["stock.warehouse"].search([("company_id","in",company_ids[0][2])]).ids
             values["warehouse_ids"] = [(6,0,warehouse_ids)]
         return super(Users, self).write(values)
