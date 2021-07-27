@@ -1,23 +1,6 @@
 <odoo>
 
     <!-- Detracciones -->
-    <record id="view_form_catalog_54" model="ir.ui.view">
-        <field name="name">view.form.catalog.54</field>
-        <field name="model">sunat.catalog.54</field>
-        <field name="arch" type="xml">
-            <form>
-                <sheet>
-                    <group>
-                        <field name="name"/>
-                        <field name="code"/>
-                        <field name="rate"/>
-                        <field name="active"/>
-                    </group>
-                </sheet>
-            </form>
-        </field>
-    </record>
-
     <record id="view_tree_catalog_54" model="ir.ui.view">
         <field name="name">view.tree.catalog.54</field>
         <field name="model">sunat.catalog.54</field>
@@ -38,6 +21,27 @@
         <field name="domain">['|',('active','=',True),('active','=',False)]</field>
     </record>
 
+    <!-- Códigos de descuentos, cargos y otras deducciones -->
+    <record id="view_tree_catalog_53" model="ir.ui.view">
+        <field name="name">view.tree.catalog.53</field>
+        <field name="model">sunat.catalog.53</field>
+        <field name="arch" type="xml">
+            <tree editable="top" decoration-muted="active==False">
+                <field name="name"/>
+                <field name="code"/>
+                <field name="active"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_view_catalog_53" model="ir.actions.act_window">
+        <field name="name">Catg 53 - Detracciones</field>
+        <field name="res_model">sunat.catalog.53</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">['|',('active','=',True),('active','=',False)]</field>
+    </record>
+
+    <!-- Menús -->
     <menuitem id="menu_sunat_catalogs"
                 name="Catálogos de Sunat"
                 string="Catálogos de Sunat"
@@ -49,4 +53,10 @@
                 string="Catg 54 - Detracciones"
                 parent="gestionit_pe_fe.menu_sunat_catalogs"
                 action="action_view_catalog_54"/>
+
+    <menuitem id="menu_sunat_catalog_53"
+                name="Catg 53 - Descuentos,Cargos y Deducciones"
+                string="Catg 53 - Descuentos,Cargos y Deducciones"
+                parent="gestionit_pe_fe.menu_sunat_catalogs"
+                action="action_view_catalog_53"/>
 </odoo>

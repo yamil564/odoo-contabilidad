@@ -22,8 +22,10 @@
     # "create_invoice_from_sale"
     "category": "invoicing",
     "data": [
+        'security/res_groups.xml',
         'views/account/menu.xml',
         'views/product/view_product_uom.xml',
+        'views/product/view_product_product.xml',
         'views/sale_order/view_sale_order.xml',
         'views/catalogs/sunat_catalogs.xml',
         'views/account/view_account_journal.xml',
@@ -51,6 +53,7 @@
         'views/company/view_company.xml',
         'views/reportes/external_layout_background_gestionit.xml',
         'views/reportes/report_invoice_document.xml',
+        'views/res_config_settings.xml',
         'reports/report_guia_remision.xml',
         'reports/report.xml',
         'reports/report_saleorder_document.xml',
@@ -65,7 +68,6 @@
         'data/res_company.xml',
         'data/identification_type.xml',
         'data/catalogs.xml',
-        'security/res_groups.xml',
         'cron/account_move_cron.xml',
         'cron/account_summary_cron.xml',
         'cron/comunicacion_baja_cron.xml',

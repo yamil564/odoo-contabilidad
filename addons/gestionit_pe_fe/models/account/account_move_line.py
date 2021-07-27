@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from odoo import fields, models, api
 from odoo.tools.profiler import profile
-
 import logging
 log = logging.getLogger(__name__)
 
@@ -14,8 +13,11 @@ class AccountMoveLine(models.Model):
     tipo_afectacion_igv_code = fields.Char("Tipo Afectación IGV - Código")
     tipo_afectacion_igv_name = fields.Char("Tipo Afectación IGV - Nombre")
     no_onerosa = fields.Boolean("No onerosa", compute="_compute_price")
-    price_subtotal2 = fields.Float("Precio Total", compute="_compute_price")
+    # price_subtotal2 = fields.Float("Precio Total", compute="_compute_price")
     descuento_unitario = fields.Float("Descuento Unitario")
+    
+    is_charge_or_discount = fields.Boolean(string="Es Cargo/Descuento/Deducción?")
+    type_charge_or_discount_code = fields.Char("Código de cargo, descuento u otra deducción")
 
     @api.onchange('discount')
     def _onchange_discount(self):
@@ -60,11 +62,24 @@ class AccountMoveLine(models.Model):
             #     )).compute(price_subtotal_signed, line.move_id.company_id.currency_id)
             sign = line.move_id.type in ['in_refund', 'out_refund'] and -1 or 1
             line.price_subtotal_signed = price_subtotal_signed * sign
-            line.price_subtotal2 = line.quantity * \
-                (line.price_unit*(1 - ((line.discount or 0.0) / 100.0)) -
-                 line.descuento_unitario)
+            # line.price_subtotal2 = line.quantity * \
+            #     (line.price_unit*(1 - ((line.discount or 0.0) / 100.0)) -
+            #      line.descuento_unitario)
             line.no_onerosa = line.tax_ids[0].tax_group_id.no_onerosa if len(
                 line.tax_ids) > 0 else False
+
+            
+            
+    @api.onchange('product_id')
+    def _onchange_product_id(self):
+        super(AccountMoveLine,self)._onchange_product_id()
+        
+        for line in self:
+            line.is_charge_or_discount = False
+            line.type_charge_or_discount_code = False
+            if line.product_id.is_charge_or_discount and line.product_id.type_charge_or_discount_id.exists():
+                line.is_charge_or_discount = True
+                line.type_charge_or_discount_code = line.product_id.type_charge_or_discount_id.code
 
     # @profile
     @api.onchange("tax_ids")

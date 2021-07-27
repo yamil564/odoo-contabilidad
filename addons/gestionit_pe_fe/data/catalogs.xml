@@ -34,6 +34,28 @@
     <record id="catalog_54_039" model="sunat.catalog.54"><field name="code">039</field><field name="name">Minerales no metálicos</field><field name="rate" eval="10"/></record>
     <record id="catalog_54_040" model="sunat.catalog.54"><field name="code">040</field><field name="name">Bien inmueble gravado con IGV</field><field name="rate" eval="4"/></record>
 
+    <record id="catalog_53_00" model="sunat.catalog.53"><field name="code">00</field><field name="name">Descuentos que afectan la base imponible del IGV/IVAP</field><field name="active" eval="False"></field></record>
+    <record id="catalog_53_01" model="sunat.catalog.53"><field name="code">01</field><field name="name">Descuentos que no afectan la base imponible del IGV/IVAP</field><field name="active" eval="False"></field></record>
+    <record id="catalog_53_02" model="sunat.catalog.53"><field name="code">02</field><field name="name">Descuentos globales que afectan la base imponible del IGV/IVAP</field><field name="active" eval="True"></field></record>
+    <record id="catalog_53_03" model="sunat.catalog.53"><field name="code">03</field><field name="name">Descuentos globales que no afectan la base imponible del IGV/IVAP</field><field name="active" eval="False"></field></record>
+    <record id="catalog_53_04" model="sunat.catalog.53"><field name="code">04</field><field name="name">Descuentos globales por anticipos gravados que afectan la base imponible del IGV/IVAP </field><field name="active" eval="False"></field></record>
+    <record id="catalog_53_05" model="sunat.catalog.53"><field name="code">05</field><field name="name">Descuentos globales por anticipos exonerados</field><field name="active" eval="False"></field></record>
+    <record id="catalog_53_06" model="sunat.catalog.53"><field name="code">06</field><field name="name">Descuentos globales por anticipos inafectos</field><field name="active" eval="False"></field></record>
+    <record id="catalog_53_07" model="sunat.catalog.53"><field name="code">07</field><field name="name">Factor de compensación - Decreto de urgencia N. 010-2004</field><field name="active" eval="False"></field></record>
+    <record id="catalog_53_20" model="sunat.catalog.53"><field name="code">20</field><field name="name">Anticipo de ISC</field><field name="active" eval="False"></field></record>
+    <record id="catalog_53_45" model="sunat.catalog.53"><field name="code">45</field><field name="name">FISE</field><field name="active" eval="False"></field></record>
+    <record id="catalog_53_46" model="sunat.catalog.53"><field name="code">46</field><field name="name">Recargo al consumo y/o propinas</field><field name="active" eval="False"></field></record>
+    <record id="catalog_53_47" model="sunat.catalog.53"><field name="code">47</field><field name="name">Cargos que afectan la base imponible del IGV/IVAP</field><field name="active" eval="False"></field></record>
+    <record id="catalog_53_48" model="sunat.catalog.53"><field name="code">48</field><field name="name">Cargos que no afectan la base imponible del IGV/IVAP</field><field name="active" eval="False"></field></record>
+    <record id="catalog_53_49" model="sunat.catalog.53"><field name="code">49</field><field name="name">Cargos globales que afectan la base imponible del IGV/IVAP</field><field name="active" eval="False"></field></record>
+    <record id="catalog_53_50" model="sunat.catalog.53"><field name="code">50</field><field name="name">Cargos globales que no afectan la base imponible del IGV/IVAP</field><field name="active" eval="False"></field></record>
+    <record id="catalog_53_51" model="sunat.catalog.53"><field name="code">51</field><field name="name">Percepción venta interna</field><field name="active" eval="True"></field></record>
+    <record id="catalog_53_52" model="sunat.catalog.53"><field name="code">52</field><field name="name">Percepción a la adquisición de combustible</field><field name="active" eval="False"></field></record>
+    <record id="catalog_53_53" model="sunat.catalog.53"><field name="code">53</field><field name="name">Percepción realizada al agente de percepción con tasa especial</field><field name="active" eval="False"></field></record>
+    <record id="catalog_53_54" model="sunat.catalog.53"><field name="code">54</field><field name="name">Factor de aportación - Decreto de urgencia N. 010-2004</field><field name="active" eval="False"></field></record>
+    <record id="catalog_53_61" model="sunat.catalog.53"><field name="code">61</field><field name="name">Retención de renta por anticipos</field><field name="active" eval="False"></field></record>
+    <record id="catalog_53_62" model="sunat.catalog.53"><field name="code">62</field><field name="name">Retención del IGV</field><field name="active" eval="True"></field></record>
+    <record id="catalog_53_63" model="sunat.catalog.53"><field name="code">63</field><field name="name">Rentención de renta de segunda categoría</field><field name="active" eval="False"></field></record>
 </odoo>
 <!-- 
 lines = [['001','Azúcar y melaza de caña','10'],
@@ -70,6 +92,28 @@ lines = [['001','Azúcar y melaza de caña','10'],
 ['039','Minerales no metálicos','10'],
 ['040','Bien inmueble gravado con IGV','4']]
 
+lines=[["00","Descuentos que afectan la base imponible del IGV/IVAP"],
+["01","Descuentos que no afectan la base imponible del IGV/IVAP"],
+["02","Descuentos globales que afectan la base imponible del IGV/IVAP"],
+["03","Descuentos globales que no afectan la base imponible del IGV/IVAP"],
+["04","Descuentos globales por anticipos gravados que afectan la base imponible del IGV/IVAP "],
+["05","Descuentos globales por anticipos exonerados"],
+["06","Descuentos globales por anticipos inafectos"],
+["07","Factor de compensación - Decreto de urgencia N. 010-2004"],
+["20","Anticipo de ISC"],
+["45","FISE"],
+["46","Recargo al consumo y/o propinas"],
+["47","Cargos que afectan la base imponible del IGV/IVAP"],
+["48","Cargos que no afectan la base imponible del IGV/IVAP"],
+["49","Cargos globales que afectan la base imponible del IGV/IVAP"],
+["50","Cargos globales que no afectan la base imponible del IGV/IVAP"],
+["51","Percepción venta interna"],
+["52","Percepción a la adquisición de combustible"],
+["53","Percepción realizada al agente de percepción con tasa especial"],
+["54","Factor de aportación - Decreto de urgencia N. 010-2004"],
+["61","Retención de renta por anticipos"],
+["62","Retención del IGV"],
+["63","Rentención de renta de segunda categoría"]]
 
 for l in lines:
-    print('<record id="catalog_54_{}" model="sunat.catalog.54"><field name="code">{}</field><field name="name">{}</field><field name="rate" eval="{}"/></record>'.format(l[0],l[0],l[1],l[2] if l[2] else 0)) -->
+    print('<record id="catalog_53_{}" model="sunat.catalog.53"><field name="code">{}</field><field name="name">{}</field><field name="active" eval="False"></field></record>'.format(l[0],l[0],l[1])) -->

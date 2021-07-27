@@ -4,7 +4,7 @@
     <t t-extend="OrderReceipt">
         <t t-jquery=".pos-receipt" t-operation="replace">
             <div class="pos-receipt">
-				<div class="logo">
+				<div class="logo" t-if="widget.pos.config.receipt_show_logo">
 					<div class="pos-center-align">
 						<img t-att-src='widget.pos.company_logo_base64' />
 					</div>

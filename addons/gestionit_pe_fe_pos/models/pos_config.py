@@ -9,3 +9,7 @@ class PosConfig(models.Model):
     invoice_journal_ids = fields.Many2many("account.journal",
                                             string="Series disponibles",
                                             domain=[("invoice_type_code_id","in",["01","03","07"])])
+
+    receipt_show_logo = fields.Boolean("Mostrar logo en ticket",default=True)
+    receipt_show_default_code = fields.Boolean("Mostrar Ref.Interna en Ticket",default=False)
+    products_show_default_code = fields.Boolean("Mostrar Ref.Interna en Lista de Productos",default=False)

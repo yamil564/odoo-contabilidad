@@ -17,6 +17,7 @@
         "static/src/xml/show_journals.xml",
         "static/src/xml/client_screen.xml",
         "static/src/xml/payment_screen.xml",
-        "static/src/xml/order_receipt.xml"
+        "static/src/xml/order_receipt.xml",
+        "static/src/xml/products.xml"
     ]
 }
