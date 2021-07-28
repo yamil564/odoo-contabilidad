@@ -38,7 +38,7 @@
         'views/account/view_account_log_status.xml',
         'views/account/view_acc_mis_comprobantes.xml',
         'views/partner/res_partner_bank.xml',
-        # 'views/partner/res_partner.xml',
+        'views/partner/res_partner.xml',
         'views/guia_remision/guia_remision_electronica.xml',
         'views/guia_remision/popup_form_seleccion_ubigeo.xml',
         'views/guia_remision/res_partner_destinatario.xml',

@@ -1,0 +1,12 @@
+<odoo>
+    <record id="res_partner_clone_address_form_view" model="ir.ui.view">
+        <field name="name">Clone Partner Form - View</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="gestionit_pe_consulta_ruc_dni.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="create_address_contact" type="object" string="Crear contacto de entrega" />
+            </xpath>
+        </field>
+    </record>
+</odoo>
