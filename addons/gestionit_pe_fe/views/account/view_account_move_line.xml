@@ -5,8 +5,8 @@
         <field name="model">account.move</field>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='invoice_line_ids']//tree" position="inside">
-                <field name="is_charge_or_discount"/>
-                <field name="type_charge_or_discount_code"/>
+                <field name="is_charge_or_discount" invisible="1"/>
+                <field name="type_charge_or_discount_code" invisible="1"/>
             </xpath>
             <xpath expr="//field[@name='line_ids']//tree" position="inside">
                 <field name="is_charge_or_discount" invisible="1"/>
