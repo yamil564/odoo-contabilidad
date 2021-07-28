@@ -666,7 +666,7 @@ def crear_json_not_cred_deb(self):
             "mntNeto": round(self.total_venta_gravado, 2),
             "mntExe": round(self.total_venta_inafecto, 2),
             "mntExo": round(self.total_venta_exonerada, 2),
-            "mntTotalIgv": round(self.amount_tax, 2),
+            "mntTotalIgv": round(self.amount_igv, 2),
             "mntTotal": round(self.amount_total, 2),
             # "mntTotalGrat": round(self.total_venta_gratuito, 2),  # solo para facturas y boletas
             "fechaVencimiento": str(self.invoice_date_due) if self.invoice_date_due else now.strftime("%Y-%m-%d"),

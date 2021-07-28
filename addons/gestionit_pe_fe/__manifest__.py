@@ -30,6 +30,7 @@
         'views/catalogs/sunat_catalogs.xml',
         'views/account/view_account_journal.xml',
         'views/account/view_account_move.xml',
+        'views/account/view_account_move_line.xml',
         'views/account/view_acc_inv_factura.xml',
         'views/account/view_acc_inv_boleta.xml',
         'views/account/view_acc_inv_nota_credito.xml',

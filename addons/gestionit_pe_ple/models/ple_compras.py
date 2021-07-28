@@ -136,7 +136,7 @@ class PrintReportTextCompras(models.TransientModel):
                     + "|"
                     + str(line.amount_untaxed)
                     + "|"
-                    + str(line.amount_tax)
+                    + str(line.amount_igv)
                     + "|"
                     + ""
                     + "|"
