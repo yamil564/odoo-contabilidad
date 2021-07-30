@@ -32,6 +32,41 @@ class AccountMoveLine(models.Model):
                 record.name = record.name.strip()
                 record.name = record.name.replace("\n", " ")
 
+    @api.depends(
+        'price_unit', 'discount', 'tax_ids', 'quantity',
+        'product_id', 'move_id.partner_id', 'move_id.currency_id',
+        'move_id.company_id', 'move_id.date'
+    )
+    def _compute_price(self):
+        # self.ensure_one()
+        for line in self:
+            currency = line.move_id and line.move_id.currency_id or None
+            price = line.price_unit * (1 - (line.discount or 0.0) / 100.0)
+            taxes = False
+            if line.tax_ids:
+                taxes = line.tax_ids.compute_all(
+                    price, currency, line.quantity, product=line.product_id, partner=line.move_id.partner_id)
+
+            if len([1 for tax in line.tax_ids if tax.tax_group_id.codigo in ["31", "32", "33", "34", "35", "36"]]) == 0:
+                line.price_subtotal = price_subtotal_signed = taxes[
+                    'total_excluded'] if taxes else line.quantity * price
+                line.price_total = taxes['total_included'] if taxes else line.price_subtotal
+            else:
+                line.price_subtotal = price_subtotal_signed = 0
+                line.price_total = 0
+
+            # if line.move_id.currency_id and line.move_id.currency_id != line.move_id.company_id.currency_id:
+            #     price_subtotal_signed = line.move_id.currency_id.with_context(date=line.move_id._get_currency_rate_date(
+            #     )).compute(price_subtotal_signed, line.move_id.company_id.currency_id)
+            sign = line.move_id.type in ['in_refund', 'out_refund'] and -1 or 1
+            line.price_subtotal_signed = price_subtotal_signed * sign
+            # line.price_subtotal2 = line.quantity * \
+            #     (line.price_unit*(1 - ((line.discount or 0.0) / 100.0)) -
+            #      line.descuento_unitario)
+            line.no_onerosa = line.tax_ids[0].tax_group_id.no_onerosa if len(
+                line.tax_ids) > 0 else False
+
+                
     # @api.depends(
     #     'price_unit', 'discount', 'tax_ids', 'quantity',
     #     'product_id', 'move_id.partner_id', 'move_id.currency_id',

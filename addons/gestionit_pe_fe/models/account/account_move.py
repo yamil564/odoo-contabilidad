@@ -310,7 +310,13 @@ class AccountMove(models.Model):
     tipo_operacion = fields.Selection(selection=[(
         "01", "Venta Interna"), ("02", "Exportación")], default="01", required=True, copy=False)
 
-    apply_global_discount = fields.Boolean("Aplicar descuento global",default=False)
+    apply_same_discount_on_all_lines = fields.Boolean("Aplicar el mismo descuento en todas las líneas?",states={'draft': [('readonly', False)]},readonly=True)
+    discount_on_all_lines = fields.Integer("Descuento (%)",states={'draft': [('readonly', False)]},readonly=True)
+    
+    def action_apply_same_discount_on_all_lines(self):
+        self.invoice_line_ids = [(1,line.id,{"discount":self.discount_on_all_lines}) for line in self.invoice_line_ids]
+
+    apply_global_discount = fields.Boolean("Aplicar descuento global",default=False,states={'draft': [('readonly', False)]},readonly=True)
     descuento_global = fields.Float(
         string="Descuento Global (%)",
         readonly=True,
@@ -473,6 +479,7 @@ class AccountMove(models.Model):
         cancelled_moves = self.filtered(lambda m: m.state == "cancel")
         super(AccountMove, cancelled_moves.with_context(force_delete=True)).unlink()
         return super(AccountMove, self - cancelled_moves).unlink()
+
 
 
     @api.depends(
