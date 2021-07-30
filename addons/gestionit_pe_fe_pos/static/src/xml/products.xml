@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-extend="Product">
+        <t t-jquery=".product-name" t-operation="append">
+            <span t-if="widget.pos.config.products_show_default_code">
+                <t t-esc="'['+product.default_code+']'"/>
+            </span>
+        </t>
+    </t>
+
+    <t t-extend="Orderline">
+        <t t-jquery=".product-name" t-operation="before">
+            <span t-if="widget.pos.config.products_show_default_code">
+                <t t-esc="'['+line.get_product().default_code+']'"/>
+            </span>
+        </t>
+    </t>
+
+</templates>

@@ -1,5 +1,5 @@
-from . import product
 from . import parameters
+from . import product
 from . import purchase
 from . import sale_order
 from . import partner

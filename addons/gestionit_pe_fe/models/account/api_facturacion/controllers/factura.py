@@ -561,7 +561,7 @@ def build_factura(data):
             tax_category = TaxCategory(per_unit_amount=per_unit_amount,
                                        tax_scheme=tax_scheme)
 
-            base_unit_measure = BaseUnitMeasure(quantity=line.get("cantidadItem", 0),
+            base_unit_measure = BaseUnitMeasure(quantity=round(line.get("cantidadItem", 0)),
                                                 unit_code=line.get('unidadMedidaItem'))
 
             tax_amount = TaxAmount(amount=round(line.get("cantidadItem", 0.0)*tasaICBPER, 2),

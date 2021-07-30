@@ -133,7 +133,7 @@ class PrintReportTextVentas(models.TransientModel):
                     + "|"
                     + ""
                     + "|"
-                    + str(line.amount_tax)
+                    + str(line.amount_igv)
                     + "|"
                     + ""
                     + "|"

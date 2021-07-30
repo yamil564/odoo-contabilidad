@@ -36,4 +36,40 @@
             }),
         ]"/>
     </record>
+
+    <record id="sale_tax_icbper" model="account.tax.template">
+        <field name="chart_template_id" ref="l10n_pe.pe_chart_template"/>
+        <field name="name">ICBPER</field>
+        <field name="description">ICBPER</field>
+        <!-- <field name="l10n_pe_edi_tax_code">7152</field> -->
+        <!-- <field name="l10n_pe_edi_unece_category">E</field> -->
+        <field name="amount_type">fixed</field>  
+        <field name="amount">0.3</field>  
+        <field name="type_tax_use">sale</field>
+        <field name="sequence">10</field>
+        <field name="tax_group_id" ref="gestionit_pe_fe.tax_icbper"/>
+        <field name="invoice_repartition_line_ids" eval="[(5, 0, 0),
+            (0,0, {
+                'factor_percent': 100,
+                'repartition_type': 'base',
+            }),
+            (0,0, {
+                'factor_percent': 100,
+                'repartition_type': 'tax',
+                'account_id': ref('l10n_pe.chart6442'),
+            }),
+
+        ]"/>
+        <field name="refund_repartition_line_ids" eval="[(5, 0, 0),
+            (0,0, {
+                'factor_percent': 100,
+                'repartition_type': 'base',
+            }),
+            (0,0, {
+                'factor_percent': 100,
+                'repartition_type': 'tax',
+                'account_id': ref('l10n_pe.chart6442'),
+            }),
+        ]"/>
+    </record>
 </odoo>

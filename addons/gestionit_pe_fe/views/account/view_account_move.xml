@@ -48,6 +48,14 @@
                     <field name="account_journal_national_bank" options="{'no_open':True,'no_create':True,'no_quick_create':True}" string="Número de cuenta del Banco de la Nación" groups="gestionit_pe_fe.group_fe_detraction_user" attrs="{'required':[('has_detraction','=',True)],'invisible':[('has_detraction','=',False)],'readonly':[['state','not in',['draft']]]}"/>
                     <field name="bank_account_number_national" groups="gestionit_pe_fe.group_fe_detraction_user" attrs="{'required':[('has_detraction','=',True)],'readonly':[['state','not in',['draft']]]}" invisible="1"/>
                     <field name="detraction_amount" groups="gestionit_pe_fe.group_fe_detraction_user" attrs="{'required':[('has_detraction','=',True)],'invisible':[('has_detraction','=',False)],'readonly':[['state','not in',['draft']]]}"/>
+
+                    <!-- Mismo descuento en todas las líneas-->
+                    <field name="apply_same_discount_on_all_lines" groups="product.group_discount_per_so_line"/>
+                    <field name="discount_on_all_lines" string="Descuento (%)" 
+                            attrs="{'required':[('apply_same_discount_on_all_lines','=',True)],'invisible':[('apply_same_discount_on_all_lines','=',False)]}"/>
+                    <button name="action_apply_same_discount_on_all_lines" string="Aplicar dscto (%) en todas las líneas" type="object" class="oe_highlight"
+                        attrs="{'invisible':[('apply_same_discount_on_all_lines','=',False)]}"/>
+                    
                 </xpath>
                 <xpath expr="//field[@name='journal_id']" position="replace">
                     <field name="tipo_operacion" string="Tipo de Operación" attrs="{'readonly':[['state','not in',['draft']]]}" widget="radio" />
@@ -142,9 +150,10 @@
             <field name="inherit_id" ref="account.view_move_form"/>
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='amount_untaxed']" position="replace">
-                    <field name="descuento_global" string="Descuento Global (%)"/>
+                    <field name="apply_global_discount" string="Aplicar descuento Global?"/>
+                    <field name="descuento_global" string="Descuento Global (%)" attrs="{'invisible':[('apply_global_discount','=',False)]}"/>
                     <field name="total_venta_gravado" string="Monto Gravado"/>
-                    <field name="amount_tax"/>
+                    <!-- <field name="amount_tax"/> -->
                     <field name="amount_igv"/>
                     <field name="total_venta_inafecto" string="Monto Inafecto"/>
                     <field name="total_venta_exonerada" string="Monto Exonerado"/>

@@ -225,21 +225,22 @@
             <table class="table table-condensed">
                 <thead>
                     <tr>
-                        <th class="text-right">Cantidad</th>
-                        <th>Description</th>
+                        <th>Cantidad</th>
+                        <th>Descripción</th>
                         <!-- <th class="hidden">Source Document</th> -->
-                        <th class="text-right">Unidad de Medida</th>
-                        <th class="text-right">Precio de Venta Unitario</th>
-                        <th t-if="display_discount" class="text-right">Disc.(%)</th>
-                        <th class="text-right">Precio Total</th>
+                        <th class="text-right">UM</th>
+                        <th class="text-right">PU</th>
+                        <th t-if="display_discount" class="text-right">Dscto.(%)</th>
+                        <th class="text-right">Total</th>
                     </tr>
                 </thead>
                 <tbody class="invoice_tbody" style="font-size:10px;">
-                    <tr t-foreach="o.invoice_line_ids" t-as="l">
-                        <td class="text-right">
+                    <tr t-foreach="o.invoice_line_ids.filtered(lambda r:not r.is_charge_or_discount)" t-as="l">
+                        <td>
                             <span t-field="l.quantity"/>
                         </td>
                         <td>
+                            <span t-if="l.product_id.default_code" t-esc="'['+l.product_id.default_code+']'"/>
                             <span t-field="l.product_id.name"/>
                         </td>
                         <!-- <td class="hidden">
@@ -252,10 +253,13 @@
                             <span t-field="l.price_unit"/>
                         </td>
                         <td t-if="display_discount" class="text-right">
-                            <span t-field="l.discount"/>
+                            <span t-if="l.discount &gt; 0">
+                                (<span t-field="l.discount"/>%)
+                                <span t-esc="round(l.price_unit*l.quantity,3)" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
+                            </span>
                         </td>
-                        <td class="text-right" id="subtotal">
-                            <span t-field="l.price_subtotal" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
+                        <td class="text-right">
+                            <span t-field="l.price_total" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
                         </td>
                     </tr>
                 </tbody>
@@ -294,7 +298,23 @@
                                     <span t-field="o.amount_untaxed"/>
                                 </td>
                             </tr> -->
-                            <tr class="border-black o_subtotal" style="">
+                            <tr class="border-black" style="" t-if="o.descuento_global &gt; 0">
+                                <td>
+                                    <strong>Dscto. Global (<t t-esc="o.descuento_global"/> %)</strong>
+                                </td>
+                                <td class="text-right">
+                                    <span t-field="o.total_descuento_global"/>
+                                </td>
+                            </tr>
+                            <tr t-if="o.total_descuentos &gt; 0">
+                                <td>
+                                    <strong>Total de Descuentos</strong>
+                                </td>
+                                <td class="text-right">
+                                    <span t-field="o.total_descuentos"/>
+                                </td>
+                            </tr>
+                            <tr>
                                 <td>
                                     <strong>Monto Gravado</strong>
                                 </td>

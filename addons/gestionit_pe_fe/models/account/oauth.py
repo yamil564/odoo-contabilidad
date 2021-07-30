@@ -126,7 +126,9 @@ def send_invoice_xml(invoice):
                             headers=headers,
                             timeout=20)
 
+    
     result = sunat_response_handle.get_response(response.text)
+    _logger.info(result)
     data = {
         "response_json":json.dumps(result,indent=4),
         "response_xml_without_format":response.text,
@@ -467,39 +469,39 @@ def crear_json_fac_bol(self):
     # if self.nota_id:
     #     data["nota"] = self.nota_id.descripcion
     ###############
-    self.total_venta_gravado = sum(
-        [
-            line.price_subtotal
-            for line in self.invoice_line_ids
-            if len([line.price_subtotal for line_tax in line.tax_ids
-                    if line_tax.tax_group_id.tipo_afectacion in ["10"]])
-        ])*(1-self.descuento_global/100.0)
+    # self.total_venta_gravado = sum(
+    #     [
+    #         line.price_subtotal
+    #         for line in self.invoice_line_ids
+    #         if len([line.price_subtotal for line_tax in line.tax_ids
+    #                 if line_tax.tax_group_id.tipo_afectacion in ["10"]])
+    #     ])*(1-self.descuento_global/100.0)
 
-    self.total_venta_inafecto = sum(
-        [
-            line.price_subtotal
-            for line in self.invoice_line_ids
-            if len(
-                [line.price_subtotal for line_tax in line.tax_ids
-                    if line_tax.tax_group_id.tipo_afectacion in ["40", "30"]])
-        ])*(1-self.descuento_global/100.0)
+    # self.total_venta_inafecto = sum(
+    #     [
+    #         line.price_subtotal
+    #         for line in self.invoice_line_ids
+    #         if len(
+    #             [line.price_subtotal for line_tax in line.tax_ids
+    #                 if line_tax.tax_group_id.tipo_afectacion in ["40", "30"]])
+    #     ])*(1-self.descuento_global/100.0)
 
-    self.total_venta_exonerada = sum(
-        [
-            line.price_subtotal
-            for line in self.invoice_line_ids
-            if len(
-                [line.price_subtotal for line_tax in line.tax_ids
-                    if line_tax.tax_group_id.tipo_afectacion in ["20"]])
-        ])*(1-self.descuento_global/100.0)
+    # self.total_venta_exonerada = sum(
+    #     [
+    #         line.price_subtotal
+    #         for line in self.invoice_line_ids
+    #         if len(
+    #             [line.price_subtotal for line_tax in line.tax_ids
+    #                 if line_tax.tax_group_id.tipo_afectacion in ["20"]])
+    #     ])*(1-self.descuento_global/100.0)
 
-    self.total_venta_gratuito = sum(
-        [
-            line.price_unit*line.quantity
-            for line in self.invoice_line_ids
-            if len([1 for line_tax in line.tax_ids
-                    if line_tax.tax_group_id.tipo_afectacion in ["31", "32", "33", "34", "35", "36", "37"]])
-        ])
+    # self.total_venta_gratuito = sum(
+    #     [
+    #         line.price_unit*line.quantity
+    #         for line in self.invoice_line_ids
+    #         if len([1 for line_tax in line.tax_ids
+    #                 if line_tax.tax_group_id.tipo_afectacion in ["31", "32", "33", "34", "35", "36", "37"]])
+    #     ])
     ##########
     taxlen = 0
     for line in self.invoice_line_ids:
@@ -524,7 +526,7 @@ def crear_json_fac_bol(self):
     #         "tasaImpuesto": 0.18
     #     })
 
-    for item in self.invoice_line_ids:
+    for item in self.invoice_line_ids.filtered(lambda r: not r.is_charge_or_discount):
         #price_unit = item.price_unit*(1-(item.discount/100)) - item.descuento_unitario
         #descuento = item.price_unit*item.discount/100 + item.descuento_unitario
         """
@@ -597,6 +599,13 @@ def crear_json_fac_bol(self):
             datac.update({
                 "montoItem":round(item.price_subtotal,2)
             })
+        icbper = item.tax_ids.filtered(lambda r: r.tax_group_id.codigo == "7152")
+        
+        if icbper.exists():
+            datac.update({
+                "afectacionICBPER":True,
+                "tasa_ICBPER":icbper.amount
+            })
 
         data_detalle.append(datac)
 
@@ -666,7 +675,7 @@ def crear_json_not_cred_deb(self):
             "mntNeto": round(self.total_venta_gravado, 2),
             "mntExe": round(self.total_venta_inafecto, 2),
             "mntExo": round(self.total_venta_exonerada, 2),
-            "mntTotalIgv": round(self.amount_tax, 2),
+            "mntTotalIgv": round(self.amount_igv, 2),
             "mntTotal": round(self.amount_total, 2),
             # "mntTotalGrat": round(self.total_venta_gratuito, 2),  # solo para facturas y boletas
             "fechaVencimiento": str(self.invoice_date_due) if self.invoice_date_due else now.strftime("%Y-%m-%d"),

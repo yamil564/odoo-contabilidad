@@ -11,7 +11,7 @@
                     </div>
                     <div class="o_setting_right_pane">
                         <label for="module_account_invoicing" string="Facturación Electrónica"/>
-                        <div class="text-muted" id="invoice_journal">
+                        <div class="text-muted">
                             Emisión de facturas, boletas y notas de crédito electrónica
                         </div>
                         <div class="content-group mt16" attrs="{'invisible': [('module_account_invoicing', '=', False)]}">
@@ -25,6 +25,39 @@
                                         options="{'no_open': True,'no_create': True,'no_quick_create':True}"
                                         />
                             </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-lg-6 o_setting_box" id="receipt_show_logo">
+                    <div class="o_setting_left_pane">
+                        <field name="receipt_show_logo"/>
+                    </div>
+                    <div class="o_setting_right_pane">
+                        <label for="receipt_show_logo" string="Mostrar logo en ticket"/>
+                        <div class="text-muted">
+                            Muestra el logo de la empresa en la impresión del ticket de venta.
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-lg-6 o_setting_box" id="receipt_show_default_code">
+                    <div class="o_setting_left_pane">
+                        <field name="receipt_show_default_code"/>
+                    </div>
+                    <div class="o_setting_right_pane">
+                        <label for="receipt_show_default_code" string="Mostrar Ref.Interna en Ticket"/>
+                        <div class="text-muted">
+                            Muestra la Ref.Interna del producto en el Ticket
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-lg-6 o_setting_box" id="products_show_default_code">
+                    <div class="o_setting_left_pane">
+                        <field name="products_show_default_code"/>
+                    </div>
+                    <div class="o_setting_right_pane">
+                        <label for="products_show_default_code" string="Mostrar Ref.Interna en Lista de Productos"/>
+                        <div class="text-muted">
+                            Muestra la Ref.Interna en la vista de productos
                         </div>
                     </div>
                 </div>

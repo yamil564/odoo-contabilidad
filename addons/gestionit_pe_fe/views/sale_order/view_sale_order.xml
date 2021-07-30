@@ -13,14 +13,14 @@
                 </xpath>
                 <field name="amount_tax" position="replace"/>
                 <field name="amount_untaxed" position="replace">
-                    <field name="descuento_global"/>
+                    <field name="descuento_global" groups="gestionit_pe_fe.group_fe_discount_global_sale_invoices"/>
                     <field name="total_venta_gravado"/>
                     <field name="total_venta_inafecto"/>
                     <field name="total_venta_exonerada"/>
                     <field name="total_venta_gratuito"/>
-                    <field name="total_descuento_global"/>
-                    <field name="total_descuentos"/>
-                    <field name="amount_tax" string="Total Impuestos"/>
+                    <field name="total_descuento_global" groups="gestionit_pe_fe.group_fe_discount_global_sale_invoices"/>
+                    <field name="total_descuentos" groups="gestionit_pe_fe.group_fe_discount_global_sale_invoices,product.group_discount_per_so_line"/>
+                    <field name="total_igv" string="IGV (18%)"/>
                 </field>
             </field>
         </record>

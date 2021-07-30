@@ -123,3 +123,4 @@ cdc = [
     ("11", "11_POR_VERIFICAR"),
     ("12", "12_NO_HABIDO"),
     ("20", "20_NO_HALLADO")]
+
