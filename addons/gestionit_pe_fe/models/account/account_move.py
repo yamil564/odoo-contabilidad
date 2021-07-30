@@ -1161,18 +1161,18 @@ class AccountMove(models.Model):
         return action
 
     
-    @api.model
-    def create(self, values):
-        _logger.info(json.dumps(values,indent=4)) 
-        result = super(AccountMove, self).create(values)
+    # @api.model
+    # def create(self, values):
+    #     _logger.info(json.dumps(values,indent=4)) 
+    #     result = super(AccountMove, self).create(values)
            
-        return result
+    #     return result
 
 
-    def write(self, values):
-        _logger.info(json.dumps(values,indent=4))
-        result = super(AccountMove, self).write(values)
-        return result
+    # def write(self, values):
+    #     _logger.info(json.dumps(values,indent=4))
+    #     result = super(AccountMove, self).write(values)
+    #     return result
 
     
 
