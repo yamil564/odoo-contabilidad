@@ -142,7 +142,8 @@
             <field name="inherit_id" ref="account.view_move_form"/>
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='amount_untaxed']" position="replace">
-                    <field name="descuento_global" string="Descuento Global (%)"/>
+                    <field name="apply_global_discount" string="Aplicar descuento Global?"/>
+                    <field name="descuento_global" string="Descuento Global (%)" attrs="{'invisible':[('apply_global_discount','=',False)]}"/>
                     <field name="total_venta_gravado" string="Monto Gravado"/>
                     <field name="amount_tax"/>
                     <field name="amount_igv"/>

@@ -310,15 +310,18 @@ class AccountMove(models.Model):
     tipo_operacion = fields.Selection(selection=[(
         "01", "Venta Interna"), ("02", "Exportación")], default="01", required=True, copy=False)
 
+    apply_global_discount = fields.Boolean("Aplicar descuento global",default=False)
     descuento_global = fields.Float(
         string="Descuento Global (%)",
         readonly=True,
         states={'draft': [('readonly', False)]},
         default=0.0)
     
-    @api.onchange('invoice_line_ids','descuento_global')
+    @api.onchange('invoice_line_ids','descuento_global','apply_global_discount')
     def _onchange_invoice_line_ids(self):
         for record in self:
+            if not record.apply_global_discount:
+                record.descuento_global = 0
             # _logger.info(record.invoice_line_ids)
             # for x in record.invoice_line_ids:
             #     _logger.info(x.name)
@@ -376,7 +379,7 @@ class AccountMove(models.Model):
                         "type_charge_or_discount_code":"02",
                         "exclude_from_invoice_tab":False
                     }
-                _logger.info(values)
+                # _logger.info(values)
                 record.invoice_line_ids = [(0,0,values)]
                 # record.line_ids = [(0,0,values)]
                 # line = record.invoice_line_ids.new(values)
