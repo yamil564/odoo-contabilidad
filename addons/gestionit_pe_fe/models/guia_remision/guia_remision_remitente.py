@@ -552,8 +552,8 @@ class GuiaRemision(models.Model):
                 guia_remision_lines = list(guia_remision_lines_temp.values())
                 record.guia_remision_line_ids = guia_remision_lines
 
-    @api.depends("guia_remision_line_ids")
-    def _compute_peso_bruto(self):
+    # @api.depends("guia_remision_line_ids")
+    def compute_peso_bruto(self):
         peso_total = 0
         # for record in self:
         for line in self.guia_remision_line_ids:
@@ -565,12 +565,13 @@ class GuiaRemision(models.Model):
                                 'validado': [('readonly', True)]})
     fecha_inicio_traslado = fields.Date(string="Fecha inicio de traslado", states={
                                         'validado': [('readonly', True)]})
-    # peso_bruto_total_uom_id = fields.Many2one("product.uom",string="UM",default="_default_peso_bruto_total_uom")
 
     peso_bruto_total = fields.Float(string="Peso Bruto Total (KGM)", states={
-                                    'validado': [('readonly', True)]}, compute="_compute_peso_bruto")
+                                    'validado': [('readonly', True)]}, default=0.0)
+    calc_peso = fields.Boolean(string="Calc peso", related="company_id.calc_peso")
+    # peso_bruto_total = fields.Float(string="Peso Bruto Total (KGM)", states={
+    #                                 'validado': [('readonly', True)]}, compute="_compute_peso_bruto")
 
-    # modalidad_transporte = fields.Selection(selection="_list_modalidad_transporte", string="Modalidad de Transporte", states={'validado': [('readonly', True)]})
     modalidad_transporte = fields.Selection(
         selection="_list_modalidad_transporte", string="Modalidad de Transporte")
 
@@ -1255,3 +1256,15 @@ class AccountInvoiceGuiaRemision(models.Model):
 
     def btn_crear_guia_remision(self):
         pass
+
+
+class ResCompany(models.Model):
+    _inherit = 'res.company'
+
+    calc_peso = fields.Boolean(string="Calcular peso")
+
+class ResConfigSettings(models.TransientModel):
+    _inherit = "res.config.settings"
+
+    calc_peso = fields.Boolean(
+        string="Calcular peso automáticamente", related="company_id.calc_peso", readonly=False)

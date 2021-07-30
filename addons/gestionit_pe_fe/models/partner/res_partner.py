@@ -15,3 +15,14 @@ class ResPartner(models.Model):
             res.update({"parent_id": self.env.context.get("parent_id")})
 
         return res
+
+    def create_address_contact(self):
+        
+        self.create({
+            'parent_id': self.id,
+            'name': self.name+' - Entrega',
+            'type': 'other',
+            'street': self.street,
+            'company_type': 'person',
+            'ubigeo': self.ubigeo
+        })

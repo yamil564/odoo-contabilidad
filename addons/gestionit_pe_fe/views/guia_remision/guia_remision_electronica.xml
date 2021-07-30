@@ -153,7 +153,9 @@
 
                                 <label for="peso_bruto_total" string="Peso Bruto Total (KGM)"/>
                                 <div class="o_row">
-                                    <field name="peso_bruto_total"/>
+                                    <field name="calc_peso" invisible="1" />
+                                    <field name="peso_bruto_total" attrs="{'readonly':[('calc_peso','=',True)]}" />
+                                    <button name="compute_peso_bruto" string="Calcular peso bruto" type="object" class="oe_highlight" attrs="{'invisible':[('calc_peso','!=',True)]}" />
                                     <!--
                                     <field name="peso_bruto_total_uom_id" options="{
                                                         'no_create': True, 
