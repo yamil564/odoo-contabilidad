@@ -120,3 +120,6 @@ class AccountMoveLine(models.Model):
 
         # log.info("tipo_afectacion line")
         # log.info(self.tax_ids)
+
+
+    

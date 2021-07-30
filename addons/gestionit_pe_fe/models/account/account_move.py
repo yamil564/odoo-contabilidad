@@ -535,11 +535,11 @@ class AccountMove(models.Model):
             #         if len([line.price_subtotal for line_tax in line.tax_ids
             #                 if line_tax.tax_group_id.tipo_afectacion not in ["31", "32", "33", "34", "35", "36"]])
             #     ])*move.descuento_global/100.0
-            move.total_descuento_global = sum([
+            move.total_descuento_global = abs(sum([
                     line.price_total
                         for line in move.invoice_line_ids
                             if line.is_charge_or_discount and line.type_charge_or_discount_code in ["02"]
-                ])
+                ]))
 
             move.total_venta_gravado = sum([
                     line.price_subtotal
@@ -821,15 +821,16 @@ class AccountMove(models.Model):
                 break
             else:
                 for line_tax in line.tax_ids:
-                    if not line_tax.tax_group_id.tipo_afectacion:
-                        errors.append(
-                            "* El impuesto seleccionado en las líneas del comprobante no posee tipo de afectación al IGV.")
-                        break
-                    else:
-                        if line_tax.tax_group_id.tipo_afectacion not in codigos_tipo_afectacion_igv:
+                    if not line_tax.tax_group_id.codigo == "7152":
+                        if not line_tax.tax_group_id.tipo_afectacion:
                             errors.append(
-                                "* El código de tipo de afectación ingresado no es Válido. Consulte con su Administrador del Sistema.")
+                                "* El impuesto seleccionado en las líneas del comprobante no posee tipo de afectación al IGV.")
                             break
+                        else:
+                            if line_tax.tax_group_id.tipo_afectacion not in codigos_tipo_afectacion_igv:
+                                errors.append(
+                                    "* El código de tipo de afectación ingresado no es Válido. Consulte con su Administrador del Sistema.")
+                                break
 
             if line.discount == 100:
                 errors.append(

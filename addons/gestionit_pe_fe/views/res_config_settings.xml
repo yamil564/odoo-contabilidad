@@ -1,31 +1,11 @@
 <odoo>
-    <record id="view_form_res_config_default_product_discount_global" model="ir.ui.view">
-        <field name="name">view.form.res.config.default.product.discount.global</field>
-        <field name="model">res.config.settings</field>
-        <field name="inherit_id" ref="sale.res_config_settings_view_form"/>
-        <field name="arch" type="xml">
-            <xpath expr="//div[hasclass('o_settings_container')][1]//div[hasclass('o_setting_box')]" position="after">
-                <div class="col-12 col-lg-6 o_setting_box" title="Apply manual discounts on sales order lines or display discounts computed from pricelists (option to activate in the pricelist configuration).">
-                    <div class="o_setting_left_pane">
-                    </div>
-                    <div class="o_setting_right_pane">
-                        <label for="product_global_discount_id" string="Producto de descuento global"/>
-                        <field name="product_global_discount_id" context="{'default_is_charge_or_discount':True,
-                                                                            'default_type':'service',
-                                                                            'default_purchase_ok':False}"/>
-                    </div>
-                </div>
-            </xpath>
-        </field>
-    </record>
-
     <record id="guia_remision_setting" model="ir.ui.view">
         <field name="name">Opciones de guía de remisión</field>
         <field name="model">res.config.settings</field>
         <field name="inherit_id" ref="base.res_config_settings_view_form" />
         <field name="arch" type="xml">
             <xpath expr="//div[hasclass('settings')]" position="inside">
-                <div class="app_settings_block" data-string="Facturación electrónica" string="Facturación electrónica">
+                <div class="app_settings_block" data-string="Facturación electrónica" data-key="gestionit_pe_fe" string="Facturación electrónica">
                     <h2>Guía de remisión</h2>
                     <div class="row mt16 o_settings_container">
                         <div class="col-12 col-lg-6 o_setting_box">
@@ -37,6 +17,20 @@
                                 <div class="text-muted">
                                     Calcular peso automáticamente.
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                    <h2>Descuento Global</h2>
+                    <div class="row mt16 o_settings_container">
+                        <div class="col-12 col-lg-6 o_setting_box" title="Apply manual discounts on sales order lines or display discounts computed from pricelists (option to activate in the pricelist configuration).">
+                            <div class="o_setting_left_pane">
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label for="product_global_discount_id" string="Producto de descuento global"/>
+                                <br/>
+                                <field name="product_global_discount_id" context="{'default_is_charge_or_discount':True,
+                                                                                'default_type':'service',
+                                                                                'default_purchase_ok':False}"/>
                             </div>
                         </div>
                     </div>

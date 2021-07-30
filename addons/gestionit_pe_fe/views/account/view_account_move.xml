@@ -153,7 +153,7 @@
                     <field name="apply_global_discount" string="Aplicar descuento Global?"/>
                     <field name="descuento_global" string="Descuento Global (%)" attrs="{'invisible':[('apply_global_discount','=',False)]}"/>
                     <field name="total_venta_gravado" string="Monto Gravado"/>
-                    <field name="amount_tax"/>
+                    <!-- <field name="amount_tax"/> -->
                     <field name="amount_igv"/>
                     <field name="total_venta_inafecto" string="Monto Inafecto"/>
                     <field name="total_venta_exonerada" string="Monto Exonerado"/>
