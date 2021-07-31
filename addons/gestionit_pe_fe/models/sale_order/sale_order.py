@@ -39,6 +39,15 @@ class SaleOrder(models.Model):
         else:
             self.tipo_documento = "03"
 
+
+    apply_same_discount_on_all_lines = fields.Boolean("Aplicar el mismo descuento en todas las líneas?",states={'draft': [('readonly', False)]},readonly=True)
+    discount_on_all_lines = fields.Integer("Descuento (%)",states={'draft': [('readonly', False)]},readonly=True)
+    
+    def action_apply_same_discount_on_all_lines(self):
+        self.order_line = [(1,line.id,{"discount":self.discount_on_all_lines}) for line in self.order_line]
+
+
+
     def order_lines_layouted(self):
         """
         Returns this order lines classified by sale_layout_category and separated in
@@ -65,8 +74,14 @@ class SaleOrder(models.Model):
 
     def _prepare_invoice(self):
         res = super(SaleOrder, self)._prepare_invoice()
-        res["invoice_type_code"] = self.tipo_documento
-        res["descuento_global"] = self.descuento_global
+        # res["invoice_type_code"] = self.tipo_documento
+        # res["descuento_global"] = self.descuento_global
+        res.update({
+            "invoice_type_code":self.tipo_documento,
+            "descuento_global":self.descuento_global,
+            "apply_same_discount_on_all_lines":self.apply_same_discount_on_all_lines,
+            "discount_on_all_lines":self.discount_on_all_lines
+        })
         if len(self.env.user.warehouse_ids)>0:
             res["warehouse_id"] = self.env.user.warehouse_ids[0].id
             journals = self.env.user.warehouse_ids.journal_ids.filtered(lambda r:r.invoice_type_code_id ==self.tipo_documento and r.type =="sale")
