@@ -8,6 +8,14 @@
             <field name="arch" type="xml">
                 <xpath expr="//button[@name='%(sale.action_view_sale_advance_payment_inv)d']" position="replace">
                 </xpath>
+                <xpath expr="//field[@name='partner_shipping_id']" position="after">
+                    <!-- Mismo descuento en todas las líneas-->
+                    <field name="apply_same_discount_on_all_lines" groups="product.group_discount_per_so_line"/>
+                    <field name="discount_on_all_lines" string="Descuento (%)" 
+                            attrs="{'required':[('apply_same_discount_on_all_lines','=',True)],'invisible':[('apply_same_discount_on_all_lines','=',False)]}"/>
+                    <button name="action_apply_same_discount_on_all_lines" string="Aplicar dscto (%) en todas las líneas" type="object" class="oe_highlight"
+                        attrs="{'invisible':[('apply_same_discount_on_all_lines','=',False)]}"/>
+                </xpath>
                 <xpath expr="//kanban//templates//div" position="inside">
                     <a t-if="!read_only_mode" type="delete" class="fa fa-times pull-right"/>
                 </xpath>
