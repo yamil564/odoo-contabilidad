@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from odoo import fields, models, api
 from odoo.tools.profiler import profile
+from odoo.exceptions import UserError, ValidationError
+
 import logging
 log = logging.getLogger(__name__)
 
@@ -18,6 +20,9 @@ class AccountMoveLine(models.Model):
     
     is_charge_or_discount = fields.Boolean(string="Es Cargo/Descuento/Deducción?")
     type_charge_or_discount_code = fields.Char("Código de cargo, descuento u otra deducción")
+
+    
+
 
     @api.onchange('discount')
     def _onchange_discount(self):

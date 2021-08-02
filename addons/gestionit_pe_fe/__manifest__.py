@@ -54,6 +54,7 @@
         'views/stock/view_stock_warehouse.xml',
         'views/company/view_cert_sunat.xml',
         'views/company/view_company.xml',
+        'views/reportes/assets.xml',
         'views/reportes/external_layout_background_gestionit.xml',
         'views/reportes/report_invoice_document.xml',
         'views/res_config_settings.xml',

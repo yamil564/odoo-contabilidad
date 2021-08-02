@@ -234,7 +234,7 @@
                         <th class="text-right">Total</th>
                     </tr>
                 </thead>
-                <tbody class="invoice_tbody" style="font-size:10px;">
+                <tbody class="invoice_tbody">
                     <tr t-foreach="o.invoice_line_ids.filtered(lambda r:not r.is_charge_or_discount)" t-as="l">
                         <td>
                             <span t-field="l.quantity"/>
@@ -250,7 +250,7 @@
                             <span t-field="l.product_uom_id.code"/>
                         </td>
                         <td class="text-right">
-                            <span t-field="l.price_unit"/>
+                            <span t-field="l.price_unit" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
                         </td>
                         <td t-if="display_discount" class="text-right">
                             <span t-if="l.discount &gt; 0">
@@ -322,7 +322,7 @@
                                     <span t-field="o.total_venta_gravado"/>
                                 </td>
                             </tr>
-                            <tr>
+                            <tr t-if="o.total_venta_inafecto &gt; 0">
                                 <td>
                                     <strong>Monto Inafecto</strong>
                                 </td>
@@ -330,7 +330,7 @@
                                     <span t-field="o.total_venta_inafecto"/>
                                 </td>
                             </tr>
-                            <tr>
+                            <tr t-if="o.total_venta_exonerada &gt; 0">
                                 <td>
                                     <strong>Monto Exonerado</strong>
                                 </td>
@@ -338,7 +338,7 @@
                                     <span t-field="o.total_venta_exonerada"/>
                                 </td>
                             </tr>
-                            <tr>
+                            <tr t-if="o.total_venta_gratuito &gt; 0">
                                 <td>
                                     <strong>Monto Gratuito</strong>
                                 </td>
@@ -383,7 +383,7 @@
             <div class="row">
                 <div class="col-4">
                     <t t-if="o.state in ['posted','paid']">
-                        <img t-att-src="'/report/barcode/?type=%s&amp;value=%s&amp;width=%s&amp;height=%s'%('QR', o.generate_text_qr(o), 200, 200)"/>
+                        <img t-att-src="'/report/barcode/?type=%s&amp;value=%s&amp;width=%s&amp;height=%s'%('QR', o.generate_text_qr(o), 80, 80)"/>
                     </t>
                 </div>
             </div>

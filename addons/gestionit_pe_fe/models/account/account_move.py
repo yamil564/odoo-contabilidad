@@ -329,6 +329,8 @@ class AccountMove(models.Model):
         for record in self:
             if not record.apply_global_discount:
                 record.descuento_global = 0
+
+            # _logger.info(record.invoice_line_ids)
             # _logger.info(record.invoice_line_ids)
             # for x in record.invoice_line_ids:
             #     _logger.info(x.name)
