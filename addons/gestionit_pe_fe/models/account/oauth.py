@@ -581,7 +581,7 @@ def crear_json_fac_bol(self):
             "codAfectacionIgv": item.tax_ids[0].tax_group_id.tipo_afectacion if len(item.tax_ids) else "",
             # "tasaIgv": round(tasaIgv*100, 2),
             # Monto Total del IGV
-            "montoIgv": montoIgv if montoIgv > 0 else 0.0,
+            "montoIgv": round(montoIgv if montoIgv > 0 else 0.0,2),
             "codSistemaCalculoIsc": "01",  # VERIFICAR
             "montoIsc": 0.0,  # VERIFICAR
             # "tasaIsc" : 0.0, #VERIFICAR
