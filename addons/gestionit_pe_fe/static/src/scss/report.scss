@@ -25,5 +25,14 @@
         position: relative;
         bottom: 0px;
         // white-space: nowrap;
+        .additional-information{
+            font-size: 12px;
+        }
+        .banks{
+            ul{
+                list-style: none;
+                padding:0px;
+            }
+        }
     }
 }

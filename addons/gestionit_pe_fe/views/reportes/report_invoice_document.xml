@@ -276,7 +276,7 @@
 
             <div class="invoice-content-total">
                 <div id="total" class="row">
-                    <div class="col-7">
+                    <div class="col-7 additional-information">
                         <br t-if="o.has_detraction"/>
                         <div style="border: solid gray 1px;padding:8px" t-if="o.has_detraction">
                             <div>
@@ -295,20 +295,26 @@
                                 </span>
                             </div>
                         </div>
-                        <br/>
+                        <br t-if="o.has_detraction"/>
                         <div style="font-size: 12px; width: 100%">
                             <div>
-                                <b>Importe en letras</b>
-                                <span t-esc="o.to_word(o.amount_total,o.currency_id.name)"/>
+                                <b>SON: </b><span t-esc="o.to_word(o.amount_total,o.currency_id.name)"/>
                             </div>
                             <div>
                                 <t t-if="o.amount_total==0.0">TRANSFERENCIA GRATUITA</t>
                             </div>
-                            <p>---------------------------------------------------------------</p>
+                            <p>--------------------------------------------------------------------</p>
                         </div>
                         <p t-if="o.invoice_payment_term_id and o.amount_total!=0.0">
                             <span t-field="o.invoice_payment_term_id.note"/>
                         </p>
+                        <div t-if="len(o.company_id.bank_ids) &gt; 0" class="banks">
+                            <ul>
+                                <li t-foreach="o.company_id.partner_id.bank_ids" t-as="bank">
+                                    <span t-field="bank.acc_number"></span>
+                                </li>
+                            </ul>
+                        </div>
                         <div class="row">
                             <div class="col-12">
                                 <t t-if="o.state in ['posted','paid']">
@@ -400,6 +406,7 @@
                         </table>
                     </div>
                 </div>
+                <br/>
                 <div class="row">
                     <div class="col-12 text-center">
                         <span t-if="o.type == 'out_invoice' and (o.state == 'posted' or o.state == 'paid') and o.invoice_type_code=='01'">
