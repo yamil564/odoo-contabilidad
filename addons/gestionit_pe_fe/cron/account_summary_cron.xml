@@ -10,7 +10,7 @@
             <field name="doall">1</field>
             <field name="user_id" ref="base.user_root"/>
             <field name="code">model.cron_crear_resumenes_diarios()</field>
-            <field name="nextcall" eval="(datetime.strptime(datetime.now().strftime('%Y-%m-%d %H:00:00'),'%Y-%m-%d %X') + timedelta(hours=20) ).strftime('%Y-%m-%d %X')"/>
+            <!-- <field name="nextcall" eval="(datetime.strptime(datetime.now().strftime('%Y-%m-%d %H:00:00'),'%Y-%m-%d %X') + timedelta(hours=20) ).strftime('%Y-%m-%d %X')"/> -->
         </record>
 
         <record id="gestionit_pe_fe.ir_cron_validacion_de_resumen_diario" model="ir.cron">
@@ -23,7 +23,7 @@
             <field name="numbercall">-1</field>
             <field name="user_id" ref="base.user_root"/>
             <field name="code">model.cron_consulta_estado_resumen()</field>
-            <field name="nextcall" eval="(datetime.strptime(datetime.now().strftime('%Y-%m-%d %H:00:00'),'%Y-%m-%d %X') + timedelta(hours=24) ).strftime('%Y-%m-%d %X')"/>
+            <!-- <field name="nextcall" eval="(datetime.strptime(datetime.now().strftime('%Y-%m-%d %H:00:00'),'%Y-%m-%d %X') + timedelta(hours=24) ).strftime('%Y-%m-%d %X')"/> -->
         </record>
     </data>
 </odoo>

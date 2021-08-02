@@ -222,7 +222,7 @@ def build_factura(data):
     # percepcion = data.get("percepcion", None)
     # detraccion = data.get("detraccion", None)
 
-    # mntDescuentoGlobal = descuento.get('mntDescuentoGlobal', 0.0)
+    mntDescuentoGlobal = descuento.get('mntDescuentoGlobal', 0.0)
     mntTotalDescuentos = descuento.get('mntTotalDescuentos', 0.0)
 
     if indExportacion:
@@ -277,7 +277,7 @@ def build_factura(data):
         documento_descuento_global = documento["descuentoGlobal"]
         if ("factor" in documento_descuento_global) and ("montoDescuento" in documento_descuento_global) and ("montoBase" in documento_descuento_global):
             descuento_global = AllowanceCharge(charge_indicator=False,
-                                               allowance_charge_reason_code="00",
+                                               allowance_charge_reason_code="02",
                                                multiplier_factor_numeric=documento_descuento_global.get(
                                                    "factor", 0.0),  # Porcentaje del descuento
                                                amount=documento_descuento_global.get(
@@ -299,7 +299,7 @@ def build_factura(data):
     payable_amount = PayableAmount(
         amount=round(mntTotal, 2), currencyID=tipoMoneda)
     tax_inclusive_amount = TaxInclusiveAmount(
-        amount=round(mntTotal, 2), currencyID=tipoMoneda)
+        amount=round(mntNeto + mntExe + mntExo + mntTotalDescuentos + mntTotalIgv, 2), currencyID=tipoMoneda)
 
     legal_monetary_total = MonetaryTotal.LegalMonetaryTotal(line_extension_amount=line_extension_amount,
                                                             prepaid_amount=prepaid_amount,
