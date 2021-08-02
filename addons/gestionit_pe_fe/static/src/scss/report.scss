@@ -14,4 +14,16 @@
             padding:4px 0px 4px;
         }
     }
+
+    .sale-total,.invoice-total{
+        font-size:16px;
+        td{
+            padding:4px 0px 4px;
+        }
+    }
+    .invoice-content-total{
+        position: relative;
+        bottom: 0px;
+        // white-space: nowrap;
+    }
 }
