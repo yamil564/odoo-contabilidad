@@ -227,10 +227,16 @@
                     </t> -->
                 <!-- </t> -->
 
-                <div class="clearfix">
+                <div class="sale-content-total">
                     <div class="row" name="total">
-                        <div class="col-7" >
-                            
+                        <div class="col-7 additional-information" >
+                            <div t-if="len(doc.company_id.bank_ids) &gt; 0" class="banks">
+                                <ul>
+                                    <li t-foreach="doc.company_id.partner_id.bank_ids" t-as="bank">
+                                        <span t-field="bank.acc_number"></span>
+                                    </li>
+                                </ul>
+                            </div>
                         </div>
                         <div class="col-5">
                             <table class="table table-condensed sale-total" style="min-width: 200px;max-width: 350px;">

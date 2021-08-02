@@ -21,17 +21,18 @@
             padding:4px 0px 4px;
         }
     }
-    .invoice-content-total{
+    .invoice-content-total,.sale-content-total{
         position: relative;
         bottom: 0px;
+        color:black;
         // white-space: nowrap;
         .additional-information{
             font-size: 12px;
-        }
-        .banks{
-            ul{
-                list-style: none;
-                padding:0px;
+            .banks{
+                ul{
+                    list-style: none;
+                    padding:0px;
+                }
             }
         }
     }
