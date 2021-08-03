@@ -250,7 +250,7 @@
                         </td>
                         <td>
                             <span t-if="l.product_id.default_code" t-esc="'['+l.product_id.default_code+']'"/>
-                            <span t-field="l.product_id.name"/>
+                            <span t-field="l.name"/>
                         </td>
                         <!-- <td class="hidden">
                                 <span t-field="l.invoice_origin"/>
@@ -291,7 +291,7 @@
                             <br/>
                             <div>
                                 <strong>Descripción: </strong>
-                                <span>OPERACIÓN SUJETA AL SISTEMA DE PAGO DE OBLIGACIONES TRIBUTARIAS DEL BANCO DE LA NACIÓN <t t-esc="bank_account_number_national"/>
+                                <span>OPERACIÓN SUJETA AL SISTEMA DE PAGO DE OBLIGACIONES TRIBUTARIAS DEL BANCO DE LA NACIÓN <t t-esc="o.bank_account_number_national"/>
                                 </span>
                             </div>
                         </div>
