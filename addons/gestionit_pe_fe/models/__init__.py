@@ -3,8 +3,8 @@ from . import product
 from . import purchase
 from . import sale_order
 from . import partner
-from . import account
 from . import company
+from . import account
 from . import user
 from . import stock
 from . import guia_remision

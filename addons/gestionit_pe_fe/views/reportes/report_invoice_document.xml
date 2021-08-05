@@ -39,7 +39,7 @@
                             <div>
                                 <span t-field="company.street"/>
                             </div>
-                            
+
                             <div t-if="company.email">
                                 <b> Email: </b>
                                 <span t-field="company.email"/>
@@ -120,19 +120,20 @@
                             <span t-esc="o.partner_id.parent_id.street"/>
                         </div>
                         <div>
-                            <span t-field="o.partner_id.parent_id.state_id"/>
- -                            <span t-field="o.partner_id.parent_id.province_id"/>
- -                            <span t-field="o.partner_id.parent_id.district_id"/>
+                            <span t-esc="'{}-{}-{}'.format(o.partner_id.parent_id.state_id.name or '',o.partner_id.parent_id.province_id.name or '',o.partner_id.parent_id.district_id.name or '')"/>
                         </div>
                     </div>
                     <div t-else="">
-                        <b>Cliente: </b>
-                        <div t-if="o.partner_id.registration_name">
-                            <span t-field="o.partner_id.registration_name"/>
+                        <div>
+                            <b>Cliente: </b>
+                            <t t-if="o.partner_id.registration_name">
+                                <span t-field="o.partner_id.registration_name"/>
+                            </t>
+                            <t t-else="">
+                                <span t-field="o.partner_id.name"/>
+                            </t>
                         </div>
-                        <div t-else="">
-                            <span t-field="o.partner_id.name"/>
-                        </div>
+
                         <div t-if="o.partner_id.vat">
                             <span t-if="o.invoice_type_code in ['01','07'] and o.partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code =='6' ">
                                 <b>RUC:</b>
@@ -150,9 +151,17 @@
                             <span t-field="o.partner_id.street"/>
                         </div>
                         <div>
-                            <span t-field="o.partner_id.state_id"/>
- -                            <span t-field="o.partner_id.province_id"/>
- -                            <span t-field="o.partner_id.district_id"/>
+                            <span t-esc="'{}-{}-{}'.format(o.partner_id.state_id.name or '',o.partner_id.province_id.name or '',o.partner_id.district_id.name or '')"/>
+                        </div>
+                        <div>
+                            <t t-if="o.partner_id.phone">
+                                <b>Teléfono: </b>
+                                <span t-field="o.partner_id.phone"/>
+                            </t>
+                            <t t-if="o.partner_id.mobile">
+                                <b>Celular: </b>
+                                <span t-field="o.partner_id.mobile"/>
+                            </t>
                         </div>
                     </div>
                 </div>
@@ -234,14 +243,14 @@
                         <th class="text-right">Total</th>
                     </tr>
                 </thead>
-                <tbody class="invoice_tbody" style="font-size:10px;">
+                <tbody class="invoice_tbody">
                     <tr t-foreach="o.invoice_line_ids.filtered(lambda r:not r.is_charge_or_discount)" t-as="l">
                         <td>
                             <span t-field="l.quantity"/>
                         </td>
                         <td>
                             <span t-if="l.product_id.default_code" t-esc="'['+l.product_id.default_code+']'"/>
-                            <span t-field="l.product_id.name"/>
+                            <span t-field="l.name"/>
                         </td>
                         <!-- <td class="hidden">
                                 <span t-field="l.invoice_origin"/>
@@ -250,11 +259,11 @@
                             <span t-field="l.product_uom_id.code"/>
                         </td>
                         <td class="text-right">
-                            <span t-field="l.price_unit"/>
+                            <span t-field="l.price_unit" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
                         </td>
                         <td t-if="display_discount" class="text-right">
                             <span t-if="l.discount &gt; 0">
-                                (<span t-field="l.discount"/>%)
+                                <span t-esc="'('+str(l.discount)+'%)'"/>
                                 <span t-esc="round(l.price_unit*l.quantity,3)" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
                             </span>
                         </td>
@@ -265,10 +274,10 @@
                 </tbody>
             </table>
 
-            <div class="clearfix">
+            <div class="invoice-content-total">
                 <div id="total" class="row">
-                    <div class="col-8">
-                        <br/>
+                    <div class="col-7 additional-information">
+                        <br t-if="o.has_detraction"/>
                         <div style="border: solid gray 1px;padding:8px" t-if="o.has_detraction">
                             <div>
                                 <strong>% Detracción: </strong>
@@ -282,25 +291,56 @@
                             <br/>
                             <div>
                                 <strong>Descripción: </strong>
-                                <span>OPERACIÓN SUJETA AL SISTEMA DE PAGO DE OBLIGACIONES TRIBUTARIAS DEL BANCO DE LA NACIÓN <t t-esc="bank_account_number_national"/></span>
+                                <span>OPERACIÓN SUJETA AL SISTEMA DE PAGO DE OBLIGACIONES TRIBUTARIAS DEL BANCO DE LA NACIÓN <t t-esc="o.bank_account_number_national"/>
+                                </span>
+                            </div>
+                        </div>
+                        <br t-if="o.has_detraction"/>
+                        <div style="font-size: 12px; width: 100%">
+                            <div>
+                                <b>SON: </b><span t-esc="o.to_word(o.amount_total,o.currency_id.name)"/>
+                            </div>
+                            <div>
+                                <t t-if="o.amount_total==0.0">TRANSFERENCIA GRATUITA</t>
+                            </div>
+                            <p>--------------------------------------------------------------------</p>
+                        </div>
+                        <p t-if="o.invoice_payment_term_id and o.amount_total!=0.0">
+                            <span t-field="o.invoice_payment_term_id.note"/>
+                        </p>
+                        <div t-if="len(o.company_id.bank_ids) &gt; 0" class="banks">
+                            <ul>
+                                <li t-foreach="o.company_id.partner_id.bank_ids" t-as="bank">
+                                    <span t-field="bank.acc_number"></span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="row">
+                            <div class="col-12">
+                                <t t-if="o.state in ['posted','paid']">
+                                    <img t-att-src="'/report/barcode/?type=%s&amp;value=%s&amp;width=%s&amp;height=%s'%('QR', o.generate_text_qr(o), 80, 80)"/>
+                                </t>
+                                <t t-if="o.digest_value">
+                                    <span t-field="o.digest_value"/>
+                                </t>
+                            </div>
+                        </div>
+                        <!-- <br/>
+                        <div class="row">
+                            <div class="col-6">
+                                
                             </div>
                         </div>
                         <br/>
+                        <br/> -->
+                        
                     </div>
-                    <div class="col-4">
-                    <!-- <div t-attf-class="#{'col-4' if report_type != 'html' else 'col-sm-4 col-md-4'} ml-auto"> -->
-                        <table class="table table-sm" style="page-break-inside: avoid;">
-                            <!-- <tr class="border-black o_subtotal" style="">
-                                <td>
-                                    <strong>Subtotal</strong>
-                                </td>
-                                <td class="text-right">
-                                    <span t-field="o.amount_untaxed"/>
-                                </td>
-                            </tr> -->
+                    <div class="col-5">
+                        <!-- <div t-attf-class="#{'col-4' if report_type != 'html' else 'col-sm-4 col-md-4'} ml-auto"> -->
+                        <table class="table table-sm invoice-total" style="page-break-inside: avoid;">
                             <tr class="border-black" style="" t-if="o.descuento_global &gt; 0">
                                 <td>
-                                    <strong>Dscto. Global (<t t-esc="o.descuento_global"/> %)</strong>
+                                    <strong>Dscto. Global <t t-esc="'('+str(o.descuento_global)+'%)'"/></strong>
                                 </td>
                                 <td class="text-right">
                                     <span t-field="o.total_descuento_global"/>
@@ -322,7 +362,7 @@
                                     <span t-field="o.total_venta_gravado"/>
                                 </td>
                             </tr>
-                            <tr>
+                            <tr t-if="o.total_venta_inafecto &gt; 0">
                                 <td>
                                     <strong>Monto Inafecto</strong>
                                 </td>
@@ -330,7 +370,7 @@
                                     <span t-field="o.total_venta_inafecto"/>
                                 </td>
                             </tr>
-                            <tr>
+                            <tr t-if="o.total_venta_exonerada &gt; 0">
                                 <td>
                                     <strong>Monto Exonerado</strong>
                                 </td>
@@ -338,7 +378,7 @@
                                     <span t-field="o.total_venta_exonerada"/>
                                 </td>
                             </tr>
-                            <tr>
+                            <tr t-if="o.total_venta_gratuito &gt; 0">
                                 <td>
                                     <strong>Monto Gratuito</strong>
                                 </td>
@@ -366,53 +406,33 @@
                         </table>
                     </div>
                 </div>
-            </div>
-            <div style="font-size: 12px; width: 100%">
-                <p>Importe en letras</p>
-                <b>
-                    <span t-esc="o.to_word(o.amount_total,o.currency_id.name)"/>
-                </b>
-                <p>
-                    <t t-if="o.amount_total==0.0">TRANSFERENCIA GRATUITA</t>
-                </p>
-                <p>---------------------------------------------------------------</p>
-            </div>
-            <p t-if="o.invoice_payment_term_id and o.amount_total!=0.0">
-                <span t-field="o.invoice_payment_term_id.note"/>
-            </p>
-            <div class="row">
-                <div class="col-4">
-                    <t t-if="o.state in ['posted','paid']">
-                        <img t-att-src="'/report/barcode/?type=%s&amp;value=%s&amp;width=%s&amp;height=%s'%('QR', o.generate_text_qr(o), 200, 200)"/>
-                    </t>
+                <br/>
+                <div class="row">
+                    <div class="col-12 text-center">
+                        <span t-if="o.type == 'out_invoice' and (o.state == 'posted' or o.state == 'paid') and o.invoice_type_code=='01'">
+                            Representación impresa de la <b>FACTURA ELECTRÓNICA</b>
+                            <t t-if="company.website_invoice_search">, comprobante emitido desde sistemas del contribuyente, puede consultar este comprobante ingresando a <t t-esc="company.website_invoice_search"/>
+                            </t>
+                        </span>
+                        <span t-if="o.type == 'out_invoice' and (o.state == 'posted' or o.state == 'paid') and o.invoice_type_code=='03'">
+                            Representación impresa de la <b>BOLETA ELECTRÓNICA</b>
+                            <t t-if="company.website_invoice_search">, comprobante emitido desde sistemas del contribuyente, puede consultar este comprobante ingresando a <t t-esc="company.website_invoice_search"/>
+                            </t>
+                        </span>
+                        <span t-if="o.type == 'out_invoice' and (o.state == 'posted' or o.state == 'paid') and o.invoice_type_code=='07'">
+                            Representación impresa de la <b>NOTA DE CRÉDITO ELECTRÓNICA</b>
+                            <t t-if="company.website_invoice_search">, comprobante emitido desde sistemas del contribuyente, puede consultar este comprobante ingresando a <t t-esc="company.website_invoice_search"/>
+                            </t>
+                        </span>
+                        <span t-if="o.type == 'out_invoice' and (o.state == 'posted' or o.state == 'paid') and o.invoice_type_code=='08'">
+                            Representación impresa de la <b>NOTA DE DÉBITO ELECTRÓNICA</b>
+                            <t t-if="company.website_invoice_search">, comprobante emitido desde sistemas del contribuyente, puede consultar este comprobante ingresando a <t t-esc="company.website_invoice_search"/>
+                            </t>
+                        </span>
+                    </div>
                 </div>
             </div>
-            <br/>
-            <div class="row">
-                <div class="col-6">
-                    <t t-if="o.digest_value">
-                        <span t-field="o.digest_value"/>
-                    </t>
-                </div>
-            </div>
-            <br/>
-            <br/>
-            <div class="row">
-                <div class="col-12 text-center">
-                    <span t-if="o.type == 'out_invoice' and (o.state == 'posted' or o.state == 'paid') and o.invoice_type_code=='01'">
-									Representación impresa de la <b>FACTURA ELECTRÓNICA</b> <t t-if="company.website_invoice_search">, comprobante emitido desde sistemas del contribuyente, puede consultar este comprobante ingresando a <t t-esc="company.website_invoice_search"/></t>
-                    </span>
-                    <span t-if="o.type == 'out_invoice' and (o.state == 'posted' or o.state == 'paid') and o.invoice_type_code=='03'">
-									Representación impresa de la <b>BOLETA ELECTRÓNICA</b><t t-if="company.website_invoice_search">, comprobante emitido desde sistemas del contribuyente, puede consultar este comprobante ingresando a <t t-esc="company.website_invoice_search"/></t>
-                    </span>
-                    <span t-if="o.type == 'out_invoice' and (o.state == 'posted' or o.state == 'paid') and o.invoice_type_code=='07'">
-									Representación impresa de la <b>NOTA DE CRÉDITO ELECTRÓNICA</b><t t-if="company.website_invoice_search">, comprobante emitido desde sistemas del contribuyente, puede consultar este comprobante ingresando a <t t-esc="company.website_invoice_search"/></t>
-                    </span>
-                    <span t-if="o.type == 'out_invoice' and (o.state == 'posted' or o.state == 'paid') and o.invoice_type_code=='08'">
-									Representación impresa de la <b>NOTA DE DÉBITO ELECTRÓNICA</b><t t-if="company.website_invoice_search">, comprobante emitido desde sistemas del contribuyente, puede consultar este comprobante ingresando a <t t-esc="company.website_invoice_search"/></t>
-                    </span>
-                </div>
-            </div>
+
 
         </xpath>
     </template>

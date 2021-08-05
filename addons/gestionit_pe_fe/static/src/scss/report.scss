@@ -1,0 +1,39 @@
+.o_report_layout_background{
+    .invoice_tbody{
+        font-size:12px;
+        color:black;
+        td{
+            padding:4px 0px 4px;
+        }
+    }
+
+    .sale_tbody{
+        font-size:12px;
+        color:black;
+        td{
+            padding:4px 0px 4px;
+        }
+    }
+
+    .sale-total,.invoice-total{
+        font-size:16px;
+        td{
+            padding:4px 0px 4px;
+        }
+    }
+    .invoice-content-total,.sale-content-total{
+        position: relative;
+        bottom: 0px;
+        color:black;
+        // white-space: nowrap;
+        .additional-information{
+            font-size: 12px;
+            .banks{
+                ul{
+                    list-style: none;
+                    padding:0px;
+                }
+            }
+        }
+    }
+}

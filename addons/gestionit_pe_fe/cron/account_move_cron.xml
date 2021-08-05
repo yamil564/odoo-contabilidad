@@ -10,8 +10,8 @@
             <field name="numbercall">-1</field>
             <field name="doall">1</field>
             <field name="user_id" ref="base.user_root"/>
-            <field name="code">model.cron_enviar_comprobante()</field>
-            <field name="nextcall" eval="(datetime.strptime(datetime.now().strftime('%Y-%m-%d %H:00:00'),'%Y-%m-%d %X') + timedelta(hours=6) ).strftime('%Y-%m-%d %X')"/>
+            <field name="code">model.cron_action_send_invoice()</field>
+            <!-- <field name="nextcall" eval="(datetime.strptime(datetime.now().strftime('%Y-%m-%d %H:00:00'),'%Y-%m-%d %X') + timedelta(hours=6) ).strftime('%Y-%m-%d %X')"/> -->
         </record>
     </data>
 </odoo>

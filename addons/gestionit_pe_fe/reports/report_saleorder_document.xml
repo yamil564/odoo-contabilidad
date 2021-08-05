@@ -81,18 +81,18 @@
                                 <span t-esc="doc.partner_id.parent_id.street"/>
                             </div>
                             <div>
-                                <span t-field="doc.partner_id.parent_id.state_id"/>
- -                                <span t-field="doc.partner_id.parent_id.province_id"/>
- -                                <span t-field="doc.partner_id.parent_id.district_id"/>
+                                <span t-esc="'{}-{}-{}'.format(doc.partner_id.parent_id.state_id.name or '',doc.partner_id.parent_id.province_id.name or '',doc.partner_id.parent_id.district_id.name or '')"/>
                             </div>
                         </div>
                         <div t-else="">
-                            <b>Cliente: </b>
-                            <div t-if="doc.partner_id.registration_name">
-                                <span t-field="doc.partner_id.registration_name"/>
-                            </div>
-                            <div t-else="">
-                                <span t-field="doc.partner_id.name"/>
+                            <div>
+                                <b>Cliente: </b>
+                                <t t-if="doc.partner_id.registration_name">
+                                    <span t-field="doc.partner_id.registration_name"/>
+                                </t>
+                                <t t-else="">
+                                    <span t-field="doc.partner_id.name"/>
+                                </t>
                             </div>
 
                             <div t-if="doc.partner_id.vat">
@@ -113,9 +113,17 @@
                                 <span t-field="doc.partner_id.street"/>
                             </div>
                             <div>
-                                <span t-field="doc.partner_id.state_id"/>
- -                                <span t-field="doc.partner_id.province_id"/>
- -                                <span t-field="doc.partner_id.district_id"/>
+                                <span t-esc="'{}-{}-{}'.format(doc.partner_id.state_id.name or '',doc.partner_id.province_id.name or '',doc.partner_id.district_id.name or '')"/>
+                            </div>
+                            <div>
+                                <t t-if="doc.partner_id.phone">
+                                    <b>Teléfono: </b>
+                                    <span t-field="doc.partner_id.phone"/>
+                                </t>
+                                <t t-if="doc.partner_id.mobile">
+                                    <b>Celular: </b>
+                                    <span t-field="doc.partner_id.mobile"/>
+                                </t>
                             </div>
                         </div>
                     </div>
@@ -129,17 +137,17 @@
                         <div name="expiration_date"></div>
 
                         <div name="user_id" t-if="doc.user_id">
-                            <strong>Vendedor:</strong>
-                            <p t-field="doc.user_id"/>
+                            <b>Vendedor: </b>
+                            <span t-field="doc.user_id"/>
                         </div>
 
                         <div name="currency_unit_label" t-if="doc.currency_id.currency_unit_label">
-                            <strong t-if="doc.currency_id.currency_unit_label">Tipo de Moneda: </strong>
+                            <b t-if="doc.currency_id.currency_unit_label">Tipo de Moneda: </b>
                             <span t-field="doc.currency_id.currency_unit_label"/>
                         </div>
 
                         <div name="payment_term" t-if="doc.payment_term_id">
-                            <strong t-if="doc.payment_term_id.note">Condición de Pago: </strong>
+                            <b t-if="doc.payment_term_id.note">Condición de Pago: </b>
                             <span t-field="doc.payment_term_id.note"/>
                         </div>
                     </div>
@@ -154,7 +162,7 @@
                             <th>Descripción</th>
                             <th class="text-right">Cantidad</th>
                             <th class="text-right">PU</th>
-                            <th t-if="display_discount" class="text-right" groups="product.group_discount_per_so_line">Dscto.(%)</th>
+                            <th t-if="display_discount" class="text-center" name="display_discount" groups="product.group_discount_per_so_line">Dscto.(%)</th>
                             <!-- <th class="text-right">Taxes</th> -->
                             <th class="text-right" groups="sale.group_show_price_subtotal">Monto</th>
                             <th class="text-right price_tax_included" groups="account.group_show_line_subtotals_tax_included">Total</th>
@@ -185,8 +193,8 @@
                                 <td class="text-right">
                                     <span t-field="l.price_unit"/>
                                 </td>
-                                <td t-if="display_discount" class="text-right" groups="product.group_discount_per_so_line">
-                                    <span t-field="l.discount"/>
+                                <td t-if="display_discount" class="text-right" name="display_discount" groups="product.group_discount_per_so_line">
+                                    <span t-esc="'({}%)'.format(l.discount)"/>
                                 </td>
                                 <!-- <td class="text-right">
                                     <span t-esc="', '.join(map(lambda x: (x.description or x.name), l.tax_id))"/>
@@ -219,20 +227,37 @@
                     </t> -->
                 <!-- </t> -->
 
-                <div class="clearfix">
+                <div class="sale-content-total">
                     <div class="row" name="total">
-                        <div class="col-8"></div>
-                        <div class="col-4">
-                            <table class="table table-condensed" style="min-width: 200px;max-width: 350px;">
-                                <tr style="border-bottom:1px solid #dddddd;" t-if="doc.descuento_global &gt; 0" >
+                        <div class="col-7 additional-information" >
+                            <div t-if="len(doc.company_id.bank_ids) &gt; 0" class="banks">
+                                <ul>
+                                    <li t-foreach="doc.company_id.partner_id.bank_ids" t-as="bank">
+                                        <span t-field="bank.acc_number"></span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-5">
+                            <table class="table table-condensed sale-total" style="min-width: 200px;max-width: 350px;">
+                                <tr t-if="doc.total_descuento_global &gt; 0">
                                     <td>
-                                        <strong>Dscto Global %</strong>
+                                        <strong>Dscto. Global <span t-esc="str(doc.descuento_global) +'%'"/>
+                                        </strong>
                                     </td>
                                     <td class="text-right">
-                                        <span t-esc="str(doc.descuento_global) +'%'"/>
+                                        <span t-esc="round(doc.total_descuento_global,2)" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.pricelist_id.currency_id}"/>
                                     </td>
                                 </tr>
-                                <tr style="border-bottom:1px solid #dddddd;">
+                                <tr t-if="doc.total_descuentos &gt; 0">
+                                    <td>
+                                        <strong>Total Dscto.</strong>
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-esc="round(doc.total_descuentos,2)" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.pricelist_id.currency_id}"/>
+                                    </td>
+                                </tr>
+                                <tr >
                                     <td>
                                         <strong>Subtotal</strong>
                                     </td>
@@ -240,7 +265,7 @@
                                         <span t-esc="doc.total_venta_gravado" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.pricelist_id.currency_id}"/>
                                     </td>
                                 </tr>
-                                <tr style="border-bottom:1px solid #dddddd;">
+                                <tr >
                                     <td>
                                         <strong>IGV (18%)</strong>
                                     </td>
