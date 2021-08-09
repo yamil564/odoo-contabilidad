@@ -1,11 +1,12 @@
-.o_report_layout_background{
-    .invoice_tbody{
+.o_report_layout_pe_v1{
+    .invoice_tbody,.sale_order_tbody{
         font-size:12px;
         color:black;
         td{
             padding:4px 0px 4px;
         }
     }
+    
 
     .sale_tbody{
         font-size:12px;
@@ -36,4 +37,99 @@
             }
         }
     }
+    div[name="invoice_address"],div[name="sale_order_address"]{
+        border:solid 1px black;
+        font-size: 11px;
+        border-radius: 12px;
+        padding:5px 0px;
+        label{
+            color:black;
+            white-space:pre-wrap;
+            margin:auto;
+        }
+        th{
+            text-align: end;
+            width: 12%;
+        }
+        th,td{
+            padding-top: 3px;
+        }
+    }
+    .table-invoice-lines,.table-order-lines{
+        thead{
+            tr{
+                background-color:#d9d9d9;
+                color:black;
+                font-size: 10px;
+                th{
+                    padding:8px 0px;
+                    text-align: center;
+                    &:first-child{
+                        border-radius:10px 0px 0px 0px;
+                    }
+                    &:last-child{
+                        border-radius:0px 10px 0px 0px;
+                    }
+                }
+                .h_item{
+                    width:30px;
+                }
+                .h_quantity,.h_product_uom_id{
+                    width:7%
+                }
+            }
+        }
+        tbody{
+            tr{
+                td{
+                    height:8px;
+                    max-height: 20px;
+                    font-size: 10px;
+                   
+                    &.v_item,&.v_quantity,&.v_product_uom_id{
+                        text-align: center;
+                    }
+                    &.v_name{
+                        padding:0px 8px;
+                    }
+                    &.v_price_unit,&.v_price_total,&.v_discount,&.v_value_unit{
+                        padding:0px 8px;
+                        text-align: right;
+                    }
+                    &:not(.empty){
+                        border:solid 1px #d9d9d9;
+                    }
+                    &.empty{
+                        border-right: solid 1px #d9d9d9;
+                        border-left: solid 1px #d9d9d9;
+                    }
+                }
+                &.empty{
+                    &:last-child{
+                        td{
+                            border-bottom: solid 1px #d9d9d9;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+.o_report_header_pe_v1{
+    padding-bottom: 10px;
+    div[name="company_address"]{
+        color:black;
+        font-size: 10px !important;
+    }
+    div[name="company_document"]{
+        border-radius: 12px;
+        border:solid 1px black;
+        color:black;
+    }
+    .logo{
+        justify-content: center;
+        display: flex;
+        flex-direction: column;
+    }
+   
 }

@@ -1,71 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <template id="external_layout_background_gestionit">
-        <!-- <t t-set="o" t-value="o.with_context(lang=lang)"/> -->
-        <!-- <div t-attf-class="o_company_#{company.id}_layout header">
-            <div class="o_background_header">
+        <div t-attf-class="header o_company_#{company.id}_layout">
+            <div class="o_report_header_pe_v1">
                 <div class="row">
-                    <div class="col-3">
-                        <img t-if="company.logo" t-att-src="image_data_uri(company.logo)" class="float-left" alt="Logo"/>
+                    <div class="col-4">
+                        <img t-if="company.logo" t-att-src="image_data_uri(company.logo)" alt="Logo" class="w-100"/>
                     </div>
-                    <div class="col-5">
+                    <div class="col-4" name="company_address">
                         <div>
-                            <h3>
-                                <span t-field="company.name"/>
-                            </h3>
+                            <span t-field="o.company_id.name"/>
                         </div>
                         <div>
-                            <span t-field="company.street"/>
+                            <span t-field="o.company_id.street"/>
                         </div>
-                        <br/>
-                        <div t-if="company.email">
+                        <div t-if="o.company_id.email">
                             <b> Email: </b>
-                            <span t-field="company.email"/>
+                            <span t-field="o.company_id.email"/>
                         </div>
-                        <div t-if="company.phone">
+                        <div t-if="o.company_id.phone">
                             <b> Teléfono: </b>
-                            <span t-field="company.phone"/>
+                            <span t-field="o.company_id.phone"/>
+                        </div>
+                        <div t-if="o.company_id.website">
+                            <b> Website: </b>
+                            <span t-field="o.company_id.website"/>
                         </div>
                     </div>
-                    <br/>
-                    <div class="col-4" style="border-style:solid; border-width:thin;">
-                        <div class="text-center">RUC: <span t-field="company.vat"/>
-                        </div>
-                        <br/>
-                        <div class="text-center">
-                            <h3>
-                                <span t-if="o.type == 'out_invoice' and (o.state == 'posted' or o.state == 'paid') and o.journal_id.invoice_type_code_id=='01'">FACTURA ELECTRÓNICA</span>
-                                <span t-if="o.type == 'out_invoice' and (o.state == 'posted' or o.state == 'paid') and o.journal_id.invoice_type_code_id=='03'">BOLETA ELECTRÓNICA</span>
-                                <span t-if="o.type == 'out_refund' and (o.state == 'posted' or o.state == 'paid') and o.journal_id.invoice_type_code_id=='07'">NOTA DE CRÉDITO ELECTRÓNICA</span>
-                                <span t-if="o.type == 'out_invoice' and (o.state == 'posted' or o.state == 'paid') and o.journal_id.invoice_type_code_id=='08'">NOTA DE DÉBITO ELECTRÓNICA</span>
-                                <span t-if="o.type == 'out_invoice' and o.state == 'proforma2'">PRO-FORMA</span>
-                                <span t-if="o.type == 'out_invoice' and o.state == 'draft'">
-                                    <span t-if="o.journal_id.invoice_type_code_id=='01'">FACTURA </span>
-                                    <span t-if="o.journal_id.invoice_type_code_id=='03'">BOLETA </span>
-                                    <span t-if="o.journal_id.invoice_type_code_id=='07'">NOTA DE CRÉDITO</span>
-                                    <span t-if="o.journal_id.invoice_type_code_id=='08'">NOTA DE DÉBITO</span>
-                                        BORRADOR
-                                </span>
-                                <span t-if="o.type == 'out_invoice' and o.state == 'cancel' and o.journal_id.invoice_type_code_id=='01'">FACTURA CANCELADA</span>
-                                <span t-if="o.type == 'out_invoice' and o.state == 'cancel' and o.journal_id.invoice_type_code_id=='03'">BOLETA CANCELADA</span>
-                                <span t-if="o.type == 'out_refund' and o.state == 'cancel' and o.journal_id.invoice_type_code_id=='07'">NOTA DE CRÉDITO CANCELADA</span>
-                                <span t-if="o.type == 'out_invoice' and o.state == 'cancel' and o.journal_id.invoice_type_code_id=='08'">NOTA DE DÉBITO CANCELADA</span>
-                                <span t-if="o.type == 'in_invoice' and o.journal_id.invoice_type_code_id=='01'">FACTURA DE PROVEEDOR</span>
-                                <span t-if="o.type == 'in_invoice' and o.journal_id.invoice_type_code_id=='03'">BOLETA DE PROVEEDOR</span>
-                                <span t-if="o.type == 'in_refund' and o.journal_id.invoice_type_code_id=='07'">NOTA DE CRÉDITO DE PROVEEDOR</span>
-                                <span t-if="o.type == 'in_invoice' and o.journal_id.invoice_type_code_id=='08'">NOTA DE DÉBITO DE PROVEEDOR</span>
-                            </h3>
-                        </div>
-                        <br/>
-                        <div class="text-center">Nro. <span t-field="o.name"/>
+                    <div class="col-4" name="company_document">
+                        <div class="pt-2">
+                            <div class="text-center">
+                                <b>
+                                    <t t-esc="document_display_name"/>
+                                </b>
+                            </div>
+                            <div class="text-center">
+                                <span t-esc="'R.U.C. {}'.format(o.company_id.vat)"/>
+                            </div>
+                            <div class="text-center">
+                                <span t-esc="o.name"/>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div> -->
+        </div>
 
-        <div t-attf-class="o_company_#{company.id}_layout article o_report_layout_background" t-att-data-oe-model="o and o._name" t-att-data-oe-id="o and o.id" t-att-data-oe-lang="o and o.env.context.get('lang')">
-            <t t-call="web.address_layout"/>
+        <div t-attf-class="o_company_#{company.id}_layout article o_report_layout_pe_v1" t-att-data-oe-model="o and o._name" t-att-data-oe-id="o and o.id" t-att-data-oe-lang="o and o.env.context.get('lang')">
             <t t-raw="0"/>
         </div>
     </template>

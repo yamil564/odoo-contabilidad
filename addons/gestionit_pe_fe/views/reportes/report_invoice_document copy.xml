@@ -4,12 +4,13 @@
     </template>
 
     <template id="account.report_invoice_document">
+
         <t t-call="gestionit_pe_fe.external_layout_background_gestionit">
+            <t t-set="document_display_name" t-value="Nombre de documento"/>
             <t t-set="o" t-value="o.with_context({'lang':o.partner_id.lang})"/>
-            <div class="o_background_header">
+            <!-- <div class="o_background_header">
                 <div class="row">
                     <div class="col-xs-3">
-                        <!-- <span t-field="o.company_id.logo" t-field-options="{'widget':'image'}"/> -->
                         <img t-if="o.company_id.logo" t-att-src="image_data_uri(o.company_id.logo)" class="float-left" alt="Logo"/>
                     </div>
                     <div class="col-xs-4">
@@ -62,7 +63,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> -->
 
             <div class="page" style="padding-top:30px;position:absolute">
                 <div class="row" style="font-size:10px">
