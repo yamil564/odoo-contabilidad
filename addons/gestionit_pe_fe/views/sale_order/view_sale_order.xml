@@ -19,6 +19,7 @@
                 <xpath expr="//kanban//templates//div" position="inside">
                     <a t-if="!read_only_mode" type="delete" class="fa fa-times pull-right"/>
                 </xpath>
+                
                 <field name="amount_tax" position="replace"/>
                 <field name="amount_untaxed" position="replace">
                     <field name="descuento_global" groups="gestionit_pe_fe.group_fe_discount_global_sale_invoices"/>
@@ -30,6 +31,23 @@
                     <field name="total_descuentos"/>
                     <field name="total_igv" string="IGV (18%)"/>
                 </field>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="gestionit_pe_fe.sale_order_restrict_edit_price">
+            <field name="name">sale.order.restrict.price</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form"/>
+            <field name="groups_id" eval="[(4,ref('gestionit_pe_fe.group_fe_restrict_edit_price_from_sale'))]"/>
+            <field name="arch" type="xml">
+                <xpath expr="//tree/field[@name='price_unit']" position="attributes">
+                    <attribute name="readonly">1</attribute>
+                    <attribute name="force_save">1</attribute>
+                </xpath>
+                <xpath expr="//form//field[@name='price_unit']" position="attributes">
+                    <attribute name="readonly">1</attribute>
+                    <attribute name="force_save">1</attribute>
+                </xpath>
             </field>
         </record>
 

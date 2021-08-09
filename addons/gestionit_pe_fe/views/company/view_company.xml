@@ -36,7 +36,7 @@
                 <xpath expr="//field[@name='vat']" position="after">
                     <field name="default_national_bank_account_id" 
                             attrs="{'invisible':[('id','=',False)]}" 
-                            domain="[('company_id','=',id)]"
+                            domain="[('company_id','=',id),('is_national_bank_detraction','=',True)]"
                             context="{'default_company_id':id,'default_partner_id':partner_id,'default_is_national_bank_detraction':True}"/>
                 </xpath>
                 

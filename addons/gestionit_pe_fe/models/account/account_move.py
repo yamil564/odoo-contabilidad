@@ -252,7 +252,7 @@ class AccountMove(models.Model):
             else:
                 record.anulacion_comprobante = "-"
     
-    @api.depends("amount_total")
+    @api.depends("amount_total","type_detraction")
     def _compute_amount_detraction(self):
         for record in self:
             record.detraction_amount = round(record.amount_total*record.detraction_rate/100,2)
@@ -342,7 +342,9 @@ class AccountMove(models.Model):
             if len(line_discount_global_ids) > 1:
                 raise UserError("El comprobante tiene más de un descuento global, para corregir esto, establezca el valor a 0 guarde, y vuelva a establecer el valor del descuento global")
             
+            # _logger.info("line_discount_global_ids")
             # _logger.info(line_discount_global_ids)
+            # _logger.info(record.descuento_global)
             if record.descuento_global > 0:
                 # _logger.info(line_discount_global_ids)
                 if len(line_discount_global_ids) == 1:
@@ -402,7 +404,7 @@ class AccountMove(models.Model):
                 record._onchange_recompute_dynamic_lines()
                 # record._compute_amount()
             else:
-                record.descuento_global = 0
+                # record.descuento_global = 0
                 # line_discount_global_ids = self.invoice_line_ids.filtered(lambda r:r.is_charge_or_discount and r.type_charge_or_discount_code in ["02"])
                 if line_discount_global_ids.exists():
                     for l in line_discount_global_ids:

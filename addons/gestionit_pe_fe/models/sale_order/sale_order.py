@@ -10,7 +10,7 @@ from itertools import groupby
 from datetime import datetime, timedelta
 from werkzeug.urls import url_encode
 from odoo.addons.gestionit_pe_fe.models.parameters.catalogs import tdi
-
+from odoo.addons.gestionit_pe_fe.models.number_to_letter import to_word
 import json
 import time
 import uuid
@@ -20,6 +20,9 @@ import os
 class SaleOrder(models.Model):
     _inherit = "sale.order"
 
+    def to_word(self, monto, moneda):
+        return to_word(monto, moneda)
+        
     tipo_documento_identidad = fields.Selection(
         selection="_selection_tipo_documento_identidad")
 

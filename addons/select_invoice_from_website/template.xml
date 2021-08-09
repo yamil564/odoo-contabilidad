@@ -44,13 +44,13 @@
                 <t t-if="website_sale_order.state =='draft'">
                     <div class="d-flex flex-column">
                         <div class="form-check">
-                            <input class="form-check-input" type="radio" name="invoice_type_code" value="01" t-att-checked="website_sale_order.invoice_type_code =='01'"/>
+                            <input class="form-check-input" type="radio" name="invoice_type_code" value="01" t-att-checked="website_sale_order.invoice_type_code =='01'" disabled="1"/>
                             <label class="form-check-label" for="Factura Electrónica" style="font-weight:100 !important">
                                 Factura Electrónica
                             </label>
                         </div>
                         <div class="form-check">
-                            <input class="form-check-input" type="radio" name="invoice_type_code"  value="03" t-att-checked="website_sale_order.invoice_type_code =='03'"/>
+                            <input class="form-check-input" type="radio" name="invoice_type_code" value="03" t-att-checked="website_sale_order.invoice_type_code =='03'" disabled="1"/>
                             <label class="form-check-label" for="Boleta Electrónica" style="font-weight:100 !important">
                                 Boleta Electrónica
                             </label>
@@ -72,7 +72,7 @@
                 <div class="form-group d-flex flex-row justify-content-between flex-wrap">
                     <t t-foreach="request.env['l10n_latam.identification.type'].sudo().search([])" t-as="idt">
                         <div class="form-check pt-2">
-                            <input class="form-check-input" type="radio" name="l10n_latam_identification_type_id" t-att-value="idt.id" t-att-data-itc="idt.l10n_pe_vat_code" t-att-checked="'l10n_latam_identification_type_id' in checkout and checkout['l10n_latam_identification_type_id'] == idt.id or idt.name=='DNI'" />
+                            <input class="form-check-input" type="radio" name="l10n_latam_identification_type_id" t-att-id="idt.name" t-att-value="idt.id" t-att-data-itc="idt.l10n_pe_vat_code" t-att-checked="'l10n_latam_identification_type_id' in checkout and checkout['l10n_latam_identification_type_id'] == idt.id or idt.name=='DNI'" />
                             <label class="form-check-label" t-att-for="idt.name" style="font-weight:100 !important">
                                 <t t-esc="idt.name"/>
                             </label>
@@ -106,7 +106,6 @@
                 </t>
                 <input name="country_id" id="country_id" class="d-none" t-att-value="country.id"/>
                 <input name="country_name" class="d-none" t-attf-class="form-control #{error.get('country_id') and 'is-invalid' or ''}" t-att-value="country.name"/>
-                
             </div>
         </xpath>
         <xpath expr="//div[contains(@t-attf-class, 'div_state')]" position="replace">

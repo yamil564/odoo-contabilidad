@@ -486,8 +486,7 @@ class AccountSummary(models.Model):
                 return False, msg_error
 
     def cron_consulta_estado_resumen(self):
-        resumenes = self.env["account.summary"].search(
-            [["estado_emision", "=", "E"]])
+        resumenes = self.env["account.summary"].search([["estado_emision", "=", "E"]])
         for resumen in resumenes:
             try:
                 resumen.consulta_estado_resumen()
@@ -501,10 +500,9 @@ class AccountSummary(models.Model):
             raise UserError("El campo de Ticket esta vacío")
 
         nombreEmisor = self.company_id.partner_id.registration_name.strip()
-        numDocEmisor = self.company_id.partner_id.vat.strip(
-        ) if self.company_id.partner_id.vat else ""
+        numDocEmisor = self.company_id.partner_id.vat.strip() if self.company_id.partner_id.vat else ""
 
-        data = {
+        summary = {
             "company": {
                 "numDocEmisor": numDocEmisor,
                 "nombreEmisor": nombreEmisor,
@@ -517,42 +515,40 @@ class AccountSummary(models.Model):
             "tipoEnvio": int(self.company_id.tipo_envio)
         }
 
-        response = api_models.consultaResumen(data)
+        response = api_models.consultaResumen(summary)
         # r = requests.post(endpoint, headers=headers, data=json.dumps(data))
 
         # response = r.json()
 
         # os.system("echo '%s'"%(json.dumps(r.json(), indent=4)))
 
-        result = response.get("result", False)
-        if result:
-            status = result.get("status", False)
+        # result = response.get("result", False)
+        if response:
+            status = response.get("status", False)
             if status:
-                self.estado_emision = response["result"]["status"]
-                if self.estado_emision == "A":
+                self.estado_emision = status
+                if status == "A":
                     if self.cod_operacion == "1":
-                        self.account_invoice_ids.sudo().write(
-                            {"estado_comprobante_electronico": "1_ACEPTADO"})
+                        self.account_invoice_ids.sudo().write({"estado_comprobante_electronico": "1_ACEPTADO"})
                         self.estado = "resumen_valido"
                     elif self.cod_operacion == "3":
-                        self.account_invoice_ids.sudo().write(
-                            {"estado_comprobante_electronico": "2_ANULADO"})
+                        self.account_invoice_ids.sudo().write({"estado_comprobante_electronico": "2_ANULADO"})
                         self.estado = "resumen_valido"
             else:
-                raise UserError(json.dumps(response))
-
-            if result.get("status"):
-                data["status"] = response["result"]["status"]
-            if result.get("digestValue"):
-                data["digest_value"] = result.get("digestValue")
-            if result.get("description"):
-                data["description"] = result.get("description")
-            if result.get("cdr"):
+                raise UserError(json.dumps(response.get("description")))
+            data = {}
+            if response.get("status"):
+                data["status"] = response["status"]
+            if response.get("digestValue"):
+                data["digest_value"] = response.get("digestValue")
+            if response.get("description"):
+                data["description"] = response.get("description")
+            if response.get("cdr"):
                 try:
-                    ps = parseString(result.get("cdr"))
+                    ps = parseString(response.get("cdr"))
                     data["response_xml"] = ps.toprettyxml()
                 except Exception as e:
-                    data["response_xml"] = result.get("cdr")
+                    data["response_xml"] = response.get("cdr")
 
             data["account_summary_id"] = self.id
             self.env["account.log.status"].sudo().create(data)
@@ -561,40 +557,41 @@ class AccountSummary(models.Model):
             raise UserError(json.dumps(response))
 
     def cron_crear_resumenes_diarios(self):
-        tz = self.env.user.tz or "America/Lima"
-        fecha_ayer = datetime.strptime(datetime.now(tz=timezone(tz)), '%Y-%m-%d')
-        fecha_ayer = datetime.strftime(fecha_ayer, '%Y-%m-%d')
+        # tz = self.env.user.tz or "America/Lima"
+        # fecha_ayer = datetime.strptime(datetime.now(tz=timezone(tz)), '%Y-%m-%d')
+        # fecha_ayer = datetime.strftime(fecha_ayer, '%Y-%m-%d')
+        fecha_ayer = datetime.now().strftime('%Y-%m-%d')
 
         invoices = self.env["account.move"].search([("estado_comprobante_electronico","in",["0_NO_EXISTE","-"]),
-                                                            ("move_name","!=",False),
-                                                            ("state","in",["open","paid"]),
+                                                            ("name","!=",False),
+                                                            ("state","=","posted"),
                                                             ("partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code","in",["0","1","6"]),
                                                             ("partner_id.vat","!=",False),
                                                             ("invoice_date","<",fecha_ayer),
-                                                            ("account_summary_id.cod_operacion","in",[False,"3"]),
-                                                            ('invoice_type_code','=','03')]).sorted(key=lambda r:r.invoice_date)
+                                                            # ("account_summary_id.cod_operacion","in",[False,"3"]),
+                                                            ('invoice_type_code','=','03')])
 
         invoices += self.env["account.move"].search([("invoice_date","<",fecha_ayer),
-                                                        ("state","in",["open","paid"]),
+                                                        ("state","=","posted"),
                                                         ("invoice_type_code","=","07"),
                                                         ("partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code","in",["0","1","6"]),
                                                         ("partner_id.vat","!=",False),
                                                         ("reversed_entry_id","!=",False),
                                                         ("estado_comprobante_electronico","in",["0_NO_EXISTE","-"]),
                                                         ("reversed_entry_id.invoice_type_code","=","03"),
-                                                        ("account_summary_id.cod_operacion","in",[False,"3"]),
+                                                        # ("account_summary_id.cod_operacion","in",[False,"3"]),
                                                         ("reversed_entry_id.estado_comprobante_electronico","=","1_ACEPTADO")])
         
         invoices += self.env["account.move"].search([("invoice_date","<",fecha_ayer),
-                                                        ("state","in",["open","paid"]),
+                                                        ("state","=","posted"),
                                                         ("invoice_type_code","=","08"),
                                                         ("partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code","in",["0","1","6"]),
                                                         ("partner_id.vat","!=",False),
-                                                        ("reversed_entry_id","!=",False),
+                                                        ("debit_origin_id","!=",False),
                                                         ("estado_comprobante_electronico","in",["0_NO_EXISTE","-"]),
-                                                        ("reversed_entry_id.invoice_type_code","=","03"),
-                                                        ("account_summary_id.cod_operacion","in",[False,"3"]),
-                                                        ("reversed_entry_id.estado_comprobante_electronico","=","1_ACEPTADO")])
+                                                        ("debit_origin_id.invoice_type_code","=","03"),
+                                                        # ("account_summary_id.cod_operacion","in",[False,"3"]),
+                                                        ("debit_origin_id.estado_comprobante_electronico","=","1_ACEPTADO")])
 
         try:
             for company in invoices.mapped("company_id"):
@@ -610,7 +607,7 @@ class AccountSummary(models.Model):
                               for x in range(0, len(invoices_by_company_by_date), 300)]
                     for invs in chunks:
                         resumen = {
-                            "fecha_generacion": datetime.now(tz=tz),
+                            "fecha_generacion": datetime.now(),
                             "fecha_emision_documentos": invoice_date,
                             "cod_operacion": "1",
                             "account_invoice_ids": [(6, 0, invs.mapped("id"))],
