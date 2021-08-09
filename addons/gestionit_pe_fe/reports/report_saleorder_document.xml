@@ -127,7 +127,7 @@
                         </td>
                         <td class="v_discount" t-if="display_discount">
                             <span t-if="l.discount &gt; 0">
-                                <span t-esc="round(l.price_total/l.quantity,4)" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.currency_id}"/>
+                                <span t-esc="round(l.price_total/l.product_uom_qty,4)" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.currency_id}"/>
                                 <span t-esc="'('+str(l.discount)+'%)'"/>
                             </span>
                         </td>

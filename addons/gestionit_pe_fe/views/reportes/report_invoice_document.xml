@@ -35,7 +35,7 @@
                                 <label t-esc="'CLIENTE: '"/>
                             </th>
                             <td class="label">
-                                <span t-esc="(o.partner_id.registration_name or '').upper()"/>
+                                <span t-esc="((o.partner_id.registration_name if o.partner_id.registration_name else o.partner_id.name)  or '').upper()"/>
                             </td>
                         </tr>
                         <tr>
@@ -92,7 +92,8 @@
                                 <label t-esc="'N° GUÍA: '"/>
                             </th>
                             <td class="label">
-                                <span t-esc="o.invoice_origin" t-if="o.invoice_origin"/>
+                                <div name="reference" class="d-none"></div>
+                                <span t-esc="o.ref" t-if="o.ref"/>
                             </td>
                         </tr>
                     </table>
@@ -308,25 +309,21 @@
             </div>
             <div class="row invoice-content-total" id="total">
                 <div class="col-8 additional-information">
-                    <br t-if="o.has_detraction"/>
                     <div style="border: solid gray 1px;padding:8px" t-if="o.has_detraction">
                         <div>
                             <strong>% Detracción: </strong>
                             <span t-field="o.detraction_rate"></span>
                         </div>
-                        <br/>
                         <div>
                             <strong>Monto Detracción: </strong>
                             <span t-field="o.detraction_amount"></span>
                         </div>
-                        <br/>
                         <div>
                             <strong>Descripción: </strong>
                             <span>OPERACIÓN SUJETA AL SISTEMA DE PAGO DE OBLIGACIONES TRIBUTARIAS DEL BANCO DE LA NACIÓN <t t-esc="o.bank_account_number_national"/>
                             </span>
                         </div>
                     </div>
-                    <br t-if="o.has_detraction"/>
                     <!-- <div style="font-size: 12px; width: 100%">
                         <div>
                             <b>SON: </b>
@@ -421,7 +418,7 @@
             <div class="row">
                 <div class="col-12" t-if="'{}_{}'.format(o.type,o.journal_id.invoice_type_code_id) in ['out_invoice_01','out_invoice_03','out_refund_07','out_invoice_08']">
                     <div class="pb-3">
-                        <span t-esc="'SON: '.format(o.to_word(o.amount_total,o.currency_id.name).upper())"/>
+                        <span t-esc="'SON: {}'.format(o.to_word(o.amount_total,o.currency_id.name).upper())"/>
                     </div>
                     <div t-if="o.state in ['posted','paid']" class="d-flex flex-row">
                         <div>

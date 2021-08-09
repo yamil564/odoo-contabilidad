@@ -252,7 +252,7 @@ class AccountMove(models.Model):
             else:
                 record.anulacion_comprobante = "-"
     
-    @api.depends("amount_total")
+    @api.depends("amount_total","type_detraction")
     def _compute_amount_detraction(self):
         for record in self:
             record.detraction_amount = round(record.amount_total*record.detraction_rate/100,2)

@@ -89,10 +89,10 @@
                     &.v_item,&.v_quantity,&.v_product_uom_id{
                         text-align: center;
                     }
-                    &.v_name{
+                    &.v_name,&.v_string{
                         padding:0px 8px;
                     }
-                    &.v_price_unit,&.v_price_total,&.v_discount,&.v_value_unit{
+                    &.v_price_unit,&.v_price_total,&.v_discount,&.v_value_unit,&.v_amount{
                         padding:0px 8px;
                         text-align: right;
                     }
