@@ -15,7 +15,24 @@ import json
 import time
 import uuid
 import os
+import logging
+_logger = logging.getLogger(__name__)
 
+class SaleOrderLine(models.Model):
+    _inherit = "sale.order.line"
+
+    qty_by_location = fields.Char()
+    
+    @api.onchange('product_id')
+    def _compute_qty_by_location(self):
+        for record in self:
+            if record.product_id.exists():
+                self.env.cr.execute("""select sl.name,sq.quantity from stock_quant as sq 
+                                            right join stock_location as sl 
+                                            on sq.location_id = sl.id and sl.usage = 'internal'
+                                            where product_id='{}'""".format(record.product_id.id))
+                result = self.env.cr.dictfetchall()
+                record.qty_by_location = json.dumps(result)
 
 class SaleOrder(models.Model):
     _inherit = "sale.order"

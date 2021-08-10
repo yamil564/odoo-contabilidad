@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <template id="sale.report_invoice_document_inherit_sale" inherit_id="account.report_invoice_document">
-    </template>
 
     <template id="gestionit_report_invoice_document" inherit_id="account.report_invoice_document">
 
@@ -12,7 +10,7 @@
             <div/>
         </xpath>
 
-        <xpath expr="//div[hasclass('page')]" position="replace">
+        <xpath expr="//div[hasclass('page')]/h2" position="replace">
             <t t-set="company" t-value="o.company_id"/>
             <t t-set="documents" t-value="{'out_invoice_01':'FACTURA ELECTRÓNICA',
                                            'out_invoice_03':'BOLETA ELECTRÓNICA',
@@ -23,7 +21,14 @@
                                            'in_refund_07':'NOTA DE CRÉDITO DE PROVEEDOR',
                                            'in_invoice_08':'NOTA DE DÉBITO DE PROVEEDOR'}"/>
             <t t-set="document_display_name" t-value="documents.get('{}_{}'.format(o.type,o.journal_id.invoice_type_code_id),'-')"/>
-            <div class="row pt-2">
+        </xpath>
+
+        <xpath expr="//div[@id='informations']" position="attributes">
+            <attribute name="class">d-none</attribute>
+        </xpath>
+        
+        <xpath expr="//div[@id='informations']" position="after">
+            <div class="row" id="informations">
                 <!--DATOS DEL CLIENTE-->
                 <div name="invoice_address" class="w-100">
 
@@ -158,7 +163,7 @@
                             <td class="label">
                                 <span t-esc="o.currency_id.currency_unit_label" t-if="o.currency_id.currency_unit_label"/>
                             </td>
-                            
+
                             <!-- DE FECHA -->
                             <th>
                                 <label t-esc="'DE FECHA: '"/>
@@ -229,7 +234,7 @@
                             <td class="label">
                                 <span t-esc="o.currency_id.currency_unit_label" t-if="o.currency_id.currency_unit_label"/>
                             </td>
-                            
+
                             <!-- DE FECHA -->
                             <th>
                                 <label t-esc="'DE FECHA: '"/>
@@ -240,9 +245,10 @@
                         </tr>
                     </table>
                 </div>
-
             </div>
+        </xpath>
 
+        <xpath expr="//table[hasclass('o_main_table')]" position="replace">
             <!-- Is there a discount on at least one line? -->
             <t t-set="display_discount" t-value="any([l.discount for l in o.invoice_line_ids])"/>
             <div class="table-invoice-lines row pt-2 pb-2">
@@ -276,10 +282,10 @@
                                 <span t-field="l.name"/>
                             </td>
                             <td class="v_value_unit">
-                                <span t-esc="0 if l.quantity == 0 else round(l.price_subtotal/l.quantity,2)" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
+                                <span t-esc="0 if l.quantity == 0 else  round((l.price_subtotal/l.quantity)/(1-l.discount/100),2)" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
                             </td>
                             <td class="v_price_unit">
-                                <span t-esc="0 if l.quantity == 0 else  round(l.price_total/l.quantity,2)" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
+                                <span t-esc="0 if l.quantity == 0 else  round((l.price_total/l.quantity)/(1-l.discount/100),2)" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
                             </td>
                             <td class="v_discount" t-if="display_discount">
                                 <span t-if="l.discount &gt; 0">
@@ -292,8 +298,8 @@
                             </td>
                             <t t-set="item" t-value="item+1"/>
                         </tr>
-                        <t t-if="len(invoice_lines) &lt; 40">
-                            <tr t-foreach="range(40-len(invoice_lines))" t-as="x" class="empty">
+                        <t t-if="len(invoice_lines) &lt; 35">
+                            <tr t-foreach="range(35-len(invoice_lines))" t-as="x" class="empty">
                                 <td class="empty"></td>
                                 <td class="empty"></td>
                                 <td class="empty"></td>
@@ -307,6 +313,13 @@
                     </tbody>
                 </table>
             </div>
+        </xpath>
+
+        <xpath expr="//div[hasclass('clearfix')]" position="attributes">
+            <attribute name="class">clearfix d-none</attribute>
+        </xpath>
+
+        <xpath expr="//div[hasclass('clearfix')]" position="after">
             <div class="row invoice-content-total" id="total">
                 <div class="col-8 additional-information">
                     <div style="border: solid gray 1px;padding:8px" t-if="o.has_detraction">
@@ -427,13 +440,17 @@
                         <div class="pl-3">
                             <t t-if="o.digest_value">
                                 <span t-esc="'Hash: {}'.format(o.digest_value)"/>
-                            </t><br/>
+                            </t>
+                            <br/>
                             <span t-esc="'Representación impresa de la {}. Esta puede ser consultada en : {}'.format(documents.get('{}_{}'.format(o.type,o.journal_id.invoice_type_code_id),'-'),company.website_invoice_search or '')"/>
                         </div>
                     </div>
                 </div>
             </div>
+        </xpath>
 
+        <xpath expr="//p[@t-if]" position="attributes">
+            <attribute name="class">d-none</attribute>
         </xpath>
     </template>
 </odoo>
