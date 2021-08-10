@@ -31,6 +31,9 @@
                     <field name="total_descuentos"/>
                     <field name="total_igv" string="IGV (18%)"/>
                 </field>
+                <xpath expr="//tree/field[@name='price_unit']" position="after">
+                    <field name="qty_by_location" invisible="1"/>
+                </xpath>
             </field>
         </record>
 

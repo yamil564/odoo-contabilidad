@@ -8,13 +8,13 @@
         "sale",
         "sale_management",
         "stock",
+        "sale_stock",
         "purchase",
         "l10n_pe",
         "l10n_latam_base",
         "account_tax_python",
         "account_debit_note",
         "gestionit_pe_ubicaciones",
-        "sale_stock",
     ],
     # "gestionit_pe_ubicaciones",
     # "gestionit_pe_consulta_ruc_dni",
@@ -78,7 +78,9 @@
         'cron/comunicacion_baja_cron.xml',
         'cron/guia_remision_cron.xml',
         'cron/validez_comprobante_cron.xml',
+        'assets.xml'
     ],
     # 'application': True,
-    "external_dependencies": {"python": ["signxml"]}
+    "external_dependencies": {"python": ["signxml"]},
+    "qweb":["static/src/xml/qty_at_date.xml"]
 }

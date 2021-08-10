@@ -1213,8 +1213,9 @@ class AccountMove(models.Model):
 
 
     def cron_actualizacion_estado_emision_sunat(self):
-        comprobantes = self.env["account.move"].sudo().search([["estado_comprobante_electronico","=","1_ACEPTADO"],["estado_emision","in",[False,"N"]]])
-        comprobantes.sudo().write({"estado_emision" : "A"})
+        comprobantes = self.env["account.move"].sudo().search([["estado_comprobante_electronico","=","1_ACEPTADO"],["estado_emision","in",[False,"N","P"]]]).mapped("current_log_status_id")
+        _logger.info(comprobantes)
+        comprobantes.sudo().write({"status" : "A"})
         return True
 
     def get_token_validez_comprobante(self):
@@ -1299,7 +1300,7 @@ class AccountMove(models.Model):
         invoices = self.env["account.move"].sudo().search([("journal_id.electronic_invoice","=",True),
                                                             ("state","not in",["draft","cancel"]),
                                                             ("name","!=",False),
-                                                            ("date_invoice","<",today),
+                                                            ("invoice_date","<",today),
                                                             ("journal_id.invoice_type_code_id","in",["01","03","07","08"]),
                                                             ("estado_comprobante_electronico","=","-")])
         step = 20
