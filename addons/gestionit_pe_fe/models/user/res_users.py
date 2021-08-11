@@ -29,10 +29,10 @@ class Users(models.Model):
                 return super(Users, self).write(values)
 
 
-        if len(company_ids) > 0:
-            _logger.info(company_ids)
-            warehouse_ids = self.env["stock.warehouse"].search([("company_id","in",company_ids[0][2])]).ids
-            values["warehouse_ids"] = [(6,0,warehouse_ids)]
+        # if len(company_ids) > 0:
+        #     _logger.info(company_ids)
+        #     warehouse_ids = self.env["stock.warehouse"].search([("company_id","in",company_ids[0][2])]).ids
+        #     values["warehouse_ids"] = [(6,0,warehouse_ids)]
         return super(Users, self).write(values)
         
     
