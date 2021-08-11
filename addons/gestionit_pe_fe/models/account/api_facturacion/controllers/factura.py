@@ -499,7 +499,6 @@ def build_factura(data):
         # 9996 -	Gratuito
         if cod_afectacion_igv in ["11", "12", "13", "14", "15", "16", "21", "31", "32", "33", "34", "35", "36",
                                   "37"]:
-            line_extension_amount = 0.0
             tax_scheme = TaxScheme("9996", "GRA", "FRE")
             tax_category = TaxCategory(category_id="Z",
                                        percent=tasaIgv,

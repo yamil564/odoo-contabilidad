@@ -2,6 +2,7 @@
 <odoo>
     <template id="external_layout_background_gestionit">
         <div t-attf-class="header o_company_#{company.id}_layout">
+            <t t-set="o" t-value="o if o else doc"/>
             <div class="o_report_header_pe_v1">
                 <div class="row">
                     <div class="col-4">
