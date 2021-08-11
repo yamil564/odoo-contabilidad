@@ -51,6 +51,14 @@
                             <td class="label">
                                 <span t-esc="(o.partner_id.vat or '').upper()"/>
                             </td>
+                            <!-- N° COT -->
+                            <th>
+                                <label t-esc="'N° COT: '"/>
+                            </th>
+                            <td class="label">
+                                <!-- <span t-esc="o.ref" t-if="o.ref"/> -->
+                                <span t-esc="o.invoice_origin" />
+                            </td>
                         </tr>
                         <tr>
                             <!-- DIRECCIÓN -->
@@ -97,8 +105,10 @@
                                 <label t-esc="'N° GUÍA: '"/>
                             </th>
                             <td class="label">
-                                <div name="reference" class="d-none"></div>
-                                <span t-esc="o.ref" t-if="o.ref"/>
+                                <!-- <div name="reference" class="d-none"></div> -->
+                                <!-- <span t-esc="o.ref" t-if="o.ref"/> -->
+                                <span t-esc="';'.join([g.numero for g in o.guia_remision_ids.filtered(lambda r:r.state == 'validado')])" 
+                                        t-if="len(o.guia_remision_ids.filtered(lambda r:r.state == 'validado')) &gt; 0"/>
                             </td>
                         </tr>
                     </table>
