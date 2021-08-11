@@ -213,8 +213,7 @@ class SaleOrder(models.Model):
             # amount_tax = (sum(
             #     [line.price_tax for line in order.order_line])+total_venta_gratuito)*(1-order.descuento_global/100)
             
-            total_igv = (sum(
-                [line.price_tax for line in order.order_line])+total_venta_gratuito)*(1-order.descuento_global/100)
+            total_igv = (sum([line.price_tax for line in order.order_line]))*(1-order.descuento_global/100)
 
             order.update({
                 'total_descuento_global': total_descuento_global,

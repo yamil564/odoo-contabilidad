@@ -1300,7 +1300,7 @@ class AccountMove(models.Model):
         invoices = self.env["account.move"].sudo().search([("journal_id.electronic_invoice","=",True),
                                                             ("state","not in",["draft","cancel"]),
                                                             ("name","!=",False),
-                                                            ("invoice_date","<",today),
+                                                            ("invoice_date","<=",today),
                                                             ("journal_id.invoice_type_code_id","in",["01","03","07","08"]),
                                                             ("estado_comprobante_electronico","=","-")])
         step = 20
