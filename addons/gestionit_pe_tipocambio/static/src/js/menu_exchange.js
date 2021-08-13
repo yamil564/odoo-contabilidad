@@ -13,6 +13,11 @@ odoo.define("gestionit_pe_tipocambio.menu_exchange",[
         return '' + y + '-' + (m<=9 ? '0' + m : m) + '-' + (d <= 9 ? '0' + d : d);
     }
 
+    var currency_types = {
+        "sale":"Venta",
+        "purchase":"Compra"
+    }
+
     var ExchangeMenuLine = Widget.extend({
         template:"ExchangeMenuLine",
         init:function(parent,options){
@@ -20,13 +25,15 @@ odoo.define("gestionit_pe_tipocambio.menu_exchange",[
             this.id = options.id
             this.name = options.name
             this.parent = parent
+            this.type = currency_types[options.type] || "-"
             // var d = new Date()
             if(options.rate!=0 && options.date == dateToYMD(new Date())){
-                this.tc_compra = Math.round(10000*(options.cambio_compra),4)/10000
-                this.tc_venta = Math.round(10000*(options.cambio_venta),4)/10000
+                this.rate = Math.round(10000*(1/options.rate),4)/10000
+                // this.tc_compra = Math.round(10000*(options.cambio_compra),4)/10000
+                // this.tc_venta = Math.round(10000*(options.cambio_venta),4)/10000
             }else{
-                this.tc_compra = 0.00
-                this.tc_venta = 0.00
+                this.rate = 0.00
+                // this.tc_venta = 0.00
             }
         },
         start:function(){
@@ -66,7 +73,7 @@ odoo.define("gestionit_pe_tipocambio.menu_exchange",[
             
             $(this.$el.find(".menu-exchange")).on("click",function(e){
                 options_exchanges.empty()
-                console.log(e.currentTarget)
+                // console.log(e.currentTarget)
                 self._rpc({
                     model:"res.currency",
                     method:"search_read",

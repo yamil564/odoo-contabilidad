@@ -5,8 +5,9 @@
         <field name="inherit_id" ref="base.view_currency_form"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='rate']" position="after">
-                <field name="cambio_venta"></field>
-                <field name="cambio_compra"></field>
+                <field name="type"></field>
+                <!-- <field name="cambio_venta"></field>
+                <field name="cambio_compra"></field> -->
             </xpath>
         </field>
     </record>
@@ -17,9 +18,10 @@
         <field name="inherit_id" ref="base.view_currency_rate_tree"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='rate']" position="after">
+                <field name="type" string="Venta"></field>
                 <!-- <field name="fecha"></field> -->
-                <field name="cambio_venta"></field>
-                <field name="cambio_compra"></field>
+                <!-- <field name="cambio_venta"></field>
+                <field name="cambio_compra"></field> -->
             </xpath>
         </field>
     </record>
@@ -52,13 +54,23 @@
                         <field name="company_id" readonly="1" force_save="1" options="{'no_open':1}"/>
                     </group>
                     <group>
-                        <field name="cambio_compra"/>
-                        <field name="cambio_venta"/>
+                        <field name="type" readonly="1" force_save="1" string="Tipo"/>
+                        <field name="rate"/>
+                        <!-- <field name="cambio_compra"/>
+                        <field name="cambio_venta"/> -->
                     </group>
                 </group>
                 <footer>
                     <button type="object" string="Guardar" name="save" class="oe_highlight"/>
-                    <button type="object" string="Obtener T/C" name="action_update_rate_sale_purchase_pen_usd" class="oe_highlight"/>
+                    <button type="object" string="Obtener T/C" 
+                            name="action_update_rate_sale_pen_usd" 
+                            class="oe_highlight" 
+                            attrs="{'invisible':['|',('name','!=','USD'),('type','!=','sale')]}"/>
+                            
+                    <button type="object" string="Obtener T/C" 
+                            name="action_update_rate_puchase_pen_usd" 
+                            class="oe_highlight" 
+                            attrs="{'invisible':['|',('name','!=','USD'),('type','!=','puchase')]}"/>
                 </footer>
             </form>
         </field>

@@ -1,0 +1,6 @@
+<odoo>
+    <record id="res_currency_usd_purchase" model="res_currency">
+        <field name="name">USD*</field>
+        <field name="type">purchase</field>
+    </record>
+</odoo>
