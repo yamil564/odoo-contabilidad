@@ -279,6 +279,7 @@
                         <t t-set="item" t-value="1"/>
                         <t t-set="invoice_lines" t-value="o.invoice_line_ids.filtered(lambda r:not r.is_charge_or_discount)"/>
                         <tr t-foreach="invoice_lines" t-as="l">
+                            <t t-set="is_free" t-value="len(l.tax_ids.filtered(lambda r:r.tax_group_id.tipo_afectacion == '31')) == 0"/>
                             <td class="v_item">
                                 <span t-esc="item"/>
                             </td>
@@ -295,7 +296,12 @@
                                 <span t-esc="0 if l.quantity == 0 else  round((l.price_subtotal/l.quantity)/(1-l.discount/100),2)" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
                             </td>
                             <td class="v_price_unit">
-                                <span t-esc="0 if l.quantity == 0 else  round((l.price_total/l.quantity)/(1-l.discount/100),2)" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
+                                <t t-if="is_free">
+                                    <span t-esc="0 if l.quantity == 0 else  round((l.price_total/l.quantity)/(1-l.discount/100),2)" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
+                                </t>
+                                <t t-else="">
+                                    <span t-esc="float('0')"  t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
+                                </t>
                             </td>
                             <td class="v_discount" t-if="display_discount">
                                 <span t-if="l.discount &gt; 0">
@@ -304,7 +310,12 @@
                                 </span>
                             </td>
                             <td class="v_price_total">
-                                <span t-field="l.price_total" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
+                                <t t-if="is_free">
+                                    <span t-field="l.price_total" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
+                                </t>
+                                <t t-else="">
+                                    *Bonif*
+                                </t>
                             </td>
                             <t t-set="item" t-value="item+1"/>
                         </tr>
