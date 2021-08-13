@@ -80,7 +80,7 @@ class ComprobantesXlsx(models.AbstractModel):
         # 07 - Notas de Crédito
         # 08 - Notas de Débito
         domain = [['journal_id.type', '=', 'sale'],
-                  ['state', 'in', ['open', 'paid']],
+                  ['state', 'in', ['posted']],
                   ['journal_id.invoice_type_code_id', 'in', ['00', '01', '03', '07', '08']], ]
         if fecha_fin:
             domain.append(["invoice_date", "<=", fecha_fin])
@@ -104,22 +104,27 @@ class ComprobantesXlsx(models.AbstractModel):
             return (serie, correlativo)
 
         def row_comp(comp):
-            numero = comp.number
+            numero = comp.name
             serie, correlativo = get_serie_correlativo(numero)
             tipo_comp = comp.journal_id.invoice_type_code_id if comp.journal_id else ""
             observacion = ""
-            if comp.refund_invoice_id:
-                numero_rec = comp.refund_invoice_id.number
+            if comp.reversed_entry_id:
+                numero_rec = comp.reversed_entry_id.name
                 serie_rec, correlativo_rec = get_serie_correlativo(numero_rec)
-                tipo_comp_rec = comp.refund_invoice_id.journal_id.invoice_type_code_id
-                fecha_emision_rec = comp.refund_invoice_id.invoice_date
+                tipo_comp_rec = comp.reversed_entry_id.journal_id.invoice_type_code_id
+                fecha_emision_rec = comp.reversed_entry_id.invoice_date
+            elif comp.debit_origin_id:
+                numero_rec = comp.debit_origin_id.name
+                serie_rec, correlativo_rec = get_serie_correlativo(numero_rec)
+                tipo_comp_rec = comp.debit_origin_id.journal_id.invoice_type_code_id
+                fecha_emision_rec = comp.debit_origin_id.invoice_date
             else:
                 numero_rec, serie_rec, correlativo_rec, tipo_comp_rec, fecha_emision_rec = "", "", "", "", ""
 
             row = {
                 "Estado": comp.state,
                 "Fecha de emisión": comp.invoice_date,
-                "Fecha de Vencimiento": comp.date_due,
+                "Fecha de Vencimiento": comp.invoice_date_due,
                 'Tipo de comprobante': tipo_comp,
                 "Número Comp.": numero,
                 "Serie Comp.": serie,
@@ -129,14 +134,15 @@ class ComprobantesXlsx(models.AbstractModel):
                 "Comprobante a Rectificar": numero_rec,
                 "Serie Comp. Rec.": serie_rec,
                 "Correlativo Comp. Rec.": correlativo_rec,
-                'Documento de origen': comp.origin if comp.origin else "",
+                'Documento de origen': comp.invoice_origin if comp.invoice_origin else "",
                 'Código de Empresa': comp.partner_id.ref if comp.partner_id else "",
                 'Empresa': comp.partner_id.name if comp.partner_id else "",
-                'Tipo de documento de identidad': comp.partner_id.tipo_documento if comp.partner_id else "",
+                'Tipo de documento de identidad': comp.partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code if comp.partner_id else "",
                 'Número de documento': comp.partner_id.vat if comp.partner_id else "",
                 'Dirección': comp.partner_id.street if comp.partner_id else "",
                 'Descuento Global': round(comp.descuento_global, 2),
                 'Monto Gravado': round(comp.total_venta_gravado, 2),
+                'IGV 18% Venta': round(comp.amount_igv, 2),
                 'Monto Inafecto': round(comp.total_venta_inafecto, 2),
                 'Monto Exonerado': round(comp.total_venta_exonerada, 2),
                 'Monto Gratuito': round(comp.total_venta_gratuito, 2),
@@ -148,15 +154,15 @@ class ComprobantesXlsx(models.AbstractModel):
                 'Observacion': observacion
             }
 
-            for x in comp.tax_line_ids.sorted(lambda r: r.sequence):
-                row.update({x.name: round(x.amount_total, 2)})
+            # for x in comp.tax_line_ids.sorted(lambda r: r.sequence):
+            #     row.update({x.name: round(x.amount_total, 2)})
             return row
 
         comps = [
             row_comp(comp)
             for comp in comprobante_ids
         ]
-
+        _logger.info(comps)
         df_states = pd.DataFrame(comps, columns=["Estado",
                                                  "Fecha de emisión",
                                                  "Fecha de Vencimiento",
@@ -470,10 +476,8 @@ class ComprobantesXlsx(models.AbstractModel):
                     "obs": row["Observacion"]
                 })
             else:
-                fecha = datetime.strptime(
-                    row["Fecha de emisión"], "%Y-%m-%d").strftime("%d-%m-%y") if row["Fecha de emisión"] else ""
-                fechavcto = datetime.strptime(row["Fecha de Vencimiento"], "%Y-%m-%d").strftime(
-                    "%d-%m-%y") if row["Fecha de Vencimiento"] else ""
+                fecha = row["Fecha de emisión"].strftime("%d-%m-%y") if row["Fecha de emisión"] else ""
+                fechavcto = row["Fecha de Vencimiento"].strftime("%d-%m-%y") if row["Fecha de Vencimiento"] else ""
                 tipo = row.get("Tipo de comprobante", "") or ""
                 serie = row.get("Serie Comp.", "") or ""
                 numero = str(row.get("Correlativo Comp.", "")).zfill(7) or ""
@@ -487,8 +491,7 @@ class ComprobantesXlsx(models.AbstractModel):
                           * (-1 if tipo == '07' else 1))
                 total = str(round(row.get("Monto total", 0), 2)
                             * (-1 if tipo == '07' else 1))
-                fecharef = datetime.strptime(row.get("Fecha de emisión Comp. Rec.", ""), "%Y-%m-%d").strftime(
-                    "%d-%m-%Y") if row.get("Fecha de emisión Comp. Rec.") else ""
+                fecharef = row.get("Fecha de emisión Comp. Rec.", "").strftime("%d-%m-%Y") if row.get("Fecha de emisión Comp. Rec.") else ""
                 tiporef = row.get("Tipo de comprobante a Rec.", "") or ""
                 serieref = row.get("Serie Comp. Rec.", "") or ""
                 numeroref = str(row.get("Correlativo Comp. Rec.", "")).zfill(
@@ -552,6 +555,6 @@ class ComprobantesXlsx(models.AbstractModel):
                                                      "codigo",
                                                      "obs"])
 
-        df_states_0.to_excel(workbook, sheet_name='Formato')
-        df_states_1.to_excel(workbook, sheet_name='Formato con Obs.')
+        # df_states_0.to_excel(workbook, sheet_name='Formato')
+        # df_states_1.to_excel(workbook, sheet_name='Formato con Obs.')
         df_states.to_excel(workbook, sheet_name='Comprobantes')

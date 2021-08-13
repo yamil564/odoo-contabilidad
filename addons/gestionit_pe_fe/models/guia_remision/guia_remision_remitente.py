@@ -554,12 +554,8 @@ class GuiaRemision(models.Model):
 
     # @api.depends("guia_remision_line_ids")
     def compute_peso_bruto(self):
-        peso_total = 0
-        # for record in self:
-        for line in self.guia_remision_line_ids:
-            peso_total += line.product_id.weight*line.qty
-        self.peso_bruto_total = peso_total
-
+        self.peso_bruto_total = sum([line.product_id.weight*line.qty*(line.uom_id.factor_inv/line.product_id.uom_id.factor_inv) for line in self.guia_remision_line_ids])
+ 
         # ENVÍO
     fecha_emision = fields.Date(string="Fecha de Emisión", states={
                                 'validado': [('readonly', True)]})

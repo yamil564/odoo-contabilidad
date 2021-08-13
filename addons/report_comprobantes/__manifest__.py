@@ -10,7 +10,7 @@
     'website': "http://www.facturacion.vip",
     'category': 'Uncategorized',
     'version': '0.1',
-    'depends': ['base', 'account', 'report_xlsx'],
+    'depends': ['base', 'account','account_period', 'report_xlsx'],
     'data': [
         'views/views.xml',
         'views/templates.xml',

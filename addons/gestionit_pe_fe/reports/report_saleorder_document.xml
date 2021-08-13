@@ -6,17 +6,17 @@
                 <table class="w-100">
                     <tr>
                         <!-- CLIENTE -->
-                        <th>
+                        <th class="l_partner">
                             <label t-esc="'CLIENTE : '"/>
                         </th>
-                        <td class="label">
+                        <td class="v_partner">
                             <span t-esc="((doc.partner_id.registration_name if doc.partner_id.registration_name else doc.partner_id.name)  or '').upper()"/>
                         </td>
                         <!-- TELÉFONO -->
-                        <th>
+                        <th class="l_mobile">
                             <label t-esc="'TELÉFONO : '"/>
                         </th>
-                        <td class="label">
+                        <td class="v_mobile">
                             <span t-esc="'{} {}'.format(doc.partner_id.phone or '',doc.partner_id.mobile or '').upper()"/>
                         </td>
                     </tr>
@@ -25,14 +25,14 @@
                         <th>
                             <label t-esc="'{} : '.format(doc.partner_id.l10n_latam_identification_type_id.name)"/>
                         </th>
-                        <td class="label">
+                        <td>
                             <span t-esc="(doc.partner_id.vat or '').upper()"/>
                         </td>
                         <!-- REFERENCIA -->
                         <th>
                             <label t-esc="'REFERENCIA : '"/>
                         </th>
-                        <td class="label">
+                        <td>
                             <span t-esc="(doc.client_order_ref or '').upper()"/>
                         </td>
                     </tr>
@@ -41,14 +41,14 @@
                         <th>
                             <label t-esc="'ATENCIÓN : '"/>
                         </th>
-                        <td class="label">
+                        <td>
                             <span t-esc="doc.user_id.name"/>
                         </td>
                         <!-- FECHA EMISIÓN -->
                         <th>
                             <label t-esc="'FECHA EMISIÓN : '"/>
                         </th>
-                        <td class="label">
+                        <td>
                             <span t-esc="doc.date_order" t-if="doc.date_order"/>
                         </td>
 
@@ -58,14 +58,14 @@
                         <th>
                             <label t-esc="'E-MAIL : '"/>
                         </th>
-                        <td class="label">
+                        <td>
                             <span t-esc="doc.partner_id.email" t-if="doc.partner_id.email"/>
                         </td>
                         <!-- MONEDA -->
                         <th>
                             <label t-esc="'MONEDA : '"/>
                         </th>
-                        <td class="label">
+                        <td>
                             <span t-esc="doc.currency_id.currency_unit_label" t-if="doc.currency_id.currency_unit_label"/>
                         </td>
                     </tr>
