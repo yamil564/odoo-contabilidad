@@ -1,24 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <!-- <template id="report_guia_remision_document">
-        <t t-call="web.html_container">
-            <t t-foreach="docs" t-as="doc">
-                <h3>Hola mundo</h3>
-            </t>
-        </t>
-    </template> -->
     <template id="gestionit_pe_fe.report_guia_remision_template">
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="o">
-                <!-- <h2 t-field="doc.numero"/>
-                <span t-field="doc.motivo_traslado"/> -->
                 <t t-call="gestionit_pe_fe.external_layout_background_gestionit">
                     <t t-set="company" t-value="o.company_id"/>
                     <div t-attf-class="o_company_#{company.id}_layout header">
                         <div class="o_background_header">
                             <div class="row">
                                 <div class="col-3">
-                                    <!-- <span t-field="o.company_id.logo" t-field-options="{'widget':'image'}"/> -->
                                     <img t-if="o.company_id.logo" t-att-src="image_data_uri(o.company_id.logo)" class="float-left" alt="Logo"/>
                                 </div>
                                 <div class="col-5">
@@ -41,7 +31,8 @@
                                     </div>
                                 </div>
                                 <div class="col-4" style="border-style:solid; border-width:thin;">
-                                    <div class="text-center">RUC: <span t-field="o.company_id.vat"/>
+                                    <div class="text-center">RUC:
+                                        <span t-field="o.company_id.vat"/>
                                     </div>
                                     <div class="text-center">
                                         <h3>
@@ -52,14 +43,17 @@
                                         </h3>
                                     </div>
                                     <t t-if="o.name">
-                                        <div class="text-center">Nro. <span t-field="o.name"/>
+                                        <div class="text-center">Nro.
+                                            <span t-field="o.name"/>
                                         </div>
                                     </t>
                                 </div>
                             </div>
                         </div>
                     </div>
-
+                    <t t-set="documents" t-value="{'borrador':'GUÍA BORRADOR',
+                                            'validado':'GUÍA DE REMISIÓN'}"/>
+                    <t t-set="document_display_name" t-value="documents.get(o.state,'-')"/>
                     <div class="page" style="font-size:12px;">
                         <br />
                         <div style="width:100%;">
