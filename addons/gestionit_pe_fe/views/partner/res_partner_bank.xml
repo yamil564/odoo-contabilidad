@@ -5,7 +5,8 @@
         <field name="inherit_id" ref="base.view_partner_bank_form"/>
         <field name="arch" type="xml">
             <field name="acc_type" position="after">
-                <field name="is_national_bank_detraction" string="Es una cuenta de detracción?"/>
+                <field name="description" string="Descripción" />
+                <field name="is_national_bank_detraction" string="Es una cuenta de detracción?" />
             </field>
         </field>
     </record>
