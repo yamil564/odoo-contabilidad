@@ -90,11 +90,6 @@ def generate_and_signed_xml(invoice):
 
 def send_doc_xml(doc):
     signed_xml_with_creds = doc.current_log_status_id.signed_xml_with_creds
-    # creds = {
-    #     "ruc":doc.company_id.vat,
-    #     "sunat_user":doc.company_id.sunat_user,
-    #     "sunat_password":doc.company_id.sunat_pass
-    # }
     tipo_envio = doc.journal_id.tipo_envio
     invoice_type_code = doc.journal_id.invoice_type_code_id
 
@@ -124,19 +119,18 @@ def send_doc_xml(doc):
                                 data=signed_xml_with_creds,
                                 headers=headers,
                                 timeout=20)
-        _logger.info(response.text)
+        # _logger.info(response.text)
         result = sunat_response_handle.get_response(response.text)
-        _logger.info(result)
+        # _logger.info(result)
         data = {
             "response_json":json.dumps(result,indent=4),
             "response_xml_without_format":response.text,
-            "response_content_xml":parseString(result.get("xml_content")).toprettyxml(),
+            "response_content_xml": parseString(result.get("xml_content")).toprettyxml() if result.get("xml_content",False) else "",
             "date_request":fields.Datetime.now(),
-            "status":result.get("status")
+            "status":result.get("status"),
+            "log_observation_ids":[]
         }
         return data
-        # _logger.info(data)
-        # doc.current_log_status_id.sudo().write(data)
 
     except Timeout as e:
         return {
@@ -613,7 +607,7 @@ def crear_json_fac_bol(self):
             # Precio unitario con IGV
             "precioItem": round(item.price_total/item.quantity, 10) if len([item for line_tax in item.tax_ids if line_tax.tax_group_id.tipo_afectacion in ["31", "32", "33", "34", "35", "36"]]) == 0 else 0,
             # Precio unitario sin IGV y sin descuento
-            "precioItemSinIgv": round(item.price_subtotal/item.quantity, 10) if len([item for line_tax in item.tax_ids if line_tax.tax_group_id.tipo_afectacion in ["31", "32", "33", "34", "35", "36"]]) == 0 else 0,
+            "precioItemSinIgv": round((item.price_subtotal/item.quantity)/(1-item.discount/100), 10) if len([item for line_tax in item.tax_ids if line_tax.tax_group_id.tipo_afectacion in ["31", "32", "33", "34", "35", "36"]]) == 0 else 0,
             # Monto total de la línea sin IGV
             "montoItem": round(item.price_unit*item.quantity, 2) if item.no_onerosa else round(item.price_subtotal, 2),
 

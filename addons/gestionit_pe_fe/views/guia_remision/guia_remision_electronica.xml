@@ -25,14 +25,12 @@
             <field name="arch" type="xml">
                 <form>
                     <header>
-                        <button name="action_send_email" string="Send by email" type="object"/>
+                        <button name="action_send_email" string="Enviar e-mail" type="object" class="oe_highlight"/>
                         <!-- <button name="print_report_guia" string="Print" type="object"/> -->
                         <button name="post" string="Validar" type="object" help="Emitir Guía de Remisión" class="oe_highlight" attrs="{'invisible':[('state','=','validado')]}" confirm="¿Está seguro que desea validar la Guía de Remisión Remitente?"/>
-                        <button name="generar_log_envio" string="Generar XML" type="object" groups="base.group_system"/>
-                        <button name="send_gr_xml" string="Enviar XML" type="object" groups="base.group_system"/>
-                        <button name="btn_enviar_comprobante" string="Enviar a Sunat" type="object" help="Enviar Guía de Remisión a Sunat" class="oe_highlight"/>
+                        <button name="generar_log_envio" string="Generar XML" type="object" groups="base.group_system" attrs="{'invisible':[('state','=','validado')]}"/>
+                        <button name="send_gr_xml" string="Enviar XML" type="object" groups="base.group_system" attrs="{'invisible':[('state','=','validado')]}"/>
                         <button name="convertir_a_borrador" string="Convertir a Borrador" type="object" class="oe_highlight" attrs="{'invisible':['|',('state','=','borrador'),('estado_emision','not in',['P','E'])]}"/>
-                        <button name="btn_view_log_guia_remision" string="Log de Envío" type="object" class="oe_highlight" groups="base.group_no_one"/>
                         <field name="state" widget="statusbar"/>
                     </header>
                     <sheet>

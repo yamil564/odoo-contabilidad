@@ -34,7 +34,7 @@ class AccountLogStatus(models.Model):
     signed_xml_with_creds = fields.Text("XML con Credenciales")
     signed_xml_data_without_format = fields.Text("Comprobante XML Firmado")
     response_xml_without_format = fields.Text("Respuesta de Sunat - CDR")
-
+    log_observation_ids= fields.One2many("account.log.status.observation","account_log_status_id")
     status = fields.Selection(string="Estado de envío a SUNAT",selection=[
             ('A', 'Aceptado'),
             ('E', 'Enviado a SUNAT'),

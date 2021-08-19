@@ -295,10 +295,10 @@ def build_factura(data):
     if mntTotalOtrosCargos > 0:
         charge_total_amount = ChargeTotalAmount(amount=round( mntTotalOtrosCargos, 2), currencyID=tipoMoneda)
 
-    line_extension_amount = LineExtensionAmount(amount=round( mntNeto + mntExe + mntExo + mntTotalDescuentos, 2), currencyID=tipoMoneda)
-    allowance_total_amount = AllowanceTotalAmount(amount=round(mntTotalDescuentos, 2), currencyID=tipoMoneda)
+    line_extension_amount = LineExtensionAmount(amount=round( mntNeto + mntExe + mntExo, 2), currencyID=tipoMoneda)
+    allowance_total_amount = AllowanceTotalAmount(amount=round(mntDescuentoGlobal, 2), currencyID=tipoMoneda)
     payable_amount = PayableAmount(amount=round(mntTotal, 2), currencyID=tipoMoneda)
-    tax_inclusive_amount = TaxInclusiveAmount(amount=round(mntNeto + mntExe + mntExo + mntTotalDescuentos + mntTotalIgv, 2), currencyID=tipoMoneda)
+    tax_inclusive_amount = TaxInclusiveAmount(amount=round(mntNeto + mntExe + mntExo + mntTotalIgv, 2), currencyID=tipoMoneda)
 
     legal_monetary_total = MonetaryTotal.LegalMonetaryTotal(line_extension_amount=line_extension_amount,
                                                             prepaid_amount=prepaid_amount,

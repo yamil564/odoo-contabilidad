@@ -16,7 +16,7 @@ def get_response(xml_response):
     observaciones = []
     success = False
     status = ""
-    xml_content = None
+    xml_content = False
 
     if faultcodes:
         for faultcode in faultcodes:
