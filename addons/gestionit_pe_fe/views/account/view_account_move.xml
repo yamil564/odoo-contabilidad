@@ -22,6 +22,9 @@
                         <span attrs="{'invisible': ['|', '|', ('type', '!=', 'in_receipt'), ('state', '!=', 'draft'), ('name', '!=', '/')]}">Draft Purchase Receipt</span>
                     </h1>
                 </xpath>
+                <xpath expr="//field[@name='invoice_line_ids']//tree//field[@name='price_total']" position="before">
+                    <field name="price_subtotal" string="Subtotal"/>
+                </xpath>
                 <xpath expr="//field[@name='ref']" position="replace">
                     <field name="inv_supplier_ref" 
                             attrs="{'invisible': [('type','in',['out_refund','out_invoice'])],'required':[('type','in',['in_invoice','in_refund'])]}"
@@ -237,8 +240,8 @@
                     </button>
                 </xpath>
                 <xpath expr="//button[@name='preview_invoice']" position="after">
-                    <button name="action_generate_and_signed_xml" string="Generar XML" class="oe_highlight" type="object" groups="base.group_no_one" attrs="{'invisible': ['|',('state','!=','posted'),('type','not in',['out_invoice','out_refund'])]}"/>
-                    <button name="action_send_invoice" string="Enviar XML" class="oe_highlight" type="object" groups="base.group_no_one" attrs="{'invisible': ['|',('state','!=','posted'),('type','not in',['out_invoice','out_refund'])]}"/>
+                    <button name="action_generate_and_signed_xml" string="Generar XML" class="oe_highlight" type="object" groups="gestionit_pe_fe.group_fe_allow_generate_send_xml" attrs="{'invisible': ['|',('state','!=','posted'),('type','not in',['out_invoice','out_refund'])]}"/>
+                    <button name="action_send_invoice" string="Enviar XML" class="oe_highlight" type="object" groups="gestionit_pe_fe.group_fe_allow_generate_send_xml" attrs="{'invisible': ['|',('state','!=','posted'),('type','not in',['out_invoice','out_refund'])]}"/>
                     <button name="btn_comunicacion_baja" string="Anular Comprobante" class="oe_highlight" type="object" attrs="{'invisible': ['|',('estado_comprobante_electronico','=','2_ANULADO'),('state','not in',['posted'])]}"/>
                     <button name="action_open_guia_remision" string="Generar Guía de Remisión" class="oe_highlight" type="object" attrs="{'invisible': [('guia_remision_count','!=',0)]}"/>
                 </xpath>

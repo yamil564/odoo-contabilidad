@@ -734,8 +734,11 @@ class AccountMove(models.Model):
     def action_send_invoice(self):
         if self.current_log_status_id and (self.journal_id.invoice_type_code_id == "01" or self.journal_id.tipo_comprobante_a_rectificar == "01"):
             if self.current_log_status_id.status == "P":
-                vals = oauth.send_invoice_xml(self)
-                self.current_log_status_id.write(vals)
+                try:
+                    vals = oauth.send_doc_xml(self)
+                    self.current_log_status_id.write(vals)
+                except Exception as e:
+                    return vals
 
     inv_supplier_ref = fields.Char("Número de comprobante")
 

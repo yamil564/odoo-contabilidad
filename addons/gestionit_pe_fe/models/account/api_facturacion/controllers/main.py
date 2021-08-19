@@ -162,8 +162,9 @@ def handle(data, user_credentials, self_signed=False):
     # _logger.info(signed)
     digest_value = firma.get_digest_value(signed)
 
-    doc_zip = firma.zipear(signed, file_name + ".xml")
-
+    doc_zip = firma.zipear(signed, file_name+".xml")
+    
+    # _logger.info(file_name + ".xml")
     if document_type in ["01", "03", "07", "08", "09"]:
         final_xml = firma.generate_envio_xml(
             ruc + usuario,

@@ -88,15 +88,10 @@ def generate_and_signed_xml(invoice):
     return data
 
 
-def send_invoice_xml(invoice):
-    signed_xml_with_creds = invoice.current_log_status_id.signed_xml_with_creds
-    creds = {
-        "ruc":invoice.company_id.vat,
-        "sunat_user":invoice.company_id.sunat_user,
-        "sunat_password":invoice.company_id.sunat_pass
-    }
-    tipo_envio = invoice.journal_id.tipo_envio
-    invoice_type_code = invoice.journal_id.invoice_type_code_id
+def send_doc_xml(doc):
+    signed_xml_with_creds = doc.current_log_status_id.signed_xml_with_creds
+    tipo_envio = doc.journal_id.tipo_envio
+    invoice_type_code = doc.journal_id.invoice_type_code_id
 
     if int(tipo_envio) == 0:
         if invoice_type_code in ["01","03","07","08"]:
@@ -113,32 +108,71 @@ def send_invoice_xml(invoice):
         raise Exception("Tipo de envio incorrecto. Tipos de envío posibles: 0 - Pruebas u 1- Producción")
 
     headers = {"Content-Type": "application/xml"}
-
     
-    user = "{}{}".format(creds.get("ruc"),creds.get("sunat_user"))
-    password = creds.get("sunat_password")
-    file_name = "{}.zip".format(invoice.current_log_status_id.name)
-    
-    doc_zip = firma.zipear(signed_xml_with_creds, file_name + ".xml")
+    # user = "{}{}".format(creds.get("ruc"),creds.get("sunat_user"))
+    # password = creds.get("sunat_password")
+    # file_name = "{}.zip".format(doc.current_log_status_id.name)
+    # doc_zip = firma.zipear(signed_xml_with_creds, file_name + ".xml")
 
-    response = requests.post(endpoint,
-                            data=signed_xml_with_creds,
-                            headers=headers,
-                            timeout=20)
+    try:
+        response = requests.post(endpoint,
+                                data=signed_xml_with_creds,
+                                headers=headers,
+                                timeout=20)
+        # _logger.info(response.text)
+        result = sunat_response_handle.get_response(response.text)
+        # _logger.info(result)
+        data = {
+            "response_json":json.dumps(result,indent=4),
+            "response_xml_without_format":response.text,
+            "response_content_xml": parseString(result.get("xml_content")).toprettyxml() if result.get("xml_content",False) else "",
+            "date_request":fields.Datetime.now(),
+            "status":result.get("status"),
+            "log_observation_ids":[]
+        }
+        return data
 
-    
-    result = sunat_response_handle.get_response(response.text)
-    _logger.info(result)
-    data = {
-        "response_json":json.dumps(result,indent=4),
-        "response_xml_without_format":response.text,
-        "response_content_xml":parseString(result.get("xml_content")).toprettyxml(),
-        "date_request":datetime.now(tz=timezone(invoice.user_id.tz or "America/Lima")),
-        "status":result.get("status")
-    }
-    
-    return data
-
+    except Timeout as e:
+        return {
+            'name': 'Tiempo de espera excedido',
+            'type': 'ir.actions.act_window',
+            'view_type': 'form',
+            'view_mode': 'form',
+            'res_model': 'custom.pop.message',
+            'target': 'new',
+            'context': {
+                'default_name': "Alerta",
+                'default_accion': "* El comprobante ha sido generado de forma exitosa.\n* El tiempo de espera de la respuesta ha sido excedida.\n* El comprobante se enviará de forma automática luego"
+            }
+        }
+    except ConnectionError as e:
+        return {
+            'name': 'Error en la conexión',
+            'type': 'ir.actions.act_window',
+            'view_type': 'form',
+            'view_mode': 'form',
+            'res_model': 'custom.pop.message',
+            'target': 'new',
+            'context': {
+                'default_name': "Alerta",
+                'default_accion': "* El comprobante ha sido generado de forma exitosa.\n* No se ha logrado enviar el comprobante.\n* Se intentará enviar luego de forma automática."
+            }
+        }
+    except Exception as e:
+        return {
+            'name': 'Error',
+            'type': 'ir.actions.act_window',
+            'view_type': 'form',
+            'view_mode': 'form',
+            'res_model': 'custom.pop.message',
+            'target': 'new',
+            'context': {
+                'default_name': "Alerta",
+                'default_accion': "* El comprobante ha sido generado de forma exitosa.\n* "+str(e)
+            }
+        }
+    finally:
+        doc.current_log_status_id.status = "P"
 
 
 def enviar_doc(self):
@@ -573,7 +607,7 @@ def crear_json_fac_bol(self):
             # Precio unitario con IGV
             "precioItem": round(item.price_total/item.quantity, 10) if len([item for line_tax in item.tax_ids if line_tax.tax_group_id.tipo_afectacion in ["31", "32", "33", "34", "35", "36"]]) == 0 else 0,
             # Precio unitario sin IGV y sin descuento
-            "precioItemSinIgv": round(item.price_subtotal/item.quantity, 10) if len([item for line_tax in item.tax_ids if line_tax.tax_group_id.tipo_afectacion in ["31", "32", "33", "34", "35", "36"]]) == 0 else 0,
+            "precioItemSinIgv": round((item.price_subtotal/item.quantity)/(1-item.discount/100), 10) if len([item for line_tax in item.tax_ids if line_tax.tax_group_id.tipo_afectacion in ["31", "32", "33", "34", "35", "36"]]) == 0 else 0,
             # Monto total de la línea sin IGV
             "montoItem": round(item.price_unit*item.quantity, 2) if item.no_onerosa else round(item.price_subtotal, 2),
 

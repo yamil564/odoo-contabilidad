@@ -34,7 +34,7 @@ class AccountLogStatus(models.Model):
     signed_xml_with_creds = fields.Text("XML con Credenciales")
     signed_xml_data_without_format = fields.Text("Comprobante XML Firmado")
     response_xml_without_format = fields.Text("Respuesta de Sunat - CDR")
-
+    log_observation_ids= fields.One2many("account.log.status.observation","account_log_status_id")
     status = fields.Selection(string="Estado de envío a SUNAT",selection=[
             ('A', 'Aceptado'),
             ('E', 'Enviado a SUNAT'),
@@ -64,6 +64,9 @@ class AccountLogStatus(models.Model):
         if self.account_move_id:
             self.account_move_id.current_log_status_id = False
             self.is_last_log = False
+        if self.guia_remision_id:
+            self.guia_remision_id.current_log_status_id = False
+            self.is_last_log = False
 
     def action_set_last_log(self):
         self.ensure_one()
@@ -71,6 +74,10 @@ class AccountLogStatus(models.Model):
             self.account_move_id.account_log_status_ids.filtered(lambda log: log != self and log.is_last_log).write({'is_last_log':False})
             self.is_last_log = True
             self.account_move_id.current_log_status_id = self.id
+        if self.guia_remision_id:
+            self.guia_remision_id.account_log_status_ids.filtered(lambda log: log != self and log.is_last_log).write({'is_last_log':False})
+            self.is_last_log = True
+            self.guia_remision_id.current_log_status_id = self.id
 
     # def update_request_response_xml(self):
     #     for log in self:
