@@ -27,7 +27,9 @@
                     <header>
                         <button name="action_send_email" string="Send by email" type="object"/>
                         <!-- <button name="print_report_guia" string="Print" type="object"/> -->
-                        <button name="btn_validar_comprobante" string="Validar" type="object" help="Emitir Guía de Remisión" class="oe_highlight" attrs="{'invisible':[('state','=','validado')]}" confirm="¿Está seguro que desea validar la Guía de Remisión Remitente?"/>
+                        <button name="post" string="Validar" type="object" help="Emitir Guía de Remisión" class="oe_highlight" attrs="{'invisible':[('state','=','validado')]}" confirm="¿Está seguro que desea validar la Guía de Remisión Remitente?"/>
+                        <button name="generar_log_envio" string="Generar XML" type="object" groups="base.group_system"/>
+                        <button name="send_gr_xml" string="Enviar XML" type="object" groups="base.group_system"/>
                         <button name="btn_enviar_comprobante" string="Enviar a Sunat" type="object" help="Enviar Guía de Remisión a Sunat" class="oe_highlight"/>
                         <button name="convertir_a_borrador" string="Convertir a Borrador" type="object" class="oe_highlight" attrs="{'invisible':['|',('state','=','borrador'),('estado_emision','not in',['P','E'])]}"/>
                         <button name="btn_view_log_guia_remision" string="Log de Envío" type="object" class="oe_highlight" groups="base.group_no_one"/>
@@ -184,8 +186,8 @@
                                                     'parent_id':partner_direccion_partida_id
                                                 }" domain="[('parent_id','=',partner_direccion_partida_id), ('parent_id','!=',False),
                                                     ('type','in',['other'])]" options="{'no_create':True,'no_create_edit':True,'no_quick_create':True,'no_open':True}"/>
-                                <field name="lugar_partida_direccion" widget="text" attrs="{'readonly':[('estado_emision','!=','B')]}"/>
-                                <field name="lugar_partida_ubigeo_code" context="{'ubigeo_search':True}" attrs="{'readonly':[('estado_emision','!=','B')]}" options="{'no_create':True,'no_create_edit':True,'no_quick_create':True,'no_open':True}"/>
+                                <field name="lugar_partida_direccion" widget="text" attrs="{'readonly':[('estado_emision','!=','B')]}" readonly="1" force_save="1"/>
+                                <field name="lugar_partida_ubigeo_code" context="{'ubigeo_search':True}" attrs="{'readonly':[('estado_emision','!=','B')]}" options="{'no_create':True,'no_create_edit':True,'no_quick_create':True,'no_open':True}" readonly="1" force_save="1"/>
                             </group>
                             <group>
                                 <field name="partner_direccion_llegada_id" invisible="1"/>
@@ -200,8 +202,8 @@
                                                     'parent_id':partner_direccion_llegada_id
                                                 }" domain="[('parent_id','=',partner_direccion_llegada_id), ('parent_id','!=',False),
                                                     ('type','in',['other'])]"/>
-                                <field name="lugar_llegada_direccion" widget="text" attrs="{'readonly':[('estado_emision','!=','B')]}"/>
-                                <field name="lugar_llegada_ubigeo_code" context="{'ubigeo_search':True}" attrs="{'readonly':[('estado_emision','!=','B')]}" options="{'no_create':True,'no_create_edit':True,'no_quick_create':True,'no_open':True}"/>
+                                <field name="lugar_llegada_direccion" widget="text" attrs="{'readonly':[('estado_emision','!=','B')]}" force_save="1"/>
+                                <field name="lugar_llegada_ubigeo_code" context="{'ubigeo_search':True}" attrs="{'readonly':[('estado_emision','!=','B')]}" options="{'no_create':True,'no_create_edit':True,'no_quick_create':True,'no_open':True}" force_save="1"/>
                             </group>
                         </group>
                         <group string="Transporte Público" attrs="{'invisible':[('modalidad_transporte','!=','01')]}">
@@ -223,7 +225,6 @@
                                     <tree  decoration-bf="is_last_log == True" decoration-muted="is_last_log == False">
                                         <field name="name"/>
                                         <field name="status"/>
-                                        <field name="account_summary_id"/>
                                         <field name="create_date"/>
                                         <field name="is_last_log" invisible="1"/>
                                         <button name="action_set_last_log" type="object" string="Registro actual" attrs="{'invisible':[('is_last_log','=',True)]}"/>
@@ -231,12 +232,12 @@
                                     </tree>
                                 </field>
                             </page>
-                            <page string="Petición JSON">
+                            <!-- <page string="Petición JSON">
                                 <field name="request_json"/>
                             </page>
                             <page string="Respuesta JSON">
                                 <field name="response_json"/>
-                            </page>
+                            </page> -->
                         </notebook>
                     </sheet>
                 </form>
