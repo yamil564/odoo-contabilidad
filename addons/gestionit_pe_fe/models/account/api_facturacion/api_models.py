@@ -32,7 +32,7 @@ def lamdba(data):
         'key_public': data["company"]["key_public"],
     }
 
-    main_xml = main.handle(data, credentials, True)
+    main_xml = main.handle(data, credentials)
 
     request_id = random_string(20)
 

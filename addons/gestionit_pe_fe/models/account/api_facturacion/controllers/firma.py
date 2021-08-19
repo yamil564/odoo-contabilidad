@@ -79,7 +79,8 @@ def zipear(xml_binary_content, name_file):
         zf.close()
     except Exception as e:
         raise e
-
+    # _logger.info("zf.filename")
+    # _logger.info(zf.filename)
     in_memory_zip.seek(0)
     data_file = in_memory_zip.read()
     documentoZip = base64.b64encode(data_file)

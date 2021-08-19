@@ -11,7 +11,8 @@ import base64
 import re
 import json
 import re
-from ..account.api_facturacion import api_models
+# from odoo.addons.gestionit_pe_fe.models.account.api_facturacion import api_models
+from odoo.addons.gestionit_pe_fe.models.account.api_facturacion.controllers import xml_validation, sunat_response_handle, main,firma
 import logging
 _logger = logging.getLogger(__name__)
 
@@ -108,7 +109,7 @@ class ResPartner(models.Model):
     vehiculo_ids = fields.One2many(
         "gestionit.vehiculo", "propietario_id", string="Vehículos")
     licencia = fields.Char("Licencia")
-
+    
     def action_view_conductores_privados(self):
         return {
             'name': 'Conductores Privados',
@@ -120,11 +121,11 @@ class ResPartner(models.Model):
             'domain': [('es_conductor', '=', True), ('parent_id', '!=', False), ('parent_id', '=', self.env.user.company_id.id)],
             'context': {
                 "default_es_conductor": True,
-                "default_parent_id": self.env.user.company_id.id,
+                "parent_id": self.env.user.company_id.id,
                 "default_country_id": 173
             }
         }
-
+    
 
 class Vehiculo(models.Model):
     _name = 'gestionit.vehiculo'
@@ -211,6 +212,7 @@ class GuiaRemision(models.Model):
     account_log_status_ids = fields.One2many(
         "account.log.status", "guia_remision_id", string="Registro de Envíos", copy=False)
 
+    current_log_status_id = fields.Many2one("account.log.status")
     # SERIE Y CORRELATIVO
     journal_id = fields.Many2one("account.journal", string="Serie", states={
                                  'validado': [('readonly', True)]})
@@ -1126,6 +1128,7 @@ class GuiaRemision(models.Model):
 
     def btn_enviar_comprobante(self):
         for record in self:
+            record.enviar_comprobante()
             if record.estado_emision in ["P", "B", False] and record.request_json:
                 if len(self) == 1:
                     return record.enviar_comprobante()
@@ -1158,36 +1161,45 @@ class GuiaRemision(models.Model):
         try:
             # r = requests.post(self.company_id.endpoint,
             #                   headers=headers, data=data)
-            r = api_models.lamdba(data)
+            
+            credentials = {
+                "ruc": data["company"]["numDocEmisor"],
+                'razon_social': data["company"]["nombreEmisor"],
+                'usuario': data["company"]["SUNAT_user"],
+                'password': data["company"]["SUNAT_pass"],
+                'key_private': data["company"]["key_private"],
+                'key_public': data["company"]["key_public"],
+            }
+            response = main.handle(data,credentials)
             # _logger.info("R json")
-            # _logger.info(r)
+            _logger.info(response)
             # self.response_json = json.dumps(r.json(), indent=4)
-            self.response_json = r
+            self.response_json = json.dumps(response, indent=4)
             log_status.update({
                 "response_json": self.response_json,
             })
-            if r:
-                if "errors" not in r:
-                    if "signed_xml" in r:
-                        log_status.update(
-                            {"signed_xml_data": r["signed_xml"]})
-                    if "request_id" in r:
-                        log_status.update(
-                            {"api_request_id": r["request_id"]})
-                    if "digest_value" in r:
-                        self.digest_value = r["digest_value"]
-                        log_status.update(
-                            {"digest_value": r["digest_value"]})
-                    if "response_xml" in r:
-                        log_status.update(
-                            {"response_xml": r["response_xml"]})
-                    if "response_content_xml" in r:
-                        log_status.update(
-                            {"content_xml": r["response_content_xml"]})
-                    if "sunat_status" in r:
-                        self.estado_emision = r["sunat_status"]
-                        log_status.update(
-                            {"status": r["sunat_status"]})
+            # if response:
+            #     if "errors" not in response:
+            #         if "signed_xml" in response:
+            #             log_status.update(
+            #                 {"signed_xml_data": response["signed_xml"]})
+            #         if "request_id" in response:
+            #             log_status.update(
+            #                 {"api_request_id": response["request_id"]})
+            #         if "digest_value" in response:
+            #             self.digest_value = response["digest_value"]
+            #             log_status.update(
+            #                 {"digest_value": response["digest_value"]})
+            #         if "response_xml" in response:
+            #             log_status.update(
+            #                 {"response_xml": response["response_xml"]})
+            #         if "response_content_xml" in response:
+            #             log_status.update(
+            #                 {"content_xml": response["response_content_xml"]})
+            #         if "sunat_status" in response:
+            #             self.estado_emision = response["sunat_status"]
+            #             log_status.update(
+            #                 {"status": response["sunat_status"]})
 
         except Timeout as e:
             self.estado_emision = "P"
