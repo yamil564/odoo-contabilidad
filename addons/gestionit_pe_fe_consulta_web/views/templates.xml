@@ -16,46 +16,34 @@
                                 <form>
                                     <div class="form-row">
                                         <div class="col-md-4 mb-3">
-                                            <label for="validationTooltip02">Serie</label>
+                                            <label for="serie">Serie</label>
                                             <input type="text" class="form-control" id="serie" placeholder="F001"  required="true"/>
-                                            <div class="valid-tooltip">
-                                            Looks good!
-                                            </div>
                                         </div>
                                         <div class="col-md-4 mb-3">
-                                            <label for="validationTooltipUsername">Número</label>
+                                            <label for="correlativo">Número</label>
                                             <div class="input-group">
                                                 <div class="input-group-prepend">
-                                                    <span class="input-group-text" id="validationTooltipUsernamePrepend">N°</span>
+                                                    <span class="input-group-text" id="lavel_correlativo">N°</span>
                                                 </div>
-                                                <input type="text" class="form-control" id="correlativo" placeholder="########" aria-describedby="validationTooltipUsernamePrepend" required="true"/>
-                                                <div class="invalid-tooltip">
-                                                Please choose a unique and valid username.
-                                                </div>
+                                                <input type="text" class="form-control" id="correlativo" placeholder="########"  required="true"/>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="form-row">
                                         <div class="col-md-3 mb-3">
-                                            <label for="validationTooltip03">Fecha</label>
+                                            <label for="fecha">Fecha</label>
                                             <input type="date" class="form-control" id="fecha" required="true"/>
                                             <div class="invalid-tooltip">
                                             Ingresar fecha
                                             </div>
                                         </div>
                                         <div class="col-md-6 mb-3">
-                                            <label for="validationTooltip04">RUC de Receptor</label>
-                                            <input type="text" class="form-control" id="ruc" placeholder="ruc o dni" required="true"/>
-                                            <div class="invalid-tooltip">
-                                            Ingresar RUC o DNI
-                                            </div>
+                                            <label for="ruc">RUC/DNI de Receptor</label>
+                                            <input type="text" class="form-control" id="ruc" placeholder="RUC o DNI" required="true"/>
                                         </div>
                                         <div class="col-md-3 mb-3">
-                                            <label for="validationTooltip05">Total</label>
+                                            <label for="total">Total</label>
                                             <input type="text" class="form-control" id="total" placeholder="0.00" required="true"/>
-                                            <div class="invalid-tooltip">
-                                            Ingresar total
-                                            </div>
                                         </div>
                                     </div>
                                     <button class="btn btn-primary" onclick="buscar_documento()">Buscar</button>
@@ -71,52 +59,59 @@
 				<script src="/gestionit_pe_fe_consulta_web/static/src/js/bootstrap.js"></script>
 				<script type="text/javascript" src="/gestionit_pe_fe_consulta_web/static/src/js/buscador.js"></script>
             </body>
-
         </template>
 
         <template id="gestionit_pe_fe_consulta_web.documentos" name="demo">
-
             <head>
                 <link rel="stylesheet" type="text/css" href="gestionit_pe_fe_consulta_web/static/src/css/bootstrap.css"/>
             </head>
             <body>
                 <div class="container">
-                    <div class="row justify-content-center">
+                    <div class="row justify-content-center pt-3" t-if="documento.exists()">
                         <table class="table table-sm " >
-                                        <thead>
-                                            <tr>
+                            <thead>
+                                <tr>
 
-                                                <th>FECHA EMISION</th>
-                                                <th>NÚMERO</th>
-                                                <th>CLIENTE</th>
-                                                <th>IMPORTE TOTAL</th>
-                                                <th>XML</th>
-                                                <th>PDF</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <t t-foreach="documento" t-as="doc">
-                                                <tr>
-                                                    <td><span t-esc="doc.invoice_date"/></td>
-                                                    <td><span t-esc="doc.name"/></td>
-                                                    <td><span t-esc="doc.partner_id.vat"/></td>
-                                                    <td><span t-esc="doc.amount_total"/></td>
-                                                    <td>
-                                                        <t t-if="identificador != ''">
-                                                            <a t-att-href="'/consulta/comprobante/xml/'+identificador" target="_blank">
-                                                                <img src="/gestionit_pe_fe_consulta_web/static/src/img/icon_xml.png" class="img img-responsive" style="height:50px"/>
-                                                            </a>
-                                                        </t>
-                                                    </td>
-                                                    <td>
-                                                        <a t-att-href="'/consulta/comprobante/v2/pdf/'+str(doc.id)" target="_blank">
-                                                            <img src="/gestionit_pe_fe_consulta_web/static/src/img/icon_pdf.png" class="img img-responsive" style="height:50px"/>
-                                                        </a>
-                                                    </td>
-                                                </tr>
-                                            </t>
-                                        </tbody>
-                                </table>
+                                    <th>FECHA EMISION</th>
+                                    <th>NÚMERO</th>
+                                    <th>CLIENTE</th>
+                                    <th>IMPORTE TOTAL</th>
+                                    <th  t-if="documento.has_ei_xml()">XML</th>
+                                    <th  t-if="documento.has_ei_cdr()">CDR</th>
+                                    <th>PDF</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- <t t-foreach="documento" t-as="doc"> -->
+                                    <tr>
+                                        <td><span t-esc="documento.invoice_date"/></td>
+                                        <td><span t-esc="documento.name"/></td>
+                                        <td><span t-esc="documento.partner_id.vat"/></td>
+                                        <td><span t-esc="documento.amount_total"/></td>
+                                        <td t-if="documento.has_ei_xml()">
+                                            <a t-att-href="documento.get_portal_url(suffix='/ei/xml')"  target="_blank"  >
+                                                <img src="/gestionit_pe_fe_consulta_web/static/src/img/icon_xml.png" class="img img-responsive" style="height:50px"/>
+                                            </a>
+                                        </td>
+                                        <td t-if="documento.has_ei_cdr()">
+                                            <a t-att-href="documento.get_portal_url(suffix='/ei/cdr')"  target="_blank" >
+                                                <img src="/gestionit_pe_fe_consulta_web/static/src/img/icon_xml.png" class="img img-responsive" style="height:50px"/>
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <a t-att-href="documento.get_portal_url(report_type='pdf', download=True)"  target="_blank">
+                                                <img src="/gestionit_pe_fe_consulta_web/static/src/img/icon_pdf.png" class="img img-responsive" style="height:50px"/>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                <!-- </t> -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div t-else="" class="pt-3">
+                        <div class="alert alert-warning" role="alert">
+                        Este comprobante no ha sido encontrado.
+                        </div>
                     </div>
                 </div>
 
