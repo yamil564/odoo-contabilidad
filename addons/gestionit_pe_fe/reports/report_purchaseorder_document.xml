@@ -71,16 +71,23 @@
                 </table>
             </div>
         </xpath>
-        <xpath expr="//h2" position="attributes">
-            <attribute name="class">d-none</attribute>
+        <xpath expr="//h2" position="replace">
+        </xpath>
+        <xpath expr="//h2" position="replace">
+        </xpath>
+        <xpath expr="//h2" position="replace">
+        </xpath>
+        <xpath expr="//h2" position="replace">
         </xpath>
         <xpath expr="//div[@id='informations']" position="attributes">
             <attribute name="class">d-none</attribute>
         </xpath>
-        <xpath expr="//div[hasclass('page')]" position="before">
+        <xpath expr="//t[@t-call='web.external_layout']" position="before">
             <t t-set="documents" t-value="{'draft':'PRESUPUESTO',
                                             'sent':'PRESUPUESTO',
                                             'sale':'ORDEN DE COMPRA',
+                                            'to aprove':'ORDEN DE COMPRA',
+                                            'purchase':'ORDEN DE COMPRA',
                                             'done':'ORDEN DE COMPRA',
                                             'cancel':'COMPRA CANCELADA'}"/>
             <t t-set="document_display_name" t-value="documents.get(o.state,'-')"/>
