@@ -51,4 +51,8 @@
             <t t-raw="0"/>
         </div>
     </template>
+
+    <record id="base.main_company" model="res.company">
+        <field name="external_report_layout_id" ref="gestionit_pe_fe.external_layout_background_gestionit"/>
+    </record>
 </odoo>

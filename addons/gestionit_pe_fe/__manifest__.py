@@ -72,7 +72,6 @@
         'data/account_tax_data.xml',
         'data/ir_config_parameter.xml',
         'data/res_currency.xml',
-        'data/res_company.xml',
         'data/identification_type.xml',
         'data/catalogs.xml',
         'cron/account_move_cron.xml',
