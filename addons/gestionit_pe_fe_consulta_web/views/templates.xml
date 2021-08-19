@@ -79,6 +79,7 @@
                                     <th  t-if="documento.has_ei_xml()">XML</th>
                                     <th  t-if="documento.has_ei_cdr()">CDR</th>
                                     <th>PDF</th>
+                                    <th>Consulta</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -101,6 +102,11 @@
                                         <td>
                                             <a t-att-href="documento.get_portal_url(report_type='pdf', download=True)"  target="_blank">
                                                 <img src="/gestionit_pe_fe_consulta_web/static/src/img/icon_pdf.png" class="img img-responsive" style="height:50px"/>
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <a t-att-href="'{}#discussion'.format(documento.get_portal_url())"  target="_blank">
+                                                <img src="/gestionit_pe_fe_consulta_web/static/src/img/icon_consulta.png" class="img img-responsive" style="height:50px"/>
                                             </a>
                                         </td>
                                     </tr>
