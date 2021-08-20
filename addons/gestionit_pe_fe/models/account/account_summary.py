@@ -14,7 +14,7 @@ import time
 from datetime import datetime, timedelta
 import math
 import re
-from .api_facturacion import api_models
+from odoo.addons.gestionit_pe_fe.models.account.api_facturacion import api_models
 import logging
 _logger = logging.getLogger(__name__)
 
