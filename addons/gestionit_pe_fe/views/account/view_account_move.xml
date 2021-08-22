@@ -142,7 +142,6 @@
                     <field name="journal_type" invisible="1"/>
                 </xpath>
                 <xpath expr="//field[@name='journal_id']" position="attributes">
-                    <!-- <attribute name="widget">selection</attribute> -->
                     <attribute name="domain">[('invoice_type_code_id','=',invoice_type_code), ('id','in',journal_ids),('type','=',journal_type)]</attribute>
                 </xpath>
             </field>

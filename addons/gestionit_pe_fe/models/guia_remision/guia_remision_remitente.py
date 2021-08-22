@@ -1092,15 +1092,6 @@ class GuiaRemision(models.Model):
     def generar_log_envio(self):
         data = self.generar_comprobante_json()
         self.request_json = json.dumps(data,indent=4)
-        # data = json.loads(self.request_json)
-        log_status = {
-            "guia_remision_id":self.id,
-            "request_json": self.request_json,
-            "guia_remision_id": self.id,
-            "name": self.name,
-            "date_request": fields.Datetime.now(),
-            "date_issue": self.fecha_emision
-        }
         credentials = {
             "ruc": data["company"]["numDocEmisor"],
             'razon_social': data["company"]["nombreEmisor"],
@@ -1110,26 +1101,27 @@ class GuiaRemision(models.Model):
             'key_public': data["company"]["key_public"],
         }
         request = main.handle(data,credentials)
-        log_status.update({
+        log_status = {
+            "guia_remision_id":self.id,
+            "request_json": self.request_json,
+            "guia_remision_id": self.id,
+            "name": self.name,
+            "date_request": fields.Datetime.now(),
+            "date_issue": self.fecha_emision,
             "status":"P",
             "digest_value":request.get("digest_value","-"),
             "signed_xml_data":request.get("signed_xml","-"),
             "signed_xml_with_creds":parseString(request.get("final_xml","-")).toprettyxml(),
-        })
+        }
         log_status_obj = self.env["account.log.status"].sudo().create(log_status)
         log_status_obj.sudo().action_set_last_log()
 
-        # self.response_json = json.dumps(response, indent=4)
-        # log_status.update({
-        #     "response_json": self.response_json,
-        # })
 
     def send_gr_xml(self):
         if not self.current_log_status_id:
             self.generar_log_envio()
         try:
             result = send_doc_xml(self)
-            _logger.info(result)
             self.current_log_status_id.write(result)
         except Exception as e:
             return result
@@ -1187,7 +1179,11 @@ class GuiaRemision(models.Model):
         guia_remision_ids = self.env["gestionit.guia_remision"].search(
             [("estado_emision", "in", ["P", False]), ("request_json", "!=", False)], limit=cantidad)
         for gr in guia_remision_ids:
-            gr.btn_enviar_comprobante()
+            try:
+                gr.send_gr_xml()
+                self.env.cr.commit()
+            except Exception as e:
+                pass
         return True
 
     def btn_enviar_comprobante(self):

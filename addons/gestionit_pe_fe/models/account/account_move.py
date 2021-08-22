@@ -8,7 +8,7 @@ from odoo.addons.gestionit_pe_fe.models.parameters.catalogs import tnc
 from odoo.addons.gestionit_pe_fe.models.parameters.catalogs import tnd
 from pytz import timezone
 from datetime import datetime, timedelta
-from . import oauth
+from odoo.addons.gestionit_pe_fe.models.account.oauth import send_doc_xml,generate_and_signed_xml
 import base64
 import re
 import urllib
@@ -721,12 +721,9 @@ class AccountMove(models.Model):
 
         return obj
 
-    # def action_send_invoice(self):
-    #     oauth.enviar_doc(self)
-        
     def action_generate_and_signed_xml(self):
         if not self.current_log_status_id:
-            vals = oauth.generate_and_signed_xml(self)
+            vals = generate_and_signed_xml(self)
             account_log_status = self.env["account.log.status"].create(vals)
             account_log_status.action_set_last_log()
 
@@ -735,7 +732,7 @@ class AccountMove(models.Model):
         if self.current_log_status_id and (self.journal_id.invoice_type_code_id == "01" or self.journal_id.tipo_comprobante_a_rectificar == "01"):
             if self.current_log_status_id.status == "P":
                 try:
-                    vals = oauth.send_doc_xml(self)
+                    vals = send_doc_xml(self)
                     self.current_log_status_id.write(vals)
                 except Exception as e:
                     return vals
