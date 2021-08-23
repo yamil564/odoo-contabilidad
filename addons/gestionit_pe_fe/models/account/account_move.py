@@ -42,30 +42,6 @@ codigo_unidades_de_medida = [
 codigos_tipo_afectacion_igv = [
     "10", "11", "12", "13", "14", "15", "16", "20", "30", "31", "34", "35", "36", "40"
 ]
-estado_comprobante_electronico = {
-                                    "0":"0_NO_EXISTE",
-                                    "1":"1_ACEPTADO",
-                                    "2":"2_ANULADO",
-                                    "3":"3_AUTORIZADO",
-                                    "4":"4_NO_AUTORIZADO"
-                                }
-estado_contribuyente_ruc = {
-                            "00":"00_ACTIVO",
-                            "01":"01_BAJA_PROVISIONAL",
-                            "02":"02_BAJA_PROV_POR_OFICIO",
-                            "03":"03_SUSPENSION_TEMPORAL",
-                            "10":"10_BAJA_DEFINITIVA",
-                            "11":"11_BAJA_DE_OFICIO",
-                            "22":"22_INHABILITADO-VENT.UNICA"
-                        }
-
-condicion_domicilio_contribuyente = {
-                                        "00":"00_HABIDO",
-                                        "09":"09_PENDIENTE",
-                                        "11":"11_POR_VERIFICAR",
-                                        "12":"12_NO_HABIDO",
-                                        "20":"20_NO_HALLADO"
-                                    }
 
 class AccountMove(models.Model):
     _inherit = "account.move"
@@ -94,6 +70,10 @@ class AccountMove(models.Model):
 
     credit_note_count = fields.Integer("Número de notas de crédito",compute='_compute_credit_count')
 
+    account_summary_id = fields.Many2one("account.summary",
+                                         string="Resumen Diario",
+                                         ondelete="set null",
+                                         default=False)
     @api.depends('credit_note_ids')
     def _compute_credit_count(self):
         self.env.cr.execute("select count(*) from account_move where reversed_entry_id = {}".format(self.id))
@@ -183,7 +163,6 @@ class AccountMove(models.Model):
         ],
         string = "Estado Emisión a SUNAT",
         related = "current_log_status_id.status"
-        # compute="_compute_current_log_status"
     )
 
     # @api.depends("current_log_status_id")
@@ -1094,9 +1073,10 @@ class AccountMove(models.Model):
                     "view_mode": "form",
                     "context": {
                         'default_invoice_ids': [self.id],
+                        'default_company_id':self.company_id.id,
                         'default_invoice_type_code_id': self.journal_id.invoice_type_code_id,
                         'default_date_invoice': self.invoice_date,
-                        'default_issue_date': datetime.now(tz=timezone(tz))
+                        'default_voided_date': datetime.now(tz=timezone(tz))
                     }
                 }
         elif re.match("^B\w{3}-\d{1,8}$", self.name):
@@ -1194,7 +1174,7 @@ class AccountMove(models.Model):
         invoices = self.env["account.move"].search([["estado_emision","in",["P","",False]],
                                                     ["name","!=",False],
                                                     ["state","not in",["draft","cancel"]],
-                                                    ["estado_comprobante_electronico","in",["-"]]])
+                                                    ["estado_comprobante_electronico","in",[False,"-","0_NO_EXISTE"]]])
         invoice_ids = invoices.filtered(lambda r: r.journal_id.invoice_type_code_id in ["01"] and re.match("^F\w{3}-\d{1,8}$", r.name))
 
         credit_and_debit_note_ids = invoices.filtered(lambda r: r.journal_id.invoice_type_code_id in ["07","08"] and re.match("^F\w{3}-\d{1,8}$", r.name) and (r.reversed_entry_id.estado_comprobante_electronico == "1_ACEPTADO" or r.debit_origin_id.estado_comprobante_electronico == "1_ACEPTADO") )
@@ -1211,118 +1191,44 @@ class AccountMove(models.Model):
             self.env.cr.commit()
         return True
 
-
+    @api.model
     def cron_actualizacion_estado_emision_sunat(self):
-        comprobantes = self.env["account.move"].sudo().search([["estado_comprobante_electronico","=","1_ACEPTADO"],["estado_emision","in",[False,"N","P"]]]).mapped("current_log_status_id")
-        _logger.info(comprobantes)
+        comprobantes = self.env["account.move"].sudo().search([["estado_comprobante_electronico","=","1_ACEPTADO"]]).mapped("current_log_status_id")
         comprobantes.sudo().write({"status" : "A"})
         return True
 
-    def get_token_validez_comprobante(self):
-        client_id = self.env["ir.config_parameter"].get_param("sunat.validez.comprobante.client_id")
-        client_secret = self.env["ir.config_parameter"].get_param("sunat.validez.comprobante.client_secret")
-
-        if not (client_id and client_secret):
-            raise UserError("Las credenciales del api de CONSULTA VALIDEZ DE COMPROBANTE no estan configuradas para este usuario.")
-        
-        url = "https://api-seguridad.sunat.gob.pe/v1/clientesextranet/{}/oauth2/token/".format(client_id)
-
-        data = {"grant_type":"client_credentials",
-                "scope":"https://api.sunat.gob.pe/v1/contribuyente/contribuyentes",
-                "client_id":client_id,
-                "client_secret":client_secret}
-        payload = urllib.parse.urlencode(data)
-        headers = {'Content-Type': "application/x-www-form-urlencoded",
-                    'User-Agent':'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'}
-
-        try:
-            response = requests.request("POST",url, data=payload, headers=headers)
-            _logger.info(response.json())
-        except Exception as e:
-            raise UserError("Error al consultar el Web Service de SUNAT {}".format(e))
-        
-        if response.status_code == 200:
-            return response.json()
-        else:
-            return {}
 
     def action_validez_comprobante(self):
-        token = False
-        response = self.get_token_validez_comprobante()
-        if "access_token" in response:
-            token = response.get("access_token")
-        else:
-            raise UserError("Sunat consulta de validez de comprobante - La respuesta no posee un access_token")
-
-        company_ids = self.mapped("company_id")
-        for company in company_ids:
-            url = "https://api.sunat.gob.pe/v1/contribuyente/contribuyentes/{}/validarcomprobante".format(company.vat)
-
-            invs = self.filtered(lambda inv: inv.company_id == company and inv.journal_id.electronic_invoice and re.match("^F\w{3}-\d{1,8}$", inv.name) or re.match("^B\w{3}-\d{1,8}$", inv.name))
-
-            for inv in invs:
-                comp = inv.mapped(lambda r:{
-                    "numRuc":company.vat,
-                    "codComp":r.journal_id.invoice_type_code_id,
-                    "numeroSerie":r.name.split("-")[0],
-                    "numero":int(r.name.split("-")[1]),
-                    "fechaEmision":r.invoice_date.strftime("%d/%m/%Y"),
-                    "monto": str(round(r.amount_total,2)) 
-                })
-                _logger.info(comp)
-                headers = {
-                    'Authorization': "Bearer {}".format(token),
-                    'Content-Type': "application/json"
-                    }
-                try:
-                    response = requests.request("POST", url, data=json.dumps(comp[0]), headers=headers)
-                    res = response.json()
-                    _logger.info(res)
-                    if "data" in res and res.get("success"):
-                        data = res["data"]
-                        if "estadoCp" in data:
-                            inv.estado_comprobante_electronico = estado_comprobante_electronico[data["estadoCp"]]
-                        if "estadoRuc" in data:
-                            inv.estado_contribuyente_ruc = estado_contribuyente_ruc[data["estadoRuc"]]
-                        if "condDomiRuc" in data:
-                            inv.condicion_domicilio_contribuyente = condicion_domicilio_contribuyente[data["condDomiRuc"]]
-                        if "observaciones" in data:
-                            inv.consulta_validez_observaciones = ";".join(data["observaciones"])
-                    else:
-                        inv.consulta_validez_observaciones = res.get("message","**Error**")
-                except Exception as e:
-                    inv.consulta_validez_observaciones = str(e)
+        if self.current_log_status_id:
+            self.current_log_status_id.action_request_status_invoice()
     
     @api.model
     def cron_action_validez_comprobante(self):
-        tz = timezone("America/Lima")
-        today = datetime.now(tz=tz).strftime("%Y-%m-%d")
+        today = fields.Date.today()
         invoices = self.env["account.move"].sudo().search([("journal_id.electronic_invoice","=",True),
-                                                            ("state","not in",["draft","cancel"]),
-                                                            ("name","!=",False),
+                                                            ("state","=",["posted"]),
+                                                            ("name","!=",[False,"/"]),
                                                             ("invoice_date","<=",today),
-                                                            ("journal_id.invoice_type_code_id","in",["01","03","07","08"]),
-                                                            ("estado_comprobante_electronico","=","-")])
-        step = 20
-        for cnt in range(0,len(invoices),step):
-            invs = invoices[cnt:cnt+step]
-            if len(invs)>=1:
-                try:
-                    invs.sudo().action_validez_comprobante()
-                except Exception as e:
-                    pass
+                                                            ("journal_id.invoice_type_code_id","in",["03","07","08"]),
+                                                            ("estado_comprobante_electronico","=",["-","0_NO_EXISTE"])],limit=50)
+        for inv in invoices:
+            try:
+                inv.action_validez_comprobante()
+            except Exception as e:
+                pass
             self.env.cr.commit()
     
     @api.model
     def cron_cambiar_a_no_existe(self):
-        invoices = self.env["account.move"].sudo().search([("journal_id.electronic_invoice","=",True),
-                                                            ("state","not in",["draft","cancel"]),
-                                                            ("name","!=",False),
-                                                            ("journal_id.invoice_type_code_id","=",True),
-                                                            ("estado_comprobante_electronico","=","0_NO_EXISTE")])
+        return True
+        # invoices = self.env["account.move"].sudo().search([("journal_id.electronic_invoice","=",True),
+        #                                                     ("state","not in",["draft","cancel"]),
+        #                                                     ("name","!=",False),
+        #                                                     ("journal_id.invoice_type_code_id","=",True),
+        #                                                     ("estado_comprobante_electronico","=","0_NO_EXISTE")])
 
-        invoices = invoices.filtered(lambda r:r.journal_id.invoice_type_code_id in ['01','03','07','08'] and ( re.match("^F\w{3}-\d{1,8}$", r.name) or re.match("^B\w{3}-\d{1,8}$", r.name)) )
-        return invoices.write({"estado_comprobante_electronico":"-"})
+        # invoices = invoices.filtered(lambda r:r.journal_id.invoice_type_code_id in ['01','03','07','08'] and ( re.match("^F\w{3}-\d{1,8}$", r.name) or re.match("^B\w{3}-\d{1,8}$", r.name)) )
+        # return invoices.write({"estado_comprobante_electronico":"-"})
 
 class AccountMoveReversal(models.TransientModel):
     _inherit = 'account.move.reversal'

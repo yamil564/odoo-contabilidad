@@ -8,27 +8,25 @@
             <field name="name">CRON Consulta Validez de Comprobante</field>
             <field name="model_id" ref="account.model_account_move"/>
             <field name="state">code</field>
-            <field name="interval_number">2</field>
+            <field name="interval_number">1</field>
             <field name="interval_type">hours</field>
             <field name="numbercall">-1</field>
             <field name="code">model.cron_action_validez_comprobante()</field>
             <field name="doall">1</field>
             <field name="user_id" ref="base.user_root"/>
-            <!-- <field name="nextcall" eval="(datetime.strptime(datetime.now().strftime('%Y-%m-%d %H:00:00'),'%Y-%m-%d %X') + timedelta(hours=8) ).strftime('%Y-%m-%d %X')"/> -->
         </record>
 
-        <record id="gestionit_pe_fe.ir_cron_cambiar_estado_a_no_existe" model="ir.cron">
+        <!-- <record id="gestionit_pe_fe.ir_cron_cambiar_estado_a_no_existe" model="ir.cron">
             <field name="name">CRON Cambiar estado de "NO EXISTE" a "-"</field>
             <field name="model_id" ref="account.model_account_move"/>
             <field name="state">code</field>
-            <field name="interval_number">2</field>
+            <field name="interval_number">1</field>
             <field name="interval_type">hours</field>
             <field name="numbercall">-1</field>
             <field name="code">model.cron_cambiar_a_no_existe()</field>
             <field name="doall">1</field>
             <field name="user_id" ref="base.user_root"/>
-            <!-- <field name="nextcall" eval="(datetime.strptime(datetime.now().strftime('%Y-%m-%d %H:00:00'),'%Y-%m-%d %X') + timedelta(hours=24) ).strftime('%Y-%m-%d %X')"/> -->
-        </record>
+        </record> -->
         
        <record id="gestionit_pe_fe.ir_cron_actualizacion_estado_emision_sunat" model="ir.cron">
             <field name="name">CRON Actualización Estado de Emisión a SUNAT</field>
@@ -40,7 +38,6 @@
             <field name="numbercall">-1</field>
             <field name="doall">1</field>
             <field name="user_id" ref="base.user_root"/>
-            <!-- <field name="nextcall" eval="(datetime.strptime(datetime.now().strftime('%Y-%m-%d %H:00:00'),'%Y-%m-%d %X') + timedelta(hours=8) ).strftime('%Y-%m-%d %X')"/> -->
        </record>
 
     </data>

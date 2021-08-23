@@ -21,33 +21,27 @@
             <field name="arch" type="xml">
                 <form>
                     <header>
-                        <button name="action_generate_and_signed_xml" string="Generar XML" type="object" class="oe_highlight" groups="gestionit_pe_fe.group_fe_allow_generate_send_xml"/>
-                        <button name="action_send_summary" string="Enviar XML" type="object" class="oe_highlight" groups="gestionit_pe_fe.group_fe_allow_generate_send_xml"/>
-                        <button name="convertir_a_borrador" string="Convertir a Borrador" type="object" groups="base.group_no_one"/>
-                        <button name="cargar_comprobantes" string="Cargar Comprobantes" type="object" class="oe_highlight oe_right" attrs="{'invisible':[['estado_emision','not in',[False,'B','P']]]}" />
-                        <button name="action_request_status_ticket" string="Consulta del Resumen" type="object" class="oe_highlight oe_right" />
+                        <button name="post" string="Publicar" type="object" class="oe_highlight" attrs="{'invisible':[['estado_emision','in',['A','E','O','R']]]}"/>
+                        <button name="action_generate_and_signed_xml" string="Generar XML" type="object" class="oe_highlight" groups="gestionit_pe_fe.group_fe_allow_generate_send_xml" attrs="{'invisible':[['estado_emision','in',['A','E','O','R']]]}"/>
+                        <button name="action_send_summary" string="Enviar XML" type="object" class="oe_highlight" groups="gestionit_pe_fe.group_fe_allow_generate_send_xml" attrs="{'invisible':[['estado_emision','in',['A','E','O','R']]]}"/>
+                        <button name="action_draft" string="Convertir a Borrador" type="object" groups="base.group_no_one" attrs="{'invisible':[['estado_emision','in',[False,'A','E','O','R']]]}"/>
+                        <button name="load_summary" string="Cargar Comprobantes" type="object" class="oe_highlight oe_right" attrs="{'invisible':[['estado_emision','not in',[False,'B','P']]]}" />
+                        <button name="action_request_status_ticket" string="Consulta del Resumen" type="object" class="oe_highlight oe_right" attrs="{'invisible':[['summary_ticket','=',False]]}"/>
+                        <field name="estado_emision" readonly="1" widget="statusbar"/>
                     </header>
                     <sheet>
                         <h1>
                             <field name="identificador_resumen"/>
                         </h1>
                         <group>
-                            
                             <group>
                                 
-                                <field name="estado_emision" readonly="1"/>
-                                <field name="company_id" readonly="1"/>
-                                
-                                <!-- <field name="numero_envio" attrs="{'readonly':[('estado_emision','not in',[False,'B'])]}"/> -->
-                                <!-- <field name="summary_sequence" /> -->
-                                <!-- <field name="identificador_resumen" attrs="{'readonly':[('estado_emision','not in',[False,'B'])]}"/> -->
+                                <field name="company_id" readonly="1" options="{'no_open':True}"/>
                                 <field name="cod_operacion" attrs="{'readonly':[('estado_emision','not in',[False,'B'])]}"/>
-
                             </group>
                             <group>
                                 <field name="fecha_generacion" attrs="{'readonly':[('estado_emision','not in',[False,'B'])]}"/>
                                 <field name="fecha_emision_documentos" attrs="{'readonly':[('estado_emision','not in',[False,'B'])]}"/>
-                                <!-- <field name="ticket" readonly="1"/> -->
                                 <field name="summary_ticket" string="Ticket"/>
                                 <field name="summary_description_response" attrs="{'invisible':[('summary_description_response','=',False)]}"/>
 
@@ -73,10 +67,6 @@
                                         <field name="serie" readonly="1"/>
                                         <field name="correlativo" readonly="1"/>
                                         <field name="tipo_moneda" readonly="1"/>
-                                        <!--
-                                        <field name="numero_documento_inicio"/>
-                                        <field name="numero_documento_fin"/>
-                                        -->
                                         <field name="monto_igv" readonly="1"/>
                                         <field name="monto_total" readonly="1"/>
                                         <field name="cod_operacion"/>
@@ -84,11 +74,6 @@
                                 </field>
                             </page>
                             <page string="Registro de envíos a SUNAT" groups="base.group_no_one">
-                                <!-- <group>
-                                    <field name="resumen_diario_json" readonly="1"/>
-                                    <field name="json_respuesta" readonly="1"/>
-                                    
-                                </group> -->
                                 <group>
                                     <field name="current_log_status_id" readonly="1" force_save="1"/>
                                 </group>
@@ -96,9 +81,8 @@
                                 <field name="account_log_status_ids" mode="tree" attrs="{'readonly':[['estado_emision','not in',['B']]]}">
                                     <tree decoration-bf="is_last_log == True" decoration-muted="is_last_log == False">
                                         <field name="name"/>
-                                        <!-- <field name="account_summary_id"/> -->
                                         <field name="status"/>
-                                        <field name="ticket"/>
+                                        <field name="summary_ticket"/>
                                         <field name="create_date"/>
                                         <field name="is_last_log" invisible="1"/>
                                         <button name="action_set_last_log" type="object" string="Registro actual" attrs="{'invisible':[('is_last_log','=',True)]}"/>

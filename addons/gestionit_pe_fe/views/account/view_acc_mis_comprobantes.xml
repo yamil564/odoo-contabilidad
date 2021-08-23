@@ -33,7 +33,7 @@
                     <field name="currency_id" invisible="1" string="Moneda"/>
                     <field name="company_currency_id" invisible="1"/>
                     <field name="state" string="Estado"/>
-                    <field name="estado_emision"/>
+                    <field name="estado_emision" invisible="1"/>
                     <field name="estado_comprobante_electronico" string="Validez Comp."/>
                     <field name="anulacion_comprobante" string="Anulado?"/>
                     <field name="type" invisible="context.get('type',True)" string="Tipo"/>

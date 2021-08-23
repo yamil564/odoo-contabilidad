@@ -19,7 +19,7 @@ from requests.exceptions import (
 import zipfile
 from odoo.addons.gestionit_pe_fe.models.account.api_facturacion.controllers import xml_validation, sunat_response_handle, main,firma
 from odoo.addons.gestionit_pe_fe.models.account.api_facturacion import api_models,lista_errores
-from odoo.addons.gestionit_pe_fe.models.account.api_facturacion.utils.Resumen import Resumen
+from odoo.addons.gestionit_pe_fe.models.account.api_facturacion.efact21.Documents import ResumenDiario,Factura
 from pytz import timezone
 
 import logging
@@ -86,7 +86,8 @@ def generate_and_signed_xml(invoice):
         "date_issue":invoice.invoice_date,
         "account_move_id":invoice.id,
         "digest_value":result.get("digest_value"),
-        "status":"P"
+        "status":"P",
+        "company_id":invoice.company_id.id,
     }
     return data
 
@@ -111,13 +112,14 @@ def send_summary_xml(doc):
                                 headers=headers,
                                 timeout=20)
         result = sunat_response_handle.get_response_ticket(response.text)
+        _logger.info(result)
         data = {
             "response_json":json.dumps(result,indent=4),
             "summary_submission_response_xml":parseString(response.text).toprettyxml() if response.text else "" ,
             "date_request":fields.Datetime.now(),
             "status":result.get("status"),
             "log_observation_ids":[],
-            "ticket":result.get("ticket")
+            "summary_ticket":result.get("ticket")
         }
         return data
 
@@ -160,6 +162,77 @@ def send_summary_xml(doc):
                 'default_accion': "* El comprobante ha sido generado de forma exitosa.\n* "+str(e)
             }
         }
+
+def send_voided_xml(doc):
+    signed_xml_with_creds = doc.current_log_status_id.signed_xml_with_creds
+    tipo_envio = doc.company_id.tipo_envio
+
+    if int(tipo_envio) == 0:
+        endpoint = urls_test[0]
+
+    elif int(tipo_envio) == 1: 
+        endpoint = urls_production[0]
+    else:
+        raise Exception("Tipo de envio incorrecto. Tipos de envío posibles: 0 - Pruebas u 1- Producción")
+
+    try:
+        headers = {"Content-Type": "application/xml"}
+        response = requests.post(endpoint,
+                                data=signed_xml_with_creds,
+                                headers=headers,
+                                timeout=20)
+        result = sunat_response_handle.get_response_ticket(response.text)
+        _logger.info(result)
+        data = {
+            "response_json":json.dumps(result,indent=4),
+            "voided_submission_response_xml":parseString(response.text).toprettyxml() if response.text else "" ,
+            "date_request":fields.Datetime.now(),
+            "status":result.get("status"),
+            "log_observation_ids":[],
+            "voided_ticket":result.get("ticket")
+        }
+        return data
+
+    except Timeout as e:
+        return {
+            'name': 'Tiempo de espera excedido',
+            'type': 'ir.actions.act_window',
+            'view_type': 'form',
+            'view_mode': 'form',
+            'res_model': 'custom.pop.message',
+            'target': 'new',
+            'context': {
+                'default_name': "Alerta",
+                'default_accion': "* El comprobante ha sido generado de forma exitosa.\n* El tiempo de espera de la respuesta ha sido excedida.\n* El comprobante se enviará de forma automática luego"
+            }
+        }
+    except ConnectionError as e:
+        return {
+            'name': 'Error en la conexión',
+            'type': 'ir.actions.act_window',
+            'view_type': 'form',
+            'view_mode': 'form',
+            'res_model': 'custom.pop.message',
+            'target': 'new',
+            'context': {
+                'default_name': "Alerta",
+                'default_accion': "* El comprobante ha sido generado de forma exitosa.\n* No se ha logrado enviar el comprobante.\n* Se intentará enviar luego de forma automática."
+            }
+        }
+    except Exception as e:
+        return {
+            'name': 'Error',
+            'type': 'ir.actions.act_window',
+            'view_type': 'form',
+            'view_mode': 'form',
+            'res_model': 'custom.pop.message',
+            'target': 'new',
+            'context': {
+                'default_name': "Alerta",
+                'default_accion': "* El comprobante ha sido generado de forma exitosa.\n* "+str(e)
+            }
+        }
+
 
 def send_doc_xml(doc):
     signed_xml_with_creds = doc.current_log_status_id.signed_xml_with_creds
@@ -239,139 +312,6 @@ def send_doc_xml(doc):
         }
     # finally:
     #     doc.current_log_status_id.status = "P"
-
-
-# def enviar_doc(self):
-#     self.invoice_type_code = self.journal_id.invoice_type_code_id
-
-#     if self.invoice_type_code == "01" or self.invoice_type_code == "03":
-#         data_doc = crear_json_fac_bol(self)
-#     elif self.invoice_type_code == "07" or self.invoice_type_code == "08":
-#         data_doc = crear_json_not_cred_deb(self)
-#     else:
-#         raise UserError("Tipo de documento no valido")
-
-#     self.json_comprobante = json.dumps(data_doc, indent=4)
-
-#     data = {
-#         "request_json": self.json_comprobante,
-#         "name": self.name,
-#         "date_request": fields.Datetime.now(),
-#         "date_issue": self.invoice_date,
-#         "account_move_id": self.id
-#     }
-
-#     try:
-#         response_env = enviar_doc_url(data_doc, self.company_id.tipo_envio)
-#         self.json_respuesta = json.dumps(response_env, indent=4)
-
-#         data.update({
-#             "response_json": self.json_respuesta,
-#         })
-
-#         if "sunat_status" in response_env:
-#             if response_env["sunat_status"] in ["A", "O", "P", "E", "N", "B"]:
-#                 self.estado_emision = response_env["sunat_status"]
-#             else:
-#                 self.estado_emision = "P"
-
-#         if "digest_value" in response_env:
-#             data["digest_value"] = response_env["digest_value"]
-#             self.digest_value = response_env["digest_value"]
-
-#         if "signed_xml" in response_env:
-#             try:
-#                 ps = parseString(response_env["signed_xml"])
-#                 data["signed_xml_data"] = ps.toprettyxml()
-#             except Exception as e:
-#                 data["signed_xml_data"] = response_env["signed_xml"]
-#             data["signed_xml_data_without_format"] = response_env["signed_xml"]
-
-#         if "response_content_xml" in response_env:
-#             try:
-#                 ps = parseString(response_env["response_content_xml"])
-#                 data["content_xml"] = ps.toprettyxml()
-#             except Exception as e:
-#                 data["content_xml"] = response_env["response_content_xml"]
-
-#         if "response_xml" in response_env:
-#             try:
-#                 ps = parseString(response_env["response_xml"])
-#                 data["response_xml"] = ps.toprettyxml()
-#             except Exception as e:
-#                 data["response_xml"] = response_env["response_xml"]
-#             data["response_xml_without_format"] = response_env["response_xml"]
-
-#         if "tipoDocumento" in data_doc:
-#             tipo_documento = data_doc["tipoDocumento"]
-#             if tipo_documento == '01':
-#                 data["name"] = "Factura electrónica "+self.name
-#             elif tipo_documento == '03':
-#                 data["name"] = "Boleta Electrónica "+self.name
-#             elif tipo_documento == '07':
-#                 data["name"] = "Nota de Crédito "+self.name
-#             elif tipo_documento == '08':
-#                 data["name"] = "Nota de Débito "+self.name
-
-#         if "unsigned_xml" in response_env:
-#             try:
-#                 ps = parseString(response_env["unsigned_xml"])
-#                 data["unsigned_xml"] = ps.toprettyxml()
-#             except Exception as e:
-#                 data["unsigned_xml"] = response_env["unsigned_xml"]
-
-#         if "sunat_status" in response_env:
-#             data["status"] = response_env["sunat_status"]
-#         if 'request_id' in response_env:
-#             data["api_request_id"] = response_env['request_id']
-
-#     except Timeout as e:
-#         self.estado_emision = "P"
-#         return {
-#             'name': 'Tiempo de espera excedido',
-#             'type': 'ir.actions.act_window',
-#             'view_type': 'form',
-#             'view_mode': 'form',
-#             'res_model': 'custom.pop.message',
-#             'target': 'new',
-#             'context': {
-#                     'default_name': "Alerta",
-#                     'default_accion': "* El Comprobante ha sido generado de forma exitosa.\n* El tiempo de espera de la respuesta ha sido excedida.\n* El comprobante se enviará de forma automática luego"
-
-#             }
-#         }
-#     except ConnectionError as e:
-#         self.estado_emision = "P"
-#         return {
-#             'name': 'Error en la conexión',
-#             'type': 'ir.actions.act_window',
-#             'view_type': 'form',
-#             'view_mode': 'form',
-#             'res_model': 'custom.pop.message',
-#             'target': 'new',
-#             'context': {
-#                     'default_name': "Alerta",
-#                     'default_accion': "* El Comprobante ha sido generado de forma exitosa.\n* No se ha logrado enviar el comprobante.\n* Se intentará enviar luego de forma automática."
-#             }
-#         }
-#     except Exception as e:
-#         self.estado_emision = "P"
-#         raise
-#         return {
-#             'name': 'Error',
-#             'type': 'ir.actions.act_window',
-#             'view_type': 'form',
-#             'view_mode': 'form',
-#             'res_model': 'custom.pop.message',
-#             'target': 'new',
-#             'context': {
-#                     'default_name': "Alerta",
-#                     'default_accion': "* El Comprobante ha sido generada de forma exitosa.\n* "+str(e)
-#             }
-#         }
-#     finally:
-#         self.account_log_status_ids = [(0, 0, data)]
-
 
 def get_tipo_cambio(self, compra_o_venta=2):  # 1 -> compra , 2->venta
     ratios = self.currency_id.rate_ids
@@ -1069,8 +1009,8 @@ def extraer_error(response_env):
 
 
 def request_status_ticket(username,password,ticket,tipo_envio):
-    resumen = Resumen()
-    status = resumen.getStatus(username, password, ticket).toprettyxml("  ")
+    resumen = ResumenDiario()
+    request_status_xml = resumen.getStatus(username, password, ticket).toprettyxml("  ")
 
     endpoint = ""
     if int(tipo_envio) == 0:
@@ -1079,7 +1019,7 @@ def request_status_ticket(username,password,ticket,tipo_envio):
         endpoint = urls_production[0]
     
     
-    response = requests.post(endpoint, data=status, headers={"Content-Type": "text/xml"})
+    response = requests.post(endpoint, data=request_status_xml, headers={"Content-Type": "text/xml"})
 
     if response.status_code != 200:
         raise UserError(response.text)
@@ -1156,4 +1096,75 @@ def request_status_ticket(username,password,ticket,tipo_envio):
             "status": "N",
             "digestValue": digestValue,
             "cdr": cdr
+        }
+
+
+def request_status_invoice(username,password,ruc_emisior,invoice_type,document_number):
+    factura = Factura()
+    serie,correlativo = document_number.split("-")
+    request_status_cdr = factura.getStatusCdr(username,password,ruc_emisior,invoice_type,serie,correlativo).toprettyxml("  ")
+    # endpoint = "https://e-factura.sunat.gob.pe/ol-it-wsconscpegem/billConsultService?wsdl"
+    endpoint = "https://ww1.sunat.gob.pe/ol-it-wsconscpegem/billConsultService"
+    
+    try:
+        headers = {
+            'Content-Type': 'text/xml',
+            'Cookie': 'f5avraaaaaaaaaaaaaaaa_session_=INMKPNKKIAGOJCILIOEJGGFONADMLGLLFPLFFNCONMMEHKMOHAHFCHKAAHHIDFALMPKDDNOLFDNGJNGKPKPAFOOCFJOMJCHJANAGKCEHOAMFKIJFMNFOFPPGGHOKMPMD'
+        }
+        _logger.info(request_status_cdr)
+        response = requests.post(endpoint,
+                                data=request_status_cdr,
+                                headers=headers,
+                                timeout=20)
+        _logger.info(response.text)
+        result = sunat_response_handle.get_response(response.text)
+        data = {
+            "response_json":json.dumps(result,indent=4),
+            "response_xml_without_format":response.text,
+            "response_content_xml": parseString(result.get("xml_content")).toprettyxml() if result.get("xml_content",False) else "",
+            "date_request":fields.Datetime.now(),
+            "status":result.get("status"),
+            "log_observation_ids":[]
+        }
+        return data
+
+    except Timeout as e:
+        return {
+            'name': 'Tiempo de espera excedido',
+            'type': 'ir.actions.act_window',
+            'view_type': 'form',
+            'view_mode': 'form',
+            'res_model': 'custom.pop.message',
+            'target': 'new',
+            'context': {
+                'default_name': "Alerta",
+                'default_accion': "* El comprobante ha sido generado de forma exitosa.\n* El tiempo de espera de la respuesta ha sido excedida.\n* El comprobante se enviará de forma automática luego"
+            }
+        }
+    except ConnectionError as e:
+        return {
+            'name': 'Error en la conexión',
+            'type': 'ir.actions.act_window',
+            'view_type': 'form',
+            'view_mode': 'form',
+            'res_model': 'custom.pop.message',
+            'target': 'new',
+            'context': {
+                'default_name': "Alerta",
+                'default_accion': "* El comprobante ha sido generado de forma exitosa.\n* No se ha logrado enviar el comprobante.\n* Se intentará enviar luego de forma automática."
+            }
+        }
+    except Exception as e:
+        raise e
+        return {
+            'name': 'Error',
+            'type': 'ir.actions.act_window',
+            'view_type': 'form',
+            'view_mode': 'form',
+            'res_model': 'custom.pop.message',
+            'target': 'new',
+            'context': {
+                'default_name': "Alerta",
+                'default_accion': "* El comprobante ha sido generado de forma exitosa.\n* "+str(e)
+            }
         }

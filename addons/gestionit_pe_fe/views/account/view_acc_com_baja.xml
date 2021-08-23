@@ -6,10 +6,10 @@
             <field name="name">Comunicación de baja - Tree</field>
             <field name="model">account.comunicacion_baja</field>
             <field name="arch" type="xml">
-                <tree decoration-info="state == 'draft'" decoration-muted="state == 'cancel'" string="Invoice">
-                    <field name="date_invoice" string="Fecha de Referencia"/>
+                <tree create="0">
+                    <field name="identificador_anulacion" string="Identificador de Anulación"/>
+                    <field name="date_invoice" string="F.Emisión de comprobante"/>
                     <field name="invoice_ids" widget="many2many_tags" string="Comprobantes"/>
-                    <field name="contador"/>
                     <field name="user_id" string="Responsable"/>
                     <field name="state" string="Estado de Comunicación de Baja"/>
                 </tree>
@@ -17,25 +17,6 @@
         </record>
 
 
-        <!-- <record id="gestionit_pe_fe.view_document_baja_select" model="ir.ui.view">
-            <field name="name">Comunicación de baja - Select</field>
-            <field name="model">account.comunicacion_baja</field>
-            <field name="arch" type="xml">
-                <search string="Search Invoice">
-                    <filter name="draft" string="Draft" domain="[('state','in',('draft'))]"/>
-                    <field name="user_id" string="Salesperson"/>
-                    <field name="date_invoice" string="Date invoice"/>
-                    <separator/>
-                    <filter domain="[('user_id','=',uid)]" help="My Invoices"/>
-                    <group expand="0" string="Group By">
-                        <filter string="Salesperson" context="{'group_by':'user_id'}"/>
-                        <filter name="status" string="Status" context="{'group_by':'state'}"/>
-                        <separator/>
-                        <filter string="Invoice Date" context="{'group_by':'date_invoice'}"/>
-                    </group>
-                </search>
-            </field>
-        </record> -->
         <record id="gestionit_pe_fe.view_comunicacion_baja_form_simple" model="ir.ui.view">
             <field name="name">Comunicación de baja - Simple</field>
             <field name="model">account.comunicacion_baja</field>
@@ -44,24 +25,24 @@
                     <group>
                         <field name="invoice_ids" widget="many2many_tags" readonly="1" force_save="1" string="Comprobantes"/>
                         <field name="motivo" placeholder="Motivo de baja"/>
+                        
                     </group>
                     <group>
                         <group invisible="1">
                             <group>
                                 <field name="state"/>
                                 <field name="date_invoice"/>
-                                <field name="issue_date"/>
-                                <field name="contador"/>
+                                <field name="voided_date"/>
+                                <field name="company_id"/>        
                             </group>
                             <group>
                                 <field name="user_id" groups="base.group_user"/>
                                 <field name="invoice_type_code_id"/>
-                                <field name="ticket" attrs="{'readonly':[['ticket','!=',False]],'invisible':[['ticket','=',False]]}"/>
                             </group>
                         </group>
                     </group>
                     <footer>
-                        <button name="action_summary_sent" type="object" string="Enviar" class="oe_highlight" groups="account.group_account_invoice"/>
+                        <button name="post" type="object" string="Anular" class="oe_highlight" groups="account.group_account_invoice"/>
                     </footer>
                 </form>
             </field>
@@ -73,43 +54,58 @@
             <field name="arch" type="xml">
                 <form>
                     <header>
-                        <button name="consulta_estado_comunicacion_baja" type="object" states="E" string="Estado de Comunicación de Baja" class="oe_highlight"/>
+                        <button name="post" string="Anular" type="object" class="oe_highlight" attrs="{'invisible':[['state','in',['A','E','O','R']]]}"/>
+                        <button name="action_generate_and_signed_xml" type="object" string="Generar XML" class="oe_highlight" groups="gestionit_pe_fe.group_fe_allow_generate_send_xml" attrs="{'invisible':[['state','in',['A','E','O','R']]]}"/>
+                        <button name="action_send_voided" type="object" string="Enviar XML" class="oe_highlight" groups="gestionit_pe_fe.group_fe_allow_generate_send_xml" attrs="{'invisible':[['state','in',['A','E','O','R']]]}"/>
+                        <button name="action_request_status_ticket" type="object" string="Consulta de estado de anulación" class="oe_highlight"/>
+                        <!-- <button name="consulta_estado_comunicacion_baja" type="object" states="E" string="Estado de Comunicación de Baja" class="oe_highlight"/> -->
 
-                        <button name="action_summary_sent" type="object" states="B" string="Enviar" class="oe_highlight" groups="account.group_account_invoice"/>
+                        <!-- <button name="action_summary_sent" type="object" states="B" string="Enviar" class="oe_highlight" groups="account.group_account_invoice"/> -->
 
-                        <button name="action_summary_cancel" type="object" states="N,R,P" string="Cancelar" groups="base.group_no_one"/>
+                        <!-- <button name="action_summary_cancel" type="object" states="N,R,P" string="Cancelar" groups="base.group_no_one"/> -->
 
-                        <button name="action_summary_draft" states="C,N,R,P" string="Convertir a Borrador" type="object" groups="account.group_account_invoice"/>
+                        <!-- <button name="action_summary_draft" states="C,N,R,P" string="Convertir a Borrador" type="object" groups="account.group_account_invoice"/> -->
 
                         <field name="state" widget="statusbar" />
                     </header>
                     <sheet>
+                        <h1>
+                            <field name="identificador_anulacion" attrs="{'invisible':[['identificador_anulacion','=',False]]}" readonly="1" force_save="1"/>
+                        </h1>
                         <group>
                             <group>
+                                <field name="invoice_type_code_id" readonly="1" force_save="1"/>
+                                <field name="motivo" placeholder="Motivo de baja"/>
+                                <field name="invoice_ids" widget="many2many_tags" 
+                                        string="Comprobante"
+                                        domain="[['invoice_date','=',date_invoice],['type','=','out_invoice'],['state','=',['posted']],['invoice_type_code','=',invoice_type_code_id]]" 
+                                        options="{'no_create':True,'no_open': True,'no_create_edit':True}"/>
+                            </group>
+                            <group>
+                                <field name="company_id" readonly="1" force_save="1" options="{'no_open':True}"/>
                                 <field name="date_invoice" readonly="1" force_save="1"/>
-                                <field name="issue_date" readonly="1" force_save="1"/>
-                                <field name="contador"/>
+                                <field name="voided_date" readonly="1" force_save="1"/>
+                                <field name="voided_ticket" attrs="{'readonly':[['voided_ticket','!=',False]],'invisible':[['voided_ticket','=',False]]}"/>
                             </group>
-                            <group>
-                                <field name="user_id" groups="base.group_user" options="{'no_open':True}"/>
-                            </group>
+                            
                         </group>
-                        <group>
-                            <field name="invoice_type_code_id" readonly="1" force_save="1"/>
-                            <field name="motivo" placeholder="Motivo de baja"/>
-                            <field name="ticket" attrs="{'readonly':[['ticket','!=',False]],'invisible':[['ticket','=',False]]}"/>
-                        </group>
-                        <notebook >
-                            <page string="Documentos a enviar">
-                                <!-- <field name="invoice_ids" widget="many2many_tags" domain="[['invoice_date','=',date_invoice],['type','=','out_invoice'],['status_envio','=',True],['state','not in',['draft','cancel']],['invoice_type_code','=',invoice_type_code_id]]" /> -->
-                                <field name="invoice_ids" widget="many2many_tags" domain="[['invoice_date','=',date_invoice],['type','=','out_invoice'],['state','not in',['draft','cancel']],['invoice_type_code','=',invoice_type_code_id]]" />
-                            </page>
-                            <page string="Comprobante" groups="base.group_no_one">
+                        <notebook>
+                            <page string="Registro de envíos a SUNAT" groups="base.group_no_one">
                                 <group>
-                                    <field name="json_comprobante"/>
-                                    <field name="json_respuesta"/>
-                                    <field name="json_estado_comunicacion_baja"/>
+                                    <field name="current_log_status_id" readonly="1" force_save="1"/>
                                 </group>
+                                <label for="account_log_status_ids" string="Registro de envíos"/>
+                                <field name="account_log_status_ids" mode="tree">
+                                    <tree decoration-bf="is_last_log == True" decoration-muted="is_last_log == False">
+                                        <field name="name"/>
+                                        <field name="status"/>
+                                        <field name="voided_ticket"/>
+                                        <field name="create_date"/>
+                                        <field name="is_last_log" invisible="1"/>
+                                        <button name="action_set_last_log" type="object" string="Registro actual" attrs="{'invisible':[('is_last_log','=',True)]}"/>
+                                        <button name="action_set_last_log_unlink" type="object" string="Dejar" attrs="{'invisible':[('is_last_log','=',False)]}" />
+                                    </tree>
+                                </field>
                             </page>
                         </notebook>
                     </sheet>
@@ -121,8 +117,7 @@
             <field name="name">COMUNICACIÓN DE BAJA</field>
             <field name="res_model">account.comunicacion_baja</field>
             <field name="view_id" ref="gestionit_pe_fe.account_comunicacion_baja_tree"/>
-            <field name="view_mode">tree,kanban,form,pivot,graph</field>
-            <!-- <field name="search_view_id" ref="gestionit_pe_fe.view_document_baja_select"/> -->
+            <field name="view_mode">tree,form</field>
         </record>
 
         <record id="action_document_baja_tree" model="ir.actions.act_window.view">

@@ -1104,14 +1104,14 @@ class GuiaRemision(models.Model):
         log_status = {
             "guia_remision_id":self.id,
             "request_json": self.request_json,
-            "guia_remision_id": self.id,
             "name": self.name,
             "date_request": fields.Datetime.now(),
             "date_issue": self.fecha_emision,
             "status":"P",
             "digest_value":request.get("digest_value","-"),
             "signed_xml_data":request.get("signed_xml","-"),
-            "signed_xml_with_creds":parseString(request.get("final_xml","-")).toprettyxml(),
+            "signed_xml_with_creds":parseString(request.get("final_xml")).toprettyxml(" ") if request.get("final_xml",False) else "",
+            "company_id":self.company_id.id
         }
         log_status_obj = self.env["account.log.status"].sudo().create(log_status)
         log_status_obj.sudo().action_set_last_log()

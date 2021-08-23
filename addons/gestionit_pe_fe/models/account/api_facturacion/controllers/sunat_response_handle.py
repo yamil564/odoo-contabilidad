@@ -10,7 +10,7 @@ def get_response(xml_response):
     doc = minidom.parseString(xml_response.encode("ISO-8859-1"))
     faultcodes = doc.getElementsByTagName("soap-env:Fault")
     applicationResponse = doc.getElementsByTagName("applicationResponse")
-    faults = doc.getElementsByTagName("S:Fault")
+    faults = doc.getElementsByTagName("ns0:Fault")
 
     errors = []
     observaciones = []
@@ -109,8 +109,8 @@ def get_response(xml_response):
             })
     elif faults:
         for i in range(faults.length):
-            code = int(faults.item(i).getElementsByTagName(
-                "faultcode")[0].firstChild.data)
+            code = faults.item(i).getElementsByTagName("faultcode")[0].firstChild.data
+            code = int(code.split(":")[1])
             if code == 402:
                 errors.append({
                     "status": 400,
