@@ -3,8 +3,9 @@ import base64
 from xml.dom import minidom
 import zipfile
 import io
-from ..lista_errores import errores, error_list
-
+from ..lista_errores import errores, error_list,get_error_by_code
+import logging
+_logger = logging.getLogger(__name__)
 
 def get_response(xml_response):
     doc = minidom.parseString(xml_response.encode("ISO-8859-1"))
@@ -20,12 +21,12 @@ def get_response(xml_response):
 
     if faultcodes:
         for faultcode in faultcodes:
-            code = faultcode.childNodes[0].firstChild.data
-            stringFault = faultcode.childNodes[1].firstChild.data
+            stringFault = faultcode.childNodes[0].firstChild.data
+            code = faultcode.childNodes[1].firstChild.data
             errors.append({
                 "status": 400,
-                "code": "72",
-                "detail": error_list["72"],
+                "code": code,
+                "detail": get_error_by_code(code),
                 "meta": {
                     "reenvioHabilitado": True,
                     "codigoErrorSUNAT": code,

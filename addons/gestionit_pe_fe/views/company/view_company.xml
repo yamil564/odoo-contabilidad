@@ -20,7 +20,7 @@
                                 <field name="sunat_user" />
                             </group>
                             <group>
-                                <field name="sunat_pass" />
+                                <field name="sunat_pass"  password="True"/>
                             </group>
                         </group>
                     </page>

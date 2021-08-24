@@ -64,8 +64,8 @@ class AccountSummary(models.Model):
 
     company_id = fields.Many2one("res.company", required=True, string="Compañia",
                                  default=lambda self: self.env.user.company_id.id)
-    fecha_generacion = fields.Date("Fecha de Generación", default=fields.Date.today(), required="True")
-    fecha_emision_documentos = fields.Date("Fecha de Emisión de Documentos", default=fields.Date.today(), required="True")
+    fecha_generacion = fields.Date("Fecha de Generación", default=lambda r:datetime.now(tz=timezone("America/Lima")), required="True")
+    fecha_emision_documentos = fields.Date("Fecha de Emisión de Documentos", default=lambda r:datetime.now(tz=timezone("America/Lima")), required="True")
     identificador_resumen = fields.Char("Identificador de Resumen", default="Resumen Diario",related="current_log_status_id.name")
     summary_line_ids = fields.One2many("account.summary.line", "account_summary_id", string="Líneas de Resumen", ondelete='cascade')
     resumen_diario_json = fields.Text("Resumen Diario JSON")

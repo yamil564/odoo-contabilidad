@@ -1020,7 +1020,7 @@ def request_status_ticket(username,password,ticket,tipo_envio):
     
     
     response = requests.post(endpoint, data=request_status_xml, headers={"Content-Type": "text/xml"})
-
+    _logger.info(response.text)
     if response.status_code != 200:
         raise UserError(response.text)
 
@@ -1048,7 +1048,12 @@ def request_status_ticket(username,password,ticket,tipo_envio):
         ResponseCode = ""
         ReferenceID = ""
         status = ""
-        if statusCode in ["0", "99"]:
+        try:
+            statusCode = int(statusCode)
+        except Exception as e:
+            statusCode = -1
+
+        if statusCode in [0, 99]:
             content = doc.getElementsByTagName("content")
             zip_data = content[0].firstChild.data
             zip_decode = base64.b64decode(zip_data)
@@ -1061,16 +1066,16 @@ def request_status_ticket(username,password,ticket,tipo_envio):
                 ResponseCode = DocumentResponse[0].getElementsByTagName("cbc:ResponseCode")[0].firstChild.data
                 ReferenceID = DocumentResponse[0].getElementsByTagName("cbc:ReferenceID")[0].firstChild.data
                 Description = ResponseCode+" - " + (Description if Description else lista_errores.get_error_by_code(ResponseCode) )
-            if statusCode == "0":
+            if statusCode == 0:
                 cdr = doc_xml.toprettyxml("        ")
                 Description = doc_xml.getElementsByTagName("cbc:Description")[0].firstChild.data
                 digestValue = doc_xml.getElementsByTagName("DigestValue")[0].firstChild.data
                 status = "A"
-            elif statusCode == "99":
+            elif statusCode == 99:
                 status = "R"
-        elif statusCode == "98":
-            Description = "En Proceso"
-            status = "P"
+        elif statusCode == 98:
+            Description = "En Proceso de revisión"
+            status = "E"
         else:
             status = False
             Description = doc.getElementsByTagName("statusMessage")
