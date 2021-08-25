@@ -33,7 +33,7 @@
                     <field name="currency_id" invisible="1" string="Moneda"/>
                     <field name="company_currency_id" invisible="1"/>
                     <field name="state" string="Estado"/>
-                    <field name="estado_emision"/>
+                    <field name="estado_emision" invisible="1"/>
                     <field name="estado_comprobante_electronico" string="Validez Comp."/>
                     <field name="anulacion_comprobante" string="Anulado?"/>
                     <field name="type" invisible="context.get('type',True)" string="Tipo"/>
@@ -59,8 +59,7 @@
             <field name="res_model">account.move</field>
             <field name="view_id" ref="gestionit_pe_fe.view_tree_comprobantes_venta" />
             <field name="view_mode">tree,kanban,form,pivot,graph</field>
-            <field name="domain">
-				[('journal_id.type','=','sale')]
+            <field name="domain">[('journal_id.type','=','sale'),('invoice_type_code','in',['01','03','07','08'])]
             </field>
             <field name="search_view_id" ref="account.view_account_invoice_filter" />
         </record>

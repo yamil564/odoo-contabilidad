@@ -30,7 +30,7 @@
                     <field name="company_currency_id" invisible="1"/>
                     <field name="type" invisible="context.get('type',True)"/>
                     <field name="state"/>
-                    <field name="estado_emision"/>
+                    <field name="estado_emision" invisible="1"/>
                     <field name="estado_comprobante_electronico"/>
                     <!-- <field name="anulacion_comprobante" string="Anulación Comprobante"/> -->
                 </tree>

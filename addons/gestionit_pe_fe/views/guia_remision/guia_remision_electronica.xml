@@ -43,7 +43,6 @@
                             <group>
                                 <field name="journal_id" required = "1" domain="[('invoice_type_code_id','=','09')]" context="{'default_invoice_type_code_id':'09'}" options="{'no_create_edit': True,'no_quick_create':True,'no_open':True}"/>
                                 <field name="estado_emision" groups="base.group_no_one"/>
-                                <field name="estado_emision" readonly="1"/>
                             </group>
                             <group>
                                 <field name="motivo_traslado" />
@@ -184,8 +183,8 @@
                                                     'parent_id':partner_direccion_partida_id
                                                 }" domain="[('parent_id','=',partner_direccion_partida_id), ('parent_id','!=',False),
                                                     ('type','in',['other'])]" options="{'no_create':True,'no_create_edit':True,'no_quick_create':True,'no_open':True}"/>
-                                <field name="lugar_partida_direccion" widget="text" attrs="{'readonly':[('estado_emision','!=','B')]}" readonly="1" force_save="1"/>
-                                <field name="lugar_partida_ubigeo_code" context="{'ubigeo_search':True}" attrs="{'readonly':[('estado_emision','!=','B')]}" options="{'no_create':True,'no_create_edit':True,'no_quick_create':True,'no_open':True}" readonly="1" force_save="1"/>
+                                <field name="lugar_partida_direccion" widget="text" attrs="{'readonly':[('estado_emision','not in',[False,'B'])]}" force_save="1"/>
+                                <field name="lugar_partida_ubigeo_code" context="{'ubigeo_search':True}" attrs="{'readonly':[('estado_emision','not in',[False,'B'])]}" options="{'no_create':True,'no_create_edit':True,'no_quick_create':True,'no_open':True}" force_save="1"/>
                             </group>
                             <group>
                                 <field name="partner_direccion_llegada_id" invisible="1"/>
@@ -200,8 +199,8 @@
                                                     'parent_id':partner_direccion_llegada_id
                                                 }" domain="[('parent_id','=',partner_direccion_llegada_id), ('parent_id','!=',False),
                                                     ('type','in',['other'])]"/>
-                                <field name="lugar_llegada_direccion" widget="text" attrs="{'readonly':[('estado_emision','!=','B')]}" force_save="1"/>
-                                <field name="lugar_llegada_ubigeo_code" context="{'ubigeo_search':True}" attrs="{'readonly':[('estado_emision','!=','B')]}" options="{'no_create':True,'no_create_edit':True,'no_quick_create':True,'no_open':True}" force_save="1"/>
+                                <field name="lugar_llegada_direccion" widget="text" attrs="{'readonly':[('estado_emision','not in',[False,'B'])]}" force_save="1"/>
+                                <field name="lugar_llegada_ubigeo_code" context="{'ubigeo_search':True}" attrs="{'readonly':[('estado_emision','not in',[False,'B'])]}" options="{'no_create':True,'no_create_edit':True,'no_quick_create':True,'no_open':True}" force_save="1"/>
                             </group>
                         </group>
                         <group string="Transporte Público" attrs="{'invisible':[('modalidad_transporte','!=','01')]}">
@@ -216,7 +215,7 @@
                         <notebook groups="base.group_no_one">
                             <page string="Registros de envío">
                                 <group>
-                                    <field name="current_log_status_id" string="Actual Envio"/>
+                                    <field name="current_log_status_id" string="Actual Envio" readonly="1" force_save="1"/>
                                 </group>
                                 <label for="account_log_status_ids" string="Lista de envíos"/>
                                 <field name="account_log_status_ids">

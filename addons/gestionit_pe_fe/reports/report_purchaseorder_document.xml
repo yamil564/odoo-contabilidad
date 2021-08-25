@@ -5,9 +5,9 @@
             <div name="sale_order_address" class="w-100 mb16">
                 <table class="w-100">
                     <tr>
-                        <!-- CLIENTE -->
+                        <!-- PROVEEDOR -->
                         <th class="l_partner">
-                            <label t-esc="'CLIENTE : '"/>
+                            <label t-esc="'PROVEEDOR : '"/>
                         </th>
                         <td class="v_partner">
                             <span t-esc="((o.partner_id.registration_name if o.partner_id.registration_name else o.partner_id.name)  or '').upper()"/>
@@ -83,13 +83,13 @@
             <attribute name="class">d-none</attribute>
         </xpath>
         <xpath expr="//t[@t-call='web.external_layout']" position="before">
-            <t t-set="documents" t-value="{'draft':'PRESUPUESTO',
-                                            'sent':'PRESUPUESTO',
+            <t t-set="documents" t-value="{'draft':'SOLICITUD DE PRESUPUESTO',
+                                            'sent':'SOLICITUD DE PRESUPUESTO',
                                             'sale':'ORDEN DE COMPRA',
                                             'to aprove':'ORDEN DE COMPRA',
                                             'purchase':'ORDEN DE COMPRA',
                                             'done':'ORDEN DE COMPRA',
-                                            'cancel':'COMPRA CANCELADA'}"/>
+                                            'cancel':'SOLICITUD DE COMPRA CANCELADA'}"/>
             <t t-set="document_display_name" t-value="documents.get(o.state,'-')"/>
         </xpath>
         <xpath expr="//table[hasclass('o_main_table')]" position="replace">

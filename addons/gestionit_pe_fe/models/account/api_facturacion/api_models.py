@@ -1,5 +1,5 @@
 from .controllers import main
-from .utils.ComunicacionBaja import ComunicacionBaja
+from .efact21.Documents import ComunicacionBaja
 from .lista_errores import errores
 import random
 from xml.dom import minidom

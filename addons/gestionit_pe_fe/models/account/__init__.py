@@ -1,3 +1,4 @@
+from . import summary_sequence
 from . import account_log_status
 from . import account_tax_group
 from . import account_journal

@@ -97,8 +97,6 @@ class SaleOrder(models.Model):
 
     def _prepare_invoice(self):
         res = super(SaleOrder, self)._prepare_invoice()
-        # res["invoice_type_code"] = self.tipo_documento
-        # res["descuento_global"] = self.descuento_global
         res.update({
             "invoice_type_code": self.tipo_documento,
             "descuento_global": self.descuento_global,
@@ -107,8 +105,7 @@ class SaleOrder(models.Model):
         })
         if len(self.env.user.warehouse_ids) > 0:
             res["warehouse_id"] = self.env.user.warehouse_ids[0].id
-            journals = self.env.user.warehouse_ids.journal_ids.filtered(
-                lambda r: r.invoice_type_code_id == self.tipo_documento and r.type == "sale")
+            journals = self.env.user.warehouse_ids.journal_ids.filtered(lambda r: r.invoice_type_code_id == self.tipo_documento and r.type == "sale")
             if len(journals) > 0:
                 res["journal_id"] = journals[0].id
             else:
@@ -229,7 +226,6 @@ class SaleOrder(models.Model):
                 'total_venta_exonerada': total_venta_exonerada,
                 'total_venta_gratuito': total_venta_gratuito,
                 'total_descuentos': total_descuentos,
-                # 'amount_tax': amount_tax,
                 'total_igv': total_igv,
                 'amount_total': total_venta_gravado + total_venta_exonerada + total_venta_inafecto + total_igv
             })

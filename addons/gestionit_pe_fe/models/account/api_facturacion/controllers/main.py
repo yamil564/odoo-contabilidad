@@ -77,8 +77,7 @@ def handle(data, user_credentials, self_signed=False):
                 return document
 
             ruc = data["resumen"]["numDocEmisor"]
-            number = str(data["fechaGeneracion"]).replace(
-                "-", "") + "-" + str(data["resumen"]["id"])
+            number = str(data["fechaGeneracion"]).replace("-", "") + "-" + str(data["resumen"]["id"])
             file_name = str("{ruc}-{doc_type}-{number}".format(
                 ruc=ruc,
                 doc_type=document_type,

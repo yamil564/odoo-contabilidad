@@ -224,6 +224,69 @@ class Factura(Xmleable):
         xml_doc.appendChild(self.doc)
         return xml_doc
 
+    def getStatusCdr(self,username, 
+                        password,
+                        ruc_emisor,
+                        tipo_comprobante,
+                        serie_comprobante,
+                        numero_comprobante):
+        Envelope = default_document.createElement("soapenv:Envelope")
+        Envelope.setAttribute("xmlns:soapenv", "http://schemas.xmlsoap.org/soap/envelope/")
+        Envelope.setAttribute("xmlns:ser", "http://service.sunat.gob.pe")
+        # Envelope.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance")
+        # Envelope.setAttribute("xmlns:xsd","http://www.w3.org/2001/XMLSchema")
+        Envelope.setAttribute("xmlns:wsse","http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd")
+
+        Header = default_document.createElement("soapenv:Header")
+        # Header.setAttribute("xmlns:soapenv","http://schemas.xmlsoap.org/soap/envelope")
+        Security = default_document.createElement("wsse:Security")
+        UsernameToken = default_document.createElement("wsse:UsernameToken")
+        
+        Username = default_document.createElement("wsse:Username")
+        text = default_document.createTextNode(username)
+        Username.appendChild(text)
+        
+        Password = default_document.createElement("wsse:Password")
+        text = default_document.createTextNode(password)
+        Password.appendChild(text)
+
+        UsernameToken.appendChild(Username)
+        UsernameToken.appendChild(Password)
+        Security.appendChild(UsernameToken)
+        Header.appendChild(Security)
+        Envelope.appendChild(Header)
+
+        Body = default_document.createElement("soapenv:Body")
+        getStatus = default_document.createElement("ser:getStatusCdr")
+        getStatus.setAttribute("xmlns:m","http://service.sunat.gob.pe")
+        
+        rucComprobante = default_document.createElement("rucComprobante")
+        text = default_document.createTextNode(ruc_emisor)
+        rucComprobante.appendChild(text)
+
+        tipoComprobante = default_document.createElement("tipoComprobante")
+        text = default_document.createTextNode(tipo_comprobante)
+        tipoComprobante.appendChild(text)
+
+
+        serieComprobante = default_document.createElement("serieComprobante")
+        text = default_document.createTextNode(serie_comprobante)
+        serieComprobante.appendChild(text)
+
+        numeroComprobante = default_document.createElement("numeroComprobante")
+        text = default_document.createTextNode(numero_comprobante)
+        numeroComprobante.appendChild(text)
+
+        getStatus.appendChild(rucComprobante)
+        getStatus.appendChild(tipoComprobante)
+        getStatus.appendChild(serieComprobante)
+        getStatus.appendChild(numeroComprobante)
+
+        Body.appendChild(getStatus)
+        Envelope.appendChild(Body)
+
+        return Envelope
+
 
 class ResumenDiario(Xmleable):
     def __init__(self, ubl_version="2.0", customization_id="1.1", doc_id=None,
@@ -336,6 +399,38 @@ class ResumenDiario(Xmleable):
         return xml_doc
 
 
+    def getStatus(self, username, password, nro_ticket):
+        Envelope=default_document.createElement("soapenv:Envelope")
+        Envelope.setAttribute("xmlns:soapenv","http://schemas.xmlsoap.org/soap/envelope/")
+        Envelope.setAttribute("xmlns:ser","http://service.sunat.gob.pe")
+        Envelope.setAttribute("xmlns:wsse","http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd")
+
+        Header=default_document.createElement("soapenv:Header")
+        Security=default_document.createElement("wsse:Security")
+        UsernameToken=default_document.createElement("wsse:UsernameToken")
+        Username=default_document.createElement("wsse:Username")
+        text=default_document.createTextNode(username)
+        Username.appendChild(text)
+        Password=default_document.createElement("wsse:Password")
+        text=default_document.createTextNode(password)
+        Password.appendChild(text)
+        UsernameToken.appendChild(Username)
+        UsernameToken.appendChild(Password)
+        Security.appendChild(UsernameToken)
+        Header.appendChild(Security)
+        Envelope.appendChild(Header)
+
+        Body=default_document.createElement("soapenv:Body")
+        getStatus=default_document.createElement("ser:getStatus")
+        ticket=default_document.createElement("ticket")
+        text=default_document.createTextNode(nro_ticket)
+        ticket.appendChild(text)
+        getStatus.appendChild(ticket)
+        Body.appendChild(getStatus)
+        Envelope.appendChild(Body)
+
+        return Envelope
+
 class ComunicacionBaja(Xmleable):
     def __init__(self, ubl_version="2.0", customization_id="1.0", doc_id=None,
                  issue_date=None, reference_date=None, accounting_supplier_party=None,
@@ -429,7 +524,45 @@ class ComunicacionBaja(Xmleable):
         xml_doc = minidom.Document()
         xml_doc.appendChild(self.doc)
         return xml_doc
+    
+    def getStatus(self, username, password,numero_ticket):
+        #http://schemas.xmlsoap.org/soap/envelope/"
+        #http://service.sunat.gob.pe
+        #http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd
+        Envelope = self.doc.createElement("soapenv:Envelope")
+        Envelope.setAttribute("xmlns:soapenv", "http://schemas.xmlsoap.org/soap/envelope/")
+        Envelope.setAttribute("xmlns:ser", "http://service.sunat.gob.pe")
+        Envelope.setAttribute("xmlns:wsse","http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd")
 
+        Header = self.doc.createElement("soapenv:Header")
+        Security = self.doc.createElement("wsse:Security")
+        UsernameToken = self.doc.createElement("wsse:UsernameToken")
+        Username = self.doc.createElement("wsse:Username")
+        text = self.doc.createTextNode(username)
+        Username.appendChild(text)
+        Password = self.doc.createElement("wsse:Password")
+        text = self.doc.createTextNode(password)
+        Password.appendChild(text)
+        UsernameToken.appendChild(Username)
+        UsernameToken.appendChild(Password)
+        Security.appendChild(UsernameToken)
+        Header.appendChild(Security)
+        Envelope.appendChild(Header)
+
+        Body = self.doc.createElement("soapenv:Body")
+        getStatus = self.doc.createElement("ser:getStatus")
+        ticket = self.doc.createElement("ticket")
+        text = self.doc.createTextNode(numero_ticket)
+        ticket.appendChild(text)
+        # contentFile=self.doc.createElement("contentFile")
+        # text=self.doc.createTextNode(contentfile)
+        # contentFile.appendChild(text)
+        getStatus.appendChild(ticket)
+        # getStatus.appendChild(contentFile)
+        Body.appendChild(getStatus)
+        Envelope.appendChild(Body)
+
+        return Envelope
 
 class CreditNote(Xmleable):
     def __init__(self, ubl_extensions=None, ubl_version="2.1", id=None,
