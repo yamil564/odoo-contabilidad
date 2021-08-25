@@ -185,12 +185,12 @@ class AccountMove(models.Model):
             else:
                 move.tipo_cambio =  1
 
-        super(AccountMove, self).post()
+        return super(AccountMove, self).post()
 
 
     @api.onchange("invoice_date","currency_id")
     def get_ratio(self):
-        if self.invoice_date:
+        if self.invoice_date and self.currency_id and self.company_id:
             if self.company_currency_id != self.currency_id:
                 # if not self.tipo_cambio or self.tipo_cambio == 0:
                 currency_rate = self.env["res.currency.rate"].sudo().search([("name","=",self.invoice_date.strftime("%Y-%m-%d")),("currency_id","=",self.currency_id.id)])

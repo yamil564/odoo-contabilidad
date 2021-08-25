@@ -27,7 +27,7 @@ class AccountJournal(models.Model):
     def onchange_name(self):
         name = ""
         d = {"01":"Factura de venta","03":"Boleta de venta","07":"Nota de crédito","08":"Nota de débito","09":"Guía de Remisión"}
-        if self.invoice_type_code_id in ["01","03","07","08","09"]:
+        if self.invoice_type_code_id in ["01","03","07","08","09"] and self.electronic_invoice:
             self.name = "{} {}{}".format(d[self.invoice_type_code_id],self.code or "*"," [test]" if self.tipo_envio == "0" else "")
         
     @api.constrains("code")
@@ -67,59 +67,6 @@ class AccountJournal(models.Model):
 
         return result
     
-
-    # @api.model
-    # def create(self, vals):
-    #     if ("invoice_type_code_id" in vals) and (vals.get("formato_comprobante","") == 'electronico'):
-    #         if vals["invoice_type_code_id"] in ['01','03']:
-    #             if "code" in vals:
-    #                 if len(vals["code"])!=4:
-    #                     raise UserError("La serie debe contener 4 carácteres. Si es Factura inicia con 'F' y si es boleta inicia con 'B'")
-    #                 if vals["invoice_type_code_id"]=='01':
-    #                     if vals["code"][0] != 'F':
-    #                         raise UserError("La serie de una factura debe iniciar con 'F'")
-    #                 elif vals["invoice_type_code_id"]=='03':                    
-    #                     if vals["code"][0] != 'B':
-    #                         raise UserError("La serie de una factura debe iniciar con 'B'")
-
-    #     return super(AccountJournal,self).create(vals)
-    
-    # @api.multi
-    # def write(self, vals):
-    #     if ("invoice_type_code_id" in vals) and (vals.get("formato_comprobante","") == 'electronico'):
-    #         if vals["invoice_type_code_id"] in ['01','03','07','08']:
-    #             if "code" in vals:
-    #                 if len(vals["code"])!=4:
-    #                     raise UserError("La serie debe contener 4 carácteres. Si es Factura inicia con 'F' y si es boleta inicia con 'B'")
-
-    #                 if vals["invoice_type_code_id"]=='01':
-    #                     if vals["code"][0] != 'F':
-    #                         raise UserError("La serie de una factura debe iniciar con 'F'")
-                            
-    #                 elif vals["invoice_type_code_id"]=='03':                    
-    #                     if vals["code"][0] != 'B':
-    #                         raise UserError("La serie de una factura debe iniciar con 'B'")
-
-    #     return super(AccountJournal,self).write(vals)
-    
-    # @api.constrains("code")
-    # def _constrains_serie(self):
-    #     if self.formato_comprobante == 'electronico':
-            
-    #         if self.invoice_type_code_id=='01':
-    #             if self.code[0] != 'F':
-    #                 raise UserError("La serie de una factura debe iniciar con 'F'")
-    #             else:
-    #                 if len(self.code)!=4:
-    #                     raise UserError("La serie debe contener 4 carácteres. Si es Factura inicia con 'F' y si es boleta inicia con 'B'")
-
-                    
-    #         elif self.invoice_type_code_id=='03':                    
-    #             if self.code[0] != 'B':
-    #                 raise UserError("La serie de una factura debe iniciar con 'B'")
-    #             else:
-    #                 if len(self.code)!=4:
-    #                     raise UserError("La serie debe contener 4 carácteres. Si es Factura inicia con 'F' y si es boleta inicia con 'B'")
 
     @api.model
     def _get_sequence_prefix(self, code, refund=False):

@@ -1334,9 +1334,6 @@ class Factura:
                         tipo_comprobante,
                         serie_comprobante,
                         numero_comprobante):
-        #http://schemas.xmlsoap.org/soap/envelope/"
-        #http://service.sunat.gob.pe
-        #http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd
         Envelope = self.doc.createElement("SOAP-ENV:Envelope")
         Envelope.setAttribute("xmlns:SOAP-ENV", "http://schemas.xmlsoap.org/soap/envelope/")
         Envelope.setAttribute("xmlns:SOAP-ENC", "http://schemas.xmlsoap.org/soap/encoding/")

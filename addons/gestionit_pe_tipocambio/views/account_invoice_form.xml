@@ -7,6 +7,9 @@
             <field name="inherit_id" ref="account.view_move_form"/>
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='date']" position="after">
+                    <!-- <div class="o_td_label">
+                        <label for="tipo_cambio" string="Tipo de cambio"/>
+                    </div> -->
                     <field name="tipo_cambio" attrs="{'readonly':[['state','not in',['draft']]] }"/>
                     <!-- <field name="fecha_cambio" invisible="1" /> -->
                 </xpath>

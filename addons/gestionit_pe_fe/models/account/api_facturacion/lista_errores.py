@@ -939,6 +939,18 @@ errores = {
     "12":"El comprobante de pago electrónico no le pertenece",
 }
 
+def get_error_by_code(code):
+    try:
+        code = int(code)
+    except:
+        return "El código de error es incorrecto. Notifique este error a su administrador."
+    code = str(code)
+    if code in errores:
+        return errores[code]
+    else:
+        return "El código de error es incorrecto. Notifique este error a su administrador."
+        
+
 error_list = {
     "01": "Parámetro necesario: [$_PARAMETRO].",
     "10": "Error de autenticación (credenciales invalidas o no existentes)",
