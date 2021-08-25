@@ -75,8 +75,8 @@
                     <field name="warehouse_id" domain="[('id','in',warehouses_allowed_ids)]" string="Almacén" options="{'no_create': True, 'no_create_edit':True, 'no_open': True}" attrs="{'readonly':[['state','not in',['draft']]]}"/>
                     <field name="journal_ids" widget="many2many_tags" string="Series Permitidas" groups="base.group_no_one" invisible="1"/>
                     <field name="journal_type" invisible="1"/>
-                    <field name="company_id"/>
-                    <field name="currency_id"/>
+                    <!-- <field name="company_id"/>
+                    <field name="currency_id"/> -->
 
                     <!-- <div class="o_td_label">
                         <label for="journal_id" string="Serie"/>
@@ -91,7 +91,7 @@
                             <a class="alert-link" href="#outstanding" role="button">HA SIDO ENVIADO </a>
                         </bold> - Documento con estado: Aceptado por SUNAT.
                     </div>
-                    <div class="alert alert-warning" role="alert" style="margin-bottom:0px;" attrs="{'invisible': [('estado_emision','!=','P')]}">
+                    <div class="alert alert-primary" role="alert" style="margin-bottom:0px;" attrs="{'invisible': [('estado_emision','!=','P')]}">
                         1. Este documento
                         <bold>
                             <a class="alert-link" href="#outstanding" role="button">HA SIDO ENVIADO </a>

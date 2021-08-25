@@ -97,7 +97,6 @@ class AccountMove(models.Model):
         refund_id = self._context.get("default_refund_invoice_id", False)
         domain = []
 
-        _logger.info(res)
         user = self.env.user
         allowed_company_ids = self._context.get("allowed_company_ids")
         warehouse_ids = user.warehouse_ids.filtered(lambda r:r.company_id.id in allowed_company_ids)
@@ -107,13 +106,13 @@ class AccountMove(models.Model):
             journal_ids = warehouse_ids[0].journal_ids.filtered(lambda r:r.invoice_type_code_id == res.get("invoice_type_code") and r.type == res.get("journal_type"))
             if len(journal_ids) > 0:
                 res.update({"journal_id":journal_ids[0].id})
-            else:
-                res.update({"journal_id":False})
-        else:
-            res.update({
-                "warehouse_id": False,
-                "journal_id": False
-            })
+            # else:
+            #     res.update({"journal_id":False})
+        # else:
+        #     res.update({
+        #         "warehouse_id": False,
+        #         "journal_id": False
+        #     })
 
         if refund_id:
             refund_obj = self.env["account.move"].browse(refund_id)
@@ -1147,11 +1146,11 @@ class AccountMove(models.Model):
     def cron_action_validez_comprobante(self):
         today = fields.Date.today()
         invoices = self.env["account.move"].sudo().search([("journal_id.electronic_invoice","=",True),
-                                                            ("state","=",["posted"]),
-                                                            ("name","!=",[False,"/"]),
+                                                            ("state","in",["posted"]),
+                                                            ("name","in",[False,"/"]),
                                                             ("invoice_date","<=",today),
                                                             ("journal_id.invoice_type_code_id","in",["03","07","08"]),
-                                                            ("estado_comprobante_electronico","=",["-","0_NO_EXISTE"])],limit=50)
+                                                            ("estado_comprobante_electronico","in",["-","0_NO_EXISTE"])],limit=50)
         for inv in invoices:
             try:
                 inv.action_validez_comprobante()
