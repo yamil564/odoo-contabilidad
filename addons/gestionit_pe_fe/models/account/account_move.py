@@ -1117,7 +1117,7 @@ class AccountMove(models.Model):
     def cron_action_send_invoice(self):
         invoices = self.env["account.move"].search([["estado_emision","in",["P","",False]],
                                                     ["name","not in",[False,"/"]],
-                                                    ["state","=",["posted"]],
+                                                    ["state","=","posted"],
                                                     ["estado_comprobante_electronico","in",[False,"-","0_NO_EXISTE"]]])
         invoice_ids = invoices.filtered(lambda r: r.journal_id.invoice_type_code_id in ["01"] and re.match("^F\w{3}-\d{1,8}$", r.name))
 
