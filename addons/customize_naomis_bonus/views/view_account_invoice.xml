@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="customize_naomis_bonus.account_invoice_form">
+            <field name="name">Invoice - Observaciones</field>
+            <field name="model">account.invoice</field>
+            <field name="inherit_id" ref="account.invoice_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='date_due']" position="after">
+                    <field name="observacion" string="Observaciones"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>
