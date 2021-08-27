@@ -144,7 +144,8 @@ class AccountMove(models.Model):
             ('P', 'Pendiente de envió a SUNAT'),
         ],
         string = "Estado Emisión a SUNAT",
-        related = "current_log_status_id.status"
+        related = "current_log_status_id.status",
+        store=True
     )
 
 
@@ -661,13 +662,16 @@ class AccountMove(models.Model):
 
 
     def action_send_invoice(self):
-        if self.current_log_status_id and (self.journal_id.invoice_type_code_id == "01" or self.journal_id.tipo_comprobante_a_rectificar == "01"):
-            if self.current_log_status_id.status == "P":
-                try:
-                    vals = send_doc_xml(self)
-                    self.current_log_status_id.write(vals)
-                except Exception as e:
-                    return vals
+        if not (self.current_log_status_id and (self.journal_id.invoice_type_code_id == "01" or self.journal_id.tipo_comprobante_a_rectificar == "01")):
+            self.action_generate_and_signed_xml()
+            
+        if self.current_log_status_id.status == "P":
+            try:
+                vals = send_doc_xml(self)
+                self.current_log_status_id.write(vals)
+            except Exception as e:
+                return vals
+    
 
     inv_supplier_ref = fields.Char("Número de comprobante")
 
@@ -1113,7 +1117,7 @@ class AccountMove(models.Model):
     def cron_action_send_invoice(self):
         invoices = self.env["account.move"].search([["estado_emision","in",["P","",False]],
                                                     ["name","not in",[False,"/"]],
-                                                    ["state","not in",["draft","cancel"]],
+                                                    ["state","=",["posted"]],
                                                     ["estado_comprobante_electronico","in",[False,"-","0_NO_EXISTE"]]])
         invoice_ids = invoices.filtered(lambda r: r.journal_id.invoice_type_code_id in ["01"] and re.match("^F\w{3}-\d{1,8}$", r.name))
 
