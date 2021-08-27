@@ -8,7 +8,7 @@ from odoo.addons.gestionit_pe_fe.models.parameters.catalogs import tnc
 from odoo.addons.gestionit_pe_fe.models.parameters.catalogs import tnd
 from pytz import timezone
 from datetime import datetime, timedelta
-from . import oauth
+from odoo.addons.gestionit_pe_fe.models.account.oauth import send_doc_xml,generate_and_signed_xml
 import base64
 import re
 import urllib
@@ -42,30 +42,6 @@ codigo_unidades_de_medida = [
 codigos_tipo_afectacion_igv = [
     "10", "11", "12", "13", "14", "15", "16", "20", "30", "31", "34", "35", "36", "40"
 ]
-estado_comprobante_electronico = {
-                                    "0":"0_NO_EXISTE",
-                                    "1":"1_ACEPTADO",
-                                    "2":"2_ANULADO",
-                                    "3":"3_AUTORIZADO",
-                                    "4":"4_NO_AUTORIZADO"
-                                }
-estado_contribuyente_ruc = {
-                            "00":"00_ACTIVO",
-                            "01":"01_BAJA_PROVISIONAL",
-                            "02":"02_BAJA_PROV_POR_OFICIO",
-                            "03":"03_SUSPENSION_TEMPORAL",
-                            "10":"10_BAJA_DEFINITIVA",
-                            "11":"11_BAJA_DE_OFICIO",
-                            "22":"22_INHABILITADO-VENT.UNICA"
-                        }
-
-condicion_domicilio_contribuyente = {
-                                        "00":"00_HABIDO",
-                                        "09":"09_PENDIENTE",
-                                        "11":"11_POR_VERIFICAR",
-                                        "12":"12_NO_HABIDO",
-                                        "20":"20_NO_HALLADO"
-                                    }
 
 class AccountMove(models.Model):
     _inherit = "account.move"
@@ -94,6 +70,10 @@ class AccountMove(models.Model):
 
     credit_note_count = fields.Integer("Número de notas de crédito",compute='_compute_credit_count')
 
+    account_summary_id = fields.Many2one("account.summary",
+                                         string="Resumen Diario",
+                                         ondelete="set null",
+                                         default=False)
     @api.depends('credit_note_ids')
     def _compute_credit_count(self):
         self.env.cr.execute("select count(*) from account_move where reversed_entry_id = {}".format(self.id))
@@ -117,7 +97,6 @@ class AccountMove(models.Model):
         refund_id = self._context.get("default_refund_invoice_id", False)
         domain = []
 
-        _logger.info(res)
         user = self.env.user
         allowed_company_ids = self._context.get("allowed_company_ids")
         warehouse_ids = user.warehouse_ids.filtered(lambda r:r.company_id.id in allowed_company_ids)
@@ -125,17 +104,15 @@ class AccountMove(models.Model):
         if len(warehouse_ids) > 0:
             res.update({"warehouse_id": warehouse_ids[0].id})
             journal_ids = warehouse_ids[0].journal_ids.filtered(lambda r:r.invoice_type_code_id == res.get("invoice_type_code") and r.type == res.get("journal_type"))
-            # _logger.info(warehouse_ids[0].journal_ids.mapped("invoice_type_code_id"))
-            # _logger.info(journal_ids)
             if len(journal_ids) > 0:
                 res.update({"journal_id":journal_ids[0].id})
-            else:
-                res.update({"journal_id":False})
-        else:
-            res.update({
-                "warehouse_id": False,
-                "journal_id": False
-            })
+            # else:
+            #     res.update({"journal_id":False})
+        # else:
+        #     res.update({
+        #         "warehouse_id": False,
+        #         "journal_id": False
+        #     })
 
         if refund_id:
             refund_obj = self.env["account.move"].browse(refund_id)
@@ -153,25 +130,10 @@ class AccountMove(models.Model):
                                          readonly=True
                                          )
 
-    # invoice_type_code_str = fields.Char(
-    #     "Tipo de Comrpobante*", compute="_compute_tipo_comprobante", store=True)
-
-    # def _compute_tipo_comprobante(self):
-    #     for record in self:
-    #         if record.invoice_type_code == "01":
-    #             record.invoice_type_code_str = "Factura Electrónica"
-    #         elif record.invoice_type_code == "03":
-    #             record.invoice_type_code_str = "Boleta de Venta Electrónica"
-    #         elif record.invoice_type_code == "07":
-    #             record.invoice_type_code_str = "Nota de crédito Electrónica"
-    #         elif record.invoice_type_code == "08":
-    #             record.invoice_type_code_str = "Nota de débito Electrónica"
 
     account_log_status_ids = fields.One2many("account.log.status", "account_move_id", string="Registro de Envíos", copy=False)
     current_log_status_id = fields.Many2one("account.log.status",copy=False)
 
-    # tipo_comprobante_elect_ref = fields.Selection(
-    #     related="refund_invoice_id.invoice_type_code")
     estado_emision = fields.Selection(
         selection=[
             ('A', 'Aceptado'),
@@ -182,15 +144,10 @@ class AccountMove(models.Model):
             ('P', 'Pendiente de envió a SUNAT'),
         ],
         string = "Estado Emisión a SUNAT",
-        related = "current_log_status_id.status"
-        # compute="_compute_current_log_status"
+        related = "current_log_status_id.status",
+        store=True
     )
 
-    # @api.depends("current_log_status_id")
-    # def _compute_current_log_status(self):
-    #     for record in self:
-    #         if record.current_log_status_id:
-    #             record.estado_emision = record.current_log_status_id.status if record.current_log_status_id.status else False
 
     sustento_nota = fields.Text(string="Sustento de nota", readonly=True, states={
                                 'draft': [('readonly', False)]}, copy=False)
@@ -308,8 +265,7 @@ class AccountMove(models.Model):
         string="Tipo de cambio a la fecha de factura",
         default=1.0)
 
-    tipo_operacion = fields.Selection(selection=[(
-        "01", "Venta Interna"), ("02", "Exportación")], default="01", required=True, copy=False)
+    tipo_operacion = fields.Selection(selection=[("01", "Venta Interna"), ("02", "Exportación")], default="01", required=True, copy=False)
 
     apply_same_discount_on_all_lines = fields.Boolean("Aplicar el mismo descuento en todas las líneas?",states={'draft': [('readonly', False)]},readonly=True)
     discount_on_all_lines = fields.Integer("Descuento (%)",states={'draft': [('readonly', False)]},readonly=True)
@@ -329,22 +285,10 @@ class AccountMove(models.Model):
         for record in self:
             if not record.apply_global_discount:
                 record.descuento_global = 0
-
-            # _logger.info(record.invoice_line_ids)
-            # _logger.info(record.invoice_line_ids)
-            # for x in record.invoice_line_ids:
-            #     _logger.info(x.name)
-            #     _logger.info(x.move_id)
-            #     _logger.info(x.is_charge_or_discount)
-            #     _logger.info(x.type_charge_or_discount_code)
-            # record.invoice_line_ids = [(,l.id)]
             line_discount_global_ids = record.invoice_line_ids.filtered(lambda r:r.is_charge_or_discount and r.type_charge_or_discount_code in ["02"])
             if len(line_discount_global_ids) > 1:
                 raise UserError("El comprobante tiene más de un descuento global, para corregir esto, establezca el valor a 0 guarde, y vuelva a establecer el valor del descuento global")
-            
-            # _logger.info("line_discount_global_ids")
-            # _logger.info(line_discount_global_ids)
-            # _logger.info(record.descuento_global)
+
             if record.descuento_global > 0:
                 # _logger.info(line_discount_global_ids)
                 if len(line_discount_global_ids) == 1:
@@ -404,23 +348,12 @@ class AccountMove(models.Model):
                 record._onchange_recompute_dynamic_lines()
                 # record._compute_amount()
             else:
-                # record.descuento_global = 0
-                # line_discount_global_ids = self.invoice_line_ids.filtered(lambda r:r.is_charge_or_discount and r.type_charge_or_discount_code in ["02"])
                 if line_discount_global_ids.exists():
                     for l in line_discount_global_ids:
                         record.invoice_line_ids = [(2,l.id)]
 
         super(AccountMove, self.with_context(recursive_onchanges=False))._onchange_invoice_line_ids()
 
-    # def update_global_discount(self):
-    #     pass
-
-    # @api.onchange('invoice_line_ids')
-    # def _onchange_invoice_line_ids(self):
-    #     res = super(AccountMove, self.with_context(recursive_onchanges=False))._onchange_invoice_line_ids()
-    #     self._onchange_global_discount()
-    #     return res
-        
 
 
     total_tax_discount = fields.Monetary(
@@ -721,21 +654,24 @@ class AccountMove(models.Model):
 
         return obj
 
-    # def action_send_invoice(self):
-    #     oauth.enviar_doc(self)
-        
     def action_generate_and_signed_xml(self):
         if not self.current_log_status_id:
-            vals = oauth.generate_and_signed_xml(self)
+            vals = generate_and_signed_xml(self)
             account_log_status = self.env["account.log.status"].create(vals)
             account_log_status.action_set_last_log()
 
 
     def action_send_invoice(self):
-        if self.current_log_status_id and (self.journal_id.invoice_type_code_id == "01" or self.journal_id.tipo_comprobante_a_rectificar == "01"):
-            if self.current_log_status_id.status == "P":
-                vals = oauth.send_invoice_xml(self)
+        if not (self.current_log_status_id and (self.journal_id.invoice_type_code_id == "01" or self.journal_id.tipo_comprobante_a_rectificar == "01")):
+            self.action_generate_and_signed_xml()
+            
+        if self.current_log_status_id.status == "P":
+            try:
+                vals = send_doc_xml(self)
                 self.current_log_status_id.write(vals)
+            except Exception as e:
+                return vals
+    
 
     inv_supplier_ref = fields.Char("Número de comprobante")
 
@@ -1094,9 +1030,10 @@ class AccountMove(models.Model):
                     "view_mode": "form",
                     "context": {
                         'default_invoice_ids': [self.id],
+                        'default_company_id':self.company_id.id,
                         'default_invoice_type_code_id': self.journal_id.invoice_type_code_id,
                         'default_date_invoice': self.invoice_date,
-                        'default_issue_date': datetime.now(tz=timezone(tz))
+                        'default_voided_date': datetime.now(tz=timezone(tz))
                     }
                 }
         elif re.match("^B\w{3}-\d{1,8}$", self.name):
@@ -1176,25 +1113,12 @@ class AccountMove(models.Model):
 
         return action
 
-    
-    # @api.model
-    # def create(self, values):
-    #     _logger.info(json.dumps(values,indent=4)) 
-    #     result = super(AccountMove, self).create(values)
-           
-    #     return result
-
-
-    # def write(self, values):
-    #     _logger.info(json.dumps(values,indent=4))
-    #     result = super(AccountMove, self).write(values)
-    #     return result
 
     def cron_action_send_invoice(self):
         invoices = self.env["account.move"].search([["estado_emision","in",["P","",False]],
-                                                    ["name","!=",False],
-                                                    ["state","not in",["draft","cancel"]],
-                                                    ["estado_comprobante_electronico","in",["-"]]])
+                                                    ["name","not in",[False,"/"]],
+                                                    ["state","=","posted"],
+                                                    ["estado_comprobante_electronico","in",[False,"-","0_NO_EXISTE"]]])
         invoice_ids = invoices.filtered(lambda r: r.journal_id.invoice_type_code_id in ["01"] and re.match("^F\w{3}-\d{1,8}$", r.name))
 
         credit_and_debit_note_ids = invoices.filtered(lambda r: r.journal_id.invoice_type_code_id in ["07","08"] and re.match("^F\w{3}-\d{1,8}$", r.name) and (r.reversed_entry_id.estado_comprobante_electronico == "1_ACEPTADO" or r.debit_origin_id.estado_comprobante_electronico == "1_ACEPTADO") )
@@ -1211,118 +1135,37 @@ class AccountMove(models.Model):
             self.env.cr.commit()
         return True
 
-
+    @api.model
     def cron_actualizacion_estado_emision_sunat(self):
-        comprobantes = self.env["account.move"].sudo().search([["estado_comprobante_electronico","=","1_ACEPTADO"],["estado_emision","in",[False,"N","P"]]]).mapped("current_log_status_id")
-        _logger.info(comprobantes)
+        comprobantes = self.env["account.move"].sudo().search([["estado_comprobante_electronico","=","1_ACEPTADO"]]).mapped("current_log_status_id")
         comprobantes.sudo().write({"status" : "A"})
         return True
 
-    def get_token_validez_comprobante(self):
-        client_id = self.env["ir.config_parameter"].get_param("sunat.validez.comprobante.client_id")
-        client_secret = self.env["ir.config_parameter"].get_param("sunat.validez.comprobante.client_secret")
-
-        if not (client_id and client_secret):
-            raise UserError("Las credenciales del api de CONSULTA VALIDEZ DE COMPROBANTE no estan configuradas para este usuario.")
-        
-        url = "https://api-seguridad.sunat.gob.pe/v1/clientesextranet/{}/oauth2/token/".format(client_id)
-
-        data = {"grant_type":"client_credentials",
-                "scope":"https://api.sunat.gob.pe/v1/contribuyente/contribuyentes",
-                "client_id":client_id,
-                "client_secret":client_secret}
-        payload = urllib.parse.urlencode(data)
-        headers = {'Content-Type': "application/x-www-form-urlencoded",
-                    'User-Agent':'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'}
-
-        try:
-            response = requests.request("POST",url, data=payload, headers=headers)
-            _logger.info(response.json())
-        except Exception as e:
-            raise UserError("Error al consultar el Web Service de SUNAT {}".format(e))
-        
-        if response.status_code == 200:
-            return response.json()
-        else:
-            return {}
 
     def action_validez_comprobante(self):
-        token = False
-        response = self.get_token_validez_comprobante()
-        if "access_token" in response:
-            token = response.get("access_token")
-        else:
-            raise UserError("Sunat consulta de validez de comprobante - La respuesta no posee un access_token")
-
-        company_ids = self.mapped("company_id")
-        for company in company_ids:
-            url = "https://api.sunat.gob.pe/v1/contribuyente/contribuyentes/{}/validarcomprobante".format(company.vat)
-
-            invs = self.filtered(lambda inv: inv.company_id == company and inv.journal_id.electronic_invoice and re.match("^F\w{3}-\d{1,8}$", inv.name) or re.match("^B\w{3}-\d{1,8}$", inv.name))
-
-            for inv in invs:
-                comp = inv.mapped(lambda r:{
-                    "numRuc":company.vat,
-                    "codComp":r.journal_id.invoice_type_code_id,
-                    "numeroSerie":r.name.split("-")[0],
-                    "numero":int(r.name.split("-")[1]),
-                    "fechaEmision":r.invoice_date.strftime("%d/%m/%Y"),
-                    "monto": str(round(r.amount_total,2)) 
-                })
-                _logger.info(comp)
-                headers = {
-                    'Authorization': "Bearer {}".format(token),
-                    'Content-Type': "application/json"
-                    }
-                try:
-                    response = requests.request("POST", url, data=json.dumps(comp[0]), headers=headers)
-                    res = response.json()
-                    _logger.info(res)
-                    if "data" in res and res.get("success"):
-                        data = res["data"]
-                        if "estadoCp" in data:
-                            inv.estado_comprobante_electronico = estado_comprobante_electronico[data["estadoCp"]]
-                        if "estadoRuc" in data:
-                            inv.estado_contribuyente_ruc = estado_contribuyente_ruc[data["estadoRuc"]]
-                        if "condDomiRuc" in data:
-                            inv.condicion_domicilio_contribuyente = condicion_domicilio_contribuyente[data["condDomiRuc"]]
-                        if "observaciones" in data:
-                            inv.consulta_validez_observaciones = ";".join(data["observaciones"])
-                    else:
-                        inv.consulta_validez_observaciones = res.get("message","**Error**")
-                except Exception as e:
-                    inv.consulta_validez_observaciones = str(e)
+        if self.current_log_status_id:
+            self.current_log_status_id.action_request_status_invoice()
     
     @api.model
     def cron_action_validez_comprobante(self):
-        tz = timezone("America/Lima")
-        today = datetime.now(tz=tz).strftime("%Y-%m-%d")
+        today = fields.Date.today()
         invoices = self.env["account.move"].sudo().search([("journal_id.electronic_invoice","=",True),
-                                                            ("state","not in",["draft","cancel"]),
-                                                            ("name","!=",False),
+                                                            ("state","in",["posted"]),
+                                                            ("name","in",[False,"/"]),
                                                             ("invoice_date","<=",today),
-                                                            ("journal_id.invoice_type_code_id","in",["01","03","07","08"]),
-                                                            ("estado_comprobante_electronico","=","-")])
-        step = 20
-        for cnt in range(0,len(invoices),step):
-            invs = invoices[cnt:cnt+step]
-            if len(invs)>=1:
-                try:
-                    invs.sudo().action_validez_comprobante()
-                except Exception as e:
-                    pass
+                                                            ("journal_id.invoice_type_code_id","in",["03","07","08"]),
+                                                            ("estado_comprobante_electronico","in",["-","0_NO_EXISTE"])],limit=50)
+        for inv in invoices:
+            try:
+                inv.action_validez_comprobante()
+            except Exception as e:
+                pass
             self.env.cr.commit()
     
     @api.model
     def cron_cambiar_a_no_existe(self):
-        invoices = self.env["account.move"].sudo().search([("journal_id.electronic_invoice","=",True),
-                                                            ("state","not in",["draft","cancel"]),
-                                                            ("name","!=",False),
-                                                            ("journal_id.invoice_type_code_id","=",True),
-                                                            ("estado_comprobante_electronico","=","0_NO_EXISTE")])
+        return True
 
-        invoices = invoices.filtered(lambda r:r.journal_id.invoice_type_code_id in ['01','03','07','08'] and ( re.match("^F\w{3}-\d{1,8}$", r.name) or re.match("^B\w{3}-\d{1,8}$", r.name)) )
-        return invoices.write({"estado_comprobante_electronico":"-"})
 
 class AccountMoveReversal(models.TransientModel):
     _inherit = 'account.move.reversal'
@@ -1398,40 +1241,6 @@ class AccountDebitNote(models.TransientModel):
         res.update({'sustento_nota': self.reason,'tipo_nota_debito': self.debit_note_type,'invoice_type_code': '08'})
         return res
 
-        # if move.type in ('in_refund', 'out_refund'):
-        #     type = 'in_invoice' if move.type == 'in_refund' else 'out_invoice'
-        # else:
-        #     type = move.type
-        # default_values = {
-        #     'ref': '%s, %s' % (move.name, self.reason) if self.reason else move.name,
-        #     'sustento_nota': self.reason,
-        #     'tipo_nota_debito': self.tipo_nota_debito,
-        #     'invoice_type_code': '08',
-        #     'date': self.date or move.date,
-        #     'invoice_date': move.is_invoice(include_receipts=True) and (self.date or move.date) or False,
-        #     # 'journal_id': self.journal_id and self.journal_id.id or move.journal_id.id,
-        #     'invoice_payment_term_id': None,
-        #     'debit_origin_id': move.id,
-        #     'tipo_comprobante_a_rectificar':move.journal_id.invoice_type_code_id,
-        #     # 'journal_type':move.journal_id.type,
-        #     'type': type,
-        # }
-        # _logger.info(move)
-        # _logger.info(move)
-        # if move.exists():
-        #     journals = self.env["account.journal"].sudo().search([('tipo_comprobante_a_rectificar','=',res['tipo_comprobante_a_rectificar']),
-        #                                                     ("type","=",res['journal_type'])]).ids
-        #     _logger.info(journals)
-        #     default_values['journal_id'] = journals[0] if len(journals)>0 else False
-        # else:
-        #     default_values['journal_id'] = False
-
-        # if not self.copy_lines or move.type in [('in_refund', 'out_refund')]:
-        #     default_values['line_ids'] = [(5, 0, 0)]
-        
-        # _logger.info(res)
-        # return res
-
 
 class CustomPopMessage(models.TransientModel):
     _name = "custom.pop.message"
@@ -1472,91 +1281,14 @@ class accountInvoiceSend(models.TransientModel):
 
                     if data_signed_xml:
                         datas = base64.b64encode(data_signed_xml.encode())
-                        # ctx["default_attachment_ids"].append(invoice.env["ir.attachment"].create(
-                        #     {"name": fname, "type": "binary", "datas": datas, "mimetype": "text/xml", "datas_fname": fname}).id)
                         attach_ids.append(invoice.env["ir.attachment"].create(
                             {"name": fname, "type": "binary", "datas": datas, "mimetype": "text/xml", "res_model": "account.move", "res_id": invoice.id, "res_name": invoice.name}).id)
 
                     response_xml = log_status.response_xml_without_format
                     if response_xml:
                         datas = base64.b64encode(response_xml.encode())
-                        # ctx["default_attachment_ids"].append(invoice.env["ir.attachment"].create(
-                        #     {"name": cdr_fname, "type": "binary", "datas": datas, "mimetype": "text/xml", "datas_fname": cdr_fname}).id)
                         attach_ids.append(invoice.env["ir.attachment"].create(
                             {"name": cdr_fname, "type": "binary", "datas": datas, "mimetype": "text/xml", "res_model": "account.move", "res_id": invoice.id, "res_name": invoice.name}).id)
 
                 wizard.attachment_ids = [(4, attach_id)
                                          for attach_id in attach_ids]
-
-
-# class MailComposer(models.TransientModel):
-#     _inherit = 'mail.compose.message'
-
-#     def onchange_template_id(self, template_id, composition_mode, model, res_id):
-#         if template_id and composition_mode == 'mass_mail':
-#             template = self.env['mail.template'].browse(template_id)
-#             fields = ['subject', 'body_html',
-#                       'email_from', 'reply_to', 'mail_server_id']
-#             values = dict((field, getattr(template, field))
-#                           for field in fields if getattr(template, field))
-#             if template.attachment_ids:
-#                 values['attachment_ids'] = [
-#                     att.id for att in template.attachment_ids]
-#             if template.mail_server_id:
-#                 values['mail_server_id'] = template.mail_server_id.id
-#             if template.user_signature and 'body_html' in values:
-#                 signature = self.env.user.signature
-#                 values['body_html'] = tools.append_content_to_html(
-#                     values['body_html'], signature, plaintext=False)
-#         elif template_id:
-#             values = self.generate_email_for_composer(
-#                 template_id, [res_id])[res_id]
-#             # transform attachments into attachment_ids; not attached to the document because this will
-#             # be done further in the posting process, allowing to clean database if email not send
-#             attachment_ids = []
-#             Attachment = self.env['ir.attachment']
-#             for attach_fname, attach_datas in values.pop('attachments', []):
-#                 data_attach = {
-#                     'name': attach_fname,
-#                     'datas': attach_datas,
-#                     'res_model': 'mail.compose.message',
-#                     'res_id': 0,
-#                     'type': 'binary',  # override default_type from context, possibly meant for another model!
-#                 }
-#                 attachment_ids.append(Attachment.create(data_attach).id)
-#             if values.get('attachment_ids', []) or attachment_ids:
-#                 values['attachment_ids'] = [
-#                     (6, 0, values.get('attachment_ids', []) + attachment_ids)]
-#             #####
-#             invoice = self.invoice_ids[0]
-#             attach_ids = []
-#             fname = invoice.name+".xml"
-#             cdr_fname = invoice.name+"_cdr.xml"
-#             if len(invoice.account_log_status_ids) > 0:
-#                 log_status = invoice.account_log_status_ids[-1]
-#                 data_signed_xml = log_status.signed_xml_data_without_format
-
-#                 if data_signed_xml:
-#                     datas = base64.b64encode(data_signed_xml.encode())
-#                     attach_ids.append(invoice.env["ir.attachment"].create(
-#                         {"name": fname, "type": "binary", "datas": datas, "mimetype": "text/xml", "res_model": "account.move", "res_id": invoice.id, "res_name": invoice.name}).id)
-
-#                 response_xml = log_status.response_xml_without_format
-#                 if response_xml:
-#                     datas = base64.b64encode(response_xml.encode())
-#                     attach_ids.append(invoice.env["ir.attachment"].create(
-#                         {"name": cdr_fname, "type": "binary", "datas": datas, "mimetype": "text/xml", "res_model": "account.move", "res_id": invoice.id, "res_name": invoice.name}).id)
-#             #####
-#         else:
-#             default_values = self.with_context(default_composition_mode=composition_mode, default_model=model, default_res_id=res_id).default_get(
-#                 ['composition_mode', 'model', 'res_id', 'parent_id', 'partner_ids', 'subject', 'body', 'email_from', 'reply_to', 'attachment_ids', 'mail_server_id'])
-#             values = dict((key, default_values[key]) for key in [
-#                           'subject', 'body', 'partner_ids', 'email_from', 'reply_to', 'attachment_ids', 'mail_server_id'] if key in default_values)
-
-#         if values.get('body_html'):
-#             values['body'] = values.pop('body_html')
-
-#         # This onchange should return command instead of ids for x2many field.
-#         values = self._convert_to_write(values)
-
-#         return {'value': values}

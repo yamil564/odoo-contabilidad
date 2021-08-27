@@ -261,7 +261,7 @@ class AccountMove(models.Model):
         #     else:
         #         move.tipo_cambio =  1
 
-        super(AccountMove, self).post()
+        return super(AccountMove, self).post()
 
 
     # @api.onchange("invoice_date","currency_id")

@@ -5,7 +5,6 @@
     "depends": ['base','portal','sale','account'],
     "category": "invoicing",
     "data": [
-        'views/views.xml',
         'views/templates.xml',
         'views/portal.xml'
     ],

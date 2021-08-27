@@ -51,7 +51,6 @@
                         <td>
                             <span t-esc="doc.date_order" t-if="doc.date_order"/>
                         </td>
-
                     </tr>
                     <tr>
                         <!-- EMAIL -->
@@ -69,7 +68,6 @@
                             <span t-esc="doc.currency_id.currency_unit_label" t-if="doc.currency_id.currency_unit_label"/>
                         </td>
                     </tr>
-
                 </table>
             </div>
         </xpath>
@@ -79,7 +77,6 @@
         <xpath expr="//div[@id='informations']" position="attributes">
             <attribute name="class">d-none</attribute>
         </xpath>
-
         <xpath expr="//div[hasclass('page')]" position="before">
             <t t-set="documents" t-value="{'draft':'COTIZACIÓN',
                                             'sent':'COTIZACIÓN',
@@ -88,7 +85,6 @@
                                             'cancel':'VENTA CANCELADA'}"/>
             <t t-set="document_display_name" t-value="documents.get(doc.state,'-')"/>
         </xpath>
-
         <xpath expr="//table[hasclass('o_main_table')]" position="replace">
             <table class="w-100 table-order-lines">
                 <thead>
@@ -151,7 +147,6 @@
                 </tbody>
             </table>
         </xpath>
-
         <xpath expr="//div[@name='so_total_summary']" position="attributes">
             <attribute name="class">d-none</attribute>
         </xpath>
@@ -162,7 +157,9 @@
                     <div t-if="len(doc.company_id.bank_ids) &gt; 0" class="banks">
                         <ul>
                             <li t-foreach="doc.company_id.partner_id.bank_ids" t-as="bank">
-                                <span t-field="bank.acc_number"></span>
+                                <span t-field="bank.bank_id.name" />
+                                <span t-field="bank.description" />:
+                                <span t-field="bank.acc_number" />
                             </li>
                         </ul>
                     </div>
@@ -171,7 +168,8 @@
                     <table class="w-100">
                         <tr t-if="doc.descuento_global &gt; 0">
                             <td>
-                                <strong>Dscto. Global <t t-esc="'('+str(doc.descuento_global)+'%)'"/>
+                                <strong>Dscto. Global
+                                    <t t-esc="'('+str(doc.descuento_global)+'%)'"/>
                                 </strong>
                             </td>
                             <td class="text-right">
@@ -226,7 +224,6 @@
                                 <span t-field="doc.total_igv"/>
                             </td>
                         </tr>
-
                         <tr class="border-black o_total">
                             <td>
                                 <strong>Total</strong>
@@ -527,6 +524,5 @@
                 <div name="signature"></div>
             </div>
         </t> -->
-
     </template>
 </odoo>

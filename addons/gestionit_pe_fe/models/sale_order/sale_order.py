@@ -18,27 +18,31 @@ import os
 import logging
 _logger = logging.getLogger(__name__)
 
+
 class SaleOrderLine(models.Model):
     _inherit = "sale.order.line"
 
     qty_by_location = fields.Char(compute="_compute_qty_by_location")
-    
+
     @api.onchange('product_id')
     def _compute_qty_by_location(self):
         for record in self:
-            if record.product_id.exists():
+            if record.product_id.exists() and record.display_type is False:
                 self.env.cr.execute("""select complete_name as name,sq.quantity as quantity from stock_location as sl 
                                             left join stock_quant as sq on sq.location_id = sl.id and sq.product_id={}
                                             where sl.usage = 'internal' and sl.active=True""".format(record.product_id.id))
                 result = self.env.cr.dictfetchall()
                 record.qty_by_location = json.dumps(result)
+            else:
+                record.qty_by_location = 0
+
 
 class SaleOrder(models.Model):
     _inherit = "sale.order"
 
     def to_word(self, monto, moneda):
         return to_word(monto, moneda)
-        
+
     tipo_documento_identidad = fields.Selection(
         selection="_selection_tipo_documento_identidad")
 
@@ -58,14 +62,14 @@ class SaleOrder(models.Model):
         else:
             self.tipo_documento = "03"
 
+    apply_same_discount_on_all_lines = fields.Boolean("Aplicar el mismo descuento en todas las líneas?", states={
+                                                      'draft': [('readonly', False)]}, readonly=True)
+    discount_on_all_lines = fields.Integer(
+        "Descuento (%)", states={'draft': [('readonly', False)]}, readonly=True)
 
-    apply_same_discount_on_all_lines = fields.Boolean("Aplicar el mismo descuento en todas las líneas?",states={'draft': [('readonly', False)]},readonly=True)
-    discount_on_all_lines = fields.Integer("Descuento (%)",states={'draft': [('readonly', False)]},readonly=True)
-    
     def action_apply_same_discount_on_all_lines(self):
-        self.order_line = [(1,line.id,{"discount":self.discount_on_all_lines}) for line in self.order_line]
-
-
+        self.order_line = [
+            (1, line.id, {"discount": self.discount_on_all_lines}) for line in self.order_line]
 
     def order_lines_layouted(self):
         """
@@ -93,26 +97,25 @@ class SaleOrder(models.Model):
 
     def _prepare_invoice(self):
         res = super(SaleOrder, self)._prepare_invoice()
-        # res["invoice_type_code"] = self.tipo_documento
-        # res["descuento_global"] = self.descuento_global
         res.update({
-            "invoice_type_code":self.tipo_documento,
-            "descuento_global":self.descuento_global,
-            "apply_same_discount_on_all_lines":self.apply_same_discount_on_all_lines,
-            "discount_on_all_lines":self.discount_on_all_lines
+            "invoice_type_code": self.tipo_documento,
+            "descuento_global": self.descuento_global,
+            "apply_same_discount_on_all_lines": self.apply_same_discount_on_all_lines,
+            "discount_on_all_lines": self.discount_on_all_lines
         })
-        if len(self.env.user.warehouse_ids)>0:
+        if len(self.env.user.warehouse_ids) > 0:
             res["warehouse_id"] = self.env.user.warehouse_ids[0].id
-            journals = self.env.user.warehouse_ids.journal_ids.filtered(lambda r:r.invoice_type_code_id ==self.tipo_documento and r.type =="sale")
+            journals = self.env.user.warehouse_ids.journal_ids.filtered(lambda r: r.invoice_type_code_id == self.tipo_documento and r.type == "sale")
             if len(journals) > 0:
                 res["journal_id"] = journals[0].id
             else:
-                raise UserError("Debe configurar Diarios disponibles en sus almacénes. Contacte con su administrador.")
+                raise UserError(
+                    "Debe configurar Diarios disponibles en sus almacénes. Contacte con su administrador.")
         else:
-            raise UserError("Su usuario no tiene almacenes disponibles. Contacte con su administrador.")
+            raise UserError(
+                "Su usuario no tiene almacenes disponibles. Contacte con su administrador.")
 
         return res
-
 
     total_venta_gravado = fields.Monetary(
         string="Gravado",
@@ -150,7 +153,7 @@ class SaleOrder(models.Model):
         readonly=True,
         states={'draft': [('readonly', False)]},
         default=0.0)
-        
+
     total_descuento_global = fields.Monetary(
         string="Total Descuentos Global",
         default=0.0,
@@ -212,8 +215,9 @@ class SaleOrder(models.Model):
 
             # amount_tax = (sum(
             #     [line.price_tax for line in order.order_line])+total_venta_gratuito)*(1-order.descuento_global/100)
-            
-            total_igv = (sum([line.price_tax for line in order.order_line]))*(1-order.descuento_global/100)
+
+            total_igv = (
+                sum([line.price_tax for line in order.order_line]))*(1-order.descuento_global/100)
 
             order.update({
                 'total_descuento_global': total_descuento_global,
@@ -222,8 +226,7 @@ class SaleOrder(models.Model):
                 'total_venta_exonerada': total_venta_exonerada,
                 'total_venta_gratuito': total_venta_gratuito,
                 'total_descuentos': total_descuentos,
-                # 'amount_tax': amount_tax,
-                'total_igv':total_igv,
+                'total_igv': total_igv,
                 'amount_total': total_venta_gravado + total_venta_exonerada + total_venta_inafecto + total_igv
             })
 

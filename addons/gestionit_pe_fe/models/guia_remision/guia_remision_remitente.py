@@ -3,6 +3,7 @@ from requests.exceptions import (
     TooManyRedirects, HTTPError, ConnectionError,
     FileModeWarning, ConnectTimeout, ReadTimeout
 )
+from xml.dom.minidom import parse, parseString
 from odoo import models, api, fields
 from odoo.exceptions import UserError, ValidationError, Warning
 import requests
@@ -11,7 +12,9 @@ import base64
 import re
 import json
 import re
-from ..account.api_facturacion import api_models
+from odoo.addons.gestionit_pe_fe.models.account.oauth import send_doc_xml
+# from odoo.addons.gestionit_pe_fe.models.account.api_facturacion import api_models
+from odoo.addons.gestionit_pe_fe.models.account.api_facturacion.controllers import xml_validation, sunat_response_handle, main,firma
 import logging
 _logger = logging.getLogger(__name__)
 
@@ -108,7 +111,7 @@ class ResPartner(models.Model):
     vehiculo_ids = fields.One2many(
         "gestionit.vehiculo", "propietario_id", string="Vehículos")
     licencia = fields.Char("Licencia")
-
+    
     def action_view_conductores_privados(self):
         return {
             'name': 'Conductores Privados',
@@ -120,11 +123,11 @@ class ResPartner(models.Model):
             'domain': [('es_conductor', '=', True), ('parent_id', '!=', False), ('parent_id', '=', self.env.user.company_id.id)],
             'context': {
                 "default_es_conductor": True,
-                "default_parent_id": self.env.user.company_id.id,
+                "parent_id": self.env.user.company_id.id,
                 "default_country_id": 173
             }
         }
-
+    
 
 class Vehiculo(models.Model):
     _name = 'gestionit.vehiculo'
@@ -211,6 +214,7 @@ class GuiaRemision(models.Model):
     account_log_status_ids = fields.One2many(
         "account.log.status", "guia_remision_id", string="Registro de Envíos", copy=False)
 
+    current_log_status_id = fields.Many2one("account.log.status")
     # SERIE Y CORRELATIVO
     journal_id = fields.Many2one("account.journal", string="Serie", states={
                                  'validado': [('readonly', True)]})
@@ -554,12 +558,8 @@ class GuiaRemision(models.Model):
 
     # @api.depends("guia_remision_line_ids")
     def compute_peso_bruto(self):
-        peso_total = 0
-        # for record in self:
-        for line in self.guia_remision_line_ids:
-            peso_total += line.product_id.weight*line.qty
-        self.peso_bruto_total = peso_total
-
+        self.peso_bruto_total = sum([line.product_id.weight*line.qty*(line.uom_id.factor_inv/line.product_id.uom_id.factor_inv) for line in self.guia_remision_line_ids])
+ 
         # ENVÍO
     fecha_emision = fields.Date(string="Fecha de Emisión", states={
                                 'validado': [('readonly', True)]})
@@ -643,10 +643,8 @@ class GuiaRemision(models.Model):
             ('R', 'Rechazado'),
             ('P', 'Pendiente de envió a SUNAT'),
         ],
-        string="Estado Emisión a SUNAT",
-        copy=False,
-        default="B",
-        states={'validado': [('readonly', True)]}
+        related="current_log_status_id.status",
+        string="Estado Emisión a SUNAT"
     )
 
     def set_view_lugar_partida_ubigeo(self):
@@ -938,47 +936,20 @@ class GuiaRemision(models.Model):
             next_number = self.journal_id.sequence_number_next
             numero = serie + "-" + str(next_number).zfill(8)
             if self.estado_emision in ["A", "O"]:
-                raise UserError(
-                    "La Guía de Remisión ya ha sido emitida y tiene estado de Aceptada.")
+                raise UserError("La Guía de Remisión ya ha sido emitida y tiene estado de Aceptada.")
             if self.estado_emision in ["R"]:
-                raise UserError(
-                    "La Guía de Remisión ya ha sido emitida y tiene estado de Rechazada.")
-            if not next_number or not re.match('T\\w{3}-\\d{1,8}', str(numero)):
-                raise UserError(
-                    "El codigo no tiene el formato correcto: " + str(numero))
+                raise UserError("La Guía de Remisión ya ha sido emitida y tiene estado de Rechazada.")
+            if not next_number or not re.match('[T]\d{3}[-]\d{1,8}$', str(numero)):
+                raise UserError("El codigo no tiene el formato correcto: " + str(numero))
         else:
             numero = self.name
-            if not re.match('T\\w{3}-\\d{1,8}', str(self.name)):
+            if not re.match('[T]\d{3}[-]\d{1,8}$', str(self.name)):
                 raise UserError(
                     "El codigo no tiene el formato correcto: " + str(self.name))
             else:
                 serie = self.name.split("-")[0]
                 correlativo = self.name.split("-")[1]
 
-        errors = []
-        errors += self.validar_datos_compania()
-        errors += self.validar_datos_destinatario()
-        errors += self.validar_motivo_traslado()
-        errors += self.validar_datos_envio()
-        errors += self.validar_lugar_partida()
-        errors += self.validar_lugar_llegada()
-        errors += self.validar_guia_remision_lineas()
-        errors += self.validar_transporte()
-
-        if len(errors) > 0:
-            return {
-                'error': True,
-                'name': 'ERROR: Validación de campos',
-                'type': 'ir.actions.act_window',
-                'view_type': 'form',
-                'view_mode': 'form',
-                'res_model': 'custom.pop.message',
-                'target': 'new',
-                'context': {
-                    'default_name': "Error al validar datos de la compania:",
-                    'default_accion': '\n'.join(errors)
-                }
-            }
         serie, correlativo = numero.split('-')
         correlativo = int(correlativo)
         company = self.company_id.partner_id
@@ -1074,6 +1045,103 @@ class GuiaRemision(models.Model):
         }
         return data
 
+    def validar_restricciones(self):
+        errors = []
+        errors += self.validar_datos_compania()
+        errors += self.validar_datos_destinatario()
+        errors += self.validar_motivo_traslado()
+        errors += self.validar_datos_envio()
+        errors += self.validar_lugar_partida()
+        errors += self.validar_lugar_llegada()
+        errors += self.validar_guia_remision_lineas()
+        errors += self.validar_transporte()
+
+        if len(errors) > 0:
+            return {
+                'error': True,
+                'name': 'ERROR: Validación de campos',
+                'type': 'ir.actions.act_window',
+                'view_type': 'form',
+                'view_mode': 'form',
+                'res_model': 'custom.pop.message',
+                'target': 'new',
+                'context': {
+                    'default_name': "Error al validar datos de la compania:",
+                    'default_accion': '\n'.join(errors)
+                }
+            }
+        return False
+
+    def validar_comprobante(self):
+        if self.name == "" or self.name == False:
+            serie = self.journal_id.code
+            next_number = self.journal_id.sequence_number_next
+            numero = serie + "-" + str(next_number).zfill(8)
+            _logger.info(self.env["gestionit.guia_remision"].search([("numero", "=", numero), ("state", '=', 'validado')]))
+            if self.env["gestionit.guia_remision"].search([("numero", "=", numero), ("state", '=', 'validado')]).exists():
+                raise UserError("El documento de guía de remisión ya existe 1.")
+            self.state = "validado"
+            self.numero = self.journal_id.sequence_id.next_by_id()
+            self.name = self.numero
+        else:
+            if self.env["gestionit.guia_remision"].search([("numero", "=", self.name), ("state", '=', 'validado')]).exists():
+                raise UserError("El documento de guía de remisión ya existe 2.")
+            self.numero = self.name
+            self.state = "validado"
+            
+    def generar_log_envio(self):
+        data = self.generar_comprobante_json()
+        self.request_json = json.dumps(data,indent=4)
+        credentials = {
+            "ruc": data["company"]["numDocEmisor"],
+            'razon_social': data["company"]["nombreEmisor"],
+            'usuario': data["company"]["SUNAT_user"],
+            'password': data["company"]["SUNAT_pass"],
+            'key_private': data["company"]["key_private"],
+            'key_public': data["company"]["key_public"],
+        }
+        request = main.handle(data,credentials)
+        log_status = {
+            "guia_remision_id":self.id,
+            "request_json": self.request_json,
+            "name": self.name,
+            "date_request": fields.Datetime.now(),
+            "date_issue": self.fecha_emision,
+            "status":"P",
+            "digest_value":request.get("digest_value","-"),
+            "signed_xml_data":request.get("signed_xml","-"),
+            "signed_xml_with_creds":parseString(request.get("final_xml")).toprettyxml(" ") if request.get("final_xml",False) else "",
+            "company_id":self.company_id.id
+        }
+        log_status_obj = self.env["account.log.status"].sudo().create(log_status)
+        log_status_obj.sudo().action_set_last_log()
+
+
+    def send_gr_xml(self):
+        if not self.current_log_status_id:
+            self.generar_log_envio()
+        try:
+            result = send_doc_xml(self)
+            self.current_log_status_id.write(result)
+        except Exception as e:
+            return result
+        
+
+
+    
+    # Valida y registra la guía de remisión
+    def post(self):
+        errors = self.validar_restricciones()
+        if errors:
+            return errors
+        self.validar_comprobante()
+        self.generar_log_envio()
+        if self.journal_id.send_async:
+            self.send_gr_xml()
+            
+
+
+
     def btn_validar_comprobante(self):
         if self.state == "validado":
             raise UserError("La Guía de remisión ya ha sido validada.")
@@ -1086,21 +1154,7 @@ class GuiaRemision(models.Model):
         self.validar_comprobante()
         return self.enviar_comprobante()
 
-    def validar_comprobante(self):
-        if self.name == "" or self.name == False:
-            serie = self.journal_id.code
-            next_number = self.journal_id.sequence_number_next
-            numero = serie + "-" + str(next_number).zfill(8)
-            if len(self.env["gestionit.guia_remision"].search([("numero", "=", numero), ("state", '=', 'validado')])) > 0:
-                raise UserError("El documento de guía de remisión ya existe.")
-            self.state = "validado"
-            self.numero = self.journal_id.sequence_id.next_by_id()
-            self.name = self.numero
-        else:
-            if len(self.env["gestionit.guia_remision"].search([("numero", "=", self.name), ("state", '=', 'validado')])) > 0:
-                raise UserError("El documento de guía de remisión ya existe.")
-            self.numero = self.name
-            self.state = "validado"
+
 
     # @api.multi
     def unlink(self):
@@ -1125,11 +1179,16 @@ class GuiaRemision(models.Model):
         guia_remision_ids = self.env["gestionit.guia_remision"].search(
             [("estado_emision", "in", ["P", False]), ("request_json", "!=", False)], limit=cantidad)
         for gr in guia_remision_ids:
-            gr.btn_enviar_comprobante()
+            try:
+                gr.send_gr_xml()
+                self.env.cr.commit()
+            except Exception as e:
+                pass
         return True
 
     def btn_enviar_comprobante(self):
         for record in self:
+            record.enviar_comprobante()
             if record.estado_emision in ["P", "B", False] and record.request_json:
                 if len(self) == 1:
                     return record.enviar_comprobante()
@@ -1137,21 +1196,9 @@ class GuiaRemision(models.Model):
                     record.enviar_comprobante()
 
     def enviar_comprobante(self):
-        # pass
 
-        # token = generate_token_by_company(self.company_id, 10000)
-        # data = {
-        #     "method": "EFact21.lamdba",
-        #     "kwargs": {
-        #         "data": json.loads(self.request_json)
-        #     }
-        # }
-        # data = json.dumps(self.request_json, indent=4)
         data = json.loads(self.request_json)
-        # headers = {
-        #     "Content-Type": "application/json",
-        #     "Authorization": token
-        # }
+
         log_status = {
             "request_json": self.request_json,
             "guia_remision_id": self.id,
@@ -1160,38 +1207,44 @@ class GuiaRemision(models.Model):
             "date_issue": self.fecha_emision
         }
         try:
-            # r = requests.post(self.company_id.endpoint,
-            #                   headers=headers, data=data)
-            r = api_models.lamdba(data)
+            credentials = {
+                "ruc": data["company"]["numDocEmisor"],
+                'razon_social': data["company"]["nombreEmisor"],
+                'usuario': data["company"]["SUNAT_user"],
+                'password': data["company"]["SUNAT_pass"],
+                'key_private': data["company"]["key_private"],
+                'key_public': data["company"]["key_public"],
+            }
+            response = main.handle(data,credentials)
             # _logger.info("R json")
-            # _logger.info(r)
+            _logger.info(response)
             # self.response_json = json.dumps(r.json(), indent=4)
-            self.response_json = r
+            self.response_json = json.dumps(response, indent=4)
             log_status.update({
                 "response_json": self.response_json,
             })
-            if r:
-                if "errors" not in r:
-                    if "signed_xml" in r:
-                        log_status.update(
-                            {"signed_xml_data": r["signed_xml"]})
-                    if "request_id" in r:
-                        log_status.update(
-                            {"api_request_id": r["request_id"]})
-                    if "digest_value" in r:
-                        self.digest_value = r["digest_value"]
-                        log_status.update(
-                            {"digest_value": r["digest_value"]})
-                    if "response_xml" in r:
-                        log_status.update(
-                            {"response_xml": r["response_xml"]})
-                    if "response_content_xml" in r:
-                        log_status.update(
-                            {"content_xml": r["response_content_xml"]})
-                    if "sunat_status" in r:
-                        self.estado_emision = r["sunat_status"]
-                        log_status.update(
-                            {"status": r["sunat_status"]})
+            # if response:
+            #     if "errors" not in response:
+            #         if "signed_xml" in response:
+            #             log_status.update(
+            #                 {"signed_xml_data": response["signed_xml"]})
+            #         if "request_id" in response:
+            #             log_status.update(
+            #                 {"api_request_id": response["request_id"]})
+            #         if "digest_value" in response:
+            #             self.digest_value = response["digest_value"]
+            #             log_status.update(
+            #                 {"digest_value": response["digest_value"]})
+            #         if "response_xml" in response:
+            #             log_status.update(
+            #                 {"response_xml": response["response_xml"]})
+            #         if "response_content_xml" in response:
+            #             log_status.update(
+            #                 {"content_xml": response["response_content_xml"]})
+            #         if "sunat_status" in response:
+            #             self.estado_emision = response["sunat_status"]
+            #             log_status.update(
+            #                 {"status": response["sunat_status"]})
 
         except Timeout as e:
             self.estado_emision = "P"

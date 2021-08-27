@@ -5,13 +5,12 @@
             <field name="name">CRON Envío de Comprobantes Electrónicos a SUNAT</field>
             <field name="model_id" ref="account.model_account_move"/>
             <field name="state">code</field>
-            <field name="interval_number">7</field>
+            <field name="interval_number">1</field>
             <field name="interval_type">hours</field>
             <field name="numbercall">-1</field>
             <field name="doall">1</field>
             <field name="user_id" ref="base.user_root"/>
             <field name="code">model.cron_action_send_invoice()</field>
-            <!-- <field name="nextcall" eval="(datetime.strptime(datetime.now().strftime('%Y-%m-%d %H:00:00'),'%Y-%m-%d %X') + timedelta(hours=6) ).strftime('%Y-%m-%d %X')"/> -->
         </record>
     </data>
 </odoo>
