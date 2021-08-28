@@ -14,6 +14,7 @@ odoo.define("gestionit_pe_tipocambio.menu_exchange",[
     }
 
     var currency_types = {
+        "commertial":"Comercial",
         "sale":"Venta",
         "purchase":"Compra"
     }
@@ -24,6 +25,7 @@ odoo.define("gestionit_pe_tipocambio.menu_exchange",[
             this._super(parent,options);
             this.id = options.id
             this.name = options.name
+            this.display_name = options.display_name
             this.parent = parent
             this.type = currency_types[options.type] || "-"
             // var d = new Date()
@@ -44,6 +46,7 @@ odoo.define("gestionit_pe_tipocambio.menu_exchange",[
                 ev.preventDefault();
                 var currency_menu = $(ev.currentTarget)
                 var currency_id = currency_menu.data("id")
+                console.log(currency_id)
                 self.trigger_up('clear_uncommitted_changes', {
                     callback: function () {
                         self._rpc({
@@ -80,10 +83,10 @@ odoo.define("gestionit_pe_tipocambio.menu_exchange",[
                     args:[],
                     kwargs:{}
                 }).then(function(result){
-                    console.log(result);
+                    // console.log(result);
                     _.each(result,function(el){
                         if(el.name != "PEN"){
-                            console.log(new ExchangeMenuLine(self,el));
+                            // console.log(new ExchangeMenuLine(self,el));
                             (new ExchangeMenuLine(self,el)).appendTo(options_exchanges)
                         }
                     })

@@ -1,4 +1,4 @@
-catalogo01 = {
+xmcatalogo01 = {
     "01": "Factura",
     "03": "Boleta de venta",
     "06": "Carta de porte aéreo",
