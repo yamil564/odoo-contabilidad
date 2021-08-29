@@ -5,10 +5,12 @@
     'depends': [
         "base",
         "web",
+        "web_notify",
         "account",
         "sale_management", ],
     "category": "Uncategorized",
     "data": [
+        'security/security.xml',
         'views/res_currency_view.xml',
         'views/account_invoice_form.xml',
         'models/ir_cron.xml',

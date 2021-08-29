@@ -67,13 +67,10 @@ class ResCurrency(models.Model):
 class Tipocambio(models.Model):
     _inherit = "res.currency.rate"
     type = fields.Selection(selection=[('commercial','Comercial'),('sale','Venta'),('purchase','Compra')],related="currency_id.type")
-    # fecha = fields.Date("Fecha")
-    # cambio_compra = fields.Float("T/C Compra", digits=(1, 4))
-    # cambio_venta = fields.Float("T/C Venta", digits=(1, 4))
 
-    factor = fields.Float("T/C")
+    factor = fields.Float("T/C",default=1)
     currency_name = fields.Char("Moneda",related="currency_id.name")
-
+    
     @api.onchange("rate")
     def _onchange_rate(self):
         if self.rate > 0:
@@ -83,114 +80,156 @@ class Tipocambio(models.Model):
     def _onchange_rate(self):
         if self.factor > 0:
             self.rate = 1/self.factor
+        else:
+            self.factor = 1
+            self.rate = 1
+
+    def api_migo_get_token(self):
+        company = self.env.company
+        token = company.api_migo_token
+        return token
+
+    def api_migo_get_endpoint(self):
+        company = self.env.company
+        endpoint = company.api_migo_endpoint
+        if not endpoint:
+            endpoint = "https://api.migo.pe/api/v1/"
+        endpoint = endpoint.strip()
+        endpoint = endpoint if endpoint[-1] == "/" else "{}/".format(endpoint)
+        return endpoint    
+
+    @api.model
+    def api_migo_usd_pen_exchange_latest(self):
+        token = self.api_migo_get_token()
+        endpoint = self.api_migo_get_endpoint()
+        data = {"token": token}
+        
+        try:
+            headers = {
+                'Content-Type': 'application/json'
+            }
+            result = requests.request("POST","{}exchange/latest".format(endpoint), headers=headers, data=json.dumps(data))
+            if result.status_code == 200:
+                return result.json()
+            else:
+                raise Exception("No se ha encontrado el último tipo de cambio disponible o el servicio no esta disponible.")
+        except Exception as e:
+            raise Exception(e)
+
+    @api.model
+    def api_migo_usd_pen_exchange_date(self,date):
+        token = self.api_migo_get_token()
+        endpoint = self.api_migo_get_endpoint()
+        data = {"token": token,"fecha": date}
+        try:
+            headers = {
+                'Content-Type': 'application/json'
+            }
+            result = requests.request("POST","{}exchange/date".format(endpoint), headers=headers, data=json.dumps(data))
+            if result.status_code == 200:
+                return result.json()
+            else:
+                raise Exception("No se ha encontrado el tipo de cambio solicitado para la fecha {}.".format(today_format))
+        except Exception as e:
+            raise Exception(e)
+
+    def action_update_rate_commercial_pen_usd(self):
+        if not self.name:
+            raise UserError("La fecha del T/C es obligatoria.")
+
+        if not self.currency_id:
+            raise UserError("La moneda es obligatoria.")
+        
+        if not(self.type == "commercial" and self.currency_id.name == "USD"):
+            raise UserError("Esta opción solo esta disponible para la moneda USD de tipo Venta.")
+        
+        if not self.company_id:
+            raise UserError("La compañia del tipo de cambio es obligatoria.")
+
+        try:
+            res = self.api_migo_usd_pen_exchange_date(self.name.strftime("%Y-%m-%d"))
+        except Exception as e:
+            today = datetime.now(tz=timezone("America/Lima")).strftime("%Y-%m-%d")
+            if today == self.name.strftime("%Y-%m-%d"):
+                try:
+                    res = self.api_migo_usd_pen_exchange_latest()
+                except Exception as e:
+                    raise UserError(e)
+
+        rate_sale = float(res.get("precio_venta", False))
+        rate_compra = float(res.get("precio_compra", False))
+        rate_commercial = (rate_sale + rate_compra)/2
+        rate = 1/rate_commercial if rate_commercial != 0.0 else 0.0
+        self.rate =  rate
+        self.factor =  1/rate
+        self.env.user.notify_success('El T/C PEN -> USD: {}'.format(self.factor),"T/C comercial actualizado")
 
     def action_update_rate_sale_pen_usd(self):
-        currency_usd_sale = self.env['res.currency'].search([['name', '=', 'USD'],['type','=','sale']]).exists()
-        if not currency_usd_sale:
-            raise ValueError("La Moneda USD Ventas no existe.")
-            
-        company = self.env.user.company_id
-        token = company.api_migo_token
-        endpoint = company.api_migo_endpoint
-        fecha_hoy = datetime.now(tz=timezone("America/Lima")).strftime("%Y-%m-%d")
-        # currency_rate_exists = self.env["res.currency.rate"].sudo().search([("currency_id","=",currency_usd_sale.id),("name","=",fecha_hoy),("company_id","=",company.id)]).exists()
-        # if currency_rate_exists:
-        #     return None
+        if not self.name:
+            raise UserError("La fecha del T/C es obligatoria.")
 
-        if not endpoint:
-            return None
-        else:
-            endpoint = endpoint.strip()
-            endpoint = endpoint if endpoint[-1] == "/" else "{}/".format(endpoint)
-            
-        url = "{}exchange/date".format(endpoint)
+        if not self.currency_id:
+            raise UserError("La moneda es obligatoria.")
         
-        data = {
-            "token": token,
-            "fecha": fecha_hoy
-        }
+        if not(self.type == "sale" and self.currency_id.name == "USD"):
+            raise UserError("Esta opción solo esta disponible para la moneda USD de tipo Venta.")
         
+        if not self.company_id:
+            raise UserError("La compañia del tipo de cambio es obligatoria.")
+
         try:
-            headers = {
-                'Content-Type': 'application/json'
-            }
-            result = requests.request("POST", url, headers=headers, data=json.dumps(data))
-
-            if result.status_code == 200:
-                res = result.json()
-                if res.get("success", False):
-                    rate = float(res.get("precio_venta", False))
-                    rate = 1/rate if rate != 0.0 else 0.0
-                    # self.name =  res.get("fecha"),
-                    # self.currency_id =  currency_usd_sale[0].id,
-                    self.rate =  rate
-                    # self.cambio_compra =  float(res.get("precio_compra", False))
-                    # self.cambio_venta =  float(res.get("precio_venta", False))
-                    self.company_id = company.id
-                else:
-                    raise UserError(json.dumps(res))
-            elif result.status_code == 404:
-                raise UserError("No se ha encontrado un tipo de cambio para el día de hoy. Puede actualizarlo de forma manual.")
-
+            res = self.api_migo_usd_pen_exchange_date(self.name.strftime("%Y-%m-%d"))
         except Exception as e:
-            raise UserError(e)
+            today = datetime.now(tz=timezone("America/Lima")).strftime("%Y-%m-%d")
+            if today == self.name.strftime("%Y-%m-%d"):
+                try:
+                    res = self.api_migo_usd_pen_exchange_latest()
+                except Exception as e:
+                    raise UserError(e)
+
+        rate = float(res.get("precio_venta", False))
+        rate = 1/rate if rate != 0.0 else 0.0
+        self.rate =  rate
+        self.factor =  1/rate
+        self.env.user.notify_success('El T/C PEN -> USD: {}'.format(self.factor),"T/C de compra actualizado")
+        
 
     def action_update_rate_purchase_pen_usd(self):
-        currency_usd_purchase = self.env['res.currency'].search([['name', '=', 'USD'],['type','=','purchase']]).exists()
-        if not currency_usd_purchase:
-            raise ValueError("La Moneda USD Compras no existe.")
-            
-        company = self.env.user.company_id
-        token = company.api_migo_token
-        endpoint = company.api_migo_endpoint
-        fecha_hoy = datetime.now(tz=timezone("America/Lima")).strftime("%Y-%m-%d")
+        if not self.name:
+            raise UserError("La fecha del T/C es obligatoria.")
 
+        if not self.currency_id:
+            raise UserError("La moneda es obligatoria.")
+        
+        if not(self.type == "purchase" and self.currency_id.name == "USD"):
+            raise UserError("Esta opción solo esta disponible para la moneda USD de tipo Venta.")
+        
+        if not self.company_id:
+            raise UserError("La compañia del tipo de cambio es obligatoria.")
 
-        if not endpoint:
-            return None
-        else:
-            endpoint = endpoint.strip()
-            endpoint = endpoint if endpoint[-1] == "/" else "{}/".format(endpoint)
-            
-        url = "{}exchange/date".format(endpoint)
-        
-        data = {
-            "token": token,
-            "fecha": fecha_hoy
-        }
-        
         try:
-            headers = {
-                'Content-Type': 'application/json'
-            }
-            result = requests.request("POST", url, headers=headers, data=json.dumps(data))
-
-            if result.status_code == 200:
-                res = result.json()
-                if res.get("success", False):
-                    rate = float(res.get("precio_compra", False))
-                    rate = 1/rate if rate != 0.0 else 0.0
-                    # self.name =  res.get("fecha"),
-                    # self.currency_id =  currency_usd_sale[0].id,
-                    self.rate =  rate
-                    # self.cambio_compra =  float(res.get("precio_compra", False))
-                    # self.cambio_venta =  float(res.get("precio_venta", False))
-                    self.company_id = company.id
-                else:
-                    raise UserError(json.dumps(res))
-            elif result.status_code == 404:
-                raise UserError("No se ha encontrado un tipo de cambio para el día de hoy. Puede actualizarlo de forma manual.")
-
+            res = self.api_migo_usd_pen_exchange_date(self.name.strftime("%Y-%m-%d"))
         except Exception as e:
-            raise UserError(e)
-    
+            today = datetime.now(tz=timezone("America/Lima")).strftime("%Y-%m-%d")
+            if today == self.name.strftime("%Y-%m-%d"):
+                try:
+                    
+                    res = self.api_migo_usd_pen_exchange_latest()
+                except Exception as e:
+                    raise UserError(e)
+
+        rate = float(res.get("precio_compra", False))
+        rate = 1/rate if rate != 0.0 else 0.0
+        self.rate =  rate
+        self.factor =  1/rate
+        self.env.user.notify_success('El T/C PEN -> USD: {}'.format(self.factor),"T/C de compra actualizado")
 
 
     @api.model
     def cron_update_ratio_sale_purchase_pen_usd(self,company_id):
         currency_usd_sale = self.env['res.currency'].search([['name', '=', 'USD'],['sale']],limit=1)
         currency_usd_purchase = self.env['res.currency'].search([['name', '=', 'USD'],['type','=','purchase']],limit=1)
-        currency_usd_commertial = self.env['res.currency'].search([['name', '=', 'USD'],['type','=','commertial']],limit=1)
+        currency_usd_commercial = self.env['res.currency'].search([['name', '=', 'USD'],['type','=','commercial']],limit=1)
         company = self.env["res.company"].sudo().browse(company_id)
         token = company.api_migo_token
         endpoint = company.api_migo_endpoint
@@ -205,12 +244,12 @@ class Tipocambio(models.Model):
                                                                             ("type","=","purchase"),
                                                                             ("company_id","=",company_id)],limit=1)
 
-        currency_rate_exist_usd_commertial = self.search([("currency_id","=",currency_usd.id),
+        currency_rate_exist_usd_commercial = self.search([("currency_id","=",currency_usd.id),
                                                                             ("name","=",fecha_hoy),
-                                                                            ("type","=","commertial"),
+                                                                            ("type","=","commercial"),
                                                                             ("company_id","=",company_id)],limit=1)
                                                                             
-        if not(currency_rate_exist_usd_sale.exists() and currency_rate_exist_usd_sale.exists() and currency_rate_exist_usd_commertial.exists()):
+        if not(currency_rate_exist_usd_sale.exists() and currency_rate_exist_usd_sale.exists() and currency_rate_exist_usd_commercial.exists()):
             return None
 
         if not endpoint:
@@ -240,7 +279,7 @@ class Tipocambio(models.Model):
                 rate_purchase = float(res.get("precio_compra", False))
                 rate_purchase = 1/rate_purchase if rate_purchase != 0.0 else 0.0
 
-                rate_commertial = (rate_purchase + rate_sale)/2
+                rate_commercial = (rate_purchase + rate_sale)/2
 
                 if not currency_rate_exist_usd_sale.exists(): 
                     currency_rate = self.sudo().create({
@@ -264,16 +303,16 @@ class Tipocambio(models.Model):
                 else:
                     currency_rate_exist_usd_purchase.write({'rate': rate_purchase,'factor':1/rate_purchase})
 
-                if not currency_rate_exist_usd_commertial.exists():
+                if not currency_rate_exist_usd_commercial.exists():
                     currency_rate = self.sudo().create({
                         'name': fecha_hoy,
-                        'currency_id': currency_usd_commertial.id,
-                        'rate': rate_commertial,
-                        'factor':1/rate_commertial,
+                        'currency_id': currency_usd_commercial.id,
+                        'rate': rate_commercial,
+                        'factor':1/rate_commercial,
                         'company_id':company.id
                     })
                 else:
-                    currency_rate_exist_usd_commertial.write({'rate': rate_commertial,'factor':1/rate_commertial})
+                    currency_rate_exist_usd_commercial.write({'rate': rate_commercial,'factor':1/rate_commercial})
                 
                 return True
             return None
@@ -281,10 +320,8 @@ class Tipocambio(models.Model):
             return None
 
     def save(self):
-        return
-        # if(self.cambio_venta>0):
-        #     self.rate = 1/self.cambio_venta
-
+        self.env.user.notify_success('El T/C PEN -> USD: {}'.format(self.factor),"T/C {} actualizado".format(self.type))
+        
 class AccountMove(models.Model):
     _inherit = "account.move"
 

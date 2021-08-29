@@ -54,5 +54,5 @@ test_report_directory = False
 translate_modules = ['all']
 unaccent = False
 without_demo = False
-;workers = 0
+workers = 2
 

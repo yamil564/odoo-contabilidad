@@ -17,19 +17,29 @@ cd fe-gestion-it
 ~~~
 3. Crear archivo .env y docker-compose.yaml
 ~~~
-cp copy.env .env
-cp copy.docker-compose.yaml docker-compose.yaml
+cp .env.copy .env
+cp docker-compose.yaml.copy docker-compose.yaml
+cp nginx.conf.copy nginx.conf
 ~~~
-4. Editar parámetros de .env
+4. Editar parámetros de entorno en .env, estos parámetros los tomará docker-compose.yaml para crear los contenedores
 ~~~
 Ejemplo:
 WEB_HOST=fe_odoo_empresa1 
 ~~~
-5. Opcional: Editar docker-compose.yaml, esto siempre y cuando se requiera añadir nuevos servicios o modificar parámetros.
-6. Ejecutar docker-compose
+5. Cambiar los parámetros de entorno en los siguientes archivos:
+~~~
+config/odoo.conf
+nginx/conf.d/nginx.conf
+.env
+~~~
+6. Opcional: Editar docker-compose.yaml, esto siempre y cuando se requiera añadir nuevos servicios o modificar parámetros.
+7. Ejecutar docker-compose
 ~~~
 docker-compose up -d
 ~~~
+
+## Comandos frecuentes
+
 
 
 
