@@ -73,7 +73,7 @@ class AccountComunicacionBaja(models.Model):
     ticket = fields.Char(string="Ticket")
     current_log_status_id = fields.Many2one('account.log.status',copy=False)
     account_log_status_ids = fields.One2many("account.log.status", "account_voided_id", string="Registro de Envíos", copy=False)
-    voided_ticket = fields.Char(string="Ticket",related="current_log_status_id.voided_ticket")    
+    voided_ticket = fields.Char(string="Ticket",related="current_log_status_id.voided_ticket",store=True)
     identificador_anulacion = fields.Char(string="Identificador de anulación",default="Anulación",related="current_log_status_id.name")
 
     state = fields.Selection(
@@ -86,7 +86,7 @@ class AccountComunicacionBaja(models.Model):
             ('R', 'Rechazado'),  # Rechazado por SUNAT cuando se consulta con el ticket
             # SUNAt esta en estado no disponible y su estado pasa a pendiente de envío para enviarse después
             ('P', 'Pendiente de envío a SUNAT'),
-        ], string="Estado Emision a SUNAT", copy=False,related="current_log_status_id.status")
+        ], string="Estado Emision a SUNAT", copy=False,related="current_log_status_id.status",store="True")
 
 
     # contador = fields.Integer(string="Contador", states={'B': [('readonly', False)]})
@@ -96,6 +96,13 @@ class AccountComunicacionBaja(models.Model):
 
     company_id = fields.Many2one('res.company', string='Compañia',required=True, readonly=True)
 
+    # _sql_constraints = [
+    #     ('motivo_length_min','LENGTH(motivo)>=4','El tamaño del motivo debe tener por lo menos 4 carácteres.')
+    # ]
+    @api.constrains("motivo")
+    def _check_motivo(self):
+        if len(self.motivo) <4:
+            raise UserError('El tamaño del motivo debe tener por lo menos 4 carácteres.')
     
 
     # def invoice_validate(self):
@@ -197,7 +204,7 @@ class AccountComunicacionBaja(models.Model):
             self.action_generate_and_signed_xml()
         result = {}
         try:
-            if len(self.invoice_ids.filtered(lambda r:r.estado_comprobante_electronico == "1_ACEPTADO")) == len(self.invoice_ids):
+            if all(self.invoice_ids.mapped(lambda r:r.estado_comprobante_electronico == "1_ACEPTADO")):
                 result = send_voided_xml(self)
                 self.current_log_status_id.write(result)
         except Exception as e:
@@ -207,11 +214,10 @@ class AccountComunicacionBaja(models.Model):
     def post(self):
         if len(self.invoice_ids) == 0:
             raise UserError("Al menos debe existir 1 comprobante para anular. La lista de comprobantes esta vacía")
-
         self.action_send_voided()
         
     def action_request_status_ticket(self):
-        if not self.current_log_status_id:
+        if not self.voided_ticket:
             raise UserError("El campo de ticket esta vacío")
         response = self.current_log_status_id.action_request_status_ticket_voided()
         _logger.info(response)
@@ -220,23 +226,22 @@ class AccountComunicacionBaja(models.Model):
             
 
     def cron_enviar_comunicacion_baja(self):
-        com_bajas = self.env["account.comunicacion_baja"].search([("state", "=", "P")])
-        if len(com_bajas.invoice_ids.filtered(lambda inv: inv.estado_comprobante_electronico != "1_ACEPTADO")) > 0:
-            raise UserError("La comunicación de baja solo se puede aplicar a comprobandetes aceptados. Revise si los comprobantes de esta anulación estan aceptados.")
-
-        for baja in com_bajas:
-            try:
-                baja.action_summary_sent()
-            except Exception as E:
-                pass
+        voided_ids = self.env["account.comunicacion_baja"].search([("state", "in", ["P","N",False])])
+        for voided in voided_ids:
+            if all(voided.invoice_ids.mapped(lambda inv: inv.estado_comprobante_electronico == "1_ACEPTADO")):
+                # raise UserError("La comunicación de baja solo se puede aplicar a comprobandetes aceptados. Revise si los comprobantes de esta anulación estan aceptados.")
+                try:
+                    voided.action_send_voided()
+                except Exception as E:
+                    pass
 
     # @api.multi
     def cron_consulta_estado_comunicacion_baja(self):
-        com_bajas = self.env["account.comunicacion_baja"].search(
-            [("state", "=", "E")])
-        for baja in com_bajas:
+        voided_ids = self.env["account.comunicacion_baja"].search([("voided_ticket","!=",False),("state","in",["E","N","P",False])])
+        for voided in voided_ids:
             try:
-                baja.consulta_estado_comunicacion_baja()
+                # baja.consulta_estado_comunicacion_baja()
+                voided.action_request_status_ticket()
             except Exception as E:
                 pass
 

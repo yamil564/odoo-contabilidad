@@ -1,5 +1,5 @@
 <odoo>
-    <record model="ir.ui.view" id="view_res_form_currency_rate_sale_purchase">
+    <record model="ir.ui.view" id="view_res_currency_rate_sale_purchase">
         <field name="name">view.form.res.currency.rate.sale.purchase</field>
         <field name="model">res.currency</field>
         <field name="inherit_id" ref="base.view_currency_form"/>
