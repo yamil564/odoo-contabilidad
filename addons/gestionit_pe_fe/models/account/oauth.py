@@ -1122,7 +1122,8 @@ def request_status_invoice(username,password,ruc_emisior,invoice_type,document_n
                                 headers=headers,
                                 timeout=20)
         _logger.info(response.text)
-        result = sunat_response_handle.get_response(response.text)
+        result = sunat_response_handle.get_response_status_invoice(response.text)
+        _logger.info(result)
         data = {
             "response_json":json.dumps(result,indent=4),
             "response_xml_without_format":response.text,
