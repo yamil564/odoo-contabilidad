@@ -17,8 +17,6 @@ CURRENCY_TYPES = {
 class ResCurrency(models.Model):
     _inherit = "res.currency"
     _rec_name = "display_name"
-    # name = fields.Date(string='Date', required=True, index=False,
-    #                        default=lambda self: fields.Date.today())
 
     def _compute_name(self):
         for record in self:
@@ -26,15 +24,16 @@ class ResCurrency(models.Model):
 
     display_name = fields.Char("Nombre",compute=_compute_name,store=True)
 
-    type = fields.Selection(selection=[('commercial','Comercial'),('sale','Venta'),('purchase','Compra')],default="commercial")
-    # cambio_compra = fields.Float("T/C Compra", digits=(1, 4),compute="_compute_current_rate_sale_purchase")
-    # cambio_venta = fields.Float("T/C Venta", digits=(1, 4),compute="_compute_current_rate_sale_purchase")
+    def name_get(self):
+        result = []
+        for record in self:
+            if record.name and record.type:
+                result.append((record.id, "{} [{}] T/C: {:.3f}".format(record.name, CURRENCY_TYPES.get(record.type),1/record.rate)))
+            else:
+                result.append((record.id, record.name))
+        return result
 
-    # @api.depends('rate_ids.name')
-    # def _compute_current_rate_sale_purchase(self):
-    #     for currency in self:
-    #         currency.cambio_compra = currency.rate_ids[:1].cambio_compra
-    #         currency.cambio_venta = currency.rate_ids[:1].cambio_venta
+    type = fields.Selection(selection=[('commercial','Comercial'),('sale','Venta'),('purchase','Compra')],default="commercial")
 
     _sql_constraints = [
         ('unique_name', 'FALSE', ''),
@@ -71,6 +70,7 @@ class Tipocambio(models.Model):
     factor = fields.Float("T/C",default=1)
     currency_name = fields.Char("Moneda",related="currency_id.name")
     
+
     @api.onchange("rate")
     def _onchange_rate(self):
         if self.rate > 0:
@@ -226,99 +226,58 @@ class Tipocambio(models.Model):
 
 
     @api.model
-    def cron_update_ratio_sale_purchase_pen_usd(self,company_id):
-        currency_usd_sale = self.env['res.currency'].search([['name', '=', 'USD'],['sale']],limit=1)
-        currency_usd_purchase = self.env['res.currency'].search([['name', '=', 'USD'],['type','=','purchase']],limit=1)
-        currency_usd_commercial = self.env['res.currency'].search([['name', '=', 'USD'],['type','=','commercial']],limit=1)
-        company = self.env["res.company"].sudo().browse(company_id)
-        token = company.api_migo_token
-        endpoint = company.api_migo_endpoint
-        fecha_hoy = datetime.now(tz=timezone("America/Lima")).strftime("%Y-%m-%d")
-        currency_rate_exist_usd_sale = self.search([("currency_id","=",currency_usd.id),
-                                                                            ("name","=",fecha_hoy),
-                                                                            ("type","=","sale"),
-                                                                            ("company_id","=",company_id)],limit=1)
+    def cron_update_ratio_sale_purchase_pen_usd(self):
+        company_ids = self.env["res.company"].search([])
+        today = datetime.now(tz=timezone("America/Lima"))
+        today_format = today.strftime("%Y-%m-%d")
+        today = date.fromisoformat(today_format)
 
-        currency_rate_exist_usd_purchase = self.search([("currency_id","=",currency_usd.id),
-                                                                            ("name","=",fecha_hoy),
-                                                                            ("type","=","purchase"),
-                                                                            ("company_id","=",company_id)],limit=1)
-
-        currency_rate_exist_usd_commercial = self.search([("currency_id","=",currency_usd.id),
-                                                                            ("name","=",fecha_hoy),
-                                                                            ("type","=","commercial"),
-                                                                            ("company_id","=",company_id)],limit=1)
-                                                                            
-        if not(currency_rate_exist_usd_sale.exists() and currency_rate_exist_usd_sale.exists() and currency_rate_exist_usd_commercial.exists()):
-            return None
-
-        if not endpoint:
-            return None
-        else:
-            endpoint = endpoint.strip()
-            endpoint = endpoint if endpoint[-1] == "/" else "{}/".format(endpoint)
-            
-        url = "{}exchange/date".format(endpoint)
-        
-        data = {
-            "token": token,
-            "fecha": fecha_hoy
-        }
-        
         try:
-            headers = {
-                'Content-Type': 'application/json'
-            }
-
-            res = requests.request("POST", url, headers=headers, data=json.dumps(data))
-            res = res.json()
-            if res.get("success", False):
-                rate_sale = float(res.get("precio_venta", False))
-                rate_sale = 1/rate_sale if rate_sale != 0.0 else 0.0
-
-                rate_purchase = float(res.get("precio_compra", False))
-                rate_purchase = 1/rate_purchase if rate_purchase != 0.0 else 0.0
-
-                rate_commercial = (rate_purchase + rate_sale)/2
-
-                if not currency_rate_exist_usd_sale.exists(): 
-                    currency_rate = self.sudo().create({
-                        'name': fecha_hoy,
-                        'currency_id': currency_usd_sale.id,
-                        'rate': rate_sale,
-                        'factor':1/rate_sale,
-                        'company_id':company.id
-                    })
-                else:
-                    currency_rate_exist_usd_sale.write({'rate': rate_sale,'factor':1/rate_sale})
-
-                if not currency_rate_exist_usd_purchase.exists():
-                    currency_rate = self.sudo().create({
-                        'name': fecha_hoy,
-                        'currency_id': currency_usd_purchase.id,
-                        'rate': rate_purchase,
-                        'factor':1/rate_purchase,
-                        'company_id':company.id
-                    })
-                else:
-                    currency_rate_exist_usd_purchase.write({'rate': rate_purchase,'factor':1/rate_purchase})
-
-                if not currency_rate_exist_usd_commercial.exists():
-                    currency_rate = self.sudo().create({
-                        'name': fecha_hoy,
-                        'currency_id': currency_usd_commercial.id,
-                        'rate': rate_commercial,
-                        'factor':1/rate_commercial,
-                        'company_id':company.id
-                    })
-                else:
-                    currency_rate_exist_usd_commercial.write({'rate': rate_commercial,'factor':1/rate_commercial})
-                
-                return True
-            return None
+            res = self.api_migo_usd_pen_exchange_date(today_format)
         except Exception as e:
-            return None
+            try:
+                res = self.api_migo_usd_pen_exchange_latest()
+            except Exception as e:
+                raise UserError(e)
 
+        for comp in company_ids:
+            currency_usd_sale = self.env["res.currency"].search([('type','=','sale'),('name','=','USD')],limit=1)
+            currency_usd_purchase = self.env["res.currency"].search([('type','=','purchase'),('name','=','USD')],limit=1)
+            currency_usd_commercial = self.env["res.currency"].search([('type','=','commercial'),('name','=','USD')],limit=1)
+            factor_sale = float(res.get("precio_venta"))
+            factor_purchase = float(res.get("precio_compra"))
+            factor_commercial = (factor_sale + factor_purchase)/2
+            if currency_usd_sale.exists():
+                rate_sale = 1/factor_sale
+                currency_rate_usd_sale = currency_usd_sale.rate_ids.filtered(lambda r: r.name == today)
+                if len(currency_rate_usd_sale) == 0:
+                    self.env["res.currency.rate"].create({"name":today,
+                                                            "type":"sale",
+                                                            "company_id":comp.id,
+                                                            "rate":rate_sale,
+                                                            "currency_id":currency_usd_sale.id,
+                                                            "factor":factor_sale})
+            if currency_usd_purchase.exists():
+                rate_purchase = 1/factor_purchase
+                currency_rate_usd_purchase = currency_usd_purchase.rate_ids.filtered(lambda r: r.name == today)
+                if len(currency_rate_usd_purchase) == 0:
+                    self.env["res.currency.rate"].create({"name":today,
+                                                            "type":"sale",
+                                                            "company_id":comp.id,
+                                                            "rate":rate_purchase,
+                                                            "currency_id":currency_usd_purchase.id,
+                                                            "factor":factor_purchase})
+            if currency_usd_commercial.exists():
+                rate_commercial = 1/factor_commercial
+                currency_rate_usd_commercial = currency_usd_commercial.rate_ids.filtered(lambda r: r.name == today)
+                if len(currency_rate_usd_commercial) == 0:
+                    self.env["res.currency.rate"].create({"name":today,
+                                                            "type":"commercial",
+                                                            "company_id":comp.id,
+                                                            "rate":rate_commercial,
+                                                            "currency_id":currency_usd_commercial.id,
+                                                            "factor":factor_commercial})
+                                                
     def save(self):
         self.env.user.notify_success('El T/C PEN -> USD: {}'.format(self.factor),"T/C {} actualizado".format(self.type))
         
@@ -333,16 +292,8 @@ class AccountMove(models.Model):
             if move.currency_id and move.invoice_date:
                 move.exchange_rate_day = self.env["res.currency"]._get_conversion_rate(move.company_id.currency_id,move.currency_id,move.company_id,move.invoice_date)
 
-    # tipo_cambio = fields.Float(string="T/C", digits=(1, 4))
-    # fecha_cambio = fields.Date(string="Fecha de cambio")
-
-    # @api.onchange("invoice_date")
-    # def _change_fecha_cambio(self):
-    #     self.fecha_cambio = self.invoice_date
-
-    def post(self):
-        tz = self.env.user.tz or "America/Lima"
-
+    # def post(self):
+        # tz = self.env.user.tz or "America/Lima"
         # for move in self:
         #     if not move.invoice_date:
         #         move.invoice_date = datetime.now(tz = timezone(tz))
@@ -360,8 +311,7 @@ class AccountMove(models.Model):
         #                 raise UserError("Debe actualizar el tipo de cambio de compra/venta para la fecha {}.".format(move.invoice_date.strftime("%Y-%m-%d")))
         #     else:
         #         move.tipo_cambio =  1
-
-        return super(AccountMove, self).post()
+        # return super(AccountMove, self).post()
 
 
     # @api.onchange("invoice_date","currency_id")

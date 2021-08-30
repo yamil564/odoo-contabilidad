@@ -6,11 +6,15 @@ import json
 from io import StringIO, BytesIO
 import os
 import logging
+import re
 _logger = logging.getLogger(__name__)
+
+patron_ruc = re.compile("[12]\d{10}$")
+patron_dni = re.compile("\d{8}$")
 
 
 class ResPartner(models.Model):
-    _inherit = 'res.partner'
+    _inherit = "res.partner"
 
     registration_name = fields.Char('Name', size=128, index=True)
     estado_contribuyente = fields.Char(string='Estado del Contribuyente')
@@ -18,10 +22,61 @@ class ResPartner(models.Model):
 
     l10n_latam_identification_type_id = fields.Many2one('l10n_latam.identification.type',
                                                         string="Tipo de documento de identificación", index=True, auto_join=True,
-                                                        default=lambda self: self.env.ref(
-                                                            'gestionit_pe_consulta_ruc_dni.it_RUC', raise_if_not_found=False),
+                                                        default=lambda self: self.env.ref('gestionit_pe_consulta_ruc_dni.it_RUC', raise_if_not_found=False),
                                                         help="Tipo de documento de identificación")
     
+    street_invoice_ids = fields.One2many("res.partner","parent_id",string="Facturación",domain=[("type","=","invoice")])
+    street_delivery_ids = fields.One2many("res.partner","parent_id",string="Direcciones",domain=[("type","in",["delivery","other","private"])])
+
+    @api.model
+    def default_get(self,field_list):
+        res = super(ResPartner, self).default_get(field_list)
+        if self.env.context.get("no_doc"):
+            res.update({"l10n_latam_identification_type_id": self.env.ref("l10n_pe.it_NDTD").id,"vat":"0"})
+        return res
+
+    def _get_name(self):
+        partner = self
+        name = partner.name or ''
+        name = super(ResPartner, self)._get_name()
+        if self._context.get("show_vat_first") and partner.vat:
+            name = "%s ‒ %s" % (partner.vat, name)
+        return name
+
+    @api.onchange('partner_id')
+    def onchange_partner_id(self):
+        return super(ResPartner, self).with_context(show_vat=True).onchange_partner_id()
+
+
+    @api.model
+    def _commercial_fields(self):
+        return []
+        
+    @api.constrains('vat','l10n_latam_identification_type_id')
+    def _check_valid_numero_documento(self):
+        vat_str = (self.vat or "").strip()
+        if self.l10n_latam_identification_type_id and self.type in ["contact","invoice"]:
+            if self.l10n_latam_identification_type_id.l10n_pe_vat_code == "6":
+                if patron_ruc.match(vat_str):
+                    vat_arr = [int(c) for c in vat_str]
+                    arr = [5,4,3,2,7,6,5,4,3,2]
+                    s = sum([vat_arr[r]*arr[r] for r in range(0,10)])
+                    num_ver = (11-s%11)%10
+                    if vat_arr[10] != num_ver:
+                        raise UserError("El número de RUC ingresado es inválido.")
+                else:
+                    raise UserError("El número de RUC ingresado es inválido.")
+
+            if self.l10n_latam_identification_type_id.l10n_pe_vat_code == "1":
+                if not patron_dni.match(vat_str):
+                    raise UserError("El número de DNI ingresado es inválido")
+
+    @api.onchange("street","type")
+    def get_name_street(self):
+        if self.type == "delivery" and not self.name:
+            self.name = self.street or "-"
+
+
     @api.onchange('l10n_latam_identification_type_id', 'vat')
     def vat_change(self):
         self.update_document()
@@ -89,43 +144,15 @@ class ResPartner(models.Model):
 
         return None
 
-    def _esrucvalido(self, dato):
-        largo_dato = len(dato)
-        if dato is not None and dato != "" and dato.isdigit() and (largo_dato == 11 or largo_dato == 8):
-            valor = int(dato)
-            if largo_dato == 8:
-                suma = 0
-                for i in range(largo_dato - 1):
-                    digito = int(dato[i]) - 0
-                    if i == 0:
-                        suma = suma + digito * 2
-                    else:
-                        suma = suma + digito * (largo_dato - 1)
-                    resto = suma % 11
-                    if resto == 1:
-                        resto = 11
-                    if (resto + int(dato[largo_dato - 1]) - 0) == 11:
-                        return True
-            elif largo_dato == 11:
-                suma = 0
-                x = 6
-                for i in range(largo_dato - 1):
-                    if i == 4:
-                        x = 8
-                    digito = int(dato[i]) - 0
-                    x = x - 1
-                    if x == 0:
-                        suma = suma + digito * x
-                    else:
-                        suma = suma + digito * x
-                resto = suma % 11
-                resto = 11 - resto
-                if resto >= 10:
-                    resto = resto - 10
-                if resto == int(dato[largo_dato - 1]) - 0:
-                    return True
-
-            return False
+    def _esrucvalido(self, vat_str):
+        if patron_ruc.match(vat_str):
+            vat_arr = [int(c) for c in vat_str]
+            arr = [5,4,3,2,7,6,5,4,3,2]
+            s = sum([vat_arr[r]*arr[r] for r in range(0,10)])
+            num_ver = (11-s%11)%10
+            if vat_arr[10] != num_ver:
+                return False
+            return True
         else:
             return False
 
