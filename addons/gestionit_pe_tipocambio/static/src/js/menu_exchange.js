@@ -14,7 +14,7 @@ odoo.define("gestionit_pe_tipocambio.menu_exchange",[
     }
 
     var currency_types = {
-        "commertial":"Comercial",
+        "commercial":"Comercial",
         "sale":"Venta",
         "purchase":"Compra"
     }

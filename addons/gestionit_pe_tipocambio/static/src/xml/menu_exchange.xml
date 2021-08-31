@@ -13,7 +13,8 @@
     </t>
 
     <t t-name="ExchangeMenuLine">
-        <a role="menuitem" href="#" t-att-data-id="widget.id" class="dropdown-item exchange-menu-line"><t t-esc="widget.display_name +': '+ widget.rate"/></a>
+        <a role="menuitem" href="#" t-att-data-id="widget.id" class="dropdown-item exchange-menu-line">
+            <t t-esc="widget.name +' ['+widget.type+']: '+ widget.rate"/></a>
     </t>
 
 </templates>

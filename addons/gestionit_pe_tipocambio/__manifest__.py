@@ -10,6 +10,7 @@
         "sale_management", ],
     "category": "Uncategorized",
     "data": [
+        'data/res_currency.xml',
         'security/security.xml',
         'views/res_currency_view.xml',
         'views/account_invoice_form.xml',
