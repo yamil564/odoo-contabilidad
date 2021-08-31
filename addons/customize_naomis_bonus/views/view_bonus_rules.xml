@@ -48,7 +48,7 @@
                                 <field name="bonus_id" invisible="1"/>
                                 <field name="product_id" force_save="1"/>
                                 <field name="product_uom_qty" string="Cantidad"/>
-                                <field name="product_uom" force_save="1" groups="product.group_uom"
+                                <field name="product_uom" force_save="1" groups="uom.group_uom"
                                        options='{"no_open": True}'/>
                                 <field name="product_price"/>
                                 <field name="product_total" sum="Total"/>
@@ -62,7 +62,7 @@
                                 <field name="bonus_id" invisible="1"/>
                                 <field name="product_id" force_save="1"/>
                                 <field name="product_uom_qty" string="Cantidad"/>
-                                <field name="product_uom" force_save="1" groups="product.group_uom"
+                                <field name="product_uom" force_save="1" groups="uom.group_uom"
                                        options='{"no_open": True}'/>
                                 <field name="product_price"/>
                                 <field name="product_total" sum="Total"/>
@@ -74,7 +74,7 @@
         </field>
     </record>
     <record id="customize_naomis_bonus.action_bonus_rules" model="ir.actions.act_window">
-        <field name="name">Bonus rules</field>
+        <field name="name">Reglas de Bonificación</field>
         <field name="res_model">bonus.rule</field>
         <field name="view_id" ref="customize_naomis_bonus.bonus_rules_tree"/>
         <field name="view_mode">tree,form</field>
@@ -84,6 +84,6 @@
         <field name="view_mode">tree</field>
         <field name="act_window_id" ref="customize_naomis_bonus.action_bonus_rules"/>
     </record>
-    <menuitem name="Bonus rules" id="menu_sale_bonus_rules" action="customize_naomis_bonus.action_bonus_rules"
+    <menuitem name="Reglas de Bonificación" id="menu_sale_bonus_rules" action="customize_naomis_bonus.action_bonus_rules"
               parent="sale.sale_menu_root"/>
 </odoo>

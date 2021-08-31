@@ -104,24 +104,37 @@ class saleOrderLine(models.Model):
     qty_available = fields.Float("Cnt. disp. actual")
     line_available = fields.Boolean("Disponible")
 
-    @api.onchange('product_id', 'product_uom_qty', 'product_uom')
-    def _onchange_product_qty_available(self):
-        for record in self:
-            if record.product_id and record.product_uom_qty and record.product_uom:
-                if not record.product_id.is_combo:
-                    record.qty_available = record.product_id.virtual_available * \
-                                           record.product_id.uom_id.factor_inv / record.product_uom.factor_inv
-                    record.line_available = record.qty_available >= record.product_uom_qty
-                else:
-                    _min = 1000000000
-                    for pr in record.product_id.combo_product_id:
-                        cantidad_disponible = pr.product_quantity * \
-                                              pr.uom_id.factor_inv / pr.product_id.uom_id.factor_inv
-                        cantidad_combos_por_producto = pr.product_id.virtual_available / cantidad_disponible
-                        _min = min(_min, cantidad_combos_por_producto)
+    qty_by_location = fields.Char(compute="_compute_qty_by_location")
 
-                    record.qty_available = _min
-                    record.line_available = record.qty_available >= record.product_uom_qty
+    @api.onchange('product_id')
+    def _compute_qty_by_location(self):
+        for record in self:
+            if record.product_id.exists() and record.display_type is False:
+                self.env.cr.execute("""select complete_name as name,sq.quantity as quantity from stock_location as sl 
+                                            left join stock_quant as sq on sq.location_id = sl.id and sq.product_id={}
+                                            where sl.usage = 'internal' and sl.active=True""".format(record.product_id.id))
+                result = self.env.cr.dictfetchall()
+                record.qty_by_location = json.dumps(result)
+            else:
+                record.qty_by_location = 0
+    # @api.onchange('product_id', 'product_uom_qty', 'product_uom')
+    # def _onchange_product_qty_available(self):
+    #     for record in self:
+    #         if record.product_id and record.product_uom_qty and record.product_uom:
+    #             if not record.product_id.is_combo:
+    #                 record.qty_available = record.product_id.virtual_available * \
+    #                                        record.product_id.uom_id.factor_inv / record.product_uom.factor_inv
+    #                 record.line_available = record.qty_available >= record.product_uom_qty
+    #             else:
+    #                 _min = 1000000000
+    #                 for pr in record.product_id.combo_product_id:
+    #                     cantidad_disponible = pr.product_quantity * \
+    #                                           pr.uom_id.factor_inv / pr.product_id.uom_id.factor_inv
+    #                     cantidad_combos_por_producto = pr.product_id.virtual_available / cantidad_disponible
+    #                     _min = min(_min, cantidad_combos_por_producto)
+
+    #                 record.qty_available = _min
+    #                 record.line_available = record.qty_available >= record.product_uom_qty
 
 
 class saleOrder(models.Model):

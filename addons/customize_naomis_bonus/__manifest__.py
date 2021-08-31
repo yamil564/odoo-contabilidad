@@ -8,6 +8,6 @@
         'security/res_groups.xml',
         'views/view_bonus_rules.xml',
         'views/view_sale_order.xml',
-        'views/view_product_inherit.xml',
+        # 'views/view_product_inherit.xml',
     ]
 }
