@@ -85,5 +85,5 @@
         <field name="act_window_id" ref="customize_naomis_bonus.action_bonus_rules"/>
     </record>
     <menuitem name="Reglas de Bonificación" id="menu_sale_bonus_rules" action="customize_naomis_bonus.action_bonus_rules"
-              parent="sale.sale_menu_root"/>
+              parent="sale.menu_sale_config"/>
 </odoo>

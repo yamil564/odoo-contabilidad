@@ -3,6 +3,7 @@
     <record id="customize_naomis_bonus.view_bonus_button_sale_order_form" model="ir.ui.view">
         <field name="name">Naomis Bonus - Sale Order</field>
         <field name="model">sale.order</field>
+        <field name="groups_id" ref="group_sale_order_bonus_user"/>
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
             <xpath expr="//header" position="after">
@@ -398,6 +399,7 @@
     <record id="assign_bonus_wizard" model="ir.ui.view">
         <field name="name">Bonus</field>
         <field name="model">bonus.rule.wizard</field>
+        <field name="groups_id" ref="group_sale_order_bonus_user"/>
         <field name="arch" type="xml">
             <form string="Seleccionar bonus">
                 <group>
@@ -421,7 +423,8 @@
         </field>
     </record>
     <record id="button_assign_bonus_wizard" model="ir.actions.act_window">
-        <field name="name">Bonus assign</field>
+        <field name="name">Asignar Bonificación</field>
+        <field name="groups_id" ref="group_sale_order_bonus_user"/>
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">bonus.rule.wizard</field>
         <field name="view_mode">form</field>
