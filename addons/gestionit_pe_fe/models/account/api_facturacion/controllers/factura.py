@@ -8,7 +8,7 @@ from ..efact21 import InvoiceLine
 from ..efact21 import MonetaryTotal
 from ..efact21 import Party
 from ..efact21.AllowanceCharge import AllowanceCharge
-from ..efact21.AmountTypes import PriceAmount, PrepaidAmount, ChargeTotalAmount, LineExtensionAmount, \
+from ..efact21.AmountTypes import Amount,PriceAmount, PrepaidAmount, ChargeTotalAmount, LineExtensionAmount, \
     AllowanceTotalAmount, PayableAmount, TaxInclusiveAmount
 from ..efact21.BasicGlobal import RegistrationName
 from ..efact21.DocumentReference import DespatchDocumentReference, DocumentTypeCode
@@ -18,10 +18,12 @@ from ..efact21.Party import PartyIdentification, PartyLegalEntity, PartyName
 from ..efact21.RegistrationAddress import RegistrationAddress
 from ..efact21.TaxTotal import TaxTotal, TaxSubtotal, TaxCategory, TaxScheme, CategoryID, TaxableAmount, TaxAmount, BaseUnitMeasure, PerUnitAmount
 from ..efact21.TaxScheme import TaxSchemeID
-
+from ..efact21.PaymentTerms import PaymentTerms
 import yaml
 import flex
+import re
 
+patron_cuota = re.compile("Cuota[0-9]{3}$")
 
 # def validate_json(data):
 #     with open("./files/schemas_json/invoice.yaml") as f:
@@ -191,6 +193,68 @@ def build_factura(data):
     mntTotalGrat = documento.get('mntTotalGrat', 0.0)
     mntTotalAnticipos = documento.get("mntTotalAnticipos", 0.0)
     mntExportacion = documento.get("mntExportacion", 0.0)
+
+    formaPago = documento.get("formaPago","Contado")
+    creditoCuotas = documento.get("creditoCuotas",[])
+    
+    if formaPago not in ["Contado","Credito"]:
+        return {
+            "errors":[
+                {
+                    "status":400,
+                    "code": "51",
+                    "detail":"El atributo forma de pago solo puede tomar los valores 'Contado' o 'Credito'"
+                }
+            ]
+        }
+    elif formaPago == "Credito":
+        if len(creditoCuotas) == 0:
+            return {
+                "errors":[
+                {
+                    "status":400,
+                    "code": "51",
+                    "detail":"Si la forma de pago es crédito, entonces debe establecer por lo menos una cuota."
+                }
+            ]
+            }
+        for cc in creditoCuotas:
+            if not patron_cuota.match(cc.get("nombre","")):
+                return {
+                    "errors":[
+                        {
+                            "status":400,
+                            "code": "51",
+                            "detail":"El nombre de la cuota '{}' debe tener el siguiente formato 'cuota[0-9]{3}'. Ejemplo: cuota001,cuota002,...cuota015".format(cc.get("nombre"))
+                        }
+                    ]
+                }
+            if not validacion.transformar_fecha(cc.get("fechaVencimiento","")):
+                return {
+                    "errors":[
+                        {
+                            "status":400,
+                            "code": "51",
+                            "detail":"El formato de la fecha de vencimiento de la cuota '{}' no ha sido establecido o es inválido".format(cc.get("nombre"))
+                        }
+                    ]
+                }
+            if type(cc.get("monto",0.0)) not in [float,int]:
+                if cc.get("monto",0.0) > 0:
+                    return {
+                        "errors":[
+                            {
+                                "status":400,
+                                "code": "51",
+                                "detail":"El monto de la cuota '{}' no ha sido establecido o es igual a cero.".format(cc.get("nombre"))
+                            }
+                        ]
+                    }
+
+
+        # validacion_cuota = all([bool(patron_cuota.match(cc.get("name",""))) for cc in creditoCuotas])
+
+
     # NO NECESARIOS
     # direccionOrigen = documento.get('direccionOrigen', '')
     # direccionUbigeo = documento.get('direccionUbigeo', '')
@@ -427,6 +491,19 @@ def build_factura(data):
                    accounting_supplier_party=proveedor, accounting_customer_party=cliente,
                    legal_monetary_total=legal_monetary_total, tax_total=tax_total,
                    descuento_global=descuento_global)
+    
+    # fact.add_payment_terms()
+    fact.add_payment_terms(PaymentTerms(id="FormaPago",
+                                        payment_means_id=formaPago))
+
+    if formaPago == "Credito":
+        for cuota in creditoCuotas:
+            amount = Amount(cuota["monto"],currencyID=tipoMoneda)
+            fact.add_payment_terms(PaymentTerms(id="FormaPago",
+                                                payment_means_id=cuota["nombre"],
+                                                amount=amount,
+                                                payment_due_date=cuota["fechaVencimiento"]))
+
 
     if documento.get('numero_guia', False):
         guia_doc_type_code = DocumentTypeCode("09")

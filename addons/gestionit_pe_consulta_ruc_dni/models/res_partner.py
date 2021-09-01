@@ -144,8 +144,9 @@ class ResPartner(models.Model):
 
         return None
 
+    @api.model
     def _esrucvalido(self, vat_str):
-        if patron_ruc.match(vat_str):
+        if patron_ruc.match(vat_str) :
             vat_arr = [int(c) for c in vat_str]
             arr = [5,4,3,2,7,6,5,4,3,2]
             s = sum([vat_arr[r]*arr[r] for r in range(0,10)])

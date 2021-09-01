@@ -6,7 +6,7 @@ import logging
 _logger = logging.getLogger(__name__)
 
 
-class bonusRule(models.Model):
+class BonusRule(models.Model):
     _name = "bonus.rule"
 
     name = fields.Char(string="Nombre")
@@ -39,7 +39,7 @@ class bonusRule(models.Model):
         return result
 
 
-class bonusRuleInputProduct(models.Model):
+class BonusRuleInputProduct(models.Model):
     _name = "bonus.rule.input"
 
     bonus_id = fields.Many2one(
@@ -66,7 +66,7 @@ class bonusRuleInputProduct(models.Model):
             record.product_total = record.product_price * record.product_uom_qty
 
 
-class bonusRuleOutputProduct(models.Model):
+class BonusRuleOutputProduct(models.Model):
     _name = "bonus.rule.output"
 
     bonus_id = fields.Many2one(
