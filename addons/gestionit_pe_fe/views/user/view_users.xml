@@ -1,6 +1,6 @@
 <odoo>
     <data>
-        <record model="ir.ui.view" id="gestionit_pe_fe.view_user_form_">
+        <record model="ir.ui.view" id="gestionit_pe_fe.view_user_form_warehouse">
             <field name="name">Almacenes</field>
             <field name="model">res.users</field>
             <field name="inherit_id" ref="base.view_users_form"/>

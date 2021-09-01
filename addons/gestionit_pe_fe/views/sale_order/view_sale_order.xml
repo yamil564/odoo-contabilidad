@@ -1,60 +1,57 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <data>
-        <record model="ir.ui.view" id="gestionit_pe_fe.sale_order_tipo_documento">
-            <field name="name">sale.order.tipo.documento</field>
-            <field name="model">sale.order</field>
-            <field name="inherit_id" ref="sale.view_order_form"/>
-            <field name="arch" type="xml">
-                <xpath expr="//button[@name='%(sale.action_view_sale_advance_payment_inv)d']" position="replace">
-                </xpath>
-                <xpath expr="//field[@name='partner_shipping_id']" position="after">
-                    <!-- Mismo descuento en todas las líneas-->
-                    <field name="apply_same_discount_on_all_lines" groups="product.group_discount_per_so_line"/>
-                    <field name="discount_on_all_lines" string="Descuento (%)" 
-                            attrs="{'required':[('apply_same_discount_on_all_lines','=',True)],'invisible':[('apply_same_discount_on_all_lines','=',False)]}"/>
-                    <button name="action_apply_same_discount_on_all_lines" string="Aplicar dscto (%) en todas las líneas" type="object" class="oe_highlight"
-                        attrs="{'invisible':[('apply_same_discount_on_all_lines','=',False)]}"/>
-                </xpath>
-                <xpath expr="//kanban//templates//div" position="inside">
-                    <a t-if="!read_only_mode" type="delete" class="fa fa-times pull-right"/>
-                </xpath>
-                
-                <field name="amount_tax" position="replace"/>
-                <field name="amount_untaxed" position="replace">
-                    <field name="descuento_global" groups="gestionit_pe_fe.group_fe_discount_global_sale_invoices"/>
-                    <field name="total_venta_gravado"/>
-                    <field name="total_venta_inafecto"/>
-                    <field name="total_venta_exonerada"/>
-                    <field name="total_venta_gratuito"/>
-                    <field name="total_descuento_global" />
-                    <field name="total_descuentos"/>
-                    <field name="total_igv" string="IGV (18%)"/>
-                </field>
-                <xpath expr="//tree/field[@name='price_unit']" position="after">
-                    <field name="qty_by_location" invisible="1"/>
-                </xpath>
-            </field>
-        </record>
 
-        <record model="ir.ui.view" id="gestionit_pe_fe.sale_order_restrict_edit_price">
-            <field name="name">sale.order.restrict.price</field>
-            <field name="model">sale.order</field>
-            <field name="inherit_id" ref="sale.view_order_form"/>
-            <field name="groups_id" eval="[(4,ref('gestionit_pe_fe.group_fe_restrict_edit_price_from_sale'))]"/>
-            <field name="arch" type="xml">
-                <xpath expr="//tree/field[@name='price_unit']" position="attributes">
-                    <attribute name="readonly">1</attribute>
-                    <attribute name="force_save">1</attribute>
-                </xpath>
-                <xpath expr="//form//field[@name='price_unit']" position="attributes">
-                    <attribute name="readonly">1</attribute>
-                    <attribute name="force_save">1</attribute>
-                </xpath>
-            </field>
-        </record>
+    <record model="ir.ui.view" id="gestionit_pe_fe.sale_order_tipo_documento">
+        <field name="name">sale.order.tipo.documento</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='%(sale.action_view_sale_advance_payment_inv)d']" position="replace">
+            </xpath>
+            <xpath expr="//field[@name='partner_shipping_id']" position="after">
+                <field name="apply_same_discount_on_all_lines" groups="product.group_discount_per_so_line"/>
+                <field name="discount_on_all_lines" string="Descuento (%)" attrs="{'required':[('apply_same_discount_on_all_lines','=',True)],'invisible':[('apply_same_discount_on_all_lines','=',False)]}"/>
+                <button name="action_apply_same_discount_on_all_lines" string="Aplicar dscto (%) en todas las líneas" type="object" class="oe_highlight" attrs="{'invisible':[('apply_same_discount_on_all_lines','=',False)]}"/>
+            </xpath>
+            <xpath expr="//kanban//templates//div" position="inside">
+                <a t-if="!read_only_mode" type="delete" class="fa fa-times pull-right"/>
+            </xpath>
 
-        <!-- <record id="view_form_add_btn_guia_remision" model="ir.ui.view">
+            <field name="amount_tax" position="replace"/>
+            <field name="amount_untaxed" position="replace">
+                <field name="descuento_global" groups="gestionit_pe_fe.group_fe_discount_global_sale_invoices"/>
+                <field name="total_venta_gravado"/>
+                <field name="total_venta_inafecto"/>
+                <field name="total_venta_exonerada"/>
+                <field name="total_venta_gratuito"/>
+                <field name="total_descuento_global" />
+                <field name="total_descuentos"/>
+                <field name="total_igv" string="IGV (18%)"/>
+            </field>
+            <xpath expr="//tree/field[@name='price_unit']" position="after">
+                <field name="qty_by_location" invisible="1"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record model="ir.ui.view" id="gestionit_pe_fe.sale_order_restrict_edit_price">
+        <field name="name">sale.order.restrict.price</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="groups_id" eval="[(4,ref('gestionit_pe_fe.group_fe_restrict_edit_price_from_sale'))]"/>
+        <field name="arch" type="xml">
+            <xpath expr="//tree/field[@name='price_unit']" position="attributes">
+                <attribute name="readonly">1</attribute>
+                <attribute name="force_save">1</attribute>
+            </xpath>
+            <xpath expr="//form//field[@name='price_unit']" position="attributes">
+                <attribute name="readonly">1</attribute>
+                <attribute name="force_save">1</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- <record id="view_form_add_btn_guia_remision" model="ir.ui.view">
             <field name="name">view.for.add.btn.guia.remision</field>
             <field name="model">sale.order</field>
             <field name="inherit_id" ref="sale_management.sale_order_view_form"/>
@@ -64,5 +61,5 @@
                 </xpath>
             </field>
         </record> -->
-    </data>
+
 </odoo>

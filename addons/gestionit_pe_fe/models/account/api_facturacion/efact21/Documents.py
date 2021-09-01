@@ -19,6 +19,7 @@ from .TaxTotal import TaxTotal
 from .util import Xmleable, default_document
 from . import CreditNoteLine, DebitNoteLine
 from .AllowanceCharge import AllowanceCharge
+from .PaymentTerms import PaymentTerms
 
 import logging
 _logger = logging.getLogger(__name__)
@@ -53,6 +54,7 @@ class Factura(Xmleable):
         self.file_name = None
         self.line_count_numeric = 0
         self.descuento_global = descuento_global
+        self.payment_terms = []
 
     def set_file_name(self, name):
         self.file_name = name
@@ -75,6 +77,11 @@ class Factura(Xmleable):
         if type(note) != BasicGlobal.Note:
             raise Exception("Bad type")
         self.notes.append(note)
+    
+    def add_payment_terms(self,payment_term):
+        if type(payment_term) != PaymentTerms:
+            raise Exception("Bad type")
+        self.payment_terms.append(payment_term)
 
     def fix_values(self):
         if not self.ubl_extensions:
@@ -196,6 +203,10 @@ class Factura(Xmleable):
 
         # Datos del receptor
         self.doc.appendChild(self.accounting_customer_party.get_document())
+
+        #Formas de Pago
+        for pt in self.payment_terms:
+            self.doc.appendChild(pt.get_document())
 
         # Descuento Global
         if self.descuento_global:

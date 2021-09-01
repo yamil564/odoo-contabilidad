@@ -40,7 +40,7 @@
                                         options="{'no_create': True, 'no_open': True, 'no_create_edit': True}"/>
                             </group>
                             <group>
-                                <field name="zip" string="ubigeo" />
+                                <field name="zip" string="ubigeo" widget="text"/>
                             </group>
                         </group>
                         <!-- <group>

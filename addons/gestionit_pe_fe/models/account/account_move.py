@@ -144,7 +144,8 @@ class AccountMove(models.Model):
             ('P', 'Pendiente de envió a SUNAT'),
         ],
         string = "Estado Emisión a SUNAT",
-        related = "current_log_status_id.status"
+        related = "current_log_status_id.status",
+        store=True
     )
 
 
@@ -661,13 +662,16 @@ class AccountMove(models.Model):
 
 
     def action_send_invoice(self):
-        if self.current_log_status_id and (self.journal_id.invoice_type_code_id == "01" or self.journal_id.tipo_comprobante_a_rectificar == "01"):
-            if self.current_log_status_id.status == "P":
-                try:
-                    vals = send_doc_xml(self)
-                    self.current_log_status_id.write(vals)
-                except Exception as e:
-                    return vals
+        if not (self.current_log_status_id and (self.journal_id.invoice_type_code_id == "01" or self.journal_id.tipo_comprobante_a_rectificar == "01")):
+            self.action_generate_and_signed_xml()
+            
+        if self.current_log_status_id.status in ["P",False]:
+            try:
+                vals = send_doc_xml(self)
+                self.current_log_status_id.write(vals)
+            except Exception as e:
+                return vals
+    
 
     inv_supplier_ref = fields.Char("Número de comprobante")
 
@@ -1113,17 +1117,17 @@ class AccountMove(models.Model):
     def cron_action_send_invoice(self):
         invoices = self.env["account.move"].search([["estado_emision","in",["P","",False]],
                                                     ["name","not in",[False,"/"]],
-                                                    ["state","not in",["draft","cancel"]],
-                                                    ["estado_comprobante_electronico","in",[False,"-","0_NO_EXISTE"]]])
+                                                    ["state","=","posted"],
+                                                    ["estado_comprobante_electronico","in",[False,"-","0_NO_EXISTE"]]],order="invoice_date asc")
         invoice_ids = invoices.filtered(lambda r: r.journal_id.invoice_type_code_id in ["01"] and re.match("^F\w{3}-\d{1,8}$", r.name))
 
         credit_and_debit_note_ids = invoices.filtered(lambda r: r.journal_id.invoice_type_code_id in ["07","08"] and re.match("^F\w{3}-\d{1,8}$", r.name) and (r.reversed_entry_id.estado_comprobante_electronico == "1_ACEPTADO" or r.debit_origin_id.estado_comprobante_electronico == "1_ACEPTADO") )
         
         invoices = invoice_ids + credit_and_debit_note_ids
 
-        now = fields.Date.today()
+        now = datetime.now(tz=timezone("America/Lima"))
         for inv in invoices:
-            if abs((inv.invoice_date - now).days) <= 7:
+            if abs((inv.invoice_date - now.date()).days) <= 7:
                 try:
                     inv.action_send_invoice()
                 except Exception as e:
@@ -1147,10 +1151,10 @@ class AccountMove(models.Model):
         today = fields.Date.today()
         invoices = self.env["account.move"].sudo().search([("journal_id.electronic_invoice","=",True),
                                                             ("state","in",["posted"]),
-                                                            ("name","in",[False,"/"]),
+                                                            ("name","not in",[False,"/"]),
                                                             ("invoice_date","<=",today),
-                                                            ("journal_id.invoice_type_code_id","in",["03","07","08"]),
-                                                            ("estado_comprobante_electronico","in",["-","0_NO_EXISTE"])],limit=50)
+                                                            ("journal_id.invoice_type_code_id","in",["01","03","07","08"]),
+                                                            ("estado_comprobante_electronico","in",["-","0_NO_EXISTE"])],limit=50,order="invoice_date asc")
         for inv in invoices:
             try:
                 inv.action_validez_comprobante()

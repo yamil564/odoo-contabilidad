@@ -104,12 +104,10 @@ class GuiaRemisionLine(models.Model):
 
 
 class ResPartner(models.Model):
-    _inherit = 'res.partner'
+    _inherit = "res.partner"
     es_conductor = fields.Boolean(string="Es Conductor", default=False)
-    es_empresa_transporte_publico = fields.Boolean(
-        string="Es empresa de transporte publico", default=False)
-    vehiculo_ids = fields.One2many(
-        "gestionit.vehiculo", "propietario_id", string="Vehículos")
+    es_empresa_transporte_publico = fields.Boolean(string="Es empresa de transporte publico", default=False)
+    vehiculo_ids = fields.One2many("gestionit.vehiculo", "propietario_id", string="Vehículos")
     licencia = fields.Char("Licencia")
     
     def action_view_conductores_privados(self):

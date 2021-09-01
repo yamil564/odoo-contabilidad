@@ -11,7 +11,6 @@
             <field name="doall">1</field>
             <field name="user_id" ref="base.user_root"/>
             <field name="code">model.cron_enviar_comunicacion_baja()</field>
-            <field name="nextcall" eval="(datetime.strptime(datetime.now().strftime('%Y-%m-%d %H:00:00'),'%Y-%m-%d %X') + timedelta(hours=6) ).strftime('%Y-%m-%d %X')"/>
         </record>
         
         <record id="gestionit_pe_fe.ir_cron_consulta_comunicaciones_baja" model="ir.cron">
@@ -24,7 +23,6 @@
             <field name="doall">1</field>
             <field name="user_id" ref="base.user_root"/>
             <field name="code">model.cron_consulta_estado_comunicacion_baja()</field>
-            <field name="nextcall" eval="(datetime.strptime(datetime.now().strftime('%Y-%m-%d %H:00:00'),'%Y-%m-%d %X') + timedelta(hours=4) ).strftime('%Y-%m-%d %X')"/>
         </record>
     </data>
 </odoo>

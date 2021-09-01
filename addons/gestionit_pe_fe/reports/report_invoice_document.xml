@@ -373,7 +373,7 @@
                     <div t-if="len(o.company_id.bank_ids) &gt; 0" class="banks">
                         <ul>
                             <li t-foreach="o.company_id.partner_id.bank_ids" t-as="bank">
-                                <span t-field="bank.acc_number"></span>
+                                <span t-esc="'{} : {}'.format(bank.description,bank.acc_number)"></span>
                             </li>
                         </ul>
                     </div>

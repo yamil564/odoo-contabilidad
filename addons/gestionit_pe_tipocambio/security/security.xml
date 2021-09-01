@@ -1,0 +1,5 @@
+<odoo>
+    <record id="gestionit_pe_tipocambio.res_groups_access_exchange_usd_pen" model="res.groups">
+        <field name="name">Permitir actualizar el T/C USD</field>
+    </record>
+</odoo>

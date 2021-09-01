@@ -171,10 +171,11 @@ class AccountLogStatus(models.Model):
         account_move_id = self.account_move_id
         if account_move_id:
             if account_move_id.state == "posted":
-                if account_move_id.invoice_type_code == "01" or account_move_id.journal_id.tipo_comprobante_a_rectificar == "01":
-                    self._request_cdr_invoice()
-                elif account_move_id.invoice_type_code == "03" or account_move_id.journal_id.tipo_comprobante_a_rectificar == "03":
-                    self._request_api_check_invoice_validity()
+                self._request_api_check_invoice_validity()
+                # if account_move_id.invoice_type_code == "01" or account_move_id.journal_id.tipo_comprobante_a_rectificar == "01":
+                #     self._request_cdr_invoice()
+                # elif account_move_id.invoice_type_code == "03" or account_move_id.journal_id.tipo_comprobante_a_rectificar == "03":
+                #     self._request_api_check_invoice_validity()
 
     def _request_cdr_invoice(self):
         self.ensure_one()
@@ -182,9 +183,12 @@ class AccountLogStatus(models.Model):
             if self.account_move_id.state == "posted" and \
                 (self.account_move_id.invoice_type_code == "01" or self.account_move_id.journal_id.tipo_comprobante_a_rectificar == "01"):
                 company = self.company_id
-                _logger.info(company)
+                # _logger.info(company)
                 result = request_status_invoice(company.get_username_sunat(),company.sunat_pass,company.vat,self.account_move_id.invoice_type_code,self.account_move_id.name)
                 response_json = json.loads(result.get("response_json","{}"))
+                if response_json.get("status",False) == "A":
+                    self.account_move_id.estado_comprobante_electronico = "1_ACEPTADO"
+
                 if len(response_json.get("errors",[])) > 0:
                     raise UserError("\n".join(["* [{}] {}".format(err.get("code"),err.get("detail")) for err in response_json.get("errors",[])]))
                 return result
@@ -247,6 +251,7 @@ class AccountLogStatus(models.Model):
             try:
                 response = requests.request("POST", url, data=json.dumps(comp[0]), headers=headers)
                 res = response.json()
+                _logger.info(res)
                 if "data" in res and res.get("success"):
                     data = res["data"]
                     if "estadoCp" in data:
