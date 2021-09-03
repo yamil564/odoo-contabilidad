@@ -42,15 +42,6 @@
                             <td class="label">
                                 <span t-esc="((o.partner_id.registration_name if o.partner_id.registration_name else o.partner_id.name)  or '').upper()"/>
                             </td>
-                        </tr>
-                        <tr>
-                            <!-- RUC/DNI -->
-                            <th>
-                                <label t-esc="'{}:'.format(o.partner_id.l10n_latam_identification_type_id.name)"/>
-                            </th>
-                            <td class="label">
-                                <span t-esc="(o.partner_id.vat or '').upper()"/>
-                            </td>
                             <!-- N° COT -->
                             <th>
                                 <label t-esc="'N° COT: '"/>
@@ -61,12 +52,12 @@
                             </td>
                         </tr>
                         <tr>
-                            <!-- DIRECCIÓN -->
+                            <!-- RUC/DNI -->
                             <th>
-                                <label t-esc="'DIRECCIÓN: '"/>
+                                <label t-esc="'{}:'.format(o.partner_id.l10n_latam_identification_type_id.name)"/>
                             </th>
                             <td class="label">
-                                <span t-esc="'{} {}-{}-{}'.format(o.partner_id.street,o.partner_id.state_id.name or '',o.partner_id.province_id.name or '',o.partner_id.district_id.name or '').upper()"/>
+                                <span t-esc="(o.partner_id.vat or '').upper()"/>
                             </td>
                             <!-- VENDEDOR -->
                             <th>
@@ -77,12 +68,12 @@
                             </td>
                         </tr>
                         <tr>
-                            <!-- FECHA EMISIÓN -->
+                            <!-- DIRECCIÓN -->
                             <th>
-                                <label t-esc="'FECHA EMISIÓN:'"/>
+                                <label t-esc="'DIRECCIÓN: '"/>
                             </th>
                             <td class="label">
-                                <span t-esc="o.invoice_date" t-if="o.invoice_date"/>
+                                <span t-esc="'{} {}-{}-{}'.format(o.partner_id.street,o.partner_id.state_id.name or '',o.partner_id.province_id.name or '',o.partner_id.district_id.name or '').upper()"/>
                             </td>
                             <!-- MONEDA -->
                             <th>
@@ -90,6 +81,22 @@
                             </th>
                             <td class="label">
                                 <span t-esc="o.currency_id.currency_unit_label" t-if="o.currency_id.currency_unit_label"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <!-- FECHA EMISIÓN -->
+                            <th>
+                                <label t-esc="'FECHA EMISIÓN:'"/>
+                            </th>
+                            <td class="label">
+                                <span t-esc="o.invoice_date" t-if="o.invoice_date"/>
+                            </td>
+                            <!-- FECHA DE VENCIMIENTO -->
+                            <th>
+                                <label t-esc="'FECHA VENC.:'"/>
+                            </th>
+                            <td class="label">
+                                <span t-esc="o.invoice_date_due" t-if="o.invoice_date_due"/>
                             </td>
                         </tr>
                         <tr>
