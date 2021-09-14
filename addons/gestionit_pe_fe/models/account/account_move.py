@@ -935,71 +935,72 @@ class AccountMove(models.Model):
         return action
 
 
-    def _reverse_moves(self, default_values_list=None, cancel=False):
-        ''' Reverse a recordset of account.move.
-        If cancel parameter is true, the reconcilable or liquidity lines
-        of each original move will be reconciled with its reverse's.
+    # def _reverse_moves(self, default_values_list=None, cancel=False):
+    #     ''' Reverse a recordset of account.move.
+    #     If cancel parameter is true, the reconcilable or liquidity lines
+    #     of each original move will be reconciled with its reverse's.
 
-        :param default_values_list: A list of default values to consider per move.
-                                    ('type' & 'reversed_entry_id' are computed in the method).
-        :return:                    An account.move recordset, reverse of the current self.
-        '''
-        if not default_values_list:
-            default_values_list = [{} for move in self]
+    #     :param default_values_list: A list of default values to consider per move.
+    #                                 ('type' & 'reversed_entry_id' are computed in the method).
+    #     :return:                    An account.move recordset, reverse of the current self.
+    #     '''
+        
+    #     if not default_values_list:
+    #         default_values_list = [{} for move in self]
 
-        if cancel:
-            lines = self.mapped('line_ids')
-            # Avoid maximum recursion depth.
-            if lines:
-                lines.remove_move_reconcile()
+    #     if cancel:
+    #         lines = self.mapped('line_ids')
+    #         # Avoid maximum recursion depth.
+    #         if lines:
+    #             lines.remove_move_reconcile()
 
-        # p_obj.with_context(filter_order_ids=order_ids).filtered(lambda r: r.origin_id.id IN r._context['filter_order_ids'])
+    #     # p_obj.with_context(filter_order_ids=order_ids).filtered(lambda r: r.origin_id.id IN r._context['filter_order_ids'])
 
-        reverse_type_map = {
-            'entry': 'entry',
-            'out_invoice': 'out_refund',
-            'out_refund': 'entry',
-            'in_invoice': 'in_refund',
-            'in_refund': 'entry',
-            'out_receipt': 'entry',
-            'in_receipt': 'entry',
-        }
+    #     reverse_type_map = {
+    #         'entry': 'entry',
+    #         'out_invoice': 'out_refund',
+    #         'out_refund': 'entry',
+    #         'in_invoice': 'in_refund',
+    #         'in_refund': 'entry',
+    #         'out_receipt': 'entry',
+    #         'in_receipt': 'entry',
+    #     }
 
-        move_vals_list = []
-        for move, default_values in zip(self, default_values_list):
-            default_values.update({
-                'type': reverse_type_map[move.type],
-                'reversed_entry_id': move.id,
-            })
-            move_vals_list.append(move.with_context(
-                move_reverse_cancel=cancel)._reverse_move_vals(default_values, cancel=cancel))
+    #     move_vals_list = []
+    #     for move, default_values in zip(self, default_values_list):
+    #         default_values.update({
+    #             'type': reverse_type_map[move.type],
+    #             'reversed_entry_id': move.id,
+    #         })
+    #         move_vals_list.append(move.with_context(
+    #             move_reverse_cancel=cancel)._reverse_move_vals(default_values, cancel=cancel))
 
-        reverse_moves = self.env['account.move'].create(move_vals_list)
-        for move, reverse_move in zip(self, reverse_moves.with_context(check_move_validity=False)):
-            # Update amount_currency if the date has changed.
-            if move.date != reverse_move.date:
-                for line in reverse_move.line_ids:
-                    if line.currency_id:
-                        line._onchange_currency()
+    #     reverse_moves = self.env['account.move'].create(move_vals_list)
+    #     for move, reverse_move in zip(self, reverse_moves.with_context(check_move_validity=False)):
+    #         # Update amount_currency if the date has changed.
+    #         if move.date != reverse_move.date:
+    #             for line in reverse_move.line_ids:
+    #                 if line.currency_id:
+    #                     line._onchange_currency()
 
-            reverse_move.invoice_line_ids = [(6, 0, reverse_move.invoice_line_ids.filtered(
-                lambda r: r.tax_ids[0].tax_group_id.tipo_afectacion == '10').mapped('id'))]
+    #         # reverse_move.invoice_line_ids = [(6, 0, reverse_move.invoice_line_ids.filtered(
+    #         #     lambda r: r.tax_ids[0].tax_group_id.tipo_afectacion == '10').mapped('id'))]
 
-            reverse_move._recompute_dynamic_lines(recompute_all_taxes=False)
-        reverse_moves._check_balanced()
+    #         reverse_move._recompute_dynamic_lines(recompute_all_taxes=False)
+    #     reverse_moves._check_balanced()
 
-        # Reconcile moves together to cancel the previous one.
-        if cancel:
-            reverse_moves.with_context(move_reverse_cancel=cancel).post()
-            for move, reverse_move in zip(self, reverse_moves):
-                accounts = move.mapped('line_ids.account_id') \
-                    .filtered(lambda account: account.reconcile or account.internal_type == 'liquidity')
-                for account in accounts:
-                    (move.line_ids + reverse_move.line_ids)\
-                        .filtered(lambda line: line.account_id == account and line.balance)\
-                        .reconcile()
+    #     # Reconcile moves together to cancel the previous one.
+    #     if cancel:
+    #         reverse_moves.with_context(move_reverse_cancel=cancel).post()
+    #         for move, reverse_move in zip(self, reverse_moves):
+    #             accounts = move.mapped('line_ids.account_id') \
+    #                 .filtered(lambda account: account.reconcile or account.internal_type == 'liquidity')
+    #             for account in accounts:
+    #                 (move.line_ids + reverse_move.line_ids)\
+    #                     .filtered(lambda line: line.account_id == account and line.balance)\
+    #                     .reconcile()
 
-        return reverse_moves
+    #     return reverse_moves
 
     def btn_comunicacion_baja(self):
         
