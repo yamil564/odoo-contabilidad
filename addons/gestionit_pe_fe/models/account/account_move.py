@@ -604,55 +604,57 @@ class AccountMove(models.Model):
 
     def post(self):
         # Validar journal
-        if self.journal_id.invoice_type_code_id not in ['01', '03', '07', '08', '09']:
-            return super(AccountMove, self).post()
-
-        if self.type in ["in_invoice","in_refund"]:
-            if self.inv_supplier_ref:
-                self._validate_inv_supplier_ref()
+        for move in self:
+            _logger.info(move.name)
+            if move.journal_id.invoice_type_code_id not in ['01', '03', '07', '08', '09']:
+                super(AccountMove, move).post()
             else:
-                raise UserError(
-                    "El número de comprobante del proveedor es obligatorio")
-            return super(AccountMove, self).post()
+                if move.type in ["in_invoice","in_refund"]:
+                    if move.inv_supplier_ref:
+                        move._validate_inv_supplier_ref()
+                    else:
+                        raise UserError("El número de comprobante del proveedor es obligatorio")
+                    super(AccountMove, move).post()
 
-        if not self.journal_id.electronic_invoice:
-            obj = super(AccountMove, self).post()
-            return obj
+                if not move.journal_id.electronic_invoice:
+                    super(AccountMove, move).post()
+                    # obj = super(AccountMove, self).post()
+                    # return obj
 
-        # Validaciones cuando el comprobante es factura
-        msg_error = []
-        msg_error += self.validar_datos_compania()
-        msg_error += self.validar_diario()
-        # msg_error += self.validar_fecha_emision()
-        msg_error += self.validar_lineas()
+                # Validaciones cuando el comprobante es factura
+                msg_error = []
+                msg_error += move.validar_datos_compania()
+                msg_error += move.validar_diario()
+                # msg_error += move.validar_fecha_emision()
+                msg_error += move.validar_lineas()
 
-        if self.journal_id.invoice_type_code_id == "01":
-            msg_error += self.validacion_factura()
-            if len(msg_error) > 0:
-                msg = "\n\n".join(msg_error)
-                raise UserError(msg)
+                if move.journal_id.invoice_type_code_id == "01":
+                    msg_error += move.validacion_factura()
+                    if len(msg_error) > 0:
+                        msg = "\n\n".join(msg_error)
+                        raise UserError(msg)
 
-        if self.journal_id.invoice_type_code_id == "03":
-            msg_error += self.validacion_boleta()
-            if len(msg_error) > 0:
-                msg = "\n\n".join(msg_error)
-                raise UserError(msg)
+                if move.journal_id.invoice_type_code_id == "03":
+                    msg_error += move.validacion_boleta()
+                    if len(msg_error) > 0:
+                        msg = "\n\n".join(msg_error)
+                        raise UserError(msg)
 
-        if self.partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code != "6" and self.journal_id.invoice_type_code_id == "01":
-            raise UserError("Tipo de documento del receptor no valido")
+                if move.partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code != "6" and move.journal_id.invoice_type_code_id == "01":
+                    raise UserError("Tipo de documento del receptor no valido")
 
-        obj = super(AccountMove, self).post()
+                super(AccountMove, move).post()
 
-        
-        self.action_generate_and_signed_xml()
+                
+                move.action_generate_and_signed_xml()
 
-        if self.journal_id.invoice_type_code_id == "03" or self.journal_id.tipo_comprobante_a_rectificar == "03":
-            return obj
+                # if move.journal_id.invoice_type_code_id == "03" or move.journal_id.tipo_comprobante_a_rectificar == "03":
+                #     return obj
 
-        if not self.journal_id.send_async:
-            self.action_send_invoice()
+                if not move.journal_id.send_async:
+                    move.action_send_invoice()
 
-        return obj
+                # return obj
 
     def action_generate_and_signed_xml(self):
         if not self.current_log_status_id:
@@ -774,9 +776,13 @@ class AccountMove(models.Model):
                                 break
 
             if line.discount == 100:
-                errors.append(
-                    "El descuento no puede ser del 100%. Si el producto es gratuito, use el impuesto GRATUITO.")
-                break
+                errors.append("El descuento no puede ser del 100%. Si el producto es gratuito, use el impuesto GRATUITO.")
+            
+            if line.discount < 0:
+                errors.append("Error: El descuento no puede ser menor a cero. Error en el producto {}".format(line.name))
+
+            if line.discount > 0 and len(line.tax_ids.filtered(lambda r:r.tax_group_id.tipo_afectacion in ["31","32", "33", "34", "35", "36"])) > 0:
+                errors.append("Error: Las líneas gratuitas no deben tener descuento. Error en el producto {}".format(line.name))
 
             # if line.price_unit == 0 and len([1 for tax in line.tax_ids if tax.tax_group_id.tipo_afectacion in ["31", "32", "33", "34", "35", "36"]]) > 0:
             # if line.price_unit == 0 and line.tax_ids[0].tax_group_id.tipo_afectacion == "31":
