@@ -848,9 +848,10 @@ class GuiaRemision(models.Model):
             if record.estado_emision in ["R"]:
                 raise UserError(
                     "La Guía de remisión ya ha sido emitida y tiene estado de Rechazada.")
-            record.estado_emision = "B"
+            # record.estado_emision = "B"
             record.state = "borrador"
             record.numero = "Guía de Remisión Electrónica"
+            
 
     def validar_transporte(self):
         errors = []

@@ -40,13 +40,11 @@ odoo.define("gestionit_pe_tipocambio.menu_exchange",[
         },
         start:function(){
             var self = this;
-
-
             $(this.$el).on("click",function(ev){
                 ev.preventDefault();
                 var currency_menu = $(ev.currentTarget)
                 var currency_id = currency_menu.data("id")
-                console.log(currency_id)
+                // console.log(currency_id)
                 self.trigger_up('clear_uncommitted_changes', {
                     callback: function () {
                         self._rpc({
