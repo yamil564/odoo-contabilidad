@@ -168,7 +168,7 @@ class AccountMove(models.Model):
                                                                  ("2_ANULADO","ANULADO"),
                                                                  ("3_AUTORIZADO","AUTORIZADO"),
                                                                  ("4_NO_AUTORIZADO","NO AUTORIZADO"),
-                                                                 ("-", "-")], default="-")
+                                                                 ("-", "-")], default="-",copy=False)
 
     estado_contribuyente_ruc = fields.Selection(selection=[("00_ACTIVO", "ACTIVO"),
                                                            ("01_BAJA_PROVISIONAL","BAJA PROVISIONAL"),
@@ -177,16 +177,16 @@ class AccountMove(models.Model):
                                                            ("10_BAJA_DEFINITIVA","BAJA DEFINITIVA"),
                                                            ("11_BAJA_DE_OFICIO","BAJA DE OFICIO"),
                                                            ("22_INHABILITADO-VENT.UNICA","INHABILITADO-VENT.UNICA"),
-                                                           ("-", "-")], default="-")
+                                                           ("-", "-")], default="-",copy=False)
 
     condicion_domicilio_contribuyente = fields.Selection(selection=[("00_HABIDO", "HABIDO"),
                                                                     ("09_PENDIENTE","PENDIENTE"),
                                                                     ("11_POR_VERIFICAR","POR VERIFICAR"),
                                                                     ("12_NO_HABIDO","NO HABIDO"),
                                                                     ("20_NO_HALLADO","NO HALLADO"),
-                                                                    ("-", "-")], default="-")
+                                                                    ("-", "-")], default="-",copy=False)
 
-    consulta_validez_observaciones = fields.Text("Consulta Validez - Observaciones")
+    consulta_validez_observaciones = fields.Text("Consulta Validez - Observaciones",copy=False)
 
     documento_baja_id = fields.Many2one(
         "account.comunicacion_baja", copy=False)
@@ -1015,6 +1015,9 @@ class AccountMove(models.Model):
         if self.estado_comprobante_electronico == "2_ANULADO":
             raise UserError("Este comprobante ha sido Anulado.")
 
+        if len(self.credit_note_ids) > 0 or len(self.debit_note_ids) > 0:
+            raise UserError("Este comprobante no puede ser anulado debido a que tiene una o más notas que hacen referencia a este documento.")
+
         elif re.match("^F\w{3}-\d{1,8}$", self.name):
             if self.documento_baja_id:
                 ref = self.env.ref("gestionit_pe_fe.view_comunicacion_baja_form")
@@ -1173,6 +1176,16 @@ class AccountMove(models.Model):
     def cron_cambiar_a_no_existe(self):
         return True
 
+    def action_reverse(self):
+        if self.documento_baja_id:
+            raise UserError("El documento fue dado de baja y no es posible emitir una nota de crédito asociado a este documento anulado.")
+        return super(AccountMove, self).action_reverse()
+
+    def action_view_account_move_debit(self):
+        if self.documento_baja_id:
+            raise UserError("El documento fue dado de baja y no es posible emitir una nota de débito asociado a este documento anulado.")
+
+        return self.env.ref("account_debit_note.action_view_account_move_debit").read()[0]
 
 class AccountMoveReversal(models.TransientModel):
     _inherit = 'account.move.reversal'
@@ -1214,6 +1227,8 @@ class AccountMoveReversal(models.TransientModel):
         res = super(AccountMoveReversal,self)._prepare_default_reversal(move)
         res.update({"sustento_nota":self.reason,"tipo_nota_credito":self.credit_note_type,"invoice_type_code":"07"})
         return res
+
+
 
 
 class AccountDebitNote(models.TransientModel):
