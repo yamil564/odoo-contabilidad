@@ -290,16 +290,17 @@ class AccountMove(models.Model):
             _logger.info(move)
             currency_move = move.currency_id
             invoice_date = datetime.now(tz=timezone("America/Lima")) if not move.invoice_date else move.invoice_date
-            
+
             _logger.info(invoice_date)
             if currency_move:
                 currency_company = self.env.company.currency_id
-                rate = currency_company._convert(1,currency_move,move.company_id,invoice_date)
-                move.exchange_rate_day = 1/(rate if rate > 0 else 1)
+                rate = currency_company._convert(1,currency_move,move.company_id,invoice_date,round=False)
+                _logger.info(rate)
+                move.exchange_rate_day = round(1/(rate if rate > 0 else 1),4)
             else:
                 move.exchange_rate_day = 1
             
-    exchange_rate_day = fields.Float("T/C",compute=_compute_exchante_rate_day)
+    exchange_rate_day = fields.Float("T/C",compute=_compute_exchante_rate_day,digits=(1,4))
 
     # @api.onchange("currency_id","invoice_date")
     # def onchange_exchange_rate_day(self):
