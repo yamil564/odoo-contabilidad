@@ -855,8 +855,8 @@ class AccountMove(models.Model):
                 move.id, move.name)
             new_move.message_post(body=move_msg)
             new_moves |= new_move
-        log.info("MOVIEMIENTOS DÉBITO")
-        log.info(new_moves)
+        # log.info("MOVIEMIENTOS DÉBITO")
+        # log.info(new_moves)
         action = {
             'name': _('Debit Notes'),
             'type': 'ir.actions.act_window',
