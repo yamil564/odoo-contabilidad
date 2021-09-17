@@ -18,11 +18,11 @@ class ResCurrency(models.Model):
     _inherit = "res.currency"
     _rec_name = "display_name"
 
-    def _compute_name(self):
-        for record in self:
-            record.display_name = record.name + (" [{}] ".format(CURRENCY_TYPES.get(record.type)) if CURRENCY_TYPES.get(record.type) else "")
+    # def _compute_name(self):
+    #     for record in self:
+    #         record.display_name = record.name + (" [{}] ".format(CURRENCY_TYPES.get(record.type)) if CURRENCY_TYPES.get(record.type) else "")
 
-    display_name = fields.Char("Nombre",compute=_compute_name,store=True)
+    # display_name = fields.Char("Nombre",compute=_compute_name,store=True)
 
     def name_get(self):
         result = []
@@ -287,15 +287,15 @@ class AccountMove(models.Model):
     @api.depends("currency_id","invoice_date")
     def _compute_exchante_rate_day(self):
         for move in self:
-            _logger.info(move)
+            # _logger.info(move)     
             currency_move = move.currency_id
             invoice_date = datetime.now(tz=timezone("America/Lima")) if not move.invoice_date else move.invoice_date
 
-            _logger.info(invoice_date)
+            # _logger.info(invoice_date)
             if currency_move:
                 currency_company = self.env.company.currency_id
                 rate = currency_company._convert(1,currency_move,move.company_id,invoice_date,round=False)
-                _logger.info(rate)
+                # _logger.info(rate)
                 move.exchange_rate_day = round(1/(rate if rate > 0 else 1),4)
             else:
                 move.exchange_rate_day = 1
