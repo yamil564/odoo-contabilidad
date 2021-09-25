@@ -227,6 +227,7 @@ class SaleOrder(models.Model):
                 'total_venta_gratuito': total_venta_gratuito,
                 'total_descuentos': total_descuentos,
                 'total_igv': total_igv,
+                'amount_untaxed':total_venta_gravado + total_venta_exonerada + total_venta_inafecto,
                 'amount_total': total_venta_gravado + total_venta_exonerada + total_venta_inafecto + total_igv
             })
 

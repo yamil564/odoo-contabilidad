@@ -223,6 +223,8 @@ class AccountMove(models.Model):
     bank_account_number_national = fields.Char("Banco de la nación")
     detraction_amount = fields.Float("Monto de Detracción",compute="_compute_amount_detraction",store=True)
 
+    payment_term_lines = fields.One2many("account.move.line","move_id",domain=[('date_maturity','!=',False)],readonly=False)
+
     @api.onchange("type_detraction")
     def change_type_detraction(self):
         for record in self:
