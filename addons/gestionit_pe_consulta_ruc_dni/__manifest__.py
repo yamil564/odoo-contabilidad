@@ -14,6 +14,7 @@
         'data/identification_type.xml',
         'views/res_company_view.xml',
         'views/res_partner_view.xml',
-        'views/sale_order.xml'
+        'views/sale_order.xml',
+        'views/res_users.xml'
     ]
 }

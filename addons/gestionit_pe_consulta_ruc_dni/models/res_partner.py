@@ -21,9 +21,9 @@ class ResPartner(models.Model):
     msg_error = fields.Char(readonly=True)
 
     l10n_latam_identification_type_id = fields.Many2one('l10n_latam.identification.type',
-                                                        string="Tipo de documento de identificación", index=True, auto_join=True,
+                                                        string="Tipo de documento de identidad", index=True, auto_join=True,
                                                         default=lambda self: self.env.ref('gestionit_pe_consulta_ruc_dni.it_RUC', raise_if_not_found=False),
-                                                        help="Tipo de documento de identificación")
+                                                        help="Tipo de documento de identidad")
     
     street_invoice_ids = fields.One2many("res.partner","parent_id",string="Facturación",domain=[("type","=","invoice")])
     street_delivery_ids = fields.One2many("res.partner","parent_id",string="Direcciones",domain=[("type","in",["delivery","other","private"])])
@@ -55,7 +55,7 @@ class ResPartner(models.Model):
     @api.constrains('vat','l10n_latam_identification_type_id')
     def _check_valid_numero_documento(self):
         vat_str = (self.vat or "").strip()
-        if self.l10n_latam_identification_type_id and self.type in ["contact","invoice"]:
+        if self.l10n_latam_identification_type_id and self.type in ["contact"]:
             if self.l10n_latam_identification_type_id.l10n_pe_vat_code == "6":
                 if patron_ruc.match(vat_str):
                     vat_arr = [int(c) for c in vat_str]
@@ -70,6 +70,7 @@ class ResPartner(models.Model):
             if self.l10n_latam_identification_type_id.l10n_pe_vat_code == "1":
                 if not patron_dni.match(vat_str):
                     raise UserError("El número de DNI ingresado es inválido")
+        
 
     @api.onchange("street","type")
     def get_name_street(self):

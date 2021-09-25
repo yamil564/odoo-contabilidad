@@ -843,7 +843,7 @@ def crear_json_not_cred_deb(self):
             "codSistemaCalculoIsc": "01",  # VERIFICAR
             "montoIsc": 0.0,  # VERIFICAR
             # "tasaIsc" : 0.0, #VERIFICAR
-            "precioItemReferencia": round(item.product_id.lst_price, 2),
+            "precioItemReferencia": round(item.price_unit, 2),
             "idOperacion": str(self.id),
             "no_onerosa": True if item.no_onerosa else False
         })
