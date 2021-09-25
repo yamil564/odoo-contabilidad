@@ -301,8 +301,7 @@ class GuiaRemision(models.Model):
     @api.model
     def default_get(self, flds):
         res = super(GuiaRemision, self).default_get(flds)
-        journals = self.env["account.journal"].search(
-            [("invoice_type_code_id", "=", "09")])
+        journals = self.env["account.journal"].search([("invoice_type_code_id", "=", "09"),("company_id","=",res.get("company_id",False))])
         if len(journals) > 0:
             res.update({
                 "journal_id": journals[0].id

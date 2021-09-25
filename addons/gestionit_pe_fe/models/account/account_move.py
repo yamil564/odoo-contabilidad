@@ -1074,13 +1074,14 @@ class AccountMove(models.Model):
     def action_context_default_guia_remision(self):
         return {
             "default_documento_asociado": "comprobante_pago",
-            "default_fecha_emision": fields.Date.today(),
-            "default_fecha_inicio_traslado": fields.Date.today(),
+            "default_fecha_emision": datetime.now(tz=timezone("America/Lima")).date(),
+            "default_fecha_inicio_traslado": datetime.now(tz=timezone("America/Lima")).date(),
             # "default_modalidad_transporte":"02",
             "default_motivo_traslado": "01",
             "default_comprobante_pago_ids": [(6, 0, [self.id])],
             "default_destinatario_partner_id": self.partner_id.id,
-            "default_company_partner_id": self.partner_id.id
+            "default_company_partner_id": self.partner_id.id,
+            "default_company_id":self.company_id.id
         }
 
     def action_open_guia_remision(self):

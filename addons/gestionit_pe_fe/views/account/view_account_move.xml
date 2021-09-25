@@ -140,7 +140,7 @@
                     </b>.
                 </div>
             </xpath>
-            <xpath expr="//page[@id='aml_tab']" position="after">
+            <!-- <xpath expr="//page[@id='aml_tab']" position="after">
                 <page string="Plazos de pago">
                     <field name="payment_term_lines" always_reload="1">
                         <tree editable="bottom">
@@ -153,7 +153,7 @@
                         </tree>
                     </field>
                 </page>
-            </xpath>
+            </xpath> -->
         </field>
     </record>
     <record id="gestionit_pe_fe.view_account_move_almacenes_series_permitidas" model="ir.ui.view">
