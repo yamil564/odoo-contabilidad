@@ -225,7 +225,7 @@ def build_factura(data):
                         {
                             "status":400,
                             "code": "51",
-                            "detail":"El nombre de la cuota '{}' debe tener el siguiente formato 'cuota[0-9]{3}'. Ejemplo: cuota001,cuota002,...cuota015".format(cc.get("nombre"))
+                            "detail":"El nombre de la cuota '{}'".format(cc.get("nombre")+ "debe tener el siguiente formato 'cuota[0-9]{3}'. Ejemplo: cuota001,cuota002,...cuota015")
                         }
                     ]
                 }

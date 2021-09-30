@@ -495,7 +495,19 @@ def crear_json_fac_bol(self):
     #     data["documento"]["metodosPago"] = {
     #         "metodo": "Credito",
     #     }
-    
+    payment_term = {"formaPago":"Contado"}
+    if self.invoice_payment_term_id:
+        if self.invoice_payment_term_id.type == "Credito":
+            payment_term["formaPago"] = "Credito"
+            cuota = 1
+            creditoCuotas = []
+            for line in self.paymentterm_line.sorted(lambda r:r.date_due):
+                creditoCuotas.append({"nombre":"Cuota{:03.0f}".format(cuota),
+                                            "fechaVencimiento":line.date_due.strftime("%Y-%m-%d"),
+                                            "monto":line.amount})
+            payment_term.update({"creditoCuotas":creditoCuotas})
+
+    data["documento"].update(payment_term)
 
     if self.descuento_global:
         data["documento"]["descuentoGlobal"] = {

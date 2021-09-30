@@ -365,6 +365,28 @@
                             </span>
                         </div>
                     </div>
+                    <t t-if="o.invoice_payment_term_id">
+                        <t t-if="o.invoice_payment_term_id.type == 'Credito'">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Cuota</th>
+                                        <th>Fecha de Venc.</th>
+                                        <th>Monto</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-set="cuota" t-value="1"/>
+                                    <tr t-foreach="o.paymentterm_line.sorted(lambda r: r.date_due)" t-as="line">
+                                        <td width="80px"><span t-esc="'Cuota{:03.0f}'.format(cuota)"/></td>
+                                        <td width="90px"><span t-field="line.date_due"/></td>
+                                        <td width="80px"><span t-field="line.amount" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/></td>
+                                        <t t-set="cuota" t-value="cuota+1"/>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </t>
+                    </t>
                     <!-- <div style="font-size: 12px; width: 100%">
                         <div>
                             <b>SON: </b>

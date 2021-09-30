@@ -235,7 +235,12 @@ class AccountMove(models.Model):
                     amount_total = sum(record.paymentterm_line.mapped("amount"))
                     if amount_total != record.amount_total:
                         raise UserError("El monto total de los plazos de pago debe ser igual al total de la factura.")
-                
+                    if record.invoice_date:
+                        if min(record.paymentterm_line.mapped("date_due")) < record.invoice_date:
+                            raise UserError("La fecha de vencimiento de la cuota debe ser mayor o igual a la fecha de emisión del comprobante")
+                    else:
+                        if min(record.paymentterm_line.mapped("date_due")) < datetime.now(tz=timezone("America/Lima")).date():
+                            raise UserError("La fecha de vencimiento de la cuota debe ser mayor o igual a la fecha de emisión del comprobante")
 
     @api.onchange("type_detraction")
     def change_type_detraction(self):
