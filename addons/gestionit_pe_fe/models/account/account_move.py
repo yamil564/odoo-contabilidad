@@ -223,7 +223,19 @@ class AccountMove(models.Model):
     bank_account_number_national = fields.Char("Banco de la nación")
     detraction_amount = fields.Float("Monto de Detracción",compute="_compute_amount_detraction",store=True)
 
-    # payment_term_lines = fields.One2many("account.move.line","move_id",domain=[('date_maturity','!=',False)],readonly=False)
+    paymentterm_line = fields.One2many("paymentterm.line","move_id")
+
+    invoice_payment_term_type = fields.Selection(related="invoice_payment_term_id.type")
+
+    @api.constrains("invoice_payment_term_id")
+    def check_paymenttermn_lines(self):
+        for record in self:
+            if record.invoice_payment_term_id:
+                if record.invoice_payment_term_type == "Credito":
+                    amount_total = sum(record.paymentterm_line.mapped("amount"))
+                    if amount_total != record.amount_total:
+                        raise UserError("El monto total de los plazos de pago debe ser igual al total de la factura.")
+                
 
     @api.onchange("type_detraction")
     def change_type_detraction(self):

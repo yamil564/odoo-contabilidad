@@ -313,36 +313,36 @@ def send_doc_xml(doc):
     # finally:
     #     doc.current_log_status_id.status = "P"
 
-def get_tipo_cambio(self, compra_o_venta=2):  # 1 -> compra , 2->venta
-    ratios = self.currency_id.rate_ids
-    tipo_cambio = 1.0
-    ratio_actual = False
-    for ratio in ratios:
-        if str(ratio.name)[0:10] == str(self.invoice_date):
-            tipo_cambio = ratio.rate
-            ratio_actual = True
+# def get_tipo_cambio(self, compra_o_venta=2):  # 1 -> compra , 2->venta
+#     ratios = self.currency_id.rate_ids
+#     tipo_cambio = 1.0
+#     ratio_actual = False
+#     for ratio in ratios:
+#         if str(ratio.name)[0:10] == str(self.invoice_date):
+#             tipo_cambio = ratio.rate
+#             ratio_actual = True
 
-    if ratio_actual:
-        return tipo_cambio
-    else:
-        now = datetime.datetime.now()
-        if self.invoice_date > now.strftime("%Y-%m-%d"):
-            raise ValidationError(
-                "Fecha de factura no valida, no se puede obtener tipo de cambio de esa fecha")
-        url = "https://www.sbs.gob.pe/app/pp/SISTIP_PORTAL/Paginas/Publicacion/TipoCambioPromedio.aspx"
-        r = requests.get(url)
-        if r.ok:
-            soup = BeautifulSoup(r.text, 'html.parser')
-            tipo_cambio = float(soup.find(id="ctl00_cphContent_rgTipoCambio_ctl00__0").find_all(
-                'td')[compra_o_venta].string)
-            self.env['res.currency.rate'].create({
-                'name': now.strftime("%Y-%m-%d"),
-                'currency_id': self.currency_id.id,
-                'rate': tipo_cambio
-            })
-            return tipo_cambio
-        else:
-            raise ValidationError("Error al obtener tipo de cambio en SBS")
+#     if ratio_actual:
+#         return tipo_cambio
+#     else:
+#         now = datetime.datetime.now()
+#         if self.invoice_date > now.strftime("%Y-%m-%d"):
+#             raise ValidationError(
+#                 "Fecha de factura no valida, no se puede obtener tipo de cambio de esa fecha")
+#         url = "https://www.sbs.gob.pe/app/pp/SISTIP_PORTAL/Paginas/Publicacion/TipoCambioPromedio.aspx"
+#         r = requests.get(url)
+#         if r.ok:
+#             soup = BeautifulSoup(r.text, 'html.parser')
+#             tipo_cambio = float(soup.find(id="ctl00_cphContent_rgTipoCambio_ctl00__0").find_all(
+#                 'td')[compra_o_venta].string)
+#             self.env['res.currency.rate'].create({
+#                 'name': now.strftime("%Y-%m-%d"),
+#                 'currency_id': self.currency_id.id,
+#                 'rate': tipo_cambio
+#             })
+#             return tipo_cambio
+#         else:
+#             raise ValidationError("Error al obtener tipo de cambio en SBS")
 
 
 def crear_json_fac_bol(self):
@@ -491,10 +491,12 @@ def crear_json_fac_bol(self):
     data_anticipo = []  # solo facturas y boletas
     data_anexo = []  # si hay anexos
 
-    if self.invoice_payment_term_id:
-        data["documento"]["metodosPago"] = {
-            "metodo": "Credito",
-        }
+    # if self.invoice_payment_term_id:
+    #     data["documento"]["metodosPago"] = {
+    #         "metodo": "Credito",
+    #     }
+    
+
     if self.descuento_global:
         data["documento"]["descuentoGlobal"] = {
             "factor": round(self.descuento_global/100.00, 2),
