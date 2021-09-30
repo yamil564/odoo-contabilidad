@@ -207,9 +207,9 @@ class ExcelWizard(models.TransientModel):
             sheet.merge_range('A3:C3', 'RUC:', head)
             sheet.merge_range(
                 'A4:C4', 'APELLIDOS Y NOMBRES, DENOMINACIÓN O RAZÓN SOCIAL:', head)
-            sheet.write('D2', 'MES-AÑO')
-            sheet.write('D3', 'COMPANY_VAT', head)
-            sheet.write('D4', 'COMPANY_NAME', head)
+            sheet.write('D2', data['month'] + '-' + data['year'])
+            sheet.write('D3', data['company_vat'], head)
+            sheet.write('D4', data['company_name'], head)
 
             # TABLE HEADER
             sheet.merge_range('A5:A6', 'FECHA DE LA OPERACIÓN', table_head)
@@ -221,18 +221,40 @@ class ExcelWizard(models.TransientModel):
             sheet.write('D6', 'DEBE', table_head)
             sheet.write('E6', 'HABER', table_head)
 
-            items = self.env['account.move.line'].search([("display_type", "not in", [
+            lines = self.env['account.move.line'].search([("display_type", "not in", [
                                                          "line_section", "line_note"]), ("move_id.state", "=", "posted")])
+            accounts = lines.mapped('account_id')
 
             row = 6
-            for item in items:
-                sheet.write(row, 0, str(item.date))
-                sheet.write(row, 1, "")
-                sheet.write(row, 2, item.name)
-                sheet.write(row, 3, item.debit)
-                sheet.write(row, 4, item.credit)
-
+            for account in accounts:
+                account_total_debit = 0
+                account_total_credit = 0
+                filter = lines.filtered(lambda r: r.account_id in account)
+                sheet.merge_range(
+                    row, 0, row, 1, 'CODIGO DE LA CUENTA CONTABLE:')
+                sheet.write(row, 2, str(account.code)+' - '+str(account.name))
                 row += 1
+                for item in filter:
+                    sheet.write(row, 0, str(item.date))
+                    sheet.write(row, 1, "")
+                    sheet.write(row, 2, item.name)
+                    sheet.write(row, 3, item.debit)
+                    sheet.write(row, 4, item.credit)
+
+                    account_total_debit += item.debit
+                    account_total_credit += item.credit
+
+                    row += 1
+
+                sheet.write(row, 2, 'MOVIMIENTO DEL MES')
+                sheet.write(row, 3, account_total_debit)
+                sheet.write(row, 4, account_total_credit)
+                row += 1
+
+                sheet.write(row, 1, 'SALDO FINAL')
+                sheet.write(row, 2, str(account.code)+' - '+str(account.name))
+                sheet.write(row, 3, account_total_debit - account_total_credit)
+                row += 2
 
         if data['tipo'] == 'diario':
             # DOCUMENT HEADER
@@ -242,9 +264,9 @@ class ExcelWizard(models.TransientModel):
             sheet.merge_range('A3:D3', 'RUC:', head)
             sheet.merge_range(
                 'A4:D4', 'APELLIDOS Y NOMBRES, DENOMINACIÓN O RAZÓN SOCIAL:', head)
-            sheet.write('E2', 'MES-AÑO')
-            sheet.write('E3', 'COMPANY_VAT', head)
-            sheet.write('E4', 'COMPANY_NAME', head)
+            sheet.write('E2', data['month'] + '-' + data['year'])
+            sheet.write('E3', data['company_vat'], head)
+            sheet.write('E4', data['company_name'], head)
 
             # TABLE HEADER
             sheet.merge_range(
