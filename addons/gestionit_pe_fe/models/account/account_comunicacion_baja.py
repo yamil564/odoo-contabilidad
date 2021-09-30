@@ -220,7 +220,7 @@ class AccountComunicacionBaja(models.Model):
         if not self.voided_ticket:
             raise UserError("El campo de ticket esta vacío")
         response = self.current_log_status_id.action_request_status_ticket_voided()
-        _logger.info(response)
+        # _logger.info(response)
         if response.get("status") == "A":
             self.invoice_ids.write({'estado_comprobante_electronico':'2_ANULADO'})
             
@@ -358,3 +358,9 @@ class AccountComunicacionBaja(models.Model):
                 raise UserError(json.dumps(result))
         else:
             raise UserError(json.dumps(result))
+
+    def unlink(self):
+        for voided in self:
+            if voided.state:
+                raise UserError("La anulación no puede ser eliminada.")
+        return super(AccountComunicacionBaja, self).unlink()

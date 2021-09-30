@@ -451,7 +451,7 @@ def crear_json_fac_bol(self):
             "numero_cuenta_banco_nacion":self.bank_account_number_national,
         },
         "descuento": {
-            "mntDescuentoGlobal": round(self.total_descuento_global, 2),
+            # "mntDescuentoGlobal": round(self.total_descuento_global, 2),
             "mntTotalDescuentos": round(self.total_descuentos, 2)
         },
         # solo factura y boleta
@@ -732,7 +732,7 @@ def crear_json_not_cred_deb(self):
             # "mntTotalLetras": to_word(round(self.amount_total, 2), self.currency_id.name)
         },
         "descuento": {
-            "mntDescuentoGlobal": round(self.total_descuento_global, 2),
+            # "mntDescuentoGlobal": round(self.total_descuento_global, 2),
             "mntTotalDescuentos": round(self.total_descuentos, 2)
         },
         # solo factura y boleta
@@ -843,7 +843,7 @@ def crear_json_not_cred_deb(self):
             "codSistemaCalculoIsc": "01",  # VERIFICAR
             "montoIsc": 0.0,  # VERIFICAR
             # "tasaIsc" : 0.0, #VERIFICAR
-            "precioItemReferencia": round(item.product_id.lst_price, 2),
+            "precioItemReferencia": round(item.price_unit, 2),
             "idOperacion": str(self.id),
             "no_onerosa": True if item.no_onerosa else False
         })

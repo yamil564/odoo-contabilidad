@@ -10,6 +10,8 @@
                 <attribute name="attrs">{'invisible': ['|', '|', ('debit_origin_id', '!=', False),                                         
                                                                 ('type', 'not in', ('out_invoice', 'in_invoice')), 
                                                                 ('state', '!=', 'posted')]}</attribute>
+                <attribute name="type">object</attribute>
+                <attribute name="name">action_view_account_move_debit</attribute>
             </xpath>
         </field>
     </record>

@@ -168,7 +168,7 @@ class AccountMove(models.Model):
                                                                  ("2_ANULADO","ANULADO"),
                                                                  ("3_AUTORIZADO","AUTORIZADO"),
                                                                  ("4_NO_AUTORIZADO","NO AUTORIZADO"),
-                                                                 ("-", "-")], default="-")
+                                                                 ("-", "-")], default="-",copy=False)
 
     estado_contribuyente_ruc = fields.Selection(selection=[("00_ACTIVO", "ACTIVO"),
                                                            ("01_BAJA_PROVISIONAL","BAJA PROVISIONAL"),
@@ -177,16 +177,16 @@ class AccountMove(models.Model):
                                                            ("10_BAJA_DEFINITIVA","BAJA DEFINITIVA"),
                                                            ("11_BAJA_DE_OFICIO","BAJA DE OFICIO"),
                                                            ("22_INHABILITADO-VENT.UNICA","INHABILITADO-VENT.UNICA"),
-                                                           ("-", "-")], default="-")
+                                                           ("-", "-")], default="-",copy=False)
 
     condicion_domicilio_contribuyente = fields.Selection(selection=[("00_HABIDO", "HABIDO"),
                                                                     ("09_PENDIENTE","PENDIENTE"),
                                                                     ("11_POR_VERIFICAR","POR VERIFICAR"),
                                                                     ("12_NO_HABIDO","NO HABIDO"),
                                                                     ("20_NO_HALLADO","NO HALLADO"),
-                                                                    ("-", "-")], default="-")
+                                                                    ("-", "-")], default="-",copy=False)
 
-    consulta_validez_observaciones = fields.Text("Consulta Validez - Observaciones")
+    consulta_validez_observaciones = fields.Text("Consulta Validez - Observaciones",copy=False)
 
     documento_baja_id = fields.Many2one(
         "account.comunicacion_baja", copy=False)
@@ -222,6 +222,8 @@ class AccountMove(models.Model):
     detraction_code = fields.Char("Código")
     bank_account_number_national = fields.Char("Banco de la nación")
     detraction_amount = fields.Float("Monto de Detracción",compute="_compute_amount_detraction",store=True)
+
+    # payment_term_lines = fields.One2many("account.move.line","move_id",domain=[('date_maturity','!=',False)],readonly=False)
 
     @api.onchange("type_detraction")
     def change_type_detraction(self):
@@ -604,55 +606,57 @@ class AccountMove(models.Model):
 
     def post(self):
         # Validar journal
-        if self.journal_id.invoice_type_code_id not in ['01', '03', '07', '08', '09']:
-            return super(AccountMove, self).post()
-
-        if self.type in ["in_invoice","in_refund"]:
-            if self.inv_supplier_ref:
-                self._validate_inv_supplier_ref()
+        for move in self:
+            _logger.info(move.name)
+            if move.journal_id.invoice_type_code_id not in ['01', '03', '07', '08', '09']:
+                super(AccountMove, move).post()
             else:
-                raise UserError(
-                    "El número de comprobante del proveedor es obligatorio")
-            return super(AccountMove, self).post()
+                if move.type in ["in_invoice","in_refund"]:
+                    if move.inv_supplier_ref:
+                        move._validate_inv_supplier_ref()
+                    else:
+                        raise UserError("El número de comprobante del proveedor es obligatorio")
+                    super(AccountMove, move).post()
 
-        if not self.journal_id.electronic_invoice:
-            obj = super(AccountMove, self).post()
-            return obj
+                if not move.journal_id.electronic_invoice:
+                    super(AccountMove, move).post()
+                    # obj = super(AccountMove, self).post()
+                    # return obj
 
-        # Validaciones cuando el comprobante es factura
-        msg_error = []
-        msg_error += self.validar_datos_compania()
-        msg_error += self.validar_diario()
-        # msg_error += self.validar_fecha_emision()
-        msg_error += self.validar_lineas()
+                # Validaciones cuando el comprobante es factura
+                msg_error = []
+                msg_error += move.validar_datos_compania()
+                msg_error += move.validar_diario()
+                # msg_error += move.validar_fecha_emision()
+                msg_error += move.validar_lineas()
 
-        if self.journal_id.invoice_type_code_id == "01":
-            msg_error += self.validacion_factura()
-            if len(msg_error) > 0:
-                msg = "\n\n".join(msg_error)
-                raise UserError(msg)
+                if move.journal_id.invoice_type_code_id == "01":
+                    msg_error += move.validacion_factura()
+                    if len(msg_error) > 0:
+                        msg = "\n\n".join(msg_error)
+                        raise UserError(msg)
 
-        if self.journal_id.invoice_type_code_id == "03":
-            msg_error += self.validacion_boleta()
-            if len(msg_error) > 0:
-                msg = "\n\n".join(msg_error)
-                raise UserError(msg)
+                if move.journal_id.invoice_type_code_id == "03":
+                    msg_error += move.validacion_boleta()
+                    if len(msg_error) > 0:
+                        msg = "\n\n".join(msg_error)
+                        raise UserError(msg)
 
-        if self.partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code != "6" and self.journal_id.invoice_type_code_id == "01":
-            raise UserError("Tipo de documento del receptor no valido")
+                if move.partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code != "6" and move.journal_id.invoice_type_code_id == "01":
+                    raise UserError("Tipo de documento del receptor no valido")
 
-        obj = super(AccountMove, self).post()
+                super(AccountMove, move).post()
 
-        
-        self.action_generate_and_signed_xml()
+                
+                move.action_generate_and_signed_xml()
 
-        if self.journal_id.invoice_type_code_id == "03" or self.journal_id.tipo_comprobante_a_rectificar == "03":
-            return obj
+                # if move.journal_id.invoice_type_code_id == "03" or move.journal_id.tipo_comprobante_a_rectificar == "03":
+                #     return obj
 
-        if not self.journal_id.send_async:
-            self.action_send_invoice()
+                if not move.journal_id.send_async:
+                    move.action_send_invoice()
 
-        return obj
+                # return obj
 
     def action_generate_and_signed_xml(self):
         if not self.current_log_status_id:
@@ -774,9 +778,13 @@ class AccountMove(models.Model):
                                 break
 
             if line.discount == 100:
-                errors.append(
-                    "El descuento no puede ser del 100%. Si el producto es gratuito, use el impuesto GRATUITO.")
-                break
+                errors.append("El descuento no puede ser del 100%. Si el producto es gratuito, use el impuesto GRATUITO.")
+            
+            if line.discount < 0:
+                errors.append("Error: El descuento no puede ser menor a cero. Error en el producto {}".format(line.name))
+
+            if line.discount > 0 and len(line.tax_ids.filtered(lambda r:r.tax_group_id.tipo_afectacion in ["31","32", "33", "34", "35", "36"])) > 0:
+                errors.append("Error: Las líneas gratuitas no deben tener descuento. Error en el producto {}".format(line.name))
 
             # if line.price_unit == 0 and len([1 for tax in line.tax_ids if tax.tax_group_id.tipo_afectacion in ["31", "32", "33", "34", "35", "36"]]) > 0:
             # if line.price_unit == 0 and line.tax_ids[0].tax_group_id.tipo_afectacion == "31":
@@ -849,8 +857,8 @@ class AccountMove(models.Model):
                 move.id, move.name)
             new_move.message_post(body=move_msg)
             new_moves |= new_move
-        log.info("MOVIEMIENTOS DÉBITO")
-        log.info(new_moves)
+        # log.info("MOVIEMIENTOS DÉBITO")
+        # log.info(new_moves)
         action = {
             'name': _('Debit Notes'),
             'type': 'ir.actions.act_window',
@@ -935,71 +943,72 @@ class AccountMove(models.Model):
         return action
 
 
-    def _reverse_moves(self, default_values_list=None, cancel=False):
-        ''' Reverse a recordset of account.move.
-        If cancel parameter is true, the reconcilable or liquidity lines
-        of each original move will be reconciled with its reverse's.
+    # def _reverse_moves(self, default_values_list=None, cancel=False):
+    #     ''' Reverse a recordset of account.move.
+    #     If cancel parameter is true, the reconcilable or liquidity lines
+    #     of each original move will be reconciled with its reverse's.
 
-        :param default_values_list: A list of default values to consider per move.
-                                    ('type' & 'reversed_entry_id' are computed in the method).
-        :return:                    An account.move recordset, reverse of the current self.
-        '''
-        if not default_values_list:
-            default_values_list = [{} for move in self]
+    #     :param default_values_list: A list of default values to consider per move.
+    #                                 ('type' & 'reversed_entry_id' are computed in the method).
+    #     :return:                    An account.move recordset, reverse of the current self.
+    #     '''
+        
+    #     if not default_values_list:
+    #         default_values_list = [{} for move in self]
 
-        if cancel:
-            lines = self.mapped('line_ids')
-            # Avoid maximum recursion depth.
-            if lines:
-                lines.remove_move_reconcile()
+    #     if cancel:
+    #         lines = self.mapped('line_ids')
+    #         # Avoid maximum recursion depth.
+    #         if lines:
+    #             lines.remove_move_reconcile()
 
-        # p_obj.with_context(filter_order_ids=order_ids).filtered(lambda r: r.origin_id.id IN r._context['filter_order_ids'])
+    #     # p_obj.with_context(filter_order_ids=order_ids).filtered(lambda r: r.origin_id.id IN r._context['filter_order_ids'])
 
-        reverse_type_map = {
-            'entry': 'entry',
-            'out_invoice': 'out_refund',
-            'out_refund': 'entry',
-            'in_invoice': 'in_refund',
-            'in_refund': 'entry',
-            'out_receipt': 'entry',
-            'in_receipt': 'entry',
-        }
+    #     reverse_type_map = {
+    #         'entry': 'entry',
+    #         'out_invoice': 'out_refund',
+    #         'out_refund': 'entry',
+    #         'in_invoice': 'in_refund',
+    #         'in_refund': 'entry',
+    #         'out_receipt': 'entry',
+    #         'in_receipt': 'entry',
+    #     }
 
-        move_vals_list = []
-        for move, default_values in zip(self, default_values_list):
-            default_values.update({
-                'type': reverse_type_map[move.type],
-                'reversed_entry_id': move.id,
-            })
-            move_vals_list.append(move.with_context(
-                move_reverse_cancel=cancel)._reverse_move_vals(default_values, cancel=cancel))
+    #     move_vals_list = []
+    #     for move, default_values in zip(self, default_values_list):
+    #         default_values.update({
+    #             'type': reverse_type_map[move.type],
+    #             'reversed_entry_id': move.id,
+    #         })
+    #         move_vals_list.append(move.with_context(
+    #             move_reverse_cancel=cancel)._reverse_move_vals(default_values, cancel=cancel))
 
-        reverse_moves = self.env['account.move'].create(move_vals_list)
-        for move, reverse_move in zip(self, reverse_moves.with_context(check_move_validity=False)):
-            # Update amount_currency if the date has changed.
-            if move.date != reverse_move.date:
-                for line in reverse_move.line_ids:
-                    if line.currency_id:
-                        line._onchange_currency()
+    #     reverse_moves = self.env['account.move'].create(move_vals_list)
+    #     for move, reverse_move in zip(self, reverse_moves.with_context(check_move_validity=False)):
+    #         # Update amount_currency if the date has changed.
+    #         if move.date != reverse_move.date:
+    #             for line in reverse_move.line_ids:
+    #                 if line.currency_id:
+    #                     line._onchange_currency()
 
-            reverse_move.invoice_line_ids = [(6, 0, reverse_move.invoice_line_ids.filtered(
-                lambda r: r.tax_ids[0].tax_group_id.tipo_afectacion == '10').mapped('id'))]
+    #         # reverse_move.invoice_line_ids = [(6, 0, reverse_move.invoice_line_ids.filtered(
+    #         #     lambda r: r.tax_ids[0].tax_group_id.tipo_afectacion == '10').mapped('id'))]
 
-            reverse_move._recompute_dynamic_lines(recompute_all_taxes=False)
-        reverse_moves._check_balanced()
+    #         reverse_move._recompute_dynamic_lines(recompute_all_taxes=False)
+    #     reverse_moves._check_balanced()
 
-        # Reconcile moves together to cancel the previous one.
-        if cancel:
-            reverse_moves.with_context(move_reverse_cancel=cancel).post()
-            for move, reverse_move in zip(self, reverse_moves):
-                accounts = move.mapped('line_ids.account_id') \
-                    .filtered(lambda account: account.reconcile or account.internal_type == 'liquidity')
-                for account in accounts:
-                    (move.line_ids + reverse_move.line_ids)\
-                        .filtered(lambda line: line.account_id == account and line.balance)\
-                        .reconcile()
+    #     # Reconcile moves together to cancel the previous one.
+    #     if cancel:
+    #         reverse_moves.with_context(move_reverse_cancel=cancel).post()
+    #         for move, reverse_move in zip(self, reverse_moves):
+    #             accounts = move.mapped('line_ids.account_id') \
+    #                 .filtered(lambda account: account.reconcile or account.internal_type == 'liquidity')
+    #             for account in accounts:
+    #                 (move.line_ids + reverse_move.line_ids)\
+    #                     .filtered(lambda line: line.account_id == account and line.balance)\
+    #                     .reconcile()
 
-        return reverse_moves
+    #     return reverse_moves
 
     def btn_comunicacion_baja(self):
         
@@ -1007,6 +1016,9 @@ class AccountMove(models.Model):
 
         if self.estado_comprobante_electronico == "2_ANULADO":
             raise UserError("Este comprobante ha sido Anulado.")
+
+        if len(self.credit_note_ids) > 0 or len(self.debit_note_ids) > 0:
+            raise UserError("Este comprobante no puede ser anulado debido a que tiene una o más notas que hacen referencia a este documento.")
 
         elif re.match("^F\w{3}-\d{1,8}$", self.name):
             if self.documento_baja_id:
@@ -1062,13 +1074,14 @@ class AccountMove(models.Model):
     def action_context_default_guia_remision(self):
         return {
             "default_documento_asociado": "comprobante_pago",
-            "default_fecha_emision": fields.Date.today(),
-            "default_fecha_inicio_traslado": fields.Date.today(),
+            "default_fecha_emision": datetime.now(tz=timezone("America/Lima")).date(),
+            "default_fecha_inicio_traslado": datetime.now(tz=timezone("America/Lima")).date(),
             # "default_modalidad_transporte":"02",
             "default_motivo_traslado": "01",
             "default_comprobante_pago_ids": [(6, 0, [self.id])],
             "default_destinatario_partner_id": self.partner_id.id,
-            "default_company_partner_id": self.partner_id.id
+            "default_company_partner_id": self.partner_id.id,
+            "default_company_id":self.company_id.id
         }
 
     def action_open_guia_remision(self):
@@ -1166,6 +1179,16 @@ class AccountMove(models.Model):
     def cron_cambiar_a_no_existe(self):
         return True
 
+    def action_reverse(self):
+        if self.documento_baja_id:
+            raise UserError("El documento fue dado de baja y no es posible emitir una nota de crédito asociado a este documento anulado.")
+        return super(AccountMove, self).action_reverse()
+
+    def action_view_account_move_debit(self):
+        if self.documento_baja_id:
+            raise UserError("El documento fue dado de baja y no es posible emitir una nota de débito asociado a este documento anulado.")
+
+        return self.env.ref("account_debit_note.action_view_account_move_debit").read()[0]
 
 class AccountMoveReversal(models.TransientModel):
     _inherit = 'account.move.reversal'
@@ -1207,6 +1230,8 @@ class AccountMoveReversal(models.TransientModel):
         res = super(AccountMoveReversal,self)._prepare_default_reversal(move)
         res.update({"sustento_nota":self.reason,"tipo_nota_credito":self.credit_note_type,"invoice_type_code":"07"})
         return res
+
+
 
 
 class AccountDebitNote(models.TransientModel):
