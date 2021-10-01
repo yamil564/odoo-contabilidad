@@ -157,6 +157,8 @@ class AccountMove(models.Model):
     tipo_nota_debito = fields.Selection(string='Tipo de Nota de Débito', readonly=True,
                                         selection="_selection_tipo_nota_debito", states={'draft': [('readonly', False)]})
 
+    order_reference = fields.Char("Número de la orden de compra")
+    
     def _selection_tipo_nota_credito(self):
         return tnc
 

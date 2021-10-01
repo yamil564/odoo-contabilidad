@@ -12,7 +12,7 @@ from ..efact21.AmountTypes import Amount,PriceAmount, PrepaidAmount, ChargeTotal
     AllowanceTotalAmount, PayableAmount, TaxInclusiveAmount
 from ..efact21.BasicGlobal import RegistrationName
 from ..efact21.DocumentReference import DespatchDocumentReference, DocumentTypeCode
-
+from ..efact21.OrderReference import OrderReference
 from ..efact21.Lines import PricingReference, Item, Price
 from ..efact21.Party import PartyIdentification, PartyLegalEntity, PartyName
 from ..efact21.RegistrationAddress import RegistrationAddress
@@ -193,7 +193,7 @@ def build_factura(data):
     mntTotalGrat = documento.get('mntTotalGrat', 0.0)
     mntTotalAnticipos = documento.get("mntTotalAnticipos", 0.0)
     mntExportacion = documento.get("mntExportacion", 0.0)
-
+    
     formaPago = documento.get("formaPago","Contado")
     creditoCuotas = documento.get("creditoCuotas",[])
     
@@ -251,9 +251,19 @@ def build_factura(data):
                         ]
                     }
 
-
-        # validacion_cuota = all([bool(patron_cuota.match(cc.get("name",""))) for cc in creditoCuotas])
-
+    #NUMERO DE LA ORDEN DE COMPRA O SERVICIO
+    ordenCompra = documento.get("ordenCompra",False)
+    order_reference = None
+    if ordenCompra:
+        if  re.search("^\s*$",ordenCompra):
+            return {
+                "errors":[{
+                    "status":400,
+                    "code":"51",
+                    "detail":"No se permite espacios en blanco, saltos de línea, fin de línea, etc. "
+                }]
+            }
+        order_reference = OrderReference(order_reference_id=ordenCompra,order_type_code_required=False)
 
     # NO NECESARIOS
     # direccionOrigen = documento.get('direccionOrigen', '')
@@ -303,8 +313,9 @@ def build_factura(data):
                 }
 
     # TIPO DE DOCUMENTO
-    invoice_type_code = BasicGlobal.InvoiceTypeCode(
-        tipoDocumento, listID="0101")
+    invoice_type_code = BasicGlobal.InvoiceTypeCode(tipoDocumento, listID="0101")
+
+    
 
     # PROVEEDOR
     registration_name = RegistrationName(registration_name=nombreEmisor)
@@ -490,20 +501,22 @@ def build_factura(data):
                    customization="2.0", additional_document_reference=None,
                    accounting_supplier_party=proveedor, accounting_customer_party=cliente,
                    legal_monetary_total=legal_monetary_total, tax_total=tax_total,
-                   descuento_global=descuento_global)
+                   descuento_global=descuento_global,order_reference=order_reference)
     
-    # fact.add_payment_terms()
-    fact.add_payment_terms(PaymentTerms(id="FormaPago",
-                                        payment_means_id=formaPago))
-
     if formaPago == "Credito":
+        amount = Amount(mntTotal,currencyID=tipoMoneda)
+        fact.add_payment_terms(PaymentTerms(id="FormaPago",
+                                            payment_means_id=formaPago,
+                                            amount=amount))
         for cuota in creditoCuotas:
             amount = Amount(cuota["monto"],currencyID=tipoMoneda)
             fact.add_payment_terms(PaymentTerms(id="FormaPago",
                                                 payment_means_id=cuota["nombre"],
                                                 amount=amount,
                                                 payment_due_date=cuota["fechaVencimiento"]))
-
+    elif formaPago == "Contado":
+        fact.add_payment_terms(PaymentTerms(id="FormaPago",
+                                            payment_means_id=formaPago))
 
     if documento.get('numero_guia', False):
         guia_doc_type_code = DocumentTypeCode("09")

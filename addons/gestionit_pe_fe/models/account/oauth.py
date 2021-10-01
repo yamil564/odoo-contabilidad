@@ -442,6 +442,7 @@ def crear_json_fac_bol(self):
             "mntTotalOtrosCargos": 0.0,
             # "mntTotalAnticipos" : 0.0, #solo factura y boleta
             "tipoFormatoRepresentacionImpresa": "GENERAL",
+            "ordenCompra":self.order_reference if self.order_reference else False
             # "mntTotalLetras": to_word(round(self.amount_total, 2), self.currency_id.name),
         },
         "detraccion":{
@@ -505,6 +506,7 @@ def crear_json_fac_bol(self):
                 creditoCuotas.append({"nombre":"Cuota{:03.0f}".format(cuota),
                                             "fechaVencimiento":line.date_due.strftime("%Y-%m-%d"),
                                             "monto":line.amount})
+                cuota = cuota + 1
             payment_term.update({"creditoCuotas":creditoCuotas})
 
     data["documento"].update(payment_term)

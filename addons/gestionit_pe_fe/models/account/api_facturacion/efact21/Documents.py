@@ -31,7 +31,7 @@ class Factura(Xmleable):
                  invoice_type_code=None, document_currency_code=None, customization="2.0",
                  despatch_document_reference=None, additional_document_reference=None, signature=None,
                  accounting_supplier_party=None, accounting_customer_party=None,
-                 legal_monetary_total=None, tax_total=None, descuento_global=None):
+                 legal_monetary_total=None, tax_total=None, descuento_global=None,order_reference=None):
         self.invoice_lines = []
         self.notes = []
         self.tax_total = tax_total
@@ -55,6 +55,7 @@ class Factura(Xmleable):
         self.line_count_numeric = 0
         self.descuento_global = descuento_global
         self.payment_terms = []
+        self.order_reference = order_reference
 
     def set_file_name(self, name):
         self.file_name = name
@@ -128,6 +129,7 @@ class Factura(Xmleable):
             type(self.despatch_document_reference) == DespatchDocumentReference
         assert self.descuento_global is None or \
             type(self.descuento_global) == AllowanceCharge
+        assert self.order_reference is None or type(self.order_reference) == OrderReference
 
     def generate_root(self):
         self.doc = default_document.createElement("Invoice")
@@ -182,6 +184,10 @@ class Factura(Xmleable):
 
         # Cantidad de Items de la factura
         self.doc.appendChild(self.line_count_numeric.get_document())
+
+        # Número de la orden de compra o servicio
+        if self.order_reference:
+            self.doc.appendChild(self.order_reference.get_document())
 
         # despatch_document_reference
         if self.despatch_document_reference:

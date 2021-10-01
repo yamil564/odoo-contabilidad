@@ -152,7 +152,10 @@
                         </tree>
                     </field>
                 </page>
-            </xpath> 
+            </xpath>
+            <xpath expr="//field[@name='invoice_origin']" position="after">
+                <field name="order_reference" attrs="{'readonly':[('state','not in','draft')]}"/>
+            </xpath>
         </field>
     </record>
     <record id="gestionit_pe_fe.view_account_move_almacenes_series_permitidas" model="ir.ui.view">
