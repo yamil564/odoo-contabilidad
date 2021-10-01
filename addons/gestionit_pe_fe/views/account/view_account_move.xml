@@ -155,6 +155,12 @@
             </xpath>
             <xpath expr="//field[@name='invoice_origin']" position="after">
                 <field name="order_reference" attrs="{'readonly':[('state','not in','draft')]}"/>
+                <field name="document_reference_ids" attrs="{'readonly':[('state','not in','draft')]}">
+                    <tree editable="bottom">
+                        <field name="document_type_code" required="1"/>
+                        <field name="document_number" required="1"/>
+                    </tree>
+                </field>
             </xpath>
         </field>
     </record>

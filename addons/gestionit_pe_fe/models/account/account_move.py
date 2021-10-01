@@ -4,8 +4,7 @@ from odoo.tools.translate import _
 from odoo.exceptions import UserError, ValidationError
 from odoo.http import request
 from odoo.tools.misc import get_lang
-from odoo.addons.gestionit_pe_fe.models.parameters.catalogs import tnc
-from odoo.addons.gestionit_pe_fe.models.parameters.catalogs import tnd
+from odoo.addons.gestionit_pe_fe.models.parameters.catalogs import tnc,tnd,tdc,tdr
 from pytz import timezone
 from datetime import datetime, timedelta
 from odoo.addons.gestionit_pe_fe.models.account.oauth import send_doc_xml,generate_and_signed_xml
@@ -43,6 +42,16 @@ codigos_tipo_afectacion_igv = [
     "10", "11", "12", "13", "14", "15", "16", "20", "30", "31", "34", "35", "36", "40"
 ]
 
+class AccountMoveDocumentReference(models.Model):
+    _name = "account.move.document.reference"
+    _description = "Otros documentos relacionados con la operación"
+
+    move_id = fields.Many2one("account.move")
+    document_type_code = fields.Selection(selection=tdr,string="Tipo de documento")
+    document_number = fields.Char("Número de documento")
+
+
+
 class AccountMove(models.Model):
     _inherit = "account.move"
 
@@ -65,6 +74,8 @@ class AccountMove(models.Model):
     journal_ids = fields.Many2many("account.journal", string="Series permitidas", related="warehouse_id.journal_ids")
     
     journal_type = fields.Selection(selection=[("sale","Venta"),("purchase","compra")])
+
+    document_reference_ids = fields.One2many("account.move.document.reference","move_id",string="Otros documentos relacionados")
 
     credit_note_ids = fields.One2many("account.move","reversed_entry_id")
 
@@ -158,7 +169,7 @@ class AccountMove(models.Model):
                                         selection="_selection_tipo_nota_debito", states={'draft': [('readonly', False)]})
 
     order_reference = fields.Char("Número de la orden de compra")
-    
+
     def _selection_tipo_nota_credito(self):
         return tnc
 

@@ -118,6 +118,24 @@
                                         t-if="len(o.guia_remision_ids.filtered(lambda r:r.state == 'validado')) &gt; 0"/>
                             </td>
                         </tr>
+                        <tr>
+                            <!-- Número de orden de compra-->
+                            <th>
+                                <label t-esc="'NÚMERO OC: '"/>
+                            </th>
+                            <td class="label">
+                                <span t-esc="o.order_reference"/>
+                            </td>
+                            <!--Otros Documentos-->
+                            <th>
+                                <label t-esc="'DOC. ADIC.: '"/>
+                            </th>
+                            <td class="label">
+                                <t t-if="len(o.document_reference_ids) &gt; 0">
+                                    <span t-esc="','.join(['[{}] {}'.format(d.document_type_code,d.document_number) for d in o.document_reference_ids])"/>
+                                </t>
+                            </td>
+                        </tr>
                     </table>
 
                     <!-- NOTA DE CRÉDITO ELECTRÓNICA -->

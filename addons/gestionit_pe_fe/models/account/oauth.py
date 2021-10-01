@@ -77,19 +77,23 @@ def generate_and_signed_xml(invoice):
     }
 
     result = main.handle(request_json,credentials)
-    data = {
-        "request_json":json.dumps(request_json,indent=4),
-        "signed_xml_data_without_format":result.get("signed_xml"),
-        "signed_xml_with_creds":result.get("final_xml"),
-        "signed_xml_data":parseString(result.get("signed_xml")).toprettyxml(),
-        "name":"{} {}".format(invoice_type_code[request_json.get("tipoDocumento")],invoice.name),
-        "date_issue":invoice.invoice_date,
-        "account_move_id":invoice.id,
-        "digest_value":result.get("digest_value"),
-        "status":"P",
-        "company_id":invoice.company_id.id,
-    }
-    return data
+    # _logger.info(result)
+    if result.get("success"):
+        data = {
+            "request_json":json.dumps(request_json,indent=4),
+            "signed_xml_data_without_format":result.get("signed_xml"),
+            "signed_xml_with_creds":result.get("final_xml"),
+            "signed_xml_data":parseString(result.get("signed_xml")).toprettyxml(),
+            "name":"{} {}".format(invoice_type_code[request_json.get("tipoDocumento")],invoice.name),
+            "date_issue":invoice.invoice_date,
+            "account_move_id":invoice.id,
+            "digest_value":result.get("digest_value"),
+            "status":"P",
+            "company_id":invoice.company_id.id,
+        }
+        return data
+    else:
+        raise UserError(json.dumps(result,indent=4))
 
 
 
@@ -442,7 +446,12 @@ def crear_json_fac_bol(self):
             "mntTotalOtrosCargos": 0.0,
             # "mntTotalAnticipos" : 0.0, #solo factura y boleta
             "tipoFormatoRepresentacionImpresa": "GENERAL",
-            "ordenCompra":self.order_reference if self.order_reference else False
+            "ordenCompra":self.order_reference if self.order_reference else False,
+            "documentosRelacionados":[{
+                    "type_code":dr.document_type_code,
+                    "number":dr.document_number    
+                } for dr in self.document_reference_ids
+            ]
             # "mntTotalLetras": to_word(round(self.amount_total, 2), self.currency_id.name),
         },
         "detraccion":{

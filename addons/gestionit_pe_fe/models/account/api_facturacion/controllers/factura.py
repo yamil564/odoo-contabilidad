@@ -11,7 +11,7 @@ from ..efact21.AllowanceCharge import AllowanceCharge
 from ..efact21.AmountTypes import Amount,PriceAmount, PrepaidAmount, ChargeTotalAmount, LineExtensionAmount, \
     AllowanceTotalAmount, PayableAmount, TaxInclusiveAmount
 from ..efact21.BasicGlobal import RegistrationName
-from ..efact21.DocumentReference import DespatchDocumentReference, DocumentTypeCode
+from ..efact21.DocumentReference import DespatchDocumentReference, DocumentTypeCode,AdditionalDocumentReference
 from ..efact21.OrderReference import OrderReference
 from ..efact21.Lines import PricingReference, Item, Price
 from ..efact21.Party import PartyIdentification, PartyLegalEntity, PartyName
@@ -260,10 +260,30 @@ def build_factura(data):
                 "errors":[{
                     "status":400,
                     "code":"51",
-                    "detail":"No se permite espacios en blanco, saltos de línea, fin de línea, etc. "
+                    "detail":"Orden de compra: No se permite espacios en blanco, saltos de línea, fin de línea, etc. "
                 }]
             }
         order_reference = OrderReference(order_reference_id=ordenCompra,order_type_code_required=False)
+
+    documentosRelacionados = documento.get("documentosRelacionados",[])
+
+    for dr in documentosRelacionados:
+        if re.search("^\s*$",dr.get("number")):
+            return {
+                "errors":[{
+                    "status":400,
+                    "code":"51",
+                    "detail":"Documento relacionado: No se permite espacios en blanco, saltos de línea, fin de línea, etc."
+                }]
+            }
+        if dr.get("type_code") not in ["01","02","03","04","05","06","07","08","09","99"]:
+            return {
+                "errors":[{
+                    "status":400,
+                    "code":"51",
+                    "detail":"Los tipos de documento permitidos son: '01','02','03','04','05','06','07','08','09','99'"
+                }]
+            }
 
     # NO NECESARIOS
     # direccionOrigen = documento.get('direccionOrigen', '')
@@ -498,8 +518,7 @@ def build_factura(data):
     fact = Factura(ubl_extensions=None, ubl_version="2.1", id=id,
                    issue_date=issue_date, issue_time=None, due_date=None,
                    invoice_type_code=invoice_type_code, document_currency_code=tipoMoneda,
-                   customization="2.0", additional_document_reference=None,
-                   accounting_supplier_party=proveedor, accounting_customer_party=cliente,
+                   customization="2.0",accounting_supplier_party=proveedor, accounting_customer_party=cliente,
                    legal_monetary_total=legal_monetary_total, tax_total=tax_total,
                    descuento_global=descuento_global,order_reference=order_reference)
     
@@ -517,6 +536,11 @@ def build_factura(data):
     elif formaPago == "Contado":
         fact.add_payment_terms(PaymentTerms(id="FormaPago",
                                             payment_means_id=formaPago))
+
+    for dr in documentosRelacionados:
+        adr = AdditionalDocumentReference(id=dr.get("number"),document_type_code=dr.get("type_code","00"))
+        fact.add_additional_document_reference(adr)
+
 
     if documento.get('numero_guia', False):
         guia_doc_type_code = DocumentTypeCode("09")
