@@ -4,8 +4,7 @@ from odoo.tools.translate import _
 from odoo.exceptions import UserError, ValidationError
 from odoo.http import request
 from odoo.tools.misc import get_lang
-from odoo.addons.gestionit_pe_fe.models.parameters.catalogs import tnc
-from odoo.addons.gestionit_pe_fe.models.parameters.catalogs import tnd
+from odoo.addons.gestionit_pe_fe.models.parameters.catalogs import tnc,tnd,tdc,tdr
 from pytz import timezone
 from datetime import datetime, timedelta
 from odoo.addons.gestionit_pe_fe.models.account.oauth import send_doc_xml,generate_and_signed_xml
@@ -43,6 +42,16 @@ codigos_tipo_afectacion_igv = [
     "10", "11", "12", "13", "14", "15", "16", "20", "30", "31", "34", "35", "36", "40"
 ]
 
+class AccountMoveDocumentReference(models.Model):
+    _name = "account.move.document.reference"
+    _description = "Otros documentos relacionados con la operación"
+
+    move_id = fields.Many2one("account.move")
+    document_type_code = fields.Selection(selection=tdr,string="Tipo de documento")
+    document_number = fields.Char("Número de documento")
+
+
+
 class AccountMove(models.Model):
     _inherit = "account.move"
 
@@ -65,6 +74,8 @@ class AccountMove(models.Model):
     journal_ids = fields.Many2many("account.journal", string="Series permitidas", related="warehouse_id.journal_ids")
     
     journal_type = fields.Selection(selection=[("sale","Venta"),("purchase","compra")])
+
+    document_reference_ids = fields.One2many("account.move.document.reference","move_id",string="Otros documentos relacionados")
 
     credit_note_ids = fields.One2many("account.move","reversed_entry_id")
 
@@ -157,6 +168,8 @@ class AccountMove(models.Model):
     tipo_nota_debito = fields.Selection(string='Tipo de Nota de Débito', readonly=True,
                                         selection="_selection_tipo_nota_debito", states={'draft': [('readonly', False)]})
 
+    order_reference = fields.Char("Número de la orden de compra")
+
     def _selection_tipo_nota_credito(self):
         return tnc
 
@@ -223,7 +236,24 @@ class AccountMove(models.Model):
     bank_account_number_national = fields.Char("Banco de la nación")
     detraction_amount = fields.Float("Monto de Detracción",compute="_compute_amount_detraction",store=True)
 
-    # payment_term_lines = fields.One2many("account.move.line","move_id",domain=[('date_maturity','!=',False)],readonly=False)
+    paymentterm_line = fields.One2many("paymentterm.line","move_id")
+
+    invoice_payment_term_type = fields.Selection(related="invoice_payment_term_id.type")
+
+    @api.constrains("invoice_payment_term_id")
+    def check_paymenttermn_lines(self):
+        for record in self:
+            if record.invoice_payment_term_id:
+                if record.invoice_payment_term_type == "Credito":
+                    amount_total = sum(record.paymentterm_line.mapped("amount"))
+                    if amount_total != record.amount_total:
+                        raise UserError("El monto total de los plazos de pago debe ser igual al total de la factura.")
+                    if record.invoice_date:
+                        if min(record.paymentterm_line.mapped("date_due")) < record.invoice_date:
+                            raise UserError("La fecha de vencimiento de la cuota debe ser mayor o igual a la fecha de emisión del comprobante")
+                    else:
+                        if min(record.paymentterm_line.mapped("date_due")) < datetime.now(tz=timezone("America/Lima")).date():
+                            raise UserError("La fecha de vencimiento de la cuota debe ser mayor o igual a la fecha de emisión del comprobante")
 
     @api.onchange("type_detraction")
     def change_type_detraction(self):

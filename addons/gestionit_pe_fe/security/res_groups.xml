@@ -11,6 +11,26 @@
             <field name="group_id" ref="base.group_user"/>
         </record> -->
 
+    <record id="access_model_account_move_document_reference" model="ir.model.access">
+        <field name="name">gestionit_pe_fe.account.move.document.reference</field>
+        <field name="model_id" ref="gestionit_pe_fe.model_account_move_document_reference"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="1"/>
+        <field name="perm_unlink" eval="1"/>
+        <field name="perm_create" eval="1"/>
+        <field name="group_id" ref="account.group_account_invoice"/>
+    </record>
+
+    <record id="acces_model_paymentterm_line" model="ir.model.access">
+        <field name="name">gestionit_pe_fe.paymentterm.line</field>
+        <field name="model_id" ref="gestionit_pe_fe.model_paymentterm_line"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="1"/>
+        <field name="perm_unlink" eval="1"/>
+        <field name="perm_create" eval="1"/>
+        <field name="group_id" ref="account.group_account_invoice"/>
+    </record>
+
     <record model="ir.model.access" id="gestionit_pe_fe.access_model_account_log_status">
         <field name="name">gestionit_pe_fe.access.model.account.log.status</field>
         <field name="model_id" ref="gestionit_pe_fe.model_account_log_status"/>
