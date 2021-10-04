@@ -36,7 +36,7 @@
                                 </b>
                             </div>
                             <div class="text-center">
-                                <span t-esc="'R.U.C. {}'.format(o.company_id.vat)"/>
+                                <span t-esc="'R.U.C. {}'.format(company.vat)"/>
                             </div>
                             <div class="text-center">
                                 <span t-esc="o.name"/>
