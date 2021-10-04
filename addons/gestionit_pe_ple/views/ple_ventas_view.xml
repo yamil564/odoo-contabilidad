@@ -28,7 +28,6 @@
                 </form>
             </field>
         </record>
-
         <!-- REGISTRO DE VENTAS -->
         <record id="reporte_ventas" model="ir.actions.act_window">
             <field name="name">Reporte de ventas</field>
@@ -38,7 +37,6 @@
             <field name="view_mode">form</field>
             <field name="target">new</field>
         </record>
-
         <!-- REGISTRO DE VENTAS -->
         <menuitem id="menu_print_reporte_ventas" action="reporte_ventas" sequence="210" parent="gestionit_pe_fe.menu_reportes_documentos" />
     </data>

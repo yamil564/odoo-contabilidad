@@ -140,6 +140,28 @@
                     </b>.
                 </div>
             </xpath>
+            <xpath expr="//page[@id='aml_tab']" position="after">
+                <field name="invoice_payment_term_type" invisible="1"/>
+                <page string="Plazos de pago" 
+                        attrs="{'invisible':[('invoice_payment_term_type','!=','Credito')]}">
+                    <field name="paymentterm_line" always_reload="1" attrs="{'readonly':[('state','not in','draft')]}">
+                        <tree editable="bottom">
+                            <field name="currency_id" invisible="1"/>
+                            <field name="date_due" string="Fecha de Vencimiento"/>
+                            <field name="amount" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
+            <xpath expr="//field[@name='invoice_origin']" position="after">
+                <field name="order_reference" attrs="{'readonly':[('state','not in','draft')]}"/>
+                <field name="document_reference_ids" attrs="{'readonly':[('state','not in','draft')]}">
+                    <tree editable="bottom">
+                        <field name="document_type_code" required="1"/>
+                        <field name="document_number" required="1"/>
+                    </tree>
+                </field>
+            </xpath>
         </field>
     </record>
     <record id="gestionit_pe_fe.view_account_move_almacenes_series_permitidas" model="ir.ui.view">

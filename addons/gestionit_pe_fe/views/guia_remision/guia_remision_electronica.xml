@@ -41,7 +41,7 @@
                         </h1>
                         <group>
                             <group>
-                                <field name="journal_id" required = "1" domain="[('invoice_type_code_id','=','09')]" context="{'default_invoice_type_code_id':'09'}" options="{'no_create_edit': True,'no_quick_create':True,'no_open':True}"/>
+                                <field name="journal_id" required = "1" domain="[('invoice_type_code_id','=','09'),('company_id','=',company_id)]" context="{'default_invoice_type_code_id':'09'}" options="{'no_create_edit': True,'no_quick_create':True,'no_open':True}"/>
                                 <field name="estado_emision" groups="base.group_no_one"/>
                             </group>
                             <group>

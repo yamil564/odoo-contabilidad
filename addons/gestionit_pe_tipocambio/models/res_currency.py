@@ -52,7 +52,7 @@ class ResCurrency(models.Model):
             "view_mode":"form",
             "target":"new",
         }
-        rate = self.env["res.currency.rate"].sudo().search([("type","=",self.type),("currency_id","=",self.id),("name","=",today.strftime("%Y-%m-%d"))],limit=1)
+        rate = self.env["res.currency.rate"].sudo().search([("company_id","=",self.env.company.id),("type","=",self.type),("currency_id","=",self.id),("name","=",today.strftime("%Y-%m-%d"))],limit=1)
         
         if rate.exists():
             action.update({"res_id":rate.id})
@@ -126,6 +126,7 @@ class Tipocambio(models.Model):
                 'Content-Type': 'application/json'
             }
             result = requests.request("POST","{}exchange/date".format(endpoint), headers=headers, data=json.dumps(data))
+            _logger.info(result.text)
             if result.status_code == 200:
                 return result.json()
             else:
@@ -179,6 +180,7 @@ class Tipocambio(models.Model):
 
         try:
             res = self.api_migo_usd_pen_exchange_date(self.name.strftime("%Y-%m-%d"))
+            _logger.info(res)
         except Exception as e:
             today = datetime.now(tz=timezone("America/Lima")).strftime("%Y-%m-%d")
             if today == self.name.strftime("%Y-%m-%d"):
@@ -287,16 +289,19 @@ class AccountMove(models.Model):
     @api.depends("currency_id","invoice_date")
     def _compute_exchante_rate_day(self):
         for move in self:
-            # _logger.info(move)     
-            currency_move = move.currency_id
-            invoice_date = datetime.now(tz=timezone("America/Lima")) if not move.invoice_date else move.invoice_date
+            # _logger.info(move)   
+            if move.company_id:  
+                currency_move = move.currency_id
+                invoice_date = datetime.now(tz=timezone("America/Lima")) if not move.invoice_date else move.invoice_date
 
-            # _logger.info(invoice_date)
-            if currency_move:
-                currency_company = self.env.company.currency_id
-                rate = currency_company._convert(1,currency_move,move.company_id,invoice_date,round=False)
-                # _logger.info(rate)
-                move.exchange_rate_day = round(1/(rate if rate > 0 else 1),4)
+                # _logger.info(invoice_date)
+                if currency_move:
+                    currency_company = self.env.company.currency_id
+                    rate = currency_company._convert(1,currency_move,move.company_id,invoice_date,round=False)
+                    # _logger.info(rate)
+                    move.exchange_rate_day = round(1/(rate if rate > 0 else 1),4)
+                else:
+                    move.exchange_rate_day = 1
             else:
                 move.exchange_rate_day = 1
             

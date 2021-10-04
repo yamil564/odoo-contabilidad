@@ -5,6 +5,7 @@
         "sale_management",
     ],
     "data": [
+        "security/groups.xml",
         "views/views.xml"
     ]
 }

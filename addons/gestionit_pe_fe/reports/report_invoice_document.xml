@@ -1,15 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-
     <template id="gestionit_report_invoice_document" inherit_id="account.report_invoice_document">
-
         <xpath expr="//address" position="replace">
         </xpath>
-
         <xpath expr="//div[hasclass('mt16')]" position="replace">
             <div/>
         </xpath>
-
         <xpath expr="//div[hasclass('page')]/h2" position="replace">
             <t t-set="company" t-value="o.company_id"/>
             <t t-set="documents" t-value="{'out_invoice_01':'FACTURA ELECTRÓNICA',
@@ -22,16 +18,13 @@
                                            'in_invoice_08':'NOTA DE DÉBITO DE PROVEEDOR'}"/>
             <t t-set="document_display_name" t-value="documents.get('{}_{}'.format(o.type,o.journal_id.invoice_type_code_id),'-')"/>
         </xpath>
-
         <xpath expr="//div[@id='informations']" position="attributes">
             <attribute name="class">d-none</attribute>
         </xpath>
-        
         <xpath expr="//div[@id='informations']" position="after">
             <div class="row" id="informations">
                 <!--DATOS DEL CLIENTE-->
                 <div name="invoice_address" class="w-100">
-
                     <!-- FACTURA Y BOLETA -->
                     <table class="w-100" t-if="'{}_{}'.format(o.type,o.journal_id.invoice_type_code_id) in ['out_invoice_01','out_invoice_03']">
                         <tr>
@@ -118,8 +111,25 @@
                                         t-if="len(o.guia_remision_ids.filtered(lambda r:r.state == 'validado')) &gt; 0"/>
                             </td>
                         </tr>
+                        <tr>
+                            <!-- Número de orden de compra-->
+                            <th>
+                                <label t-esc="'NÚMERO OC: '"/>
+                            </th>
+                            <td class="label">
+                                <span t-esc="o.order_reference"/>
+                            </td>
+                            <!--Otros Documentos-->
+                            <th>
+                                <label t-esc="'DOC. ADIC.: '"/>
+                            </th>
+                            <td class="label">
+                                <t t-if="len(o.document_reference_ids) &gt; 0">
+                                    <span t-esc="','.join(['[{}] {}'.format(d.document_type_code,d.document_number) for d in o.document_reference_ids])"/>
+                                </t>
+                            </td>
+                        </tr>
                     </table>
-
                     <!-- NOTA DE CRÉDITO ELECTRÓNICA -->
                     <table class="w-100" t-if="'{}_{}'.format(o.type,o.journal_id.invoice_type_code_id) == 'out_refund_07' ">
                         <tr>
@@ -180,7 +190,6 @@
                             <td class="label">
                                 <span t-esc="o.currency_id.currency_unit_label" t-if="o.currency_id.currency_unit_label"/>
                             </td>
-
                             <!-- DE FECHA -->
                             <th>
                                 <label t-esc="'DE FECHA: '"/>
@@ -190,7 +199,6 @@
                             </td>
                         </tr>
                     </table>
-
                     <!-- NOTA DE DÉBITO ELECTRÓNICA -->
                     <table class="w-100" t-if="'{}_{}'.format(o.type,o.journal_id.invoice_type_code_id) == 'out_invoice_08' ">
                         <tr>
@@ -251,7 +259,6 @@
                             <td class="label">
                                 <span t-esc="o.currency_id.currency_unit_label" t-if="o.currency_id.currency_unit_label"/>
                             </td>
-
                             <!-- DE FECHA -->
                             <th>
                                 <label t-esc="'DE FECHA: '"/>
@@ -264,7 +271,6 @@
                 </div>
             </div>
         </xpath>
-
         <xpath expr="//table[hasclass('o_main_table')]" position="replace">
             <!-- Is there a discount on at least one line? -->
             <t t-set="display_discount" t-value="any([l.discount for l in o.invoice_line_ids])"/>
@@ -342,11 +348,9 @@
                 </table>
             </div>
         </xpath>
-
         <xpath expr="//div[hasclass('clearfix')]" position="attributes">
             <attribute name="class">clearfix d-none</attribute>
         </xpath>
-
         <xpath expr="//div[hasclass('clearfix')]" position="after">
             <div class="row invoice-content-total" id="total">
                 <div class="col-8 additional-information">
@@ -361,10 +365,39 @@
                         </div>
                         <div>
                             <strong>Descripción: </strong>
-                            <span>OPERACIÓN SUJETA AL SISTEMA DE PAGO DE OBLIGACIONES TRIBUTARIAS DEL BANCO DE LA NACIÓN <t t-esc="o.bank_account_number_national"/>
+                            <span>OPERACIÓN SUJETA AL SISTEMA DE PAGO DE OBLIGACIONES TRIBUTARIAS DEL BANCO DE LA NACIÓN
+                                <t t-esc="o.bank_account_number_national"/>
                             </span>
                         </div>
                     </div>
+                    <t t-if="o.invoice_payment_term_id">
+                        <t t-if="o.invoice_payment_term_id.type == 'Credito'">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Cuota</th>
+                                        <th>Fecha de Venc.</th>
+                                        <th>Monto</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-set="cuota" t-value="1"/>
+                                    <tr t-foreach="o.paymentterm_line.sorted(lambda r: r.date_due)" t-as="line">
+                                        <td width="80px">
+                                            <span t-esc="'Cuota{:03.0f}'.format(cuota)"/>
+                                        </td>
+                                        <td width="90px">
+                                            <span t-field="line.date_due"/>
+                                        </td>
+                                        <td width="80px">
+                                            <span t-field="line.amount" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
+                                        </td>
+                                        <t t-set="cuota" t-value="cuota+1"/>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </t>
+                    </t>
                     <!-- <div style="font-size: 12px; width: 100%">
                         <div>
                             <b>SON: </b>
@@ -380,7 +413,7 @@
                     <div t-if="len(o.company_id.bank_ids) &gt; 0" class="banks" name="company_banks">
                         <ul>
                             <li t-foreach="o.company_id.partner_id.bank_ids" t-as="bank">
-                                <span t-esc="'{} : {}'.format(bank.description,bank.acc_number)"></span>
+                                <span t-esc="'{} : {}'.format(bank.bank_id.name,bank.acc_number)"></span>
                             </li>
                         </ul>
                     </div>
@@ -389,7 +422,8 @@
                     <table class="w-100">
                         <tr t-if="o.descuento_global &gt; 0">
                             <td>
-                                <strong>Dscto. Global <t t-esc="'('+str(o.descuento_global)+'%)'"/>
+                                <strong>Dscto. Global
+                                    <t t-esc="'('+str(o.descuento_global)+'%)'"/>
                                 </strong>
                             </td>
                             <td class="text-right">
@@ -444,7 +478,6 @@
                                 <span t-field="o.amount_igv"/>
                             </td>
                         </tr>
-
                         <tr class="border-black o_total">
                             <td>
                                 <strong>Total</strong>
@@ -476,7 +509,6 @@
                 </div>
             </div>
         </xpath>
-
         <xpath expr="//p[@t-if]" position="attributes">
             <attribute name="class">d-none</attribute>
         </xpath>

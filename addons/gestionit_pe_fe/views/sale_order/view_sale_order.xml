@@ -6,8 +6,7 @@
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//button[@name='%(sale.action_view_sale_advance_payment_inv)d']" position="replace">
-            </xpath>
+            
             <xpath expr="//field[@name='partner_shipping_id']" position="after">
                 <field name="apply_same_discount_on_all_lines" groups="product.group_discount_per_so_line"/>
                 <field name="discount_on_all_lines" string="Descuento (%)" attrs="{'required':[('apply_same_discount_on_all_lines','=',True)],'invisible':[('apply_same_discount_on_all_lines','=',False)]}"/>
@@ -31,6 +30,18 @@
             <xpath expr="//tree/field[@name='price_unit']" position="after">
                 <field name="qty_by_location" invisible="1"/>
             </xpath>
+        </field>
+    </record>
+
+    <record model="ir.ui.view" id="gestionit_pe_fe.view_form_change_position_warehouse">
+        <field name="name">view.form.change.position.warehouse</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale_stock.view_order_form_inherit_sale_stock"/>
+        <field name="arch" type="xml">
+            <field name="payment_term_id" position="after">
+                <field name="warehouse_id" position="move"/>
+                <field name="client_order_ref" position="move"/>
+            </field>
         </field>
     </record>
 
