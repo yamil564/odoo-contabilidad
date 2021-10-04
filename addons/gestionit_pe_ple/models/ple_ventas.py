@@ -5,7 +5,7 @@ import calendar
 import base64
 
 import logging
-logger = logging.getLogger(__name__)
+_logger = logging.getLogger(__name__)
 
 
 # REGISTRO DE VENTAS
@@ -133,7 +133,7 @@ class PrintReportTextVentas(models.TransientModel):
                     + "|"
                     + ""
                     + "|"
-                    + str(line.amount_igv)
+                    + str(line.amount_tax)
                     + "|"
                     + ""
                     + "|"

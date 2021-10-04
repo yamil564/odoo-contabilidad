@@ -29,9 +29,10 @@ class Factura(Xmleable):
     def __init__(self, ubl_extensions=None, ubl_version="2.1", id=None,
                  issue_date=None, issue_time=None, due_date=None,
                  invoice_type_code=None, document_currency_code=None, customization="2.0",
-                 despatch_document_reference=None, additional_document_reference=None, signature=None,
+                 despatch_document_reference=None, signature=None,
                  accounting_supplier_party=None, accounting_customer_party=None,
-                 legal_monetary_total=None, tax_total=None, descuento_global=None):
+                 legal_monetary_total=None, tax_total=None, descuento_global=None,
+                 order_reference=None):
         self.invoice_lines = []
         self.notes = []
         self.tax_total = tax_total
@@ -46,7 +47,7 @@ class Factura(Xmleable):
         self.invoice_type_code = invoice_type_code
         self.document_currency_code = document_currency_code
         self.despatch_document_reference = despatch_document_reference
-        self.additional_document_reference = additional_document_reference
+        self.additional_document_references = []
         self.signature = signature
         self.accounting_supplier_party = accounting_supplier_party
         self.accounting_customer_party = accounting_customer_party
@@ -55,6 +56,7 @@ class Factura(Xmleable):
         self.line_count_numeric = 0
         self.descuento_global = descuento_global
         self.payment_terms = []
+        self.order_reference = order_reference
 
     def set_file_name(self, name):
         self.file_name = name
@@ -82,6 +84,11 @@ class Factura(Xmleable):
         if type(payment_term) != PaymentTerms:
             raise Exception("Bad type")
         self.payment_terms.append(payment_term)
+
+    def add_additional_document_reference(self,additional_document_reference):
+        if type(additional_document_reference) != AdditionalDocumentReference:
+            raise Exception("Tipo AdditionalDocumentReference incorrecto")
+        self.additional_document_references.append(additional_document_reference)
 
     def fix_values(self):
         if not self.ubl_extensions:
@@ -119,8 +126,6 @@ class Factura(Xmleable):
         assert type(self.invoice_type_code) == BasicGlobal.InvoiceTypeCode
         assert type(
             self.document_currency_code) == BasicGlobal.DocumentCurrencyCode
-        assert self.additional_document_reference is None or \
-            type(self.additional_document_reference) == AdditionalDocumentReference
         assert type(self.accounting_supplier_party) == AccountingSupplierParty
         assert type(self.legal_monetary_total) == LegalMonetaryTotal
         assert type(self.accounting_customer_party) == AccountingCustomerParty
@@ -128,6 +133,7 @@ class Factura(Xmleable):
             type(self.despatch_document_reference) == DespatchDocumentReference
         assert self.descuento_global is None or \
             type(self.descuento_global) == AllowanceCharge
+        assert self.order_reference is None or type(self.order_reference) == OrderReference
 
     def generate_root(self):
         self.doc = default_document.createElement("Invoice")
@@ -183,15 +189,18 @@ class Factura(Xmleable):
         # Cantidad de Items de la factura
         self.doc.appendChild(self.line_count_numeric.get_document())
 
+        # Número de la orden de compra o servicio
+        if self.order_reference:
+            self.doc.appendChild(self.order_reference.get_document())
+
         # despatch_document_reference
         if self.despatch_document_reference:
             self.doc.appendChild(
                 self.despatch_document_reference.get_document())
 
-        # Documentos de referencia
-        if self.additional_document_reference:
-            self.doc.appendChild(
-                self.additional_document_reference.get_document())
+        # Documentos relacionados
+        for adr in self.additional_document_references:
+            self.doc.appendChild(adr.get_document())
 
         # Datos de la firma
         if self.signature:
