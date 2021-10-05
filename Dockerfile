@@ -32,3 +32,5 @@ RUN pip3 install lxml
 RUN pip3 install flex
 RUN pip3 install pandas
 RUN pip3 install numpy
+RUN apt-get install -y libmagic-dev
+RUN pip3 install --user libmagic
