@@ -103,6 +103,7 @@
                     <t t-set="item" t-value="1"/>
                     <t t-set="order_line" t-value="doc.order_line"/>
                     <tr t-foreach="order_line" t-as="l">
+                        <t t-set="is_free" t-value="len(l.tax_id.filtered(lambda r:r.tax_group_id.tipo_afectacion == '31')) == 0"/>
                         <td class="v_item">
                             <span t-esc="item"/>
                         </td>
@@ -116,10 +117,21 @@
                             <span t-field="l.name"/>
                         </td>
                         <td class="v_value_unit">
-                            <span t-esc="0 if l.product_uom_qty == 0 else  round((l.price_subtotal/l.product_uom_qty)/(1-l.discount/100),2)" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.currency_id}"/>
+                            <t t-if="is_free">
+                                <span t-esc="round((l.price_subtotal/l.product_uom_qty)/(1-l.discount/100),2)" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.currency_id}"/>
+                            </t>
+                            <t t-else="">
+                                <span t-esc="float('0')" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.currency_id}"/>
+                            </t>
                         </td>
                         <td class="v_price_unit">
-                            <span t-esc="0 if l.product_uom_qty == 0 else  round((l.price_total/l.product_uom_qty)/(1-l.discount/100),2)" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.currency_id}"/>
+                            <!-- <span t-esc="0 if l.product_uom_qty == 0 else  round((l.price_total/l.product_uom_qty)/(1-l.discount/100),2)" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.currency_id}"/> -->
+                            <t t-if="is_free">
+                                <span t-esc="round((l.price_total/l.product_uom_qty)/(1-l.discount/100),2)" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.currency_id}"/>
+                            </t>
+                            <t t-else="">
+                                <span t-esc="float('0')" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.currency_id}"/>
+                            </t>
                         </td>
                         <td class="v_discount" t-if="display_discount">
                             <span t-if="l.discount &gt; 0">
@@ -128,7 +140,13 @@
                             </span>
                         </td>
                         <td class="v_price_total">
-                            <span t-field="l.price_total" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.currency_id}"/>
+                            <!-- <span t-field="l.price_total" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.currency_id}"/> -->
+                            <t t-if="is_free">
+                                <span t-field="l.price_total" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.currency_id}"/>
+                            </t>
+                            <t t-else="">
+                                <span t-esc="'*Bonif*'"/>
+                            </t>
                         </td>
                         <t t-set="item" t-value="item+1"/>
                     </tr>
@@ -158,7 +176,8 @@
                         <ul>
                             <li t-foreach="doc.company_id.partner_id.bank_ids" t-as="bank">
                                 <span t-field="bank.bank_id.name" />
-                                <span t-field="bank.description" />:
+                                <span t-field="bank.description" />
+:
                                 <span t-field="bank.acc_number" />
                             </li>
                         </ul>
