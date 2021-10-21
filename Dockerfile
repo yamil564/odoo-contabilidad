@@ -25,8 +25,6 @@ RUN set -x; \
 RUN apt-get clean && apt-get autoclean
 
 RUN pip3 install phonenumbers
-
-
 RUN pip3 install boto3
 RUN pip3 install lxml
 RUN pip3 install flex
