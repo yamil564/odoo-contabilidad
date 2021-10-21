@@ -98,7 +98,14 @@
                                 <label t-esc="'TÉRMINO PAGO: '"/>
                             </th>
                             <td class="label">
-                                <span t-esc="o.invoice_payment_term_id.note" t-if="o.invoice_payment_term_id.note"/>
+                                <t t-if="o.invoice_payment_term_id">
+                                    <span t-esc="o.invoice_payment_term_id.note"/>
+                                </t>
+                                <t t-else="">
+                                    <t t-if="o.invoice_date == o.invoice_date_due">
+                                        <span>Contado</span>
+                                    </t>
+                                </t>
                             </td>
                             <!-- N° GUÍA -->
                             <th>
@@ -107,8 +114,7 @@
                             <td class="label">
                                 <!-- <div name="reference" class="d-none"></div> -->
                                 <!-- <span t-esc="o.ref" t-if="o.ref"/> -->
-                                <span t-esc="';'.join([g.numero for g in o.guia_remision_ids.filtered(lambda r:r.state == 'validado')])" 
-                                        t-if="len(o.guia_remision_ids.filtered(lambda r:r.state == 'validado')) &gt; 0"/>
+                                <span t-esc="';'.join([g.numero for g in o.guia_remision_ids.filtered(lambda r:r.state == 'validado')])" t-if="len(o.guia_remision_ids.filtered(lambda r:r.state == 'validado')) &gt; 0"/>
                             </td>
                         </tr>
                         <tr>
@@ -306,28 +312,28 @@
                                 <span t-field="l.name"/>
                             </td>
                             <td class="v_value_unit">
-                                <span t-esc="0 if l.quantity == 0 else  round((l.price_subtotal/l.quantity)/(1-l.discount/100),2)" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
+                                <span t-esc="round((l.price_subtotal/l.quantity)/(1-l.discount/100),2)" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
                             </td>
                             <td class="v_price_unit">
                                 <t t-if="is_free">
-                                    <span t-esc="0 if l.quantity == 0 else  round((l.price_total/l.quantity)/(1-l.discount/100),2)" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
+                                    <span t-esc="round((l.price_total/l.quantity)/(1-l.discount/100),2)" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
                                 </t>
                                 <t t-else="">
-                                    <span t-esc="float('0')"  t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
+                                    <span t-esc="float('0')" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
                                 </t>
                             </td>
                             <td class="v_discount" t-if="display_discount">
                                 <span t-if="l.discount &gt; 0">
-                                    <span t-esc="round(l.price_total/l.quantity,4)" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
+                                    <span t-esc="round(l.price_total/l.quantity,4)" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
                                     <span t-esc="'('+str(l.discount)+'%)'"/>
                                 </span>
                             </td>
                             <td class="v_price_total">
                                 <t t-if="is_free">
-                                    <span t-field="l.price_total" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
+                                    <span t-field="l.price_total" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
                                 </t>
                                 <t t-else="">
-                                    *Bonif*
+                                    <span t-esc="'*Bonif*'"/>
                                 </t>
                             </td>
                             <t t-set="item" t-value="item+1"/>
@@ -390,7 +396,7 @@
                                             <span t-field="line.date_due"/>
                                         </td>
                                         <td width="80px">
-                                            <span t-field="line.amount" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
+                                            <span t-field="line.amount" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
                                         </td>
                                         <t t-set="cuota" t-value="cuota+1"/>
                                     </tr>

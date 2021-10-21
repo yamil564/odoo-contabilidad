@@ -271,25 +271,25 @@ class AccountMove(models.Model):
     invoice_payment_term_type = fields.Selection(
         related="invoice_payment_term_id.type")
 
-    @api.constrains("invoice_payment_term_id")
+    # @api.constrains("invoice_payment_term_id")
     def check_paymenttermn_lines(self):
         for record in self:
-            if record.invoice_payment_term_id:
-                if record.invoice_payment_term_type == "Credito":
-                    amount_total = round(sum(record.paymentterm_line.mapped("amount")),6)
-                    # _logger.info(amount_total)
-                    # _logger.info(record.amount_total)
-                    if amount_total != round(record.amount_total,6):
-                        raise UserError("El monto total de los plazos de pago debe ser igual al total de la factura.")
-
-                    if record.invoice_date:
-                        if min(record.paymentterm_line.mapped("date_due")) < record.invoice_date:
+            if record.type not in ['in_invoice', 'in_refund']:
+                if record.invoice_payment_term_id:
+                    if record.invoice_payment_term_type == "Credito":
+                        amount_total = sum(
+                            record.paymentterm_line.mapped("amount"))
+                        if amount_total != record.amount_total:
                             raise UserError(
-                                "La fecha de vencimiento de la cuota debe ser mayor o igual a la fecha de emisión del comprobante")
-                    else:
-                        if min(record.paymentterm_line.mapped("date_due")) < datetime.now(tz=timezone("America/Lima")).date():
-                            raise UserError(
-                                "La fecha de vencimiento de la cuota debe ser mayor o igual a la fecha de emisión del comprobante")
+                                "El monto total de los plazos de pago debe ser igual al total de la factura.")
+                        if record.invoice_date:
+                            if min(record.paymentterm_line.mapped("date_due")) < record.invoice_date:
+                                raise UserError(
+                                    "La fecha de vencimiento de la cuota debe ser mayor o igual a la fecha de emisión del comprobante")
+                        else:
+                            if min(record.paymentterm_line.mapped("date_due")) < datetime.now(tz=timezone("America/Lima")).date():
+                                raise UserError(
+                                    "La fecha de vencimiento de la cuota debe ser mayor o igual a la fecha de emisión del comprobante")
 
     @api.onchange("type_detraction")
     def change_type_detraction(self):
@@ -687,6 +687,7 @@ class AccountMove(models.Model):
     def post(self):
         # Validar journal
         for move in self:
+            move.check_paymenttermn_lines()
             _logger.info(move.name)
             if move.journal_id.invoice_type_code_id not in ['01', '03', '07', '08', '09']:
                 super(AccountMove, move).post()
