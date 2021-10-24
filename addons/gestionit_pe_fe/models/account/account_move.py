@@ -270,7 +270,7 @@ class AccountMove(models.Model):
     invoice_payment_term_type = fields.Selection(
         related="invoice_payment_term_id.type")
 
-    @api.constrains("invoice_payment_term_id")
+    # @api.constrains("invoice_payment_term_id")
     def check_paymenttermn_lines(self):
         for record in self:
             if record.type not in ['in_invoice', 'in_refund']:
@@ -686,6 +686,7 @@ class AccountMove(models.Model):
     def post(self):
         # Validar journal
         for move in self:
+            move.check_paymenttermn_lines()
             _logger.info(move.name)
             if move.journal_id.invoice_type_code_id not in ['01', '03', '07', '08', '09']:
                 super(AccountMove, move).post()
