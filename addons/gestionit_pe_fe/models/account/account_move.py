@@ -96,10 +96,9 @@ class AccountMove(models.Model):
 
     @api.depends('credit_note_ids')
     def _compute_credit_count(self):
-        self.env.cr.execute(
-            "select count(*) from account_move where reversed_entry_id = {}".format(self.id))
-        result = self.env.cr.fetchall()
         for inv in self:
+            self.env.cr.execute("select count(*) from account_move where reversed_entry_id = {}".format(inv.id))
+            result = self.env.cr.fetchall()
             inv.credit_note_count = result[0][0]
 
     def action_view_credit_notes(self):
