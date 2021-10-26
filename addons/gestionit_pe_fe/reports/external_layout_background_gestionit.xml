@@ -36,10 +36,10 @@
                                 </b>
                             </div>
                             <div class="text-center">
-                                <span t-esc="'R.U.C. {}'.format(company.vat)"/>
+                                <span t-esc="'R.U.C. {}'.format(company.vat or '')"/>
                             </div>
                             <div class="text-center">
-                                <span t-esc="o.name"/>
+                                <span t-esc="o.name or doc.name"/>
                             </div>
                         </div>
                     </div>
@@ -48,6 +48,10 @@
         </div>
         <div t-attf-class="o_company_#{company.id}_layout article o_report_layout_pe_v1" t-att-data-oe-model="o and o._name" t-att-data-oe-id="o and o.id" t-att-data-oe-lang="o and o.env.context.get('lang')">
             <t t-raw="0"/>
+        </div>
+        <div class="footer o_company_#{company.id}_layout">
+            <div class="o_report_footer_pe_v1">
+            </div>
         </div>
     </template>
     <record id="base.main_company" model="res.company">
