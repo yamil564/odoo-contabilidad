@@ -1,20 +1,25 @@
 odoo.define("select_invoice_from_website.website_sale",function(require){
     var publicWidget = require('web.public.widget');
+    var ajax = require('web.ajax');
 
     var WebsiteSaleSuper = publicWidget.registry.WebsiteSale.prototype
 
     publicWidget.registry.WebsiteSale = publicWidget.registry.WebsiteSale.extend({
+
         events:_.extend({},WebsiteSaleSuper.events,{
+            "change input[name='vat']":"change_vat",
             "change input[name='invoice_type_code']":"change_invoice_type_code",
             "change input[name='l10n_latam_identification_type_id']:checked":"click_l10n_latam_identification_type_id",
             'change input[name="country_id"]': '_onChangeCountry',
         }),
+
         start:function(){
             var def = this._super.apply(this, arguments);
             this.$('input[name="country_id"]').trigger("change");
             this.$('input[name="l10n_latam_identification_type_id"]').trigger("change");
             return def
         },
+
         _changeCountry:function(){
             if (!$("#country_id").val()) {
                 return;
@@ -30,12 +35,13 @@ odoo.define("select_invoice_from_website.website_sale",function(require){
                     minLength:3,
                     source:_.map(data.states,function(el){return {id:el[0],value:el[1]}}),
                     select:function(ev,ui){
-                        $("input[name='state_id']").val( ui.item.id ); 
+                        $("input[name='state_id']").val( ui.item.id );
                         return false;
                     }
                 })
             })
         },
+
         change_invoice_type_code:function(ev){
             var invoice_type_code = $(ev.currentTarget).val()
             this._rpc({
@@ -47,6 +53,7 @@ odoo.define("select_invoice_from_website.website_sale",function(require){
                 return true
             })
         },
+
         click_l10n_latam_identification_type_id:function(ev){
             var itc = $(ev.currentTarget).data("itc")
             $("input[type='radio'][name='invoice_type_code']:checked").attr("checked",false)
@@ -56,7 +63,7 @@ odoo.define("select_invoice_from_website.website_sale",function(require){
                 $(".div_state label").removeClass("label-optional")
                 $(".div_street label").removeClass("label-optional")
                 $("input[value='01']").attr("checked",true)
-                
+
             }else{
                 $(".div_company label").addClass("label-optional")
                 $(".div_country label").addClass("label-optional")
@@ -77,6 +84,15 @@ odoo.define("select_invoice_from_website.website_sale",function(require){
             }else{
                 $(".div_company").removeClass("d-none")
             }
-        }
+        },
+
+        change_vat: function(){
+          var type = $('#l10n_latam_identification_type_id').val();
+          var vat = $('#vat').val();
+          ajax.jsonRpc('/change_vat', 'call', {'type': type, 'vat': vat}).then(function (result) {
+              alert(result['result']);
+          });
+        },
+
     })
 })
