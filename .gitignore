@@ -1,5 +1,6 @@
 __pycache__/
 .vscode/
+.idea/
 addons-custom-local/
 *.pyc
 .user_data_uid_*
