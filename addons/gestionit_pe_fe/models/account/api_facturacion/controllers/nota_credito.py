@@ -285,7 +285,7 @@ def build_nota_credito(data):
 
         cod_afectacion_igv = line.get("codAfectacionIgv", False)
 
-        tasaIgv = 18.0
+        tasaIgv = line.get("tasaIgv",0)
         # 9995 -	Exportación
         if cod_afectacion_igv in ["40"]:
             tax_scheme = TaxScheme("9995", "EXP", "EXP")

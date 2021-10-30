@@ -337,12 +337,14 @@ class AccountMove(models.Model):
 
     apply_same_discount_on_all_lines = fields.Boolean("Aplicar el mismo descuento en todas las líneas?", states={
                                                       'draft': [('readonly', False)]}, readonly=True)
-    discount_on_all_lines = fields.Integer(
+    discount_on_all_lines = fields.Float(
         "Descuento (%)", states={'draft': [('readonly', False)]}, readonly=True)
 
     def action_apply_same_discount_on_all_lines(self):
-        self.invoice_line_ids = [(1, line.id, {
-                                  "discount": self.discount_on_all_lines}) for line in self.invoice_line_ids]
+        self.invoice_line_ids = [(1, line.id, {"discount": self.discount_on_all_lines if all([(True if ta not in ["31", "32", "33", "34", "35", "36", "37"] else False) 
+                                                                                                        for ta in line.tax_ids.mapped("tax_group_id.tipo_afectacion") ]) else 0 }) 
+                                                    for line in self.invoice_line_ids 
+                                ]
 
     apply_global_discount = fields.Boolean("Aplicar descuento global", default=False, states={
                                            'draft': [('readonly', False)]}, readonly=True)
@@ -394,7 +396,8 @@ class AccountMove(models.Model):
                     "tax_ids": [(6, 0, [tax.id for tax in product.taxes_id])],
                     "name": product.name,
                     "product_uom_id": product.uom_id.id,
-                    "price_unit": -round(company.currency_id._convert(record.amount_total*record.descuento_global/100, record.currency_id, company, record.date), 6),
+                    # "price_unit": -round(company.currency_id._convert(record.amount_total*record.descuento_global/100, record.currency_id, company, record.date), 6),
+                    "price_unit": -round(record.amount_total*record.descuento_global/100, 6),
                     # "debit":company.currency_id._convert(record.amount_total*record.descuento_global/100, record.currency_id, company, record.date),
                     # "balance":-company.currency_id._convert(record.amount_total*record.descuento_global/100, record.currency_id, company, record.date),
                     # "credit":0,
@@ -687,7 +690,7 @@ class AccountMove(models.Model):
         # Validar journal
         for move in self:
             move.check_paymenttermn_lines()
-            _logger.info(move.name)
+            # _logger.info(move.name)
             if move.journal_id.invoice_type_code_id not in ['01', '03', '07', '08', '09']:
                 super(AccountMove, move).post()
             else:
@@ -719,6 +722,12 @@ class AccountMove(models.Model):
 
                     if move.journal_id.invoice_type_code_id == "03":
                         msg_error += move.validacion_boleta()
+                        if len(msg_error) > 0:
+                            msg = "\n\n".join(msg_error)
+                            raise UserError(msg)
+                    
+                    if move.journal_id.invoice_type_code_id == "07":
+                        msg_error += move.validacion_nota_credito()
                         if len(msg_error) > 0:
                             msg = "\n\n".join(msg_error)
                             raise UserError(msg)
@@ -923,6 +932,12 @@ class AccountMove(models.Model):
         if not self.partner_id.email:
             errors.append("* El cliente selecionado no tiene email.")
         """
+        return errors
+
+    def validacion_nota_credito(self):
+        errors = []
+        if self.descuento_global != 0 or self.apply_global_discount:
+            errors.append("* No es posible aplicar un descuento global a una Nota de crédito. Esta opción solo esta disponible para Facturas y Boletas")
         return errors
 
     def generar_nota_debito(self):
