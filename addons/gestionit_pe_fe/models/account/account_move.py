@@ -276,9 +276,8 @@ class AccountMove(models.Model):
             if record.type not in ['in_invoice', 'in_refund']:
                 if record.invoice_payment_term_id:
                     if record.invoice_payment_term_type == "Credito":
-                        amount_total = sum(
-                            record.paymentterm_line.mapped("amount"))
-                        if amount_total != record.amount_total:
+                        amount_total = round(sum(record.paymentterm_line.mapped("amount")) + record.detraction_amount,4)
+                        if amount_total != round(record.amount_total,4):
                             raise UserError(
                                 "El monto total de los plazos de pago debe ser igual al total de la factura.")
                         if record.invoice_date:

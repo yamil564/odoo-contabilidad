@@ -270,8 +270,7 @@ def build_nota_credito(data):
         line_extension_amount = LineExtensionAmount(
             amount=line.get("montoItem", 0), currencyID=tipoMoneda)
 
-        precio = line.get('precioItem', 0) if not line.get(
-            "no_onerosa") else line.get('precioItemReferencia', 0)
+        precio = line.get('precioItem', 0) if not line.get("no_onerosa") else line.get('precioItemReferencia', 0)
         price_code = "01" if not line.get("no_onerosa") else "02"
         price_amount = PriceAmount(amount=precio, currencyID=tipoMoneda)
 
