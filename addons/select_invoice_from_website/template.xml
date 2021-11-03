@@ -57,8 +57,13 @@
     <template id="website_sale.address_b2b" inherit_id="website_sale.address" name="Show b2b fields" customize_show="True">
 
         <xpath expr="//div[contains(@t-attf-class, 'div_name')]" position="replace">
-            <label class="col-form-label" for="name">Name</label>
+            <label class="col-form-label" for="name">Nomre</label>
             <input type="text" name="name" id="name_aux" t-attf-class="form-control #{error.get('name') and 'is-invalid' or ''}" t-att-value="'name' in checkout and checkout['name']" />
+        </xpath>
+
+        <xpath expr="//div[contains(@t-attf-class, 'div_street')]" position="replace">
+          <label class="col-form-label" for="street">Calle <span class="d-none d-md-inline"> y Número</span></label>
+          <input type="text" name="street" id="street_aux" t-attf-class="form-control #{error.get('street') and 'is-invalid' or ''}" t-att-value="'street' in checkout and checkout['street']" />
         </xpath>
 
         <xpath expr="//div[@id='div_phone']" position="after">
@@ -98,7 +103,7 @@
                 <div class="form-floating pais">
                     <select class="form-select" id="country" aria-label="Floating label select" required="">
                         <option selected="" disabled="">Seleccionar</option>
-                        <option>Perú</option>
+                        <option value="1">Perú</option>
                     </select>
                     <label for="country" class="form-label">País</label>
                 </div>

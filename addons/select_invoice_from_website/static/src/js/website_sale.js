@@ -89,15 +89,49 @@ odoo.define("select_invoice_from_website.website_sale",function(require){
         change_vat: function(){
           var type = $("input[type='radio'][name='l10n_latam_identification_type_id']:checked").val();
           var vat = $('#vat').val();
-          ajax.jsonRpc('/change_vat', 'call', {'type': type, 'vat': vat}).then(function (result) {
+          var country = $('#country').val()
+          var self = this
+          ajax.jsonRpc('/change_vat', 'call', {'type': type, 'vat': vat, 'country': country}).then(function (result) {
 
               if (result.validate){
-                  if (result.name){
+                $('#country').val(1);
+
+                  if (result.name && $('#name_aux').val() == ""){
                     $('#name_aux').val(result['name'])
                   }
+
+                  if (result.address && $('#street_aux').val() == ""){
+                    $('#street_aux').val(result['address'])
+                  }
+
                   if (result.razon){
                     $('#company_name').val(result['razon'])
                   }
+
+                  if (result.department){
+                    $('#departamento').val(result['department'])
+                    ajax.jsonRpc('/get-provincia', 'call',
+                     {'departamento': result['department']}).then(function (data) {
+                            for (let i = 0; i < data.length; i++) {
+                                $(self.$el).find("#provincia").append($('<option /}>').val(data[i].id).text(data[i].name));
+                            }
+                    })
+                  }
+
+                  if (result.province){
+                    $('#provincia').val(result['province'])
+                    ajax.jsonRpc('/get-distrito', 'call',
+                     {'provincia': result['province']}).then(function (data) {
+                            for (let i = 0; i < data.length; i++) {
+                                $(self.$el).find("#distrito").append($('<option /}>').val(data[i].id).text(data[i].name));
+                            }
+                    })
+                  }
+
+                  if (result.district){
+                    $('#distrito').val(result['district'])
+                  }
+
                   $("#vat").blur(function(){
                     $(this).css({"background":"transparent"})
                   })
@@ -105,8 +139,13 @@ odoo.define("select_invoice_from_website.website_sale",function(require){
                 $("#vat").css("background-color", "pink");
                 $('#name_aux').val("")
                 $('#company_name').val("")
+                $('#street_aux').val("")
               }
           });
+          // $('#country').change();
+          // $('#departamento').change();
+          // $('#provincia').change();
+          // $('#distrito').change();
         },
 
     })

@@ -55,6 +55,13 @@ class WebsiteSaleExtend(WebsiteSale):
         patron_ruc = re.compile("[12]\d{10}$")
         patron_dni = re.compile("\d{8}$")
         razon = False
+        partner = False
+        validate = False
+        district = False
+        province = False
+        department = False
+        address = False
+        country = request.env['res.country'].search([('code', '=', 'PE')], limit=1).id
 
         type = request.env['l10n_latam.identification.type'].search([('id', '=', int(kw['type']))])
 
@@ -63,30 +70,54 @@ class WebsiteSaleExtend(WebsiteSale):
             if len(kw['vat'].strip()) == 8:
                 partner = self.request_migo_dni(kw['vat'].strip(), "dni")
                 validate = True
-            else:
-                partner = False
-                validate = False
 
-        if type.l10n_pe_vat_code == '6':
+        elif type.l10n_pe_vat_code == '6':
 
-            partner = False
-            validate = True
             if patron_ruc.match(kw['vat']):
                 vat_arr = [int(c) for c in kw['vat']]
                 arr = [5,4,3,2,7,6,5,4,3,2]
                 s = sum([vat_arr[r]*arr[r] for r in range(0,10)])
                 num_ver = (11-s%11)%10
-                if vat_arr[10] != num_ver:
-                    validate = False
-                else:
-                    partner = self.request_migo_dni(kw['vat'].strip(), "ruc")
+                if vat_arr[10] == num_ver:
+                    validate = True
+                    call = self.request_migo_dni(kw['vat'].strip(), "ruc")
+                    partner = call['name']
+
+                    loc = request.env['res.country.state'].search([('code', '=', call['ubigeo'])])
+                    address = call['address']
+
+                    if loc.province_id:
+                        if loc.state_id:
+                            district = loc.id
+                            province = loc.province_id.id
+                            department = loc.state_id.id
+                        else:
+                            department = loc.id
+                            province = loc.province_id.id
+                    else:
+                        department = loc.id
+
+                    if len(call['ubigeo']) == 6:
+                        district = request.env['res.country.state'].search([('code', '=', call['ubigeo'])])
+                        province = district.province_id.id
+                        department = district.state_id.id
+                        district = district.id
+                    elif len(call['ubigeo']) == 4:
+                        province = request.env['res.country.state'].search([('code', '=', call['ubigeo'])])
+                        department = province.state_id.id
+                        province = province.id
+                    elif len(call['ubigeo']) == 2:
+                        department = request.env['res.country.state'].search([('code', '=', call['ubigeo'])]).id
                     razon = partner
-            else:
-                validate = False
         vals = {
             'name':partner,
             'validate':validate,
             'razon':razon,
+            'district':district,
+            'province':province,
+            'department':department,
+            'country':country,
+            'address':address,
         }
         return vals
 
@@ -101,27 +132,26 @@ class WebsiteSaleExtend(WebsiteSale):
                 data = {"token": "yQfQ97SvS38y3ZF9GMYZjBChKa1ajM4OzuRspcm7Eq22H7OETuxj9c17Vv3F", "dni": dni}
             else:
                 data = {"token": "yQfQ97SvS38y3ZF9GMYZjBChKa1ajM4OzuRspcm7Eq22H7OETuxj9c17Vv3F", "ruc": dni}
-            _logger.info("De nuevo por aca")
-            _logger.info("De nuevo por aca")
-            _logger.info("De nuevo por aca")
-            _logger.info(data)
-            _logger.info(headers)
-            _logger.info(url)
         else:
             return False
 
         try:
             res = requests.request("POST", url, headers=headers, data=json.dumps(data))
             res = res.json()
-            _logger.info("Por aca mi bru")
-            _logger.info("Por aca mi bru")
-            _logger.info("Por aca mi bru")
+            _logger.info("Hola Luis")
+            _logger.info("Hola Luis")
+            _logger.info("Hola Luis")
+            _logger.info("Hola Luis")
             _logger.info(res)
+
+
             if res.get("success", False):
                 if type == "dni":
                     return res.get("nombre", False)
                 else:
-                    return res.get("nombre_o_razon_social", False)
+                    ubigeo = str(res.get("ubigeo",False))
+                    address = str(res.get("direccion_simple",False))
+                    return {'name':res.get("nombre_o_razon_social", False), 'ubigeo':ubigeo, 'address':address}
             return False
         except Exception as e:
             return False
@@ -146,92 +176,38 @@ class WebsiteSaleExtend(WebsiteSale):
                 Partner.browse(partner_id).sudo().write(checkout)
         return partner_id
 
-    # @http.route(['/shop/address'], type='http', methods=['GET', 'POST'], auth="public", website=True, sitemap=False)
-    # def address(self, **kw):
-    #
-    #     Partner = request.env['res.partner'].with_context(show_address=1).sudo()
-    #     order = request.website.sale_get_order()
-    #
-    #     redirection = self.checkout_redirection(order)
-    #     if redirection:
-    #         return redirection
-    #
-    #     mode = (False, False)
-    #     can_edit_vat = False
-    #     def_country_id = order.partner_id.country_id
-    #     values, errors = {}, {}
-    #
-    #     partner_id = int(kw.get('partner_id', -1))
-    #
-    #     # IF PUBLIC ORDER
-    #     if order.partner_id.id == request.website.user_id.sudo().partner_id.id:
-    #         mode = ('new', 'billing')
-    #         can_edit_vat = True
-    #         country_code = request.session['geoip'].get('country_code')
-    #         if country_code:
-    #             def_country_id = request.env['res.country'].search([('code', '=', country_code)], limit=1)
-    #         else:
-    #             def_country_id = request.website.user_id.sudo().country_id
-    #     # IF ORDER LINKED TO A PARTNER
-    #     else:
-    #         if partner_id > 0:
-    #             if partner_id == order.partner_id.id:
-    #                 mode = ('edit', 'billing')
-    #                 can_edit_vat = order.partner_id.can_edit_vat()
-    #             else:
-    #                 shippings = Partner.search([('id', 'child_of', order.partner_id.commercial_partner_id.ids)])
-    #                 if partner_id in shippings.mapped('id'):
-    #                     mode = ('edit', 'shipping')
-    #                 else:
-    #                     return Forbidden()
-    #             if mode:
-    #                 values = Partner.browse(partner_id)
-    #         elif partner_id == -1:
-    #             mode = ('new', 'shipping')
-    #         else: # no mode - refresh without post?
-    #             return request.redirect('/shop/checkout')
-    #
-    #     # IF POSTED
-    #     if 'submitted' in kw:
-    #         pre_values = self.values_preprocess(order, mode, kw)
-    #         _logger.info(pre_values)
-    #         _logger.info(kw.items())
-    #         errors, error_msg = self.checkout_form_validate(mode, kw, pre_values)
-    #         post, errors, error_msg = self.values_postprocess(order, mode, pre_values, errors, error_msg)
-    #
-    #         if errors:
-    #             errors['error_message'] = error_msg
-    #             values = kw
-    #         else:
-    #             partner_id = self._checkout_form_save(mode, post, kw) #
-    #             if mode[1] == 'billing':
-    #                 order.partner_id = partner_id
-    #                 order.with_context(not_self_saleperson=True).onchange_partner_id()
-    #                 # This is the *only* thing that the front end user will see/edit anyway when choosing billing address
-    #                 order.partner_invoice_id = partner_id
-    #                 if not kw.get('use_same'):
-    #                     kw['callback'] = kw.get('callback') or \
-    #                         (not order.only_services and (mode[0] == 'edit' and '/shop/checkout' or '/shop/address'))
-    #             elif mode[1] == 'shipping':
-    #                 order.partner_shipping_id = partner_id
-    #
-    #             order.message_partner_ids = [(4, partner_id), (3, request.website.partner_id.id)]
-    #             if not errors:
-    #                 return request.redirect(kw.get('callback') or '/shop/confirm_order')
-    #
-    #     country = 'country_id' in values and values['country_id'] != '' and request.env['res.country'].browse(int(values['country_id']))
-    #     country = country and country.exists() or def_country_id
-    #     render_values = {
-    #         'website_sale_order': order,
-    #         'partner_id': partner_id,
-    #         'mode': mode,
-    #         'checkout': values,
-    #         'can_edit_vat': can_edit_vat,
-    #         'country': country,
-    #         'countries': country.get_website_sale_countries(mode=mode[1]),
-    #         "states": country.get_website_sale_states(mode=mode[1]),
-    #         'error': errors,
-    #         'callback': kw.get('callback'),
-    #         'only_services': order and order.only_services,
-    #     }
-    #     return request.render("website_sale.address", render_values)
+"""
+{
+    'success': True,
+    'ruc': '20601188237',
+    'nombre_o_razon_social': 'YAMICA MEGA S.A.C.',
+    'estado_del_contribuyente': 'ACTIVO',
+    'condicion_de_domicilio': 'HABIDO',
+    'ubigeo': '150101',
+    'tipo_de_via': 'JR.',
+    'nombre_de_via': 'HUAROCHIRI',
+    'codigo_de_zona': 'URB.',
+    'tipo_de_zona': 'LIMA INDUSTRIAL',
+    'numero': '507',
+    'interior': '-',
+    'lote': '-',
+    'dpto': '-',
+    'manzana': '-',
+    'kilometro': '-',
+    'distrito': 'LIMA',
+    'provincia': 'LIMA',
+    'departamento': 'LIMA',
+    'direccion_simple': 'JR. HUAROCHIRI NRO. 507 URB. LIMA INDUSTRIAL',
+    'direccion': 'JR. HUAROCHIRI NRO. 507 URB. LIMA INDUSTRIAL - LIMA LIMA LIMA',
+    'actualizado_en': '2021-11-03 06:30:01'
+}
+{
+    'name': 'WANCHOR SOCIEDAD ANONIMA',
+    'validate': True,
+    'razon': 'WANCHOR SOCIEDAD ANONIMA',
+    'district': 2843,
+    'province': 1511,
+    'department': 1160,
+    'country': 173}
+
+"""
