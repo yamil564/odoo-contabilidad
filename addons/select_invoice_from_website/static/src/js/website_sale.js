@@ -87,10 +87,25 @@ odoo.define("select_invoice_from_website.website_sale",function(require){
         },
 
         change_vat: function(){
-          var type = $('#l10n_latam_identification_type_id').val();
+          var type = $("input[type='radio'][name='l10n_latam_identification_type_id']:checked").val();
           var vat = $('#vat').val();
           ajax.jsonRpc('/change_vat', 'call', {'type': type, 'vat': vat}).then(function (result) {
-              alert(result['result']);
+
+              if (result.validate){
+                  if (result.name){
+                    $('#name_aux').val(result['name'])
+                  }
+                  if (result.razon){
+                    $('#company_name').val(result['razon'])
+                  }
+                  $("#vat").blur(function(){
+                    $(this).css({"background":"transparent"})
+                  })
+              }else{
+                $("#vat").css("background-color", "pink");
+                $('#name_aux').val("")
+                $('#company_name').val("")
+              }
           });
         },
 

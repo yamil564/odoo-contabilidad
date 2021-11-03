@@ -20,7 +20,8 @@ RUN set -x; \
         && pip3 install --upgrade setuptools  pip \
         && pip3 install cryptography \
             ipaddress \
-            signxml 
+            signxml \
+            openpyxl
 
 RUN apt-get clean && apt-get autoclean
 
