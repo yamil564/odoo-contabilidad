@@ -21,17 +21,20 @@
                     <field name="commercial_partner_id" invisible="1" />
                     <field name="ref" invisible="1"/>
                     <!-- <field name="name" invisible="1"/> -->
-                    <field name="journal_id" invisible="1"/>
+                    <field name="journal_id" optional="hide"/>
                     <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}" string="Empresa"/>
-                    <field name="user_id" string="Vendedor"/>
-                    <field name="invoice_date" string="F.Emisión"/>
-                    <field name="invoice_date_due" string="F.Venc"/>
+                    <field name="user_id" string="Vendedor" optional="show"/>
+                    <field name="invoice_date" string="F.Emisión" optional="show"/>
+                    <field name="invoice_date_due" string="F.Venc" optional="show"/>
                     <!-- <field name="origin" string="Origen"/> -->
-                    <field name="amount_total_signed" string="Total" sum="Total"/>
-                    <field name="detraction_amount" string="Detracción"/>
+                    <field name="amount_total" string="Total" optional="show"/>
+                    <field name="amount_total_signed" string="Total" optional="hide"/>
+                    <field name="exchange_rate_day" string="T/C" optional="hide"/>
+                    <field name="detraction_amount" string="Detracción"  optional="hide"/>
                     <!-- <field name="residual_signed" string="Monto adeudado" sum="Amount Due"/> -->
                     <field name="currency_id" invisible="1" string="Moneda"/>
                     <field name="company_currency_id" invisible="1"/>
+                    <field name="invoice_origin" optional="hide"/>
                     <field name="state" string="Estado"/>
                     <field name="estado_emision" invisible="1"/>
                     <field name="estado_comprobante_electronico" string="Validez Comp."/>

@@ -360,6 +360,9 @@
         <xpath expr="//div[hasclass('clearfix')]" position="after">
             <div class="row invoice-content-total" id="total">
                 <div class="col-8 additional-information">
+                    <div class="pb-3" name="amount_letter">
+                        <span t-esc="'SON: {}'.format(o.to_word(o.amount_total,o.currency_id.name).upper())"/>
+                    </div>
                     <div style="border: solid gray 1px;padding:8px" t-if="o.has_detraction">
                         <div>
                             <strong>% Detracción: </strong>
@@ -403,6 +406,7 @@
                                 </tbody>
                             </table>
                         </t>
+                        <br/>
                     </t>
                     <!-- <div style="font-size: 12px; width: 100%">
                         <div>
@@ -422,6 +426,7 @@
                                 <span t-esc="'{} : {}'.format(bank.bank_id.name,bank.acc_number)"></span>
                             </li>
                         </ul>
+                        <br/>
                     </div>
                 </div>
                 <div class="col-4 p-0">
@@ -497,11 +502,11 @@
             </div>
             <div class="row">
                 <div class="col-12" t-if="'{}_{}'.format(o.type,o.journal_id.invoice_type_code_id) in ['out_invoice_01','out_invoice_03','out_refund_07','out_invoice_08']">
-                    <div class="pb-3">
+                    <!-- <div class="pb-3" name="amount_letter">
                         <span t-esc="'SON: {}'.format(o.to_word(o.amount_total,o.currency_id.name).upper())"/>
-                    </div>
+                    </div> -->
                     <div t-if="o.state in ['posted','paid']" class="d-flex flex-row">
-                        <div>
+                        <div name="electronic_invoice_qr">
                             <img t-att-src="'/report/barcode/?type=%s&amp;value=%s&amp;width=%s&amp;height=%s'%('QR', o.generate_text_qr(o), 80, 80)"/>
                         </div>
                         <div class="pl-3">
@@ -516,6 +521,9 @@
             </div>
         </xpath>
         <xpath expr="//p[@t-if]" position="attributes">
+            <attribute name="class">d-none</attribute>
+        </xpath>
+        <xpath expr="//p[@t-if='o.invoice_payment_term_id']" position="attributes">
             <attribute name="class">d-none</attribute>
         </xpath>
     </template>
