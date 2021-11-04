@@ -170,39 +170,3 @@ class WebsiteSaleExtend(WebsiteSale):
                     return Forbidden()
                 Partner.browse(partner_id).sudo().write(checkout)
         return partner_id
-
-"""
-{
-    'success': True,
-    'ruc': '20601188237',
-    'nombre_o_razon_social': 'YAMICA MEGA S.A.C.',
-    'estado_del_contribuyente': 'ACTIVO',
-    'condicion_de_domicilio': 'HABIDO',
-    'ubigeo': '150101',
-    'tipo_de_via': 'JR.',
-    'nombre_de_via': 'HUAROCHIRI',
-    'codigo_de_zona': 'URB.',
-    'tipo_de_zona': 'LIMA INDUSTRIAL',
-    'numero': '507',
-    'interior': '-',
-    'lote': '-',
-    'dpto': '-',
-    'manzana': '-',
-    'kilometro': '-',
-    'distrito': 'LIMA',
-    'provincia': 'LIMA',
-    'departamento': 'LIMA',
-    'direccion_simple': 'JR. HUAROCHIRI NRO. 507 URB. LIMA INDUSTRIAL',
-    'direccion': 'JR. HUAROCHIRI NRO. 507 URB. LIMA INDUSTRIAL - LIMA LIMA LIMA',
-    'actualizado_en': '2021-11-03 06:30:01'
-}
-{
-    'name': 'WANCHOR SOCIEDAD ANONIMA',
-    'validate': True,
-    'razon': 'WANCHOR SOCIEDAD ANONIMA',
-    'district': 2843,
-    'province': 1511,
-    'department': 1160,
-    'country': 173}
-
-"""
