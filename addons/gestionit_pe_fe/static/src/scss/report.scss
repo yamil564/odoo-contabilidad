@@ -66,7 +66,7 @@
             tr {
                 background-color: #d9d9d9;
                 color: black;
-                font-size: 10px;
+                font-size: 12px;
                 th {
                     padding: 8px 0px;
                     text-align: center;
@@ -91,7 +91,7 @@
                 td {
                     height: 8px;
                     max-height: 20px;
-                    font-size: 10px;
+                    font-size: 14px;
 
                     &.v_item,
                     &.v_quantity,
@@ -127,6 +127,20 @@
                 }
             }
         }
+    }
+
+    div[name="company_banks"]{
+        ul{
+            list-style: none;
+            padding: 0px;
+            li{
+                padding:0px;
+                span{
+                    font-size:12px
+                }
+            }
+        }
+        
     }
 }
 .o_report_header_pe_v1 {
