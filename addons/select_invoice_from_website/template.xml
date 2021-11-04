@@ -102,7 +102,7 @@
             <div class="col-md-3 pt-3">
                 <div class="form-floating pais">
                     <select class="form-select" id="country" aria-label="Floating label select" required="">
-                        <option selected="" disabled="">Seleccionar</option>
+                        <option value="0" selected="" disabled="">Seleccionar</option>
                         <option value="1">Perú</option>
                     </select>
                     <label for="country" class="form-label">País</label>
@@ -117,7 +117,7 @@
             <div class="col-md-3 pt-3">
                 <div class="form-floating departamento">
                     <select class="form-select" name="state_id" id="departamento" aria-label="Floating label select" required="">
-                        <option selected="" disabled="">Seleccionar</option>
+                        <option value="0" selected="" disabled="">Seleccionar</option>
                         <t t-foreach="departamentos" t-as="departamento">
                             <option t-att-value="departamento.id">
                                 <t t-esc="departamento.name"/>
@@ -133,7 +133,7 @@
             <div class="col-md-3 pt-3">
                 <div class="form-floating">
                     <select class="form-select"  name="province_id" id="provincia" aria-label="Floating label select" required="">
-                        <option selected="" disabled="">Seleccionar</option>
+                        <option value="0" selected="" disabled="">Seleccionar</option>
                     </select>
                     <label for="provincia" class="form-label">Provincia</label>
                 </div>
@@ -144,7 +144,7 @@
             <div class="col-md-3 pt-3">
                 <div class="form-floating">
                     <select class="form-select" name="district_id" id="distrito" aria-label="Floating label select" required="">
-                        <option selected="" disabled="">Seleccionar</option>
+                        <option value="0" selected="" disabled="">Seleccionar</option>
                     </select>
                     <label for="distrito" class="form-label">Distrito</label>
                 </div>

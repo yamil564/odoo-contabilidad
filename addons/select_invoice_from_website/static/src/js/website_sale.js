@@ -95,6 +95,9 @@ odoo.define("select_invoice_from_website.website_sale",function(require){
 
               if (result.validate){
                 $('#country').val(1);
+                $('#departamento').val(0)
+                $('#provincia').val(0)
+                $('#distrito').val(0)
 
                   if (result.name && $('#name_aux').val() == ""){
                     $('#name_aux').val(result['name'])
@@ -114,6 +117,9 @@ odoo.define("select_invoice_from_website.website_sale",function(require){
                      {'departamento': result['department']}).then(function (data) {
                             for (let i = 0; i < data.length; i++) {
                                 $(self.$el).find("#provincia").append($('<option /}>').val(data[i].id).text(data[i].name));
+                                if (data[i].id == result['province']){
+                                    $('#provincia').val(data[i].id)
+                                }
                             }
                     })
                   }
@@ -124,6 +130,9 @@ odoo.define("select_invoice_from_website.website_sale",function(require){
                      {'provincia': result['province']}).then(function (data) {
                             for (let i = 0; i < data.length; i++) {
                                 $(self.$el).find("#distrito").append($('<option /}>').val(data[i].id).text(data[i].name));
+                                if (data[i].id == result['district']){
+                                    $('#distrito').val(data[i].id)
+                                }
                             }
                     })
                   }
@@ -142,10 +151,6 @@ odoo.define("select_invoice_from_website.website_sale",function(require){
                 $('#street_aux').val("")
               }
           });
-          // $('#country').change();
-          // $('#departamento').change();
-          // $('#provincia').change();
-          // $('#distrito').change();
         },
 
     })
