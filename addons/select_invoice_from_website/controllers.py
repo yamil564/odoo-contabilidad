@@ -129,9 +129,11 @@ class WebsiteSaleExtend(WebsiteSale):
             token = company.api_migo_token
             headers = {'Content-Type': 'application/json'}
             if type == "dni":
-                data = {"token": "yQfQ97SvS38y3ZF9GMYZjBChKa1ajM4OzuRspcm7Eq22H7OETuxj9c17Vv3F", "dni": dni}
+                # data = {"token": "yQfQ97SvS38y3ZF9GMYZjBChKa1ajM4OzuRspcm7Eq22H7OETuxj9c17Vv3F", "dni": dni}
+                data = {"token": token, "dni": dni}
             else:
-                data = {"token": "yQfQ97SvS38y3ZF9GMYZjBChKa1ajM4OzuRspcm7Eq22H7OETuxj9c17Vv3F", "ruc": dni}
+                # data = {"token": "yQfQ97SvS38y3ZF9GMYZjBChKa1ajM4OzuRspcm7Eq22H7OETuxj9c17Vv3F", "ruc": dni}
+                data = {"token": token, "ruc": dni}
         else:
             return False
 
