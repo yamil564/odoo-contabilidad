@@ -140,13 +140,6 @@ class WebsiteSaleExtend(WebsiteSale):
         try:
             res = requests.request("POST", url, headers=headers, data=json.dumps(data))
             res = res.json()
-            _logger.info("Hola Luis")
-            _logger.info("Hola Luis")
-            _logger.info("Hola Luis")
-            _logger.info("Hola Luis")
-            _logger.info(res)
-
-
             if res.get("success", False):
                 if type == "dni":
                     return res.get("nombre", False)
