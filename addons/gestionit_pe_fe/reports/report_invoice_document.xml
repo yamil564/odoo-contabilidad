@@ -420,7 +420,7 @@
                     <!-- <p t-if="o.invoice_payment_term_id and o.amount_total!=0.0">
                         <span t-field="o.invoice_payment_term_id.note"/>
                     </p> -->
-                    <div t-if="len(o.company_id.bank_ids) &gt; 0" name="company_banks">
+                    <div t-if="len(o.company_id.bank_ids) &gt; 0" name="company_banks" class="banks">
                         <ul>
                             <li t-foreach="o.company_id.partner_id.bank_ids" t-as="bank">
                                 <span t-esc="'{} : {}'.format(bank.bank_id.name,bank.acc_number)"></span>

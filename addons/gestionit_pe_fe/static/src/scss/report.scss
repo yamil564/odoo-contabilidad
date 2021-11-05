@@ -160,3 +160,14 @@
         flex-direction: column;
     }
 }
+
+.gr_table_lines{
+    tbody{
+        tr{
+            th,td{
+                padding:6px !important;
+            }
+        }
+    }
+    
+}

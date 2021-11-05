@@ -85,6 +85,12 @@
                                 </span>
                                 <span t-field="o.destinatario_direccion"/>
                                 <br/>
+                                <t t-if="len(o.comprobante_pago_ids.mapped('order_reference')) &gt; 0">
+                                    <span>
+                                        <b>Orden de compra: </b>
+                                    </span>
+                                    <span t-esc="','.join(o.comprobante_pago_ids.mapped('order_reference'))"/>
+                                </t>
                             </div>
                         </div>
                         <br />
@@ -194,7 +200,7 @@
                         </div>
                         <div class="row" style="border:solid gray 1px;padding:15px;border-radius:10px">
                             <div class="col-12">
-                                <table class="table table-bordered">
+                                <table class="table table-bordered gr_table_lines">
                                     <thead>
                                         <tr>
                                             <th scope="col">#</th>
@@ -220,6 +226,7 @@
                                                     <span t-field="line.qty"/>
                                                 </td>
                                             </tr>
+                                            <t t-set="index" t-value="index+1"></t>
                                         </t>
                                     </tbody>
                                 </table>

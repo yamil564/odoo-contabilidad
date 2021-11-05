@@ -39,7 +39,7 @@
                                 <span t-esc="'R.U.C. {}'.format(company.vat or '')"/>
                             </div>
                             <div class="text-center">
-                                <span t-esc="o.name or doc.name"/>
+                                <span t-esc="o.name"/>
                             </div>
                         </div>
                     </div>

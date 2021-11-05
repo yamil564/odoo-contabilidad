@@ -685,6 +685,16 @@ class AccountMove(models.Model):
             else:
                 move.invoice_payment_state = 'not_paid'
 
+    def button_draft(self):
+        super(AccountMove,self).button_draft()
+        for move in self:
+            if move.estado_emision in ["E","A","O"] or move.estado_comprobante_electronico in ["1_ACEPTADO","2_ANULADO"]:
+                raise UserError("Este comprobante ya fue enviado a SUNAT y no puede ser editado.")
+            else:
+                if move.current_log_status_id:
+                    move.current_log_status_id.action_set_last_log_unlink()
+        
+
     def post(self):
         # Validar journal
         for move in self:
