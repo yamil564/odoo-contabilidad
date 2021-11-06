@@ -701,7 +701,7 @@ class AccountMove(models.Model):
             move.check_paymenttermn_lines()
             # _logger.info(move.name)
             if move.journal_id.invoice_type_code_id not in ['01', '03', '07', '08', '09']:
-                super(AccountMove, move).post()
+                return super(AccountMove, move).post()
             else:
                 if move.type in ["in_invoice", "in_refund"]:
                     if move.inv_supplier_ref:
@@ -709,10 +709,10 @@ class AccountMove(models.Model):
                     else:
                         raise UserError(
                             "El número de comprobante del proveedor es obligatorio")
-                    super(AccountMove, move).post()
+                    return super(AccountMove, move).post()
 
                 if not move.journal_id.electronic_invoice:
-                    super(AccountMove, move).post()
+                    return super(AccountMove, move).post()
                     # obj = super(AccountMove, self).post()
                     # return obj
                 else:
@@ -745,7 +745,7 @@ class AccountMove(models.Model):
                         raise UserError(
                             "Tipo de documento del receptor no valido")
 
-                    super(AccountMove, move).post()
+                    return super(AccountMove, move).post()
 
                     move.action_generate_and_signed_xml()
 
@@ -1274,14 +1274,10 @@ class AccountMove(models.Model):
     def cron_action_validez_comprobante(self):
         today = fields.Date.today()
         invoices = self.env["account.move"].sudo().search([("journal_id.electronic_invoice", "=", True),
-                                                           ("state", "in",
-                                                            ["posted"]),
-                                                           ("name", "not in",
-                                                            [False, "/"]),
-                                                           ("invoice_date",
-                                                            "<=", today),
-                                                           ("journal_id.invoice_type_code_id", "in", [
-                                                            "01", "03", "07", "08"]),
+                                                           ("state", "in",["posted"]),
+                                                           ("name", "not in",[False, "/"]),
+                                                           ("invoice_date","<=", today),
+                                                           ("journal_id.invoice_type_code_id", "in", ["01", "03", "07", "08"]),
                                                            ("estado_comprobante_electronico", "in", ["-", "0_NO_EXISTE"])], limit=50, order="invoice_date asc")
         for inv in invoices:
             try:
