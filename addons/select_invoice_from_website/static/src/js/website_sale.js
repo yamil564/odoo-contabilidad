@@ -11,7 +11,7 @@ odoo.define("select_invoice_from_website.website_sale",function(require){
         }),
         start:function(){
             var def = this._super.apply(this, arguments);
-            this.$('input[name="country_id"]').trigger("change");
+            this.$('select[id="country"]').trigger("change");
             this.$('input[name="l10n_latam_identification_type_id"]').trigger("change");
             return def
         },

@@ -103,9 +103,10 @@ class SaleOrder(models.Model):
             "apply_same_discount_on_all_lines": self.apply_same_discount_on_all_lines,
             "discount_on_all_lines": self.discount_on_all_lines
         })
-        if len(self.env.user.warehouse_ids) > 0:
-            res["warehouse_id"] = self.env.user.warehouse_ids[0].id
-            journals = self.env.user.warehouse_ids.journal_ids.filtered(lambda r: r.invoice_type_code_id == self.tipo_documento and r.type == "sale")
+        warehouse_id = self.warehouse_id
+        if warehouse_id:
+            res["warehouse_id"] = warehouse_id.id
+            journals = self.env["stock.warehouse"].browse(warehouse_id.id).journal_ids.filtered(lambda r: r.invoice_type_code_id == self.tipo_documento and r.type == "sale")
             if len(journals) > 0:
                 res["journal_id"] = journals[0].id
             else:

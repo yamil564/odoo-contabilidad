@@ -522,7 +522,7 @@ def crear_json_fac_bol(self):
 
     if self.descuento_global:
         data["documento"]["descuentoGlobal"] = {
-            "factor": round(self.descuento_global/100.00, 2),
+            "factor": round(self.descuento_global/100.00, 4),
             "montoDescuento": round(self.total_descuento_global, 2),
             # El atributo amount_untaxed es el monto del total de ventas sin impuestos
             "montoBase": round(self.total_venta_gravado + self.total_venta_exonerada + self.total_venta_inafecto + self.total_descuento_global, 2)
@@ -568,22 +568,22 @@ def crear_json_fac_bol(self):
     #                 if line_tax.tax_group_id.tipo_afectacion in ["31", "32", "33", "34", "35", "36", "37"]])
     #     ])
     ##########
-    taxlen = 0
-    for line in self.invoice_line_ids:
-        for tax in line.tax_ids:
-            data_impuesto.append({
-                "codImpuesto": str(tax.tax_group_id.codigo),
-                "montoImpuesto": round(line.tax_base_amount, 2),
-                "tasaImpuesto": round(tax.amount/100, 2)
-            })
-            taxlen += 1
+    # taxlen = 0
+    # for line in self.invoice_line_ids:
+    #     for tax in line.tax_ids:
+    #         data_impuesto.append({
+    #             "codImpuesto": str(tax.tax_group_id.codigo),
+    #             "montoImpuesto": round(line.tax_base_amount, 2),
+    #             "tasaImpuesto": round(tax.amount/100, 2)
+    #         })
+    #         taxlen += 1
 
-    if taxlen == 0:
-        data_impuesto.append({
-            "codImpuesto": "1000",
-            "montoImpuesto": 0.0,
-            "tasaImpuesto": 0.18
-        })
+    # if taxlen == 0:
+    #     data_impuesto.append({
+    #         "codImpuesto": "1000",
+    #         "montoImpuesto": 0.0,
+    #         "tasaImpuesto": 0.18
+    #     })
     # if len(self.tax_ids) == 0:
     #     data_impuesto.append({
     #         "codImpuesto": "1000",
@@ -627,11 +627,11 @@ def crear_json_fac_bol(self):
         #     taxes = item.tax_ids.compute_all(item.price_unit)
         # precioItemSinIgv = taxes["total_excluded"]
 
-        # tasaIgv = round(item.invoice_line_tax_ids[0].amount/100,2) if len(item.invoice_line_tax_ids) else ""
+        tasaIgv = round(item.tax_ids[0].amount/100,2) if len(item.tax_ids) else ""
 
         montoIgv = round(item.price_total-item.price_subtotal, 3)
         datac = {
-            "cantidadItem": round(item.quantity, 2),
+            "cantidadItem": round(item.quantity, 3),
             "unidadMedidaItem": item.product_uom_id.code,
             "codItem": str(item.product_id.id),
             "nombreItem": item.name[0:250].strip().replace("\n", " "),
@@ -644,7 +644,7 @@ def crear_json_fac_bol(self):
 
             # "descuentoMonto": round((item.price_subtotal*item.discount/100.0)/(1-item.discount/100.0), 2),  # solo factura y boleta
             "codAfectacionIgv": item.tax_ids[0].tax_group_id.tipo_afectacion if len(item.tax_ids) else "",
-            # "tasaIgv": round(tasaIgv*100, 2),
+            "tasaIgv": round(tasaIgv*100, 2),
             # Monto Total del IGV
             "montoIgv": round(montoIgv if montoIgv > 0 else 0.0,2),
             "codSistemaCalculoIsc": "01",  # VERIFICAR
@@ -657,7 +657,7 @@ def crear_json_fac_bol(self):
         }
         if item.discount:
             datac["descuento"] = {
-                "factor": round(item.discount/100.0, 2),
+                "factor": round(item.discount/100.0, 4),
                 "montoDescuento": round((item.price_subtotal*item.discount/100.0)/(1-item.discount/100.0), 2),
                 "montoBase": round(item.price_subtotal/(1-item.discount/100.0), 2)
             }
@@ -742,7 +742,7 @@ def crear_json_not_cred_deb(self):
             "mntExo": round(self.total_venta_exonerada, 2),
             "mntTotalIgv": round(self.amount_igv, 2),
             "mntTotal": round(self.amount_total, 2),
-            # "mntTotalGrat": round(self.total_venta_gratuito, 2),  # solo para facturas y boletas
+            "mntTotalGrat": round(self.total_venta_gratuito, 2), 
             "fechaVencimiento": str(self.invoice_date_due) if self.invoice_date_due else now.strftime("%Y-%m-%d"),
             "glosaDocumento": "VENTA",  # verificar
             "codContrato": replace_false(self.name),
@@ -797,26 +797,26 @@ def crear_json_not_cred_deb(self):
     data_anticipo = []  # solo facturas y boletas
     data_anexo = []  # si hay anexos
 
-    taxlen = 0
-    for line in self.invoice_line_ids.filtered(lambda r: not r.is_charge_or_discount):
-        for tax in line.tax_ids:
-            data_impuesto.append({
-                "codImpuesto": str(tax.tax_group_id.codigo),
-                "montoImpuesto": round(line.tax_base_amount, 2),
-                "tasaImpuesto": round(tax.amount/100, 2)
-            })
-            taxlen += 1
+    # taxlen = 0
+    # for line in self.invoice_line_ids.filtered(lambda r: not r.is_charge_or_discount):
+    #     for tax in line.tax_ids:
+    #         data_impuesto.append({
+    #             "codImpuesto": str(tax.tax_group_id.codigo),
+    #             "montoImpuesto": round(line.tax_base_amount, 2),
+    #             "tasaImpuesto": round(tax.amount/100, 2)
+    #         })
+    #         taxlen += 1
 
-    if taxlen == 0:
-        data_impuesto.append({
-            "codImpuesto": "1000",
-            "montoImpuesto": 0.0,
-            "tasaImpuesto": 0.18
-        })
+    # if taxlen == 0:
+    #     data_impuesto.append({
+    #         "codImpuesto": "1000",
+    #         "montoImpuesto": 0.0,
+    #         "tasaImpuesto": 0.18
+    #     })
 
     for item in self.invoice_line_ids.filtered(lambda r: not r.is_charge_or_discount):
-        price_unit = item.price_unit * \
-            (1-(item.discount/100)) - item.descuento_unitario
+        # price_unit = item.price_unit * \
+        #     (1-(item.discount/100)) - item.descuento_unitario
         # if (item.invoice_line_tax_ids.price_include):
 
         #     if (item.invoice_line_tax_ids.amount == 0):
@@ -846,23 +846,27 @@ def crear_json_not_cred_deb(self):
         '''
         # tasaIgv = item.invoice_line_tax_ids[0].amount / \
         #     100 if len(item.invoice_line_tax_ids) else ""
-        montoImpuestoUni = 0
+        tasaIgv = round(item.tax_ids[0].amount/100,2) if len(item.tax_ids) else ""
+        # montoImpuestoUni = 0
         # montoItem = round((price_unit) * item.quantity, 2)
         nombreItem = item.name.strip().replace("\n", "")
         montoIgv = round(item.price_total-item.price_subtotal, 2)
-        data_detalle.append({
+        datac = {
             "cantidadItem": round(item.quantity, 3),
             "unidadMedidaItem": item.product_uom_id.code,
             "codItem": str(item.product_id.id),
             "nombreItem": nombreItem[0:250].strip().replace("\n", " "),
-            "precioItem": round(item.price_total/item.quantity, 10),
+            # "precioItem": round(item.price_total/item.quantity, 10),
+            "precioItem": round(item.price_total/item.quantity, 10) if len([item for line_tax in item.tax_ids if line_tax.tax_group_id.tipo_afectacion in ["31", "32", "33", "34", "35", "36"]]) == 0 else 0,
             # "precioItemSinIgv": round(price_unit, 2),
             # "montoItem": round(item.product_id.lst_price*item.quantity, 2) if montoItem == 0 else montoItem,
-            "precioItemSinIgv": round(item.price_subtotal/item.quantity, 10),
-            "montoItem": round(item.price_subtotal, 2),
+            # "precioItemSinIgv": round(item.price_subtotal/item.quantity, 10),
+            "precioItemSinIgv": round((item.price_subtotal/item.quantity), 10) if len([item for line_tax in item.tax_ids if line_tax.tax_group_id.tipo_afectacion in ["31", "32", "33", "34", "35", "36"]]) == 0 else 0,
+            # "montoItem": round(item.price_subtotal, 2),
+            "montoItem": round(item.price_unit*item.quantity, 2) if item.no_onerosa else round(item.price_subtotal, 2),
             # "descuentoMonto": item.discount * precioItem / 100,  # solo factura y boleta
             "codAfectacionIgv":  item.tax_ids[0].tax_group_id.tipo_afectacion if len(item.tax_ids) else "",
-            # "tasaIgv": round(tasaIgv*100, 2),
+            "tasaIgv": round(tasaIgv*100, 2),
             # "montoIgv": round(montoImpuestoUni * item.quantity, 2),
             "montoIgv": montoIgv if montoIgv > 0 else 0.0,
             "codSistemaCalculoIsc": "01",  # VERIFICAR
@@ -871,7 +875,19 @@ def crear_json_not_cred_deb(self):
             "precioItemReferencia": round(item.price_unit, 2),
             "idOperacion": str(self.id),
             "no_onerosa": True if item.no_onerosa else False
-        })
+        }
+
+        # if item.discount > 0:
+        #     datac["descuento"] = {
+        #         "factor": round(item.discount/100.0, 4),
+        #         "montoDescuento": round(((item.price_subtotal*item.discount/100.0)/(1-item.discount/100.0)), 2),
+        #         "montoBase": round((item.price_subtotal/(1-item.discount/100.0)), 2)
+        #     }
+        #     datac.update({
+        #         "montoItem":round(item.price_subtotal,2)
+        #     })
+
+        data_detalle.append(datac)
 
     if self.invoice_type_code in ["07", "08"]:
         document_reference = self.reversed_entry_id if self.invoice_type_code == '07' else self.debit_origin_id
@@ -925,10 +941,12 @@ def crear_json_not_cred_deb(self):
         raise ValidationError(
             "El código del tipo de comprobante debe ser 07 para Notas de Crédito o 08 para Notas de Débito")
 
-    data["impuesto"] = data_impuesto
+    # data["impuesto"] = data_impuesto
     data["detalle"] = data_detalle
-    data["anticipos"] = data_anticipo
-    data["anexos"] = data_anexo
+    if len(data_anticipo):
+        data["anticipos"] = data_anticipo
+    if len(data_anexo):
+        data["anexos"] = data_anexo
     data["referencia"] = data_referencia
 
     return data

@@ -114,10 +114,11 @@
                         <label for="comprobante_pago_ids"/>
                         <field name="comprobante_pago_ids" string="Factura/Boleta" attrs="{'invisible':[('documento_asociado','!=','comprobante_pago')]}" options="{'no_create': True, 'no_open': True, 'no_create_edit': True}" domain="[ ('partner_id','=',destinatario_partner_id), ('partner_id','!=',False), ('state','!=','draft')]" mode="tree">
                             <tree>
-                                <field name="user_id"/>
-                                <field name="state"/>
+                                <field name="user_id" optional="hide"/>
+                                <field name="state" optional="hide"/>
                                 <!-- <field name="move_name"/> -->
                                 <field name="name"/>
+                                <field name="order_reference" />
                                 <field name="partner_id"/>
                                 <field name="amount_total"/>
                             </tree>

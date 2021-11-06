@@ -573,7 +573,7 @@ def build_factura(data):
         tasaICBPER = line.get("tasa_ICBPER", 10)
         afectacion_icbper = line.get("afectacionICBPER", False)
 
-        tasaIgv = 18.0
+        tasaIgv = line.get("tasaIgv",0)
         # 1000 - IGV Impuesto General a las Ventas
         if cod_afectacion_igv in ["10"]:
             tax_scheme = TaxScheme("1000", "IGV", "VAT")

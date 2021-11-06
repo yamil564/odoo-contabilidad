@@ -32,7 +32,7 @@ class ResPartner(models.Model):
     def default_get(self,field_list):
         res = super(ResPartner, self).default_get(field_list)
         if self.env.context.get("no_doc"):
-            res.update({"l10n_latam_identification_type_id": self.env.ref("l10n_pe.it_NDTD").id,"vat":"0"})
+            res.update({"l10n_latam_identification_type_id": self.env.ref("l10n_pe.it_NDTD").id,"vat":res.get("vat","0")})
         return res
 
     def _get_name(self):
@@ -51,20 +51,26 @@ class ResPartner(models.Model):
     @api.model
     def _commercial_fields(self):
         return []
-        
+    
+    @api.model
+    def _check_valid_ruc(self,ruc):
+        if patron_ruc.match(ruc):
+            vat_arr = [int(c) for c in ruc]
+            arr = [5,4,3,2,7,6,5,4,3,2]
+            s = sum([vat_arr[r]*arr[r] for r in range(0,10)])
+            num_ver = (11-s%11)%10
+            if vat_arr[10] != num_ver:
+                return False
+        else:
+            return False
+        return True
+            
     @api.constrains('vat','l10n_latam_identification_type_id')
     def _check_valid_numero_documento(self):
         vat_str = (self.vat or "").strip()
         if self.l10n_latam_identification_type_id and self.type in ["contact"]:
             if self.l10n_latam_identification_type_id.l10n_pe_vat_code == "6":
-                if patron_ruc.match(vat_str):
-                    vat_arr = [int(c) for c in vat_str]
-                    arr = [5,4,3,2,7,6,5,4,3,2]
-                    s = sum([vat_arr[r]*arr[r] for r in range(0,10)])
-                    num_ver = (11-s%11)%10
-                    if vat_arr[10] != num_ver:
-                        raise UserError("El número de RUC ingresado es inválido.")
-                else:
+                if not self._check_valid_ruc(vat_str):
                     raise UserError("El número de RUC ingresado es inválido.")
 
             if self.l10n_latam_identification_type_id.l10n_pe_vat_code == "1":
