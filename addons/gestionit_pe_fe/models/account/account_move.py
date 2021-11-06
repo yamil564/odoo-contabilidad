@@ -1237,12 +1237,10 @@ class AccountMove(models.Model):
 
     def cron_action_send_invoice(self):
         invoices = self.env["account.move"].search([["estado_emision", "in", ["P", "", False]],
-                                                    ["name", "not in",
-                                                        [False, "/"]],
+                                                    ["name", "not in",[False, "/"]],
                                                     ["state", "=", "posted"],
                                                     ["estado_comprobante_electronico", "in", [False, "-", "0_NO_EXISTE"]]], order="invoice_date asc")
-        invoice_ids = invoices.filtered(lambda r: r.journal_id.invoice_type_code_id in [
-                                        "01"] and re.match("^F\w{3}-\d{1,8}$", r.name))
+        invoice_ids = invoices.filtered(lambda r: r.journal_id.invoice_type_code_id in ["01"] and re.match("^F\w{3}-\d{1,8}$", r.name))
 
         credit_and_debit_note_ids = invoices.filtered(lambda r: r.journal_id.invoice_type_code_id in ["07", "08"] and re.match("^F\w{3}-\d{1,8}$", r.name) and (
             r.reversed_entry_id.estado_comprobante_electronico == "1_ACEPTADO" or r.debit_origin_id.estado_comprobante_electronico == "1_ACEPTADO"))
@@ -1277,8 +1275,10 @@ class AccountMove(models.Model):
                                                            ("state", "in",["posted"]),
                                                            ("name", "not in",[False, "/"]),
                                                            ("invoice_date","<=", today),
+                                                           ("journal_id.electronic_invoice","=",True),
                                                            ("journal_id.invoice_type_code_id", "in", ["01", "03", "07", "08"]),
                                                            ("estado_comprobante_electronico", "in", ["-", "0_NO_EXISTE"])], limit=50, order="invoice_date asc")
+        _logger.info(invoices.mapped("name"))
         for inv in invoices:
             try:
                 inv.action_validez_comprobante()
