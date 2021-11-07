@@ -89,7 +89,7 @@
                                     <span>
                                         <b>Orden de compra: </b>
                                     </span>
-                                    <span t-esc="','.join(o.comprobante_pago_ids.mapped('order_reference'))"/>
+                                    <span t-esc="','.join(o.comprobante_pago_ids.mapped(lambda r: r.order_reference or ''))"/>
                                 </t>
                             </div>
                         </div>
