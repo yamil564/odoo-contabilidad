@@ -14,27 +14,39 @@ odoo.define('bo_backend_sale_invoice_ticket.SaleInvoiceTicket', function(require
         hasControlPanel: true,
         contentTemplate: 'InvoiceTicketMain',
         events: {
+            "click .back":"btn_back"
             // "click .o_hr_attendance_sign_in_out_icon": function() {
             //     this.$('.o_hr_attendance_sign_in_out_icon').attr("disabled", "disabled");
             //     this.update_attendance();
             // },
         },
     
-        init: function(parent, context) {
+        init: function(parent, action, options) {
             // debugger;
-            this._super(parent, context);
             // console.log(parent);
             // console.log(context);
-            this.invoice_id = context.params.invoice_id
-            this.dashboards_templates = ['OrderReceipt'];
+            console.log(parent)
+            console.log(action)
+            console.log(options)
+            
+            this.invoice_id = action.params.invoice_id
+            // this.dashboards_templates = ['OrderReceipt'];
+            // this._super(parent, action, options);
+            this._super.apply(this, arguments);
+            // options = options || {};
+
+            // this.action_manager = parent;
+            // this._title = options.display_name || options.name;
+            // this.data = options.data || {};
+            // this.context = options.context || {};
             // console.log("invoice_id : " + this.invoice_id);
         },
     
-        willStart: function() {
-            console.log("WILL START FUNCTION");
-            var self = this;
-                return self.fetch_data();
-        },
+        // willStart: function() {
+        //     console.log("WILL START FUNCTION");
+        //     var self = this;
+        //         return self.fetch_data();
+        // },
     
         start: function() {
             console.log("START FUNCTION");
@@ -47,6 +59,16 @@ odoo.define('bo_backend_sale_invoice_ticket.SaleInvoiceTicket', function(require
                 //self.clear_data()
                 self.$el.parent().addClass('oe_background_grey');
             });
+        },
+        // start : function(){
+            
+        //     return this._super.apply(this, arguments);
+        // },
+        btn_back:function(){
+            // ev.stopPropagation();
+            // this._restoreController("controller_117");  
+            console.log(this.controlPanelParams.breadcrumbs[this.controlPanelParams.breadcrumbs.length-1])
+            this.trigger_up('breadcrumb_clicked', {controllerID: this.controlPanelParams.breadcrumbs[this.controlPanelParams.breadcrumbs.length-1].controllerID});
         },
         fetch_data: function() {
             var self = this;
@@ -117,7 +139,7 @@ odoo.define('bo_backend_sale_invoice_ticket.SaleInvoiceTicket', function(require
         },
         render_ticket: function() {
             var self = this;
-            //console.log("invoice_id: " + self.invoice_id);
+            console.log(self.invoice_id);
             // var receipt = {}
             // debugger;
             rpc.query({

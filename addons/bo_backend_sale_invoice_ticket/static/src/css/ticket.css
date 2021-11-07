@@ -119,7 +119,7 @@ td {
     font-size: 12px;
     position: absolute;
     left: 0;
-    top: 100px;
+    /* top: 100px; */
     width: 100%;
     height: 100%;
     -webkit-user-select: none;
@@ -521,7 +521,7 @@ td {
 .pos .pos-content {
     width: 100%;
     position: absolute;
-    top: 48px;
+    top: 16px;
     bottom: 0;
     background: #F0EEEE;
 }

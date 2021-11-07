@@ -3,11 +3,10 @@
 
     <t t-name="InvoiceTicketMain">
         <div class='pos'>
-            <div class='pos-topheader'>
+            <!-- <div class='pos-topheader'>
                 <div class="pos-branding">
-                    <!-- <img class="pos-logo" src="/bo_backend_sale_invoice_ticket/static/src/img/logo.png" alt="Logo"> -->
                 </div>
-            </div>
+            </div> -->
             <div class='pos-content'>
                 <div class='window'>
                     <div class='subwindow'>
@@ -27,19 +26,19 @@
                 <div class='top-content'>
                     <span class='button back'>
                         <i class='fa fa-angle-double-left'></i>
-                        Back
+                        Atrás
                     </span>
-                    <h1>Comprobante</h1>
+                    <!-- <h1>Comprobante</h1> -->
                     <!-- <h1>Change: <span class='change-value'>0.00</span></h1> -->
-                    <span class='button next'>
+                    <!-- <span class='button next'>
                         Next Order
                         <i class='fa fa-angle-double-right'></i>
-                    </span>
+                    </span> -->
                 </div>
                 <div class="centered-content touch-scrollable">
                     <h2 class="print_invoice" style="display: none;">The order has been synchronized earlier. To print the invoice please refer to the order in the backend</h2>
                     <div class="button print">
-                        <i class='fa fa-print'></i> Print Receipt
+                        <i class='fa fa-print'></i> Imprimir ticket
                     </div>
                     <div class="pos-receipt-container">
                     </div>
