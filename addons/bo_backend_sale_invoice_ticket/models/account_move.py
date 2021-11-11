@@ -40,7 +40,8 @@ class AccountMove(models.Model):
         if move_env:
             company_env = self.env['res.company'].browse(move_env.company_id.id)
             fields_company = {'currency_id', 'email', 'website', 'company_registry', 'vat', 'name', 'phone', 
-                'partner_id' , 'country_id', 'state_id', 'tax_calculation_rounding_method','street', 'website_invoice_search'}
+                'partner_id' , 'country_id', 'state_id', 'city',
+                'tax_calculation_rounding_method','street', 'website_invoice_search'}
             company = company_env.read(fields_company)[0]
 
             fields_move = {'name','invoice_type_code','invoice_date','partner_id','total_venta_gravado',
@@ -106,13 +107,16 @@ class AccountMove(models.Model):
                     'vat_label': "RUC",
                     'name': company['name'],
                     'street': company['street'],
+                    'state_id': company['state_id'][1],
+                    'city': company['city'],
+                    'country_id': company['country_id'][1],
                     'phone': company['phone'],
                     'logo':  ''
                 }
             }
-            # _logger.info("data: %s" % str(data))
+            _logger.info("data: %s" % str(data))
             return {
                 'receipt': data
             }
         else:
-            return { }
+            return { 'receipt' : {}}

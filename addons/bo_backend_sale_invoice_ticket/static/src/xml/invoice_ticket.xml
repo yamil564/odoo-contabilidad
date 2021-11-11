@@ -63,7 +63,7 @@
                 </div>
             </div> -->
             <div class="pos-center-align"><b><t t-esc="receipt.company.name"/></b></div>
-            <div class="pos-center-align">Dirección: <t t-esc="receipt.company.street || ''"/></div>
+            <div class="pos-center-align"><t t-esc="receipt.company.street || '-'"/></div>
             <div class="pos-center-align">Telefono: <t t-esc="receipt.company.phone || ''"/></div>
             <!-- <t t-if="widget.pos.config.is_header_or_footer">
                 <div style='text-align:center'>
@@ -73,38 +73,42 @@
             </t> -->
             <div class="pos-center-align">
                 RUC: <t t-esc="receipt.company.vat || ''"/>
-                <h3>
-                    <t t-if="receipt.invoice_type_code_id == '03'">
-                        <b> BOLETA DE VENTA ELECTRÓNICA</b><br/>
-                        <b><t t-esc="receipt.name" /></b>
-                    </t>
-                    <t t-if="receipt.invoice_type_code_id == '01'">
-                        <b> FACTURA DE VENTA ELECTRÓNICA </b><br/>
-                        <b><t t-esc="receipt.name" /></b>
-                    </t>
-                    <t t-if="receipt.invoice_type_code_id == '07'">
-                        <b> NOTA DE CRÉDITO ELECTRÓNICA </b><br/>
-                        <b><t t-esc="receipt.name" /></b>
-                    </t>
+                <div class="type-docu">
+                    <h4>
+                        <t t-if="receipt.invoice_type_code == '03'">
+                            <b> BOLETA DE VENTA ELECTRÓNICA</b><br/>
+                            <b><t t-esc="receipt.name" /></b>
+                        </t>
+                        <t t-if="receipt.invoice_type_code == '01'">
+                            <b> FACTURA DE VENTA ELECTRÓNICA </b><br/>
+                            <b><t t-esc="receipt.name" /></b>
+                        </t>
+                        <t t-if="receipt.invoice_type_code == '07'">
+                            <b> NOTA DE CRÉDITO ELECTRÓNICA </b><br/>
+                            <b><t t-esc="receipt.name" /></b>
+                        </t>
 
-                    <!-- <t t-if="order.get_number() == false">
-                        <b>Nro:<t t-esc="order.get_name()" /></b>
-                    </t> -->
-                </h3>
-
+                        <!-- <t t-if="order.get_number() == false">
+                            <b>Nro:<t t-esc="order.get_name()" /></b>
+                        </t> -->
+                    </h4>
+                </div>
             </div>
-            <div class="pos-center-align"><b>Fecha: <t t-esc="receipt.invoice_date"/></b></div>
-            <br/>
+            <!-- <div class="pos-left-align"><b>Fecha: <t t-esc="receipt.invoice_date"/></b></div> -->
+            <!-- <br/> -->
             <div class="section-customer">
                 <t t-if="receipt.partner">
+                    <div class="receipt-user">
+                        <b>FECHA DE EMISIÓN:</b> <t t-esc="receipt.invoice_date"/>
+                    </div>
                     <div class="receipt-user">
                         <b>SEÑOR(ES):</b> <t t-esc="receipt.partner.name"/>
                     </div>
                     <div class="receipt-user">
-                        <t t-if="receipt.partner.identification_type_id == '1'">
+                        <t t-if="receipt.partner.identification_type_id == '5'">
                             <b>DNI:</b> <t t-esc="receipt.partner.vat"/>
                         </t>
-                        <t t-if="receipt.partner.identification_type_id == '6'">
+                        <t t-if="receipt.partner.identification_type_id == '4'">
                             <b>RUC:</b> <t t-esc="receipt.partner.vat"/>
                         </t>
                     </div>
