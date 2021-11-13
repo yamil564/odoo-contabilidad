@@ -12,8 +12,8 @@
             <field name="model">account.move</field>
             <field name="inherit_id" ref="account.view_move_form"/>
             <field name="arch" type="xml">
-                <xpath expr="//button[@name='button_draft']" position="after">
-                    <button name="btn_ticket" string="Ticket" type="object" class="oe_highlight"/>
+                <xpath expr="//button[@name='preview_invoice']" position="after">
+                    <button name="btn_ticket" string="Imprimir Ticket" type="object" attrs="{'invisible': [('type', 'not in', ('out_invoice', 'out_refund'))]}"/>
                 </xpath>
             </field>
         </record>
@@ -23,8 +23,8 @@
             <field name="model">sale.order</field>
             <field name="inherit_id" ref="sale.view_order_form"/>
             <field name="arch" type="xml">
-                <xpath expr="//button[@name='action_draft']" position="before">
-                    <button name="btn_ticket" string="Ticket" type="object" class="oe_highlight"/>
+                <xpath expr="//button[@name='action_quotation_send']" position="before">
+                    <button name="btn_ticket" string="Imprimir Ticket" type="object"/>
                 </xpath>
             </field>
         </record>

@@ -1,14 +1,10 @@
-from re import S
 from datetime import datetime, timedelta
 import re
 from odoo import models, fields, api, _
 from odoo.http import request
-# import pandas as pd
-# import numpy as np
 import logging
 from odoo.addons.bo_backend_sale_invoice_ticket.models.number_to_letter import to_word
 _logger = logging.getLogger(__name__)
-
 
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
@@ -26,7 +22,7 @@ class SaleOrder(models.Model):
 
     def btn_ticket(self):
         return {
-            'name': 'Pedido Ticket',
+            'name': 'Imprimir Ticket',
             'tag': 'invoice_ticket',
             'type': 'ir.actions.client',
             'params': {
@@ -37,7 +33,7 @@ class SaleOrder(models.Model):
 
     @api.model
     def ticket_data(self, ticket_id):
-        _logger.info("----- ticket_data -----")
+        # _logger.info("----- ticket_data -----")
         env = self.browse(ticket_id)
         if env:
             company_env = self.env['res.company'].browse(env.company_id.id)
@@ -72,18 +68,18 @@ class SaleOrder(models.Model):
                            'price_unit', 'price_subtotal'}
             lines_ids = lines_env_ids.read(fields_line)
 
-            _logger.info("lines_ids: %s" % str(lines_ids))
+            # _logger.info("lines_ids: %s" % str(lines_ids))
 
             json_lines = []
             for line in lines_ids:
-                _logger.info("line: %s" % str(line))
+                # _logger.info("line: %s" % str(line))
                 line.update({'product_name': line['product_id'][1]})
                 line.update({'quantity': line['product_uom_qty']})
                 json_lines.append(line)
 
             # _logger.info("company_env: %s" % str(company_env.read(fields_company)))
 
-            _logger.info("sale: %s" % str(sale))
+            # _logger.info("sale: %s" % str(sale))
             # _logger.info("move_env-read: %s" % str(move.read()))
 
             # _logger.info("company: %s" % company)
@@ -91,7 +87,7 @@ class SaleOrder(models.Model):
             data = {
                 'name': sale['name'],
                 'invoice_date': sale['date_order'],
-                'payment_id': sale['payment_term_id'][1] if sale['payment_term_id'] else "Contado",
+                'payment_id': sale['payment_term_id'] and sale['payment_term_id'][1] or "Contado",
                 'cashier': sale['user_id'][1],
                 # 'invoice_type_code': sale['invoice_type_code'],
                 'total_venta_gravado': sale['total_venta_gravado'],
@@ -110,7 +106,7 @@ class SaleOrder(models.Model):
                     'vat': partner['vat'],
                     'street': partner['street'],
                     'phone': partner['phone'],
-                    'identification_type_id': partner['l10n_latam_identification_type_id'][0]
+                    'identification_type_id': partner['l10n_latam_identification_type_id'] and partner['l10n_latam_identification_type_id'][0] or self.env.ref("l10n_pe.it_NDTD").id
                 },
                 'orderlines': json_lines,
                 'precision': {
@@ -128,9 +124,9 @@ class SaleOrder(models.Model):
                     'vat_label': "RUC",
                     'name': company['name'],
                     'street': company['street'],
-                    'state_id': company['state_id'],
+                    'state_id': company['state_id'] and company['state_id'][1] or "",
                     'city': company['city'],
-                    'country_id': company['country_id'][1],
+                    'country_id': company['country_id'] and company['country_id'][1] or "",
                     'phone': company['phone'],
                     'logo':  '/web/binary/company_logo'
                 }
@@ -146,7 +142,7 @@ class SaleOrder(models.Model):
             #     )
             # _logger.info("qr_string: %s" % str(qr_string))
             # data.update({'qr_string': "|".join(qr_string)})
-            _logger.info("data: %s" % str(data))
+            # _logger.info("data: %s" % str(data))
             return data
         else:
             return {}

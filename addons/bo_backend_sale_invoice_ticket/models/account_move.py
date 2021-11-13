@@ -1,14 +1,9 @@
-from re import S
-from datetime import datetime, timedelta
 import re
 from odoo import models, fields, api, _
 from odoo.http import request
-# import pandas as pd
-# import numpy as np
 import logging
 from odoo.addons.bo_backend_sale_invoice_ticket.models.number_to_letter import to_word
 _logger = logging.getLogger(__name__)
-
 
 class AccountMove(models.Model):
     _inherit = 'account.move'
@@ -26,7 +21,7 @@ class AccountMove(models.Model):
 
     def btn_ticket(self):
         return {
-            'name': 'Invoice Ticket',
+            'name': 'Imprimir Ticket',
             'tag': 'invoice_ticket',
             'type': 'ir.actions.client',
             'params': {
@@ -37,7 +32,7 @@ class AccountMove(models.Model):
 
     @api.model
     def invoice_data(self, ticket_id):
-        _logger.info("----- invoice_data -----")
+        # _logger.info("----- invoice_data -----")
         move_env = self.browse(ticket_id)
 
         if move_env:
@@ -50,7 +45,7 @@ class AccountMove(models.Model):
 
             fields_move = {'name', 'invoice_type_code', 'invoice_date', 'partner_id', 'total_venta_gravado',
                            'amount_igv', 'total_venta_inafecto', 'total_venta_exonerada', 'total_venta_gratuito',
-                           'total_descuento_global', 'total_descuentos', 'amount_total', 'invoice_user_id',
+                           'total_descuento_global', 'total_descuentos', 'amount_total', 'invoice_user_id', 'user_id',
                            'invoice_payment_term_id', 'journal_id', 'digest_value', 'invoice_origin'}
             move = move_env.read(fields_move)[0]
 
@@ -76,17 +71,17 @@ class AccountMove(models.Model):
                            'price_unit', 'price_subtotal'}
             lines_ids = lines_env_ids.read(fields_line)
 
-            _logger.info("lines_ids: %s" % str(lines_ids))
+            # _logger.info("lines_ids: %s" % str(lines_ids))
 
             json_lines = []
             for line in lines_ids:
-                _logger.info("line: %s" % str(line))
+                # _logger.info("line: %s" % str(line))
                 line.update({'product_name': line['product_id'][1]})
                 json_lines.append(line)
 
             # _logger.info("company_env: %s" % str(company_env.read(fields_company)))
 
-            _logger.info("move: %s" % str(move))
+            # _logger.info("move: %s" % str(move))
             # _logger.info("move_env-read: %s" % str(move.read()))
 
             # _logger.info("company: %s" % company)
@@ -95,8 +90,8 @@ class AccountMove(models.Model):
                 'name': move['name'],
                 'origin': move['invoice_origin'],
                 'invoice_date': move['invoice_date'],
-                'payment_id': move['invoice_payment_term_id'][1] if move['invoice_payment_term_id'] else "Contado",
-                'cashier': move['invoice_user_id'][1],
+                'payment_id': move['invoice_payment_term_id'] and move['invoice_payment_term_id'][1] or "Contado",
+                'cashier': move['invoice_user_id'] and move['invoice_user_id'][1] or move['user_id'][1],
                 'invoice_type_code': move['invoice_type_code'],
                 'total_venta_gravado': move['total_venta_gravado'],
                 'amount_igv': move['amount_igv'],
@@ -114,7 +109,7 @@ class AccountMove(models.Model):
                     'vat': partner['vat'],
                     'street': partner['street'],
                     'phone': partner['phone'],
-                    'identification_type_id': partner['l10n_latam_identification_type_id'][0]
+                    'identification_type_id': partner['l10n_latam_identification_type_id'] and partner['l10n_latam_identification_type_id'][0] or self.env.ref("l10n_pe.it_NDTD").id
                 },
                 'orderlines': json_lines,
                 'precision': {
@@ -132,9 +127,9 @@ class AccountMove(models.Model):
                     'vat_label': "RUC",
                     'name': company['name'],
                     'street': company['street'],
-                    'state_id': company['state_id'],
+                    'state_id': company['state_id'] and company['state_id'][1] or "",
                     'city': company['city'],
-                    'country_id': company['country_id'][1],
+                    'country_id': company['country_id'] and company['country_id'][1] or "",
                     'phone': company['phone'],
                     'logo':  '/web/binary/company_logo'
                 }
@@ -149,11 +144,11 @@ class AccountMove(models.Model):
                 l10n_latam['l10n_pe_vat_code'],
                 move['digest_value'] if move['digest_value'] else "" + "*"
             )
-            _logger.info("qr_string: %s" % str(qr_string))
+            # _logger.info("qr_string: %s" % str(qr_string))
             data.update({
                 'qr_string': "|".join(qr_string)
             })
-            _logger.info("data: %s" % str(data))
+            # _logger.info("data: %s" % str(data))
             return data
         else:
             return {}
