@@ -277,7 +277,10 @@
                 </div>
             </div>
         </xpath>
-        <xpath expr="//table[hasclass('o_main_table')]" position="replace">
+        <xpath expr="//table[hasclass('o_main_table')]" position="attributes">
+            <attribute name="style">dislay:none</attribute>
+        </xpath>
+        <xpath expr="//table[hasclass('o_main_table')]" position="after">
             <!-- Is there a discount on at least one line? -->
             <t t-set="display_discount" t-value="any([l.discount for l in o.invoice_line_ids])"/>
             <div class="table-invoice-lines row pt-2 pb-2">

@@ -104,6 +104,7 @@
                     <span>Esta seguro que desea anular este comprobante?</span>
                     <group>
                         <field name="account_invoice_id" readonly="1"/>
+                        <field name="company_id" readonly="1" groups="base.group_multi_company"/>
                     </group>
                     <footer>
                         <button name="btn_anular_comprobante" string="Anular Comprobante" type="object" class="oe_highlight"/>

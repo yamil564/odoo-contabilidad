@@ -405,14 +405,16 @@ class AccountSummaryVoided(models.TransientModel):
     _name = 'account.summary.anulacion'
     _description = 'Anular Comprobante'
 
-    account_invoice_id = fields.Many2one("account.move", string="Comprobante Electrónico")
+    account_invoice_id = fields.Many2one("account.move", string="Comprobante Electrónico",required=True)
+    company_id = fields.Many2one("res.company",string="Compañía",required=True)
 
     def btn_anular_comprobante(self):
         resumen = {
             "fecha_generacion": fields.Date.today(),
             "fecha_emision_documentos": self.account_invoice_id.invoice_date,
             "cod_operacion": "3",
-            "account_invoice_ids": [(6, 0, [self.account_invoice_id.id])]
+            "account_invoice_ids": [(6, 0, [self.account_invoice_id.id])],
+            "company_id":self.company_id.id
         }
         resumen_obj = self.env["account.summary"].create(resumen)
         self.account_invoice_id.resumen_anulacion_id = resumen_obj.id

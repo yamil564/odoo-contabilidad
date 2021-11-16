@@ -1176,7 +1176,8 @@ class AccountMove(models.Model):
                     "view_mode": "form",
                     "target": "new",
                     "context": {
-                            "default_account_invoice_id": self.id
+                            "default_account_invoice_id": self.id,
+                            "default_company_id":self.company_id.id
                     }
                 }
 
