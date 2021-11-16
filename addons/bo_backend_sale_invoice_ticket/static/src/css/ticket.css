@@ -6,7 +6,7 @@
 }
 
 /* --- Styling of OpenERP Elements --- */
-.ui-dialog, .modal-dialog {
+/* .ui-dialog, .modal-dialog {
     background: white;
     padding: 10px;
     border-radius: 3px;
@@ -20,7 +20,7 @@
 .ui-dialog button, .modal-dialog button {
     padding: 8px;
     min-width: 48px;
-}
+} */
 .ui-dialog .ui-icon-closethick{
     float: right;
 }
@@ -1467,7 +1467,7 @@ td {
     background-color: white;
     margin: 20px;
     padding: 15px;
-    font-size: 16px;
+    font-size: 13px;
     padding-bottom:30px;
     display: inline-block;
     border: solid 1px rgb(220,220,220);
@@ -2456,4 +2456,13 @@ td {
 }
 .pos .not-supported-browser img{
     border-collapse: separate;
+}
+.pos .type-docu{
+    border-top: groove;
+    border-bottom: groove;
+    padding: 5px 0px 5px 0px;
+    margin: 5px 0px 5px 0px;
+}
+.pos .emph{
+    font-size: 16px;
 }

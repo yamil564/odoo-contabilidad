@@ -8,11 +8,11 @@
     'license': 'LGPL-3',
     'category': 'Sale / Invoice',
     'depends': [
-        'account'
+        'account', 'sale'
     ],
     'data': [
         'views/assets.xml',
-        'views/invoice_view.xml',
+        'views/ticket_view.xml',
     ],
     # 'demo': [
     #     ''
