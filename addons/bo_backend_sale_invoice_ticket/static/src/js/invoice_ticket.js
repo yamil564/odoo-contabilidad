@@ -38,6 +38,7 @@ odoo.define('bo_backend_sale_invoice_ticket.SaleInvoiceTicket', function(require
             // this.dashboards_templates = ['OrderReceipt'];
             // this._super(parent, action, options);
             this._super.apply(this, arguments);
+            this._title = "Ticket"
             // options = options || {};
 
             // this.action_manager = parent;
@@ -72,8 +73,10 @@ odoo.define('bo_backend_sale_invoice_ticket.SaleInvoiceTicket', function(require
         btn_back:function(){
             // ev.stopPropagation();
             // this._restoreController("controller_117");  
-            // console.log(this.controlPanelParams.breadcrumbs[this.controlPanelParams.breadcrumbs.length-1])
-            this.trigger_up('breadcrumb_clicked', {controllerID: this.controlPanelParams.breadcrumbs[this.controlPanelParams.breadcrumbs.length-1].controllerID});
+            if (this.controlPanelParams.breadcrumbs[this.controlPanelParams.breadcrumbs.length-1]){
+                console.log(this.controlPanelParams.breadcrumbs[this.controlPanelParams.breadcrumbs.length-1])
+                this.trigger_up('breadcrumb_clicked', {controllerID: this.controlPanelParams.breadcrumbs[this.controlPanelParams.breadcrumbs.length-1].controllerID});
+            }
         },
         btn_print: function(){
             window.print();

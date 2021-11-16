@@ -10,7 +10,7 @@ odoo.define('select_invoice_from_website.change_res_ubigeo',function(require){
     // var session = require("web.session")
 
     var WebsiteSaleSuper = publicWidget.registry.WebsiteSale.prototype
-    
+
     publicWidget.registry.WebsiteSale = publicWidget.registry.WebsiteSale.extend({
         events:_.extend({},WebsiteSaleSuper.events,{
             'change #departamento':'loadProvincias',
@@ -32,11 +32,8 @@ odoo.define('select_invoice_from_website.change_res_ubigeo',function(require){
         loadProvincias:function(){
             var self = this
             var departamento = $(self.$el).find("#departamento").val()
-            //console.log('********DEPARTAMENTO********')
-            //console.log(departamento)
             ajax.jsonRpc('/get-provincia', 'call',
              {'departamento': departamento}).then(function (data) {
-                    // console.log(data);
                     for (let i = 0; i < data.length; i++) {
                         $(self.$el).find("#provincia").append($('<option /}>').val(data[i].id).text(data[i].name));
                     }
@@ -45,11 +42,8 @@ odoo.define('select_invoice_from_website.change_res_ubigeo',function(require){
         loadDistritos:function(){
             var self = this
             var provincia = $(self.$el).find("#provincia").val()
-            //console.log('********PROVINCIA********')
-            //console.log(provincia)
             ajax.jsonRpc('/get-distrito', 'call',
              {'provincia': provincia}).then(function (data) {
-                    // console.log(data);
                     for (let i = 0; i < data.length; i++) {
                         $(self.$el).find("#distrito").append($('<option /}>').val(data[i].id).text(data[i].name));
                     }
