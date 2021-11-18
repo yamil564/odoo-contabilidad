@@ -85,8 +85,11 @@
                                             'cancel':'VENTA CANCELADA'}"/>
             <t t-set="document_display_name" t-value="documents.get(doc.state,'-')"/>
         </xpath>
-        <xpath expr="//table[hasclass('o_main_table')]" position="attributes">
-            <attribute name="style">dislay:none</attribute>
+        <xpath expr="//table[hasclass('o_main_table')]/thead" position="attributes">
+            <attribute name="class">d-none</attribute>
+        </xpath>
+        <xpath expr="//table[hasclass('o_main_table')]/tbody" position="attributes">
+            <attribute name="class">d-none</attribute>
         </xpath>
         <xpath expr="//table[hasclass('o_main_table')]" position="after">
             <table class="w-100 table-order-lines">

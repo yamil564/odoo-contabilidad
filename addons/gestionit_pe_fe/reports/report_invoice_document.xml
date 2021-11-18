@@ -277,8 +277,11 @@
                 </div>
             </div>
         </xpath>
-        <xpath expr="//table[hasclass('o_main_table')]" position="attributes">
-            <attribute name="style">dislay:none</attribute>
+        <xpath expr="//table[hasclass('o_main_table')]/thead" position="attributes">
+            <attribute name="class">d-none</attribute>
+        </xpath>
+        <xpath expr="//table[hasclass('o_main_table')]/tbody" position="attributes">
+            <attribute name="class">d-none</attribute>
         </xpath>
         <xpath expr="//table[hasclass('o_main_table')]" position="after">
             <!-- Is there a discount on at least one line? -->
