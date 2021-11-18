@@ -15,6 +15,7 @@
         "account_tax_python",
         "account_debit_note",
         "gestionit_pe_consulta_ruc_dni", 
+        "gestionit_pe_tipocambio",
         "gestionit_pe_ubicaciones",
     ],
     # "gestionit_pe_ubicaciones",

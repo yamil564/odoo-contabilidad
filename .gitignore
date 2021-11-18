@@ -13,3 +13,4 @@ xml_state.py
 nginx/nginx.conf
 filename.txt
 before*
+*.code-workspace
