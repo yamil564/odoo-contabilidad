@@ -745,7 +745,7 @@ class AccountMove(models.Model):
                         raise UserError(
                             "Tipo de documento del receptor no valido")
 
-                    return super(AccountMove, move).post()
+                    super(AccountMove, move).post()
 
                     move.action_generate_and_signed_xml()
 

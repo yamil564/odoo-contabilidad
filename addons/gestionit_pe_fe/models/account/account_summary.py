@@ -277,7 +277,7 @@ class AccountSummary(models.Model):
     def action_generate_and_signed_xml(self):
         if not self.company_id:
             raise UserError("El campo de compañía es Obligatoria.")
-        tipo_envio = self.company_id.tipo_envio
+        # tipo_envio = self.company_id.tipo_envio
         summary_json = self._generate_summary_json()
         credentials = summary_json.get("company")
   
@@ -307,15 +307,23 @@ class AccountSummary(models.Model):
             self.current_log_status_id.write(result)
         except Exception as e:
             return result
+    
+    def cron_action_send_summary_pending(self):
+        summarys = self.env["account.summary"].search([("current_log_status_id.status","=","P")])
+        for summ in summarys:
+            summ.action_send_summary()
 
     def post(self):
         self.ensure_one()
         self.load_summary()
         if len(self.account_invoice_ids) == 0:
             raise UserError("Al menos debe existir 1 comprobante a publicar. La lista de comprobantes esta vacía")
-
-        if not self.current_log_status_id:
-            self.action_send_summary()
+        
+        if self.cod_operacion == "1":
+            if not self.current_log_status_id:
+                self.action_send_summary()
+        elif self.cod_operacion == "3":
+            self.action_generate_and_signed_xml()
 
     def action_request_status_ticket(self):
         if not self.current_log_status_id:
@@ -418,6 +426,7 @@ class AccountSummaryVoided(models.TransientModel):
         }
         resumen_obj = self.env["account.summary"].create(resumen)
         self.account_invoice_id.resumen_anulacion_id = resumen_obj.id
+        resumen_obj.post()
         # resumen_obj.generar_identificador_resumen()
         # resumen_obj.cargar_resumen_lineas()
         # resumen_obj.generar_resumen_diario()

@@ -22,4 +22,17 @@
         <field name="user_id" ref="base.user_root"/>
         <field name="code">model.cron_action_request_status_ticket()</field>
     </record>
+
+    <record id="gestionit_pe_fe.ir_cron_action_send_summary_pending" model="ir.cron">
+        <field name="name">CRON Envío de resumenes de baja de boletas y notas asociadas</field>
+        <field name="model_id" ref="gestionit_pe_fe.model_account_summary"/>
+        <field name="state">code</field>
+        <field name="interval_number">1</field>
+        <field name="doall">1</field>
+        <field name="interval_type">hours</field>
+        <field name="numbercall">-1</field>
+        <field name="user_id" ref="base.user_root"/>
+        <field name="code">model.cron_action_send_summary_pending()</field>
+    </record>
+    
 </odoo>
