@@ -247,11 +247,10 @@ class AccountMove(models.Model):
             else:
                 record.anulacion_comprobante = "-"
 
-    @api.depends("amount_total", "type_detraction")
+    @api.depends("amount_total", "type_detraction","detraction_rate")
     def _compute_amount_detraction(self):
         for record in self:
-            record.detraction_amount = round(
-                record.amount_total*record.detraction_rate/100, 2)
+            record.detraction_amount = round(record.amount_total*record.detraction_rate/100, 2)
 
     has_detraction = fields.Boolean("Detracción?")
     type_detraction = fields.Many2one(
@@ -267,8 +266,23 @@ class AccountMove(models.Model):
 
     paymentterm_line = fields.One2many("paymentterm.line", "move_id")
 
-    invoice_payment_term_type = fields.Selection(
-        related="invoice_payment_term_id.type")
+    invoice_payment_term_type = fields.Char(compute="_compute_invoice_payment_term_type")
+
+    @api.depends("invoice_payment_term_id","invoice_date_due")
+    def _compute_invoice_payment_term_type(self):
+        for record in self:
+            record.invoice_payment_term_type = "Contado"
+            if record.invoice_payment_term_id:
+                record.invoice_payment_term_type = record.invoice_payment_term_id.type
+            else:
+                if record.invoice_date_due:
+                    if (record.invoice_date != False and record.invoice_date_due > record.invoice_date) or \
+                        (record.invoice_date == False and record.invoice_date_due > datetime.now(tz=timezone("America/Lima")).date()):
+                        record.invoice_payment_term_type = "Credito"
+                else:
+                    record.invoice_payment_term_type = "Contado"
+                    
+                
 
     # @api.constrains("invoice_payment_term_id")
     def check_paymenttermn_lines(self):

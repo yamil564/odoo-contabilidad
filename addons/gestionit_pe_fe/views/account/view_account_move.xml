@@ -143,7 +143,7 @@
             <xpath expr="//page[@id='aml_tab']" position="after">
                 <field name="invoice_payment_term_type" invisible="1"/>
                 <page string="Plazos de pago" 
-                        attrs="{'invisible':[('invoice_payment_term_type','!=','Credito')]}">
+                        attrs="{'invisible':[('invoice_payment_term_type','!=','Credito'),('invoice_date_due','>','Credito')]}">
                     <field name="paymentterm_line" always_reload="1" attrs="{'readonly':[('state','not in','draft')]}">
                         <tree editable="bottom">
                             <field name="currency_id" invisible="1"/>

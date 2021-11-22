@@ -311,7 +311,11 @@ class AccountSummary(models.Model):
     def cron_action_send_summary_pending(self):
         summarys = self.env["account.summary"].search([("current_log_status_id.status","=","P")])
         for summ in summarys:
-            summ.action_send_summary()
+            if summ.cod_operacion == "1":
+                summ.action_send_summary()
+            elif summ.cod_operacion in ["2","3"]:
+                if all(summ.account_invoice_ids.mapped(lambda inv:inv.estado_comprobante_electronico == "1_ACEPTADO")):
+                    summ.action_send_summary()
 
     def post(self):
         self.ensure_one()

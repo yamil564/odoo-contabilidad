@@ -1,6 +1,7 @@
 from odoo import models,fields,api
 from odoo.exceptions import UserError
-
+from pytz import timezone
+from datetime import datetime, timedelta
 class PaymenttermLine(models.Model):
     _name = "paymentterm.line"
     _order = "date_due ASC"
@@ -13,12 +14,15 @@ class PaymenttermLine(models.Model):
     @api.constrains("move_id")
     def check_move_id(self):
         for record in self:
-            if record.move_id:
-                if record.move_id.invoice_payment_term_id:
-                    if record.move_id.invoice_payment_term_id.type != "Credito":
+            move = record.move_id
+            if move:
+                if move.invoice_payment_term_id:
+                    if move.invoice_payment_term_id.type != "Credito":
                         raise UserError("Si la factura tiene líneas de plazos de pago, entonces su término de pago debe ser uno de tipo Crédito.")
                 else:
-                    raise UserError("Si la factura tiene líneas de plazos de pago, entonces su término de pago debe ser uno de tipo Crédito.")
+                    if not ((move.invoice_date != False and move.invoice_date_due > move.invoice_date) or \
+                        (move.invoice_date == False and move.invoice_date_due > datetime.now(tz=timezone("America/Lima")).date())):
+                        raise UserError("Si la factura tiene líneas de plazos de pago, entonces su término de pago debe ser uno de tipo Crédito.")
 
     
 
