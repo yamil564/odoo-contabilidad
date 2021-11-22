@@ -377,7 +377,7 @@ def build_nota_credito(data):
                                                price=price)
         fact.add_invoice_line(invoice_line)
         """
-    _logger.info(nota_credito)
+    # _logger.info(nota_credito)
     nota_credito.set_file_name(
         str(numDocEmisor) + "-07-" + serie + "-" + str(correlativo).zfill(8))
     return nota_credito

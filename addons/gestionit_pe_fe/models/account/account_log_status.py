@@ -251,7 +251,7 @@ class AccountLogStatus(models.Model):
             try:
                 response = requests.request("POST", url, data=json.dumps(comp[0]), headers=headers)
                 res = response.json()
-                _logger.info(res)
+                # _logger.info(res)
                 if "data" in res and res.get("success"):
                     data = res["data"]
                     if "estadoCp" in data:

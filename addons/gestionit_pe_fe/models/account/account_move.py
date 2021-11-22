@@ -671,7 +671,7 @@ class AccountMove(models.Model):
             # move.amount_total = sign * \
             #     (total_currency if len(currencies) ==
             #      1 else total) - move.total_descuentos
-            _logger.info(move.total_descuento_global)
+            # _logger.info(move.total_descuento_global)
             move.amount_total = move.total_venta_gravado + \
                 move.total_venta_exonerada + move.total_venta_inafecto + move.amount_igv
 
@@ -1293,7 +1293,7 @@ class AccountMove(models.Model):
                                                            ("journal_id.electronic_invoice","=",True),
                                                            ("journal_id.invoice_type_code_id", "in", ["01", "03", "07", "08"]),
                                                            ("estado_comprobante_electronico", "in", ["-", "0_NO_EXISTE"])], limit=50, order="invoice_date asc")
-        _logger.info(invoices.mapped("name"))
+        # _logger.info(invoices.mapped("name"))
         for inv in invoices:
             try:
                 inv.action_validez_comprobante()
@@ -1386,7 +1386,7 @@ class AccountDebitNote(models.TransientModel):
         move_ids = self.env['account.move'].browse(self.env.context['active_ids']) if self.env.context.get(
             'active_model') == 'account.move' else self.env['account.move']
         if move_ids.exists():
-            _logger.info(move_ids)
+            # _logger.info(move_ids)
             res.update({"journal_type": move_ids[0].journal_id.type,
                         "tipo_comprobante_a_rectificar": move_ids[0].journal_id.invoice_type_code_id})
 

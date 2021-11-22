@@ -22,7 +22,7 @@ class Users(models.Model):
     
     
     def write(self, values):
-        _logger.info(self._context)
+        # _logger.info(self._context)
         company_ids = values.get("company_ids",[])
         if self._context.get("params",False):
             if self._context["params"].get("model",False) != "res.users":

@@ -57,19 +57,20 @@ odoo.define("select_invoice_from_website.website_sale",function(require){
         click_l10n_latam_identification_type_id:function(ev){
             var itc = $(ev.currentTarget).data("itc")
             $("input[type='radio'][name='invoice_type_code']:checked").attr("checked",false)
+            // $("input[name='invoice_type_code']").trigger("change")
             if(itc=="6"){
                 $(".div_company label").removeClass("label-optional")
                 $(".div_country label").removeClass("label-optional")
                 $(".div_state label").removeClass("label-optional")
                 $(".div_street label").removeClass("label-optional")
-                $("input[value='01']").attr("checked",true)
+                $("input[value='01']").attr("checked",true).trigger("change")
 
             }else{
                 $(".div_company label").addClass("label-optional")
                 $(".div_country label").addClass("label-optional")
                 $(".div_street label").addClass("label-optional")
                 $(".div_state label").addClass("label-optional")
-                $("input[value='03']").attr("checked",true)
+                $("input[value='03']").attr("checked",true).trigger("change")
             }
 
             if(itc == "0"){
