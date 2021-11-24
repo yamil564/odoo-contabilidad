@@ -56,8 +56,8 @@
                             <th>
                                 <label t-esc="'VENDEDOR: '"/>
                             </th>
-                            <td class="label">
-                                <span t-esc="o.user_id.name"/>
+                            <td class="label" name="">
+                                <span t-esc="o.user_id.name or ''"/>
                             </td>
                         </tr>
                         <tr>
@@ -66,7 +66,7 @@
                                 <label t-esc="'DIRECCIÓN: '"/>
                             </th>
                             <td class="label">
-                                <span t-esc="'{} {}-{}-{}'.format(o.partner_id.street,o.partner_id.state_id.name or '',o.partner_id.province_id.name or '',o.partner_id.district_id.name or '').upper()"/>
+                                <span t-esc="'{} {}-{}-{}'.format(o.partner_id.street or '',o.partner_id.state_id.name or '',o.partner_id.province_id.name or '',o.partner_id.district_id.name or '').upper()"/>
                             </td>
                             <!-- MONEDA -->
                             <th>
@@ -427,7 +427,7 @@
                     <div t-if="len(o.company_id.bank_ids) &gt; 0" name="company_banks" class="banks">
                         <ul>
                             <li t-foreach="o.company_id.partner_id.bank_ids" t-as="bank">
-                                <span t-esc="'{} : {}'.format(bank.bank_id.name,bank.acc_number)"></span>
+                                <span t-esc="'{} {}: {}'.format(bank.bank_id.name or '',bank.description or '',bank.acc_number or '')"></span>
                             </li>
                         </ul>
                         <br/>
