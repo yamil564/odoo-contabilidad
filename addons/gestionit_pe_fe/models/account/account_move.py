@@ -287,7 +287,7 @@ class AccountMove(models.Model):
     # @api.constrains("invoice_payment_term_id")
     def check_paymenttermn_lines(self):
         for record in self:
-            if record.type not in ['in_invoice', 'in_refund']:
+            if record.type in ['out_invoice', 'in_invoice']:
                 if record.invoice_payment_term_id:
                     if record.invoice_payment_term_type == "Credito":
                         amount_total = round(sum(record.paymentterm_line.mapped("amount")) + record.detraction_amount,4)

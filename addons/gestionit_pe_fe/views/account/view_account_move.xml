@@ -259,7 +259,11 @@
                     <button name="generar_nota_debito" string="Generar Nota de Débito" class="oe_highlight" type="object" attrs="{'invisible': ['|','|',('invoice_type_code','not in',['00','01','03']),('state','in',('cancel','draft'))]}"/> -->
             </xpath>
             <xpath expr="//button[@name='button_draft']" position="after">
-                <button name="action_validez_comprobante" string="Validez de comprobante" type="object" class="oe_highlight" attrs="{'invisible': ['|','|',('invoice_type_code','not in',['01','03','07','08']),('state','in',('cancel','draft'))]}"/>
+                <button name="action_validez_comprobante" 
+                        string="Validez de comprobante" 
+                        type="object" 
+                        class="oe_highlight" 
+                        attrs="{'invisible': ['|',('type','in',['in_invoice','in_refund']),('state','not in',('posted'))]}"/>
             </xpath>
             <xpath expr="//button[@name='button_draft']" position="attributes">
                 <attribute name="string">Convertir a borrador</attribute>
@@ -276,10 +280,23 @@
                 </button>
             </xpath>
             <xpath expr="//button[@name='preview_invoice']" position="after">
-                <button name="action_generate_and_signed_xml" string="Generar XML" class="oe_highlight" type="object" groups="gestionit_pe_fe.group_fe_allow_generate_send_xml" attrs="{'invisible': ['|',('state','!=','posted'),('type','not in',['out_invoice','out_refund'])]}"/>
+                <button name="action_generate_and_signed_xml" 
+                        string="Generar XML" 
+                        class="oe_highlight" 
+                        type="object" 
+                        groups="gestionit_pe_fe.group_fe_allow_generate_send_xml" 
+                        attrs="{'invisible': ['|',('state','!=','posted'),('type','not in',['out_invoice','out_refund'])]}"/>
                 <button name="action_send_invoice" string="Enviar XML" class="oe_highlight" type="object" groups="gestionit_pe_fe.group_fe_allow_generate_send_xml" attrs="{'invisible': ['|',('state','!=','posted'),('type','not in',['out_invoice','out_refund'])]}"/>
-                <button name="btn_comunicacion_baja" string="Anular Comprobante" class="oe_highlight" type="object" attrs="{'invisible': ['|',('estado_comprobante_electronico','=','2_ANULADO'),('state','not in',['posted'])]}"/>
-                <button name="action_open_guia_remision" string="Generar Guía de Remisión" class="oe_highlight" type="object" attrs="{'invisible': [('guia_remision_count','!=',0)]}"/>
+                <button name="btn_comunicacion_baja" 
+                            string="Anular Comprobante" 
+                            class="oe_highlight" 
+                            type="object" 
+                            attrs="{'invisible': ['|','|',('estado_comprobante_electronico','=','2_ANULADO'),('state','not in',['posted']),('type','in',['in_invoice','in_refund'])]}"/>
+                <button name="action_open_guia_remision" 
+                            string="Generar Guía de Remisión" 
+                            class="oe_highlight" 
+                            type="object" 
+                            attrs="{'invisible': ['|',('guia_remision_count','!=',0),('type','in',['in_invoice','in_refund'])]}"/>
             </xpath>
         </field>
     </record>
