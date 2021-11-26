@@ -54,10 +54,10 @@
                             </td>
                             <!-- VENDEDOR -->
                             <th>
-                                <label t-esc="'VENDEDOR: '"/>
+                                <label t-esc="'VENDEDOR: '" name="label_vendedor"/>
                             </th>
-                            <td class="label" name="">
-                                <span t-esc="o.user_id.name or ''"/>
+                            <td class="label" >
+                                <span t-esc="o.user_id.name or ''" name="value_vendedor"/>
                             </td>
                         </tr>
                         <tr>
