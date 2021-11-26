@@ -52,6 +52,9 @@ class AccountMoveDocumentReference(models.Model):
         selection=tdr, string="Tipo de documento")
     document_number = fields.Char("Número de documento")
 
+    def get_name_tdr(self,code):
+        res = [c[1] for c in tdr if c[0] == code]
+        return res[0] if len(res) >0 else ""
 
 class AccountMove(models.Model):
     _inherit = "account.move"

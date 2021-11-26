@@ -109,12 +109,14 @@
                             </td>
                             <!-- N° GUÍA -->
                             <th>
-                                <label t-esc="'N° GUÍA: '"/>
+                                <label t-esc="'N° GUÍA: '" 
+                                        name="label_n_guia"/>
                             </th>
-                            <td class="label">
+                            <td class="label" >
                                 <!-- <div name="reference" class="d-none"></div> -->
                                 <!-- <span t-esc="o.ref" t-if="o.ref"/> -->
-                                <span t-esc="';'.join([g.numero for g in o.guia_remision_ids.filtered(lambda r:r.state == 'validado')])" t-if="len(o.guia_remision_ids.filtered(lambda r:r.state == 'validado')) &gt; 0"/>
+                                <span name="value_n_guia" 
+                                      t-esc="';'.join([g.numero for g in o.guia_remision_ids.filtered(lambda r:r.state == 'validado')])" t-if="len(o.guia_remision_ids.filtered(lambda r:r.state == 'validado')) &gt; 0"/>
                             </td>
                         </tr>
                         <tr>
@@ -131,7 +133,7 @@
                             </th>
                             <td class="label">
                                 <t t-if="len(o.document_reference_ids) &gt; 0">
-                                    <span t-esc="','.join(['[{}] {}'.format(d.document_type_code,d.document_number) for d in o.document_reference_ids])"/>
+                                    <span t-esc="','.join(['[{}] {}'.format(d.get_name_tdr(d.document_type_code),d.document_number) for d in o.document_reference_ids])"/>
                                 </t>
                             </td>
                         </tr>
@@ -434,7 +436,7 @@
                     </div>
                 </div>
                 <div class="col-4 p-0">
-                    <table class="w-100">
+                    <table class="w-100" name="invoice-table-total">
                         <tr t-if="o.descuento_global &gt; 0">
                             <td>
                                 <strong>Dscto. Global
