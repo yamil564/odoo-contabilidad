@@ -23,7 +23,6 @@ odoo.define('select_invoice_from_website.change_res_ubigeo',function(require){
             console.log(pais)
             ajax.jsonRpc('/get-departamento', 'call',
              {'pais': pais}).then(function (data) {
-                    // console.log(data);
                     for (let i = 0; i < data.length; i++) {
                         $(self.$el).find("#departamento").append($('<option /}>').val(data[i].id).text(data[i].name));
                     }
