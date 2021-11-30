@@ -1325,13 +1325,10 @@ class AccountMove(models.Model):
 class AccountMoveReversal(models.TransientModel):
     _inherit = 'account.move.reversal'
 
-    tipo_comprobante_a_rectificar = fields.Selection(
-        selection=[("00", "Otros"), ("01", "Factura"), ("03", "Boleta")])
-    journal_type = fields.Selection(
-        selection=[("sale", "Ventas"), ("purchase", "Compras")], string="Tipo de diario")
+    tipo_comprobante_a_rectificar = fields.Selection(selection=[("00", "Otros"), ("01", "Factura"), ("03", "Boleta")])
+    journal_type = fields.Selection(selection=[("sale", "Ventas"), ("purchase", "Compras")], string="Tipo de diario")
 
-    credit_note_type = fields.Selection(
-        string='Tipo de Nota de Crédito', selection="_selection_credit_note_type")
+    credit_note_type = fields.Selection(string='Tipo de Nota de Crédito', selection="_selection_credit_note_type")
 
     def _selection_credit_note_type(self):
         return tnc
@@ -1339,14 +1336,11 @@ class AccountMoveReversal(models.TransientModel):
     @api.model
     def default_get(self, fields):
         res = super(AccountMoveReversal, self).default_get(fields)
-        move_ids = self.env['account.move'].browse(self.env.context['active_ids']) if self.env.context.get(
-            'active_model') == 'account.move' else self.env['account.move']
+        move_ids = self.env['account.move'].browse(self.env.context['active_ids']) if self.env.context.get('active_model') == 'account.move' else self.env['account.move']
 
-        res['refund_method'] = (
-            len(move_ids) > 1 or move_ids.type == 'entry') and 'cancel' or 'refund'
+        res['refund_method'] = (len(move_ids) > 1 or move_ids.type == 'entry') and 'cancel' or 'refund'
         res['residual'] = len(move_ids) == 1 and move_ids.amount_residual or 0
-        res['currency_id'] = len(
-            move_ids.currency_id) == 1 and move_ids.currency_id.id or False
+        res['currency_id'] = len(move_ids.currency_id) == 1 and move_ids.currency_id.id or False
         res['move_type'] = len(move_ids) == 1 and move_ids.type or False
         res['move_id'] = move_ids[0].id if move_ids else False
         res['tipo_comprobante_a_rectificar'] = move_ids[0].journal_id.invoice_type_code_id if move_ids else False
@@ -1354,8 +1348,7 @@ class AccountMoveReversal(models.TransientModel):
 
         if move_ids.exists():
             journals = self.env["account.journal"].sudo().search([('tipo_comprobante_a_rectificar', '=', res['tipo_comprobante_a_rectificar']),
-                                                                  ("invoice_type_code_id",
-                                                                   "=", "07"),
+                                                                  ("invoice_type_code_id","=", "07"),
                                                                   ("type", "=", res['journal_type'])]).ids
             res['journal_id'] = journals[0] if len(journals) > 0 else False
         else:
@@ -1366,19 +1359,19 @@ class AccountMoveReversal(models.TransientModel):
     def _prepare_default_reversal(self, move):
         res = super(AccountMoveReversal, self)._prepare_default_reversal(move)
         res.update({"sustento_nota": self.reason,
-                    "tipo_nota_credito": self.credit_note_type, "invoice_type_code": "07"})
+                    "tipo_nota_credito": self.credit_note_type, 
+                    "invoice_type_code": "07"})
+        if self.credit_note_type in ["04"]:
+            res.update({"line_ids":[]})
         return res
 
 
 class AccountDebitNote(models.TransientModel):
     _inherit = 'account.debit.note'
 
-    debit_note_type = fields.Selection(
-        string='Tipo de Nota de Débito', selection="_selection_debit_note_type")
-    tipo_comprobante_a_rectificar = fields.Selection(
-        selection=[("00", "Otros"), ("01", "Factura"), ("03", "Boleta")])
-    journal_type = fields.Selection(
-        selection=[("sale", "Ventas"), ("purchase", "Compras")], string="Tipo de diario")
+    debit_note_type = fields.Selection(string='Tipo de Nota de Débito', selection="_selection_debit_note_type")
+    tipo_comprobante_a_rectificar = fields.Selection(selection=[("00", "Otros"), ("01", "Factura"), ("03", "Boleta")])
+    journal_type = fields.Selection(selection=[("sale", "Ventas"), ("purchase", "Compras")], string="Tipo de diario")
 
     def _selection_debit_note_type(self):
         return tnd
@@ -1390,12 +1383,10 @@ class AccountDebitNote(models.TransientModel):
             'active_model') == 'account.move' else self.env['account.move']
         if move_ids.exists():
             # _logger.info(move_ids)
-            res.update({"journal_type": move_ids[0].journal_id.type,
-                        "tipo_comprobante_a_rectificar": move_ids[0].journal_id.invoice_type_code_id})
+            res.update({"journal_type": move_ids[0].journal_id.type,"tipo_comprobante_a_rectificar": move_ids[0].journal_id.invoice_type_code_id})
 
             journals = self.env["account.journal"].sudo().search([('tipo_comprobante_a_rectificar', '=', res['tipo_comprobante_a_rectificar']),
-                                                                  ("invoice_type_code_id",
-                                                                   "=", "08"),
+                                                                  ("invoice_type_code_id","=", "08"),
                                                                   ("type", "=", res['journal_type'])]).ids
             res['journal_id'] = journals[0] if len(journals) > 0 else False
 
@@ -1441,8 +1432,8 @@ class accountInvoiceSend(models.TransientModel):
 
                 fname = invoice.name+".xml"
                 cdr_fname = invoice.name+"_cdr.xml"
-                if len(invoice.account_log_status_ids) > 0:
-                    log_status = invoice.account_log_status_ids[-1]
+                if invoice.current_log_status_id != False:
+                    log_status = invoice.current_log_status_id
                     data_signed_xml = log_status.signed_xml_data_without_format
 
                     if data_signed_xml:

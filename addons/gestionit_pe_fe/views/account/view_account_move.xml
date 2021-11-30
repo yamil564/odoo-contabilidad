@@ -24,6 +24,12 @@
             <xpath expr="//field[@name='invoice_line_ids']//tree//field[@name='price_total']" position="before">
                 <field name="price_subtotal" string="Subtotal"/>
             </xpath>
+            <xpath expr="//field[@name='invoice_line_ids']//tree//field[@name='price_subtotal']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='invoice_line_ids']//tree//field[@name='discount']" position="attributes">
+                <attribute name="attrs">{'column_invisible':[('parent.type','in',['out_refund','in_refund'])]}</attribute>
+            </xpath>
             <xpath expr="//field[@name='ref']" position="replace">
                 <field name="inv_supplier_ref" attrs="{'invisible': [('type','in',['out_refund','out_invoice'])],'required':[('type','in',['in_invoice','in_refund'])]}" placeholder="Factura / Boleta / RHE"/>
                 <field name="ref" placeholder="Ref. de Proveedor"/>
@@ -35,9 +41,15 @@
                 <field name="account_summary_id" attrs="{'invisible': [('invoice_type_code','!=','03')]}" />
                 <field name="estado_comprobante_electronico" readonly="1" force_save="1"/>
                 <!-- Detracciones -->
-                <field name="has_detraction" groups="gestionit_pe_fe.group_fe_detraction_user" attrs="{'readonly':[['state','not in',['draft']]]}"/>
-                <field name="type_detraction" options="{'no_open':True,'no_create':True,'no_quick_create':True}" groups="gestionit_pe_fe.group_fe_detraction_user" attrs="{'required':[('has_detraction','=',True)],'invisible':[('has_detraction','=',False)],'readonly':[['state','not in',['draft']]]}" />
-                <field name="detraction_rate" groups="gestionit_pe_fe.group_fe_detraction_user" attrs="{'required':[('has_detraction','=',True)],'invisible':[('has_detraction','=',False)],'readonly':[['state','not in',['draft']]]}"/>
+                <field name="has_detraction" 
+                            groups="gestionit_pe_fe.group_fe_detraction_user" 
+                            attrs="{'readonly':[['state','not in',['draft']]],'invisible':[('type','in',['out_refund','in_refund'])]}"/>
+                <field name="type_detraction" options="{'no_open':True,'no_create':True,'no_quick_create':True}" 
+                            groups="gestionit_pe_fe.group_fe_detraction_user" 
+                            attrs="{'required':[('has_detraction','=',True)],'invisible':[('has_detraction','=',False)],'readonly':[['state','not in',['draft']]]}" />
+                <field name="detraction_rate" 
+                            groups="gestionit_pe_fe.group_fe_detraction_user" 
+                            attrs="{'required':[('has_detraction','=',True)],'invisible':[('has_detraction','=',False)],'readonly':[['state','not in',['draft']]]}"/>
                 <field name="detraction_code" groups="gestionit_pe_fe.group_fe_detraction_user" attrs="{'required':[('has_detraction','=',True)],'invisible':[('has_detraction','=',False)],'readonly':[['state','not in',['draft']]]}"/>
 
                 <field name="account_journal_national_bank" options="{'no_open':True,'no_create':True,'no_quick_create':True}" string="Número de cuenta del Banco de la Nación" groups="gestionit_pe_fe.group_fe_detraction_user" attrs="{'required':[('has_detraction','=',True)],'invisible':[('has_detraction','=',False)],'readonly':[['state','not in',['draft']]]}"/>
@@ -45,9 +57,17 @@
                 <field name="detraction_amount" groups="gestionit_pe_fe.group_fe_detraction_user" attrs="{'required':[('has_detraction','=',True)],'invisible':[('has_detraction','=',False)],'readonly':[['state','not in',['draft']]]}"/>
 
                 <!-- Mismo descuento en todas las líneas-->
-                <field name="apply_same_discount_on_all_lines" groups="product.group_discount_per_so_line"/>
-                <field name="discount_on_all_lines" string="Descuento (%)" attrs="{'required':[('apply_same_discount_on_all_lines','=',True)],'invisible':[('apply_same_discount_on_all_lines','=',False)]}"/>
-                <button name="action_apply_same_discount_on_all_lines" string="Aplicar dscto (%) en todas las líneas" type="object" class="oe_highlight" attrs="{'invisible':[('apply_same_discount_on_all_lines','=',False)]}"/>
+                <field name="apply_same_discount_on_all_lines" 
+                        groups="product.group_discount_per_so_line"
+                        attrs="{'readonly':[['state','not in',['draft']]],'invisible':[('type','in',['out_refund','in_refund'])]}"/>
+                <field name="discount_on_all_lines" 
+                        string="Descuento (%)" 
+                        attrs="{'required':[('apply_same_discount_on_all_lines','=',True)],'invisible':[('apply_same_discount_on_all_lines','=',False)]}"/>
+                <button name="action_apply_same_discount_on_all_lines" 
+                        string="Aplicar dscto (%) en todas las líneas" 
+                        type="object" 
+                        class="oe_highlight" 
+                        attrs="{'invisible':[('apply_same_discount_on_all_lines','=',False)]}"/>
 
             </xpath>
             <xpath expr="//field[@name='journal_id']" position="replace">
@@ -186,8 +206,15 @@
         <field name="inherit_id" ref="account.view_move_form"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='amount_untaxed']" position="replace">
-                <field name="apply_global_discount" string="Aplicar descuento Global?" groups="gestionit_pe_fe.group_fe_discount_global_sale_invoices"/>
-                <field name="descuento_global" string="Descuento Global (%)" attrs="{'invisible':[('apply_global_discount','=',False)]}" groups="gestionit_pe_fe.group_fe_discount_global_sale_invoices"/>
+                <field name="apply_global_discount" 
+                        string="Aplicar descuento Global?" 
+                        attrs="{'invisible':[('type','in',['out_refund','in_refund'])]}" 
+                        groups="gestionit_pe_fe.group_fe_discount_global_sale_invoices"/>
+                <field name="descuento_global" 
+                        string="Descuento Global (%)" 
+                        attrs="{'invisible':[('apply_global_discount','=',False),('type','in',['out_refund','in_refund'])]}" 
+                        groups="gestionit_pe_fe.group_fe_discount_global_sale_invoices"/>
+                
                 <field name="total_venta_gravado" string="Monto Gravado"/>
                 <!-- <field name="amount_tax"/> -->
                 <field name="amount_igv"/>
@@ -359,9 +386,9 @@
             <xpath expr="//filter[@name='myinvoices']" position="after">
                 <!-- <filter string="Hoy" domain="[('invoice_date', '&gt;=', datetime.datetime.now().strftime('%Y-%m-%d 00:00:00')),('invoice_date', '&lt;=',datetime.datetime.now().strftime('%Y-%m-%d 23:23:59'))]"/> -->
                 <separator/>
-                <filter name="estado_comprobante_elctronico_aceptado" string="ACEPTADO EN SUNAT" domain="[('estado_comprobante_electronico','=','1_ACEPTADO')]"/>
-                <filter name="estado_comprobante_elctronico_no_existe" string="NO EXISTE EN SUNAT" domain="[('estado_comprobante_electronico','in',[False,'-','0_NO_EXISTE'])]"/>
-                <filter name="estado_comprobante_elctronico_anulado" string="ANULADO EN SUNAT" domain="[('estado_comprobante_electronico','=','2_ANULADO')]"/>
+                <filter name="estado_comprobante_electronico_aceptado" string="ACEPTADO EN SUNAT" domain="[('estado_comprobante_electronico','=','1_ACEPTADO')]"/>
+                <filter name="estado_comprobante_electronico_no_existe" string="NO EXISTE EN SUNAT" domain="[('estado_comprobante_electronico','in',[False,'-','0_NO_EXISTE'])]"/>
+                <filter name="estado_comprobante_electronico_anulado" string="ANULADO EN SUNAT" domain="[('estado_comprobante_electronico','=','2_ANULADO')]"/>
                 <separator/>
                 <filter name="tipo_comprobante_factura" string="FACTURAS" domain="[('invoice_type_code','=','01')]"/>
                 <filter name="tipo_comprobante_boleta" string="BOLETAS" domain="[('invoice_type_code','=','03')]"/>

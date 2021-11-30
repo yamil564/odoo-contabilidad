@@ -211,6 +211,7 @@ class Tipocambio(models.Model):
 
         try:
             res = self.api_migo_usd_pen_exchange_date(self.name.strftime("%Y-%m-%d"))
+            _logger.info(res)
         except Exception as e:
             today = datetime.now(tz=timezone("America/Lima")).strftime("%Y-%m-%d")
             if today == self.name.strftime("%Y-%m-%d"):
