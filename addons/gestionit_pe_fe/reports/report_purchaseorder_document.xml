@@ -10,7 +10,7 @@
                             <label t-esc="'PROVEEDOR : '"/>
                         </th>
                         <td class="v_partner">
-                            <span t-esc="((o.partner_id.registration_name if o.partner_id.registration_name else o.partner_id.name)  or '').upper()"/>
+                            <span t-esc="((o.partner_id.registration_name if o.partner_id.registration_name not in ('-',False,'') else o.partner_id.name)  or '').upper()"/>
                         </td>
                         <!-- TELÉFONO -->
                         <th class="l_mobile">
