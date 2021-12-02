@@ -62,12 +62,12 @@
                         attrs="{'readonly':[['state','not in',['draft']]],'invisible':[('type','in',['out_refund','in_refund'])]}"/>
                 <field name="discount_on_all_lines" 
                         string="Descuento (%)" 
-                        attrs="{'required':[('apply_same_discount_on_all_lines','=',True)],'invisible':[('apply_same_discount_on_all_lines','=',False),('type','in',['out_refund','in_refund'])  ]}"/>
+                        attrs="{'required':[('apply_same_discount_on_all_lines','=',True)],'invisible':['|',('apply_same_discount_on_all_lines','=',False),('type','in',['out_refund','in_refund'])  ]}"/>
                 <button name="action_apply_same_discount_on_all_lines" 
                         string="Aplicar dscto (%) en todas las líneas" 
                         type="object" 
                         class="oe_highlight" 
-                        attrs="{'invisible':[('apply_same_discount_on_all_lines','=',False),('type','in',['out_refund','in_refund'])  ]}"/>
+                        attrs="{'invisible':['|',('apply_same_discount_on_all_lines','=',False),('type','in',['out_refund','in_refund'])  ]}"/>
 
             </xpath>
             <xpath expr="//field[@name='journal_id']" position="replace">

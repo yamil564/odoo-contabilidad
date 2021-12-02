@@ -305,46 +305,61 @@
                     <tbody class="invoice_tbody">
                         <t t-set="item" t-value="1"/>
                         <t t-set="invoice_lines" t-value="o.invoice_line_ids.filtered(lambda r:not r.is_charge_or_discount)"/>
-                        <tr t-foreach="invoice_lines" t-as="l">
-                            <t t-set="is_free" t-value="len(l.tax_ids.filtered(lambda r:r.tax_group_id.tipo_afectacion == '31')) == 0"/>
-                            <td class="v_item">
-                                <span t-esc="item"/>
-                            </td>
-                            <td class="v_quantity">
-                                <span t-esc="l.quantity"/>
-                            </td>
-                            <td class="v_product_uom_id">
-                                <span t-field="l.product_uom_id.name"/>
-                            </td>
-                            <td class="v_name">
-                                <span t-field="l.name"/>
-                            </td>
-                            <td class="v_value_unit">
-                                <span t-esc="round((l.price_subtotal/l.quantity)/(1-l.discount/100),2)" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
-                            </td>
-                            <td class="v_price_unit">
-                                <t t-if="is_free">
-                                    <span t-esc="round((l.price_total/l.quantity)/(1-l.discount/100),2)" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
-                                </t>
-                                <t t-else="">
-                                    <span t-esc="float('0')" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
-                                </t>
-                            </td>
-                            <td class="v_discount" t-if="display_discount">
-                                <span t-if="l.discount &gt; 0">
-                                    <span t-esc="round(l.price_total/l.quantity,4)" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
-                                    <span t-esc="'('+str(l.discount)+'%)'"/>
-                                </span>
-                            </td>
-                            <td class="v_price_total">
-                                <t t-if="is_free">
-                                    <span t-field="l.price_total" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
-                                </t>
-                                <t t-else="">
-                                    <span t-esc="'*Bonif*'"/>
-                                </t>
-                            </td>
-                            <t t-set="item" t-value="item+1"/>
+                        <tr t-foreach="invoice_lines.sorted('sequence')" t-as="l">
+                            <t t-if="not l.display_type">
+                                <t t-set="is_free" t-value="len(l.tax_ids.filtered(lambda r:r.tax_group_id.tipo_afectacion == '31')) == 0"/>
+                                <td class="v_item">
+                                    <span t-esc="item"/>
+                                </td>
+                                <td class="v_quantity">
+                                    <span t-esc="l.quantity"/>
+                                </td>
+                                <td class="v_product_uom_id">
+                                    <span t-field="l.product_uom_id.name"/>
+                                </td>
+                                <td class="v_name">
+                                    <span t-field="l.name"/>
+                                </td>
+                                <td class="v_value_unit">
+                                    <span t-esc="round((l.price_subtotal/l.quantity)/(1-l.discount/100),2)" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                </td>
+                                <td class="v_price_unit">
+                                    <t t-if="is_free">
+                                        <span t-esc="round((l.price_total/l.quantity)/(1-l.discount/100),2)" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                    </t>
+                                    <t t-else="">
+                                        <span t-esc="float('0')" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                    </t>
+                                </td>
+                                <td class="v_discount" t-if="display_discount">
+                                    <span t-if="l.discount &gt; 0">
+                                        <span t-esc="round(l.price_total/l.quantity,4)" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                        <span t-esc="'('+str(l.discount)+'%)'"/>
+                                    </span>
+                                </td>
+                                <td class="v_price_total">
+                                    <t t-if="is_free">
+                                        <span t-field="l.price_total" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                    </t>
+                                    <t t-else="">
+                                        <span t-esc="'*Bonif*'"/>
+                                    </t>
+                                </td>
+                                <t t-set="item" t-value="item+1"/>
+                            </t>
+                            <t t-if="l.display_type == 'line_section'">
+                                <td colspan="99">
+                                    <span t-field="l.name" t-options="{'widget': 'text'}"/>
+                                </td>
+                                <t t-set="current_section" t-value="l"/>
+                                <t t-set="current_subtotal" t-value="0"/>
+                            </t>
+                            <t t-if="l.display_type == 'line_note'">
+                                <td colspan="99">
+                                    <span t-field="l.name" t-options="{'widget': 'text'}"/>
+                                </td>
+                            </t>
+                            
                         </tr>
                         <!-- <t t-if="len(invoice_lines) &lt; 35">
                             <tr t-foreach="range(35-len(invoice_lines))" t-as="x" class="empty">
