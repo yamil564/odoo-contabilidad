@@ -33,7 +33,6 @@ class WebsiteSaleExtend(WebsiteSale):
 
     @http.route("/change_invoice_type_code",type="json",method="POST",csrf=True,auth="public", website=True)
     def change_invoice_type_code(self,**kargs):
-
         order = request.website.sale_get_order()
         order.sudo().write({"invoice_type_code":kargs.get("invoice_type_code")})
         return True

@@ -54,8 +54,8 @@ class AccountMoveLine(models.Model):
 
         # Compute 'price_total'.
         if taxes:
-            log.info(taxes.mapped("tax_group_id.tipo_afectacion"))
-            log.info(all(tax in ["31", "32", "33", "34", "35", "36", "37"] for tax in taxes.mapped("tax_group_id.tipo_afectacion")))
+            # log.info(taxes.mapped("tax_group_id.tipo_afectacion"))
+            # log.info(all(tax in ["31", "32", "33", "34", "35", "36", "37"] for tax in taxes.mapped("tax_group_id.tipo_afectacion")))
             if not all(tax in ["31", "32", "33", "34", "35", "36", "37"] for tax in taxes.mapped("tax_group_id.tipo_afectacion")):
                 taxes_res = taxes._origin.compute_all(price_unit_wo_discount,quantity=quantity, currency=currency, product=product, partner=partner, is_refund=move_type in ('out_refund', 'in_refund'))
                 res['price_subtotal'] = taxes_res['total_excluded']
@@ -70,7 +70,7 @@ class AccountMoveLine(models.Model):
         if currency:
             res = {k: currency.round(v) for k, v in res.items()}
         
-        log.info(res)
+        # log.info(res)
         return res
 
 

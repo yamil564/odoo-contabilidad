@@ -10,7 +10,7 @@
                             <label t-esc="'CLIENTE : '"/>
                         </th>
                         <td class="v_partner">
-                            <span t-esc="((doc.partner_id.registration_name if doc.partner_id.registration_name else doc.partner_id.name)  or '').upper()"/>
+                            <span t-esc="((doc.partner_id.registration_name if doc.partner_id.registration_name not in ('-',False,'') else doc.partner_id.name)  or '').upper()"/>
                         </td>
                         <!-- TELÉFONO -->
                         <th class="l_mobile">
@@ -108,66 +108,69 @@
                 <tbody class="sale_order_tbody">
                     <t t-set="item" t-value="1"/>
                     <t t-set="order_line" t-value="doc.order_line"/>
-                    <tr t-foreach="order_line" t-as="l">
-                        <t t-set="is_free" t-value="len(l.tax_id.filtered(lambda r:r.tax_group_id.tipo_afectacion == '31')) == 0"/>
-                        <td class="v_item">
-                            <span t-esc="item"/>
-                        </td>
-                        <td class="v_quantity">
-                            <span t-esc="l.product_uom_qty"/>
-                        </td>
-                        <td class="v_product_uom_id">
-                            <span t-esc="l.product_uom.name"/>
-                        </td>
-                        <td class="v_name">
-                            <span t-field="l.name"/>
-                        </td>
-                        <td class="v_value_unit">
-                            <t t-if="is_free">
-                                <span t-esc="round((l.price_subtotal/l.product_uom_qty)/(1-l.discount/100),2)" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.currency_id}"/>
-                            </t>
-                            <t t-else="">
-                                <span t-esc="float('0')" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.currency_id}"/>
-                            </t>
-                        </td>
-                        <td class="v_price_unit">
-                            <!-- <span t-esc="0 if l.product_uom_qty == 0 else  round((l.price_total/l.product_uom_qty)/(1-l.discount/100),2)" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.currency_id}"/> -->
-                            <t t-if="is_free">
-                                <span t-esc="round((l.price_total/l.product_uom_qty)/(1-l.discount/100),2)" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.currency_id}"/>
-                            </t>
-                            <t t-else="">
-                                <span t-esc="float('0')" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.currency_id}"/>
-                            </t>
-                        </td>
-                        <td class="v_discount" t-if="display_discount">
-                            <span t-if="l.discount &gt; 0">
-                                <span t-esc="round(l.price_total/l.product_uom_qty,4)" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.currency_id}"/>
-                                <span t-esc="'('+str(l.discount)+'%)'"/>
-                            </span>
-                        </td>
-                        <td class="v_price_total">
-                            <!-- <span t-field="l.price_total" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.currency_id}"/> -->
-                            <t t-if="is_free">
-                                <span t-field="l.price_total" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.currency_id}"/>
-                            </t>
-                            <t t-else="">
-                                <span t-esc="'*Bonif*'"/>
-                            </t>
-                        </td>
-                        <t t-set="item" t-value="item+1"/>
+                    <tr t-foreach="order_line.sorted('sequence')" t-as="l">
+                        <t t-if="not l.display_type">
+                            <t t-set="is_free" t-value="len(l.tax_id.filtered(lambda r:r.tax_group_id.tipo_afectacion == '31')) == 0"/>
+                            <td class="v_item">
+                                <span t-esc="item"/>
+                            </td>
+                            <td class="v_quantity">
+                                <span t-esc="l.product_uom_qty"/>
+                            </td>
+                            <td class="v_product_uom_id">
+                                <span t-esc="l.product_uom.name"/>
+                            </td>
+                            <td class="v_name">
+                                <span t-field="l.name"/>
+                            </td>
+                            <td class="v_value_unit">
+                                <t t-if="is_free">
+                                    <span t-esc="round((l.price_subtotal/l.product_uom_qty)/(1-l.discount/100),2)" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.currency_id}"/>
+                                </t>
+                                <t t-else="">
+                                    <span t-esc="float('0')" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.currency_id}"/>
+                                </t>
+                            </td>
+                            <td class="v_price_unit">
+                                <!-- <span t-esc="0 if l.product_uom_qty == 0 else  round((l.price_total/l.product_uom_qty)/(1-l.discount/100),2)" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.currency_id}"/> -->
+                                <t t-if="is_free">
+                                    <span t-esc="round((l.price_total/l.product_uom_qty)/(1-l.discount/100),2)" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.currency_id}"/>
+                                </t>
+                                <t t-else="">
+                                    <span t-esc="float('0')" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.currency_id}"/>
+                                </t>
+                            </td>
+                            <td class="v_discount" t-if="display_discount">
+                                <span t-if="l.discount &gt; 0">
+                                    <span t-esc="round(l.price_total/l.product_uom_qty,4)" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.currency_id}"/>
+                                    <span t-esc="'('+str(l.discount)+'%)'"/>
+                                </span>
+                            </td>
+                            <td class="v_price_total">
+                                <!-- <span t-field="l.price_total" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.currency_id}"/> -->
+                                <t t-if="is_free">
+                                    <span t-field="l.price_total" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.currency_id}"/>
+                                </t>
+                                <t t-else="">
+                                    <span t-esc="'*Bonif*'"/>
+                                </t>
+                            </td>
+                            <t t-set="item" t-value="item+1"/>
+                        </t>
+                        <t t-if="l.display_type == 'line_section'">
+                            <td name="td_section_line" colspan="99">
+                                <span t-field="l.name"/>
+                            </td>
+                            <t t-set="current_section" t-value="l"/>
+                            <t t-set="current_subtotal" t-value="0"/>
+                        </t>
+                        <t t-if="l.display_type == 'line_note'">
+                            <td name="td_note_line" colspan="99">
+                                <span t-field="l.name"/>
+                            </td>
+                        </t>
+                        
                     </tr>
-                    <!-- <t t-if="len(order_line) &lt; 35">
-                        <tr t-foreach="range(35-len(order_line))" t-as="x" class="empty">
-                            <td class="empty"></td>
-                            <td class="empty"></td>
-                            <td class="empty"></td>
-                            <td class="empty"></td>
-                            <td class="empty"></td>
-                            <td class="empty"></td>
-                            <td class="empty" t-if="display_discount"></td>
-                            <td class="empty"></td>
-                        </tr>
-                    </t> -->
                 </tbody>
             </table>
         </xpath>
@@ -181,11 +184,7 @@
                     <div t-if="len(doc.company_id.bank_ids) &gt; 0" name="company_banks" class="banks">
                         <ul>
                             <li t-foreach="doc.company_id.partner_id.bank_ids" t-as="bank">
-                                <span t-esc="'{} : {}'.format(bank.bank_id.name,bank.acc_number)"></span>
-                                <!-- <span t-field="bank.bank_id.name" />
-                                <span t-field="bank.description" />
-:
-                                <span t-field="bank.acc_number" /> -->
+                                <span t-esc="'{} {}: {}'.format(bank.bank_id.name or '',bank.description or '',bank.acc_number or '')"></span>
                             </li>
                         </ul>
                     </div>

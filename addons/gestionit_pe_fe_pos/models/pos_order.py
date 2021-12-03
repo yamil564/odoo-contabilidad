@@ -14,7 +14,7 @@ class PosOrder(models.Model):
         vals = super(PosOrder, self)._prepare_invoice_vals()
 
         if not self.invoice_journal_id:
-            raise ValidationError("La creación del comprobante requiere de la selección de una Serie.")
+            raise ValidationError("La creación del comprobante requiere de la selección de una Serie de facturación.")
 
         vals.update({
             "journal_id":self.invoice_journal_id.id,

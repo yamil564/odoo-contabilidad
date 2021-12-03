@@ -8,6 +8,7 @@
             <xpath expr="//field[@name='partner_id']" position="attributes">
                 <attribute name="domain">[('type','=','contact')]</attribute>
                 <attribute name="context">{'form_view_ref':'gestionit_pe_consulta_ruc_dni.view_form_popup_simple_res_partner','no_doc':True}</attribute>
+                
             </xpath>
             
             <xpath expr="//field[@name='partner_invoice_id']" position="attributes">

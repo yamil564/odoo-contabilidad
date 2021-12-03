@@ -1075,7 +1075,7 @@ class GuiaRemision(models.Model):
             serie = self.journal_id.code
             next_number = self.journal_id.sequence_number_next
             numero = serie + "-" + str(next_number).zfill(8)
-            _logger.info(self.env["gestionit.guia_remision"].search([("numero", "=", numero), ("state", '=', 'validado')]))
+            # _logger.info(self.env["gestionit.guia_remision"].search([("numero", "=", numero), ("state", '=', 'validado')]))
             if self.env["gestionit.guia_remision"].search([("numero", "=", numero), ("state", '=', 'validado')]).exists():
                 raise UserError("El documento de guía de remisión ya existe 1.")
             self.state = "validado"
@@ -1215,7 +1215,7 @@ class GuiaRemision(models.Model):
             }
             response = main.handle(data,credentials)
             # _logger.info("R json")
-            _logger.info(response)
+            # _logger.info(response)
             # self.response_json = json.dumps(r.json(), indent=4)
             self.response_json = json.dumps(response, indent=4)
             log_status.update({

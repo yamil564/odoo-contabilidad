@@ -116,7 +116,7 @@ def send_summary_xml(doc):
                                 headers=headers,
                                 timeout=20)
         result = sunat_response_handle.get_response_ticket(response.text)
-        _logger.info(result)
+        # _logger.info(result)
         data = {
             "response_json":json.dumps(result,indent=4),
             "summary_submission_response_xml":parseString(response.text).toprettyxml() if response.text else "" ,
@@ -186,7 +186,7 @@ def send_voided_xml(doc):
                                 headers=headers,
                                 timeout=20)
         result = sunat_response_handle.get_response_ticket(response.text)
-        _logger.info(result)
+        # _logger.info(result)
         data = {
             "response_json":json.dumps(result,indent=4),
             "voided_submission_response_xml":parseString(response.text).toprettyxml() if response.text else "" ,
@@ -506,17 +506,17 @@ def crear_json_fac_bol(self):
     #         "metodo": "Credito",
     #     }
     payment_term = {"formaPago":"Contado"}
-    if self.invoice_payment_term_id:
-        if self.invoice_payment_term_id.type == "Credito":
-            payment_term["formaPago"] = "Credito"
-            cuota = 1
-            creditoCuotas = []
-            for line in self.paymentterm_line.sorted(lambda r:r.date_due):
-                creditoCuotas.append({"nombre":"Cuota{:03.0f}".format(cuota),
-                                            "fechaVencimiento":line.date_due.strftime("%Y-%m-%d"),
-                                            "monto":line.amount})
-                cuota = cuota + 1
-            payment_term.update({"creditoCuotas":creditoCuotas})
+    # if self.invoice_payment_term_id:
+    if self.invoice_payment_term_type == "Credito":
+        payment_term["formaPago"] = "Credito"
+        cuota = 1
+        creditoCuotas = []
+        for line in self.paymentterm_line.sorted(lambda r:r.date_due):
+            creditoCuotas.append({"nombre":"Cuota{:03.0f}".format(cuota),
+                                        "fechaVencimiento":line.date_due.strftime("%Y-%m-%d"),
+                                        "monto":line.amount})
+            cuota = cuota + 1
+        payment_term.update({"creditoCuotas":creditoCuotas})
 
     data["documento"].update(payment_term)
 
@@ -1063,7 +1063,7 @@ def request_status_ticket(username,password,ticket,tipo_envio):
     
     
     response = requests.post(endpoint, data=request_status_xml, headers={"Content-Type": "text/xml"})
-    _logger.info(response.text)
+    # _logger.info(response.text)
     if response.status_code != 200:
         raise UserError(response.text)
 
@@ -1159,14 +1159,14 @@ def request_status_invoice(username,password,ruc_emisior,invoice_type,document_n
             'Content-Type': 'text/xml',
             'Cookie': 'f5avraaaaaaaaaaaaaaaa_session_=INMKPNKKIAGOJCILIOEJGGFONADMLGLLFPLFFNCONMMEHKMOHAHFCHKAAHHIDFALMPKDDNOLFDNGJNGKPKPAFOOCFJOMJCHJANAGKCEHOAMFKIJFMNFOFPPGGHOKMPMD'
         }
-        _logger.info(request_status_cdr)
+        # _logger.info(request_status_cdr)
         response = requests.post(endpoint,
                                 data=request_status_cdr,
                                 headers=headers,
                                 timeout=20)
-        _logger.info(response.text)
+        # _logger.info(response.text)
         result = sunat_response_handle.get_response_status_invoice(response.text)
-        _logger.info(result)
+        # _logger.info(result)
         data = {
             "response_json":json.dumps(result,indent=4),
             "response_xml_without_format":response.text,

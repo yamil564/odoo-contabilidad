@@ -9,6 +9,7 @@
         "sale_management",
         "stock",
         "sale_stock",
+        "purchase_stock",
         "purchase",
         "l10n_pe",
         "l10n_latam_base",
