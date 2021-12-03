@@ -850,7 +850,7 @@ class AccountMove(models.Model):
 
     def validar_lineas(self):
         errors = []
-        for line in self.invoice_line_ids:
+        for line in self.invoice_line_ids.filtered(lambda r: not r.display_type):
             if line.name:
                 if len(line.name) < 4 and len(line.name) > 250:
                     errors.append(
