@@ -76,10 +76,11 @@ odoo.define("select_invoice_from_website.website_sale",function(require){
             if(itc == "0"){
                 $("input[name='vat']").val("0")
                 $("div_vat").addClass("d-none")
-            }else{
-                $("input[name='vat']").val("")
-                $("div_vat").removeClass("d-none")
             }
+            // else{
+            //     $("input[name='vat']").val("")
+            //     $("div_vat").removeClass("d-none")
+            // }
             if(itc == "1" || itc == "7" || itc == "4"){
                 $(".div_company").addClass("d-none")
             }else{
@@ -92,8 +93,10 @@ odoo.define("select_invoice_from_website.website_sale",function(require){
           var vat = $('#vat').val();
           var country = $('#country').val()
           var self = this
-          ajax.jsonRpc('/change_vat', 'call', {'type': type, 'vat': vat, 'country': country}).then(function (result) {
-
+          ajax.jsonRpc('/change_vat', 
+                        'call', 
+                        {'type': type, 'vat': vat, 'country': country})
+            .then(function (result) {
               if (result.validate){
                 $('#country').val(1);
                 $('#departamento').val(0)

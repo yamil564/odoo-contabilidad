@@ -150,7 +150,7 @@ class AccountSummary(models.Model):
                                                                         ("reversed_entry_id","!=",False),
                                                                         ("company_id","=",self.company_id.id),
                                                                         ("estado_comprobante_electronico", "in", ["-", False, "0_NO_EXISTE"])])
-
+            _logger.info(nota_credito_ids)
             # nota_credito_ids = [nc for nc in nota_credito_ids if nc.reversed_entry_id.invoice_type_code == "03"]
             nota_credito_ids = nota_credito_ids.filtered(lambda nc: nc.reversed_entry_id.invoice_type_code == "03" and \
                                                                     nc.reversed_entry_id.estado_comprobante_electronico == "1_ACEPTADO" and \

@@ -47,6 +47,7 @@ class SaleOrder(models.Model):
                            'total_descuento_global', 'total_descuentos', 'amount_total', 'user_id',
                            'payment_term_id'}
             sale = env.read(fields_move)[0]
+            _logger.info(sale)
 
             # journal_env = self.env['account.journal'].browse(env.journal_id.id)
             # fields_journal = {'code', 'invoice_type_code_id'}
@@ -88,7 +89,8 @@ class SaleOrder(models.Model):
                 'name': sale['name'],
                 'invoice_date': sale['date_order'],
                 'payment_id': sale['payment_term_id'] and sale['payment_term_id'][1] or "Contado",
-                'cashier': sale['user_id'][1],
+                # 'cashier': sale['user_id'][1],
+                'cashier': sale.get("user_id","-")[1] if sale.get("user_id",False) else "",
                 # 'invoice_type_code': sale['invoice_type_code'],
                 'total_venta_gravado': sale['total_venta_gravado'],
                 'amount_igv': sale['total_igv'],

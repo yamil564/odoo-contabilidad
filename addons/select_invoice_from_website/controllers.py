@@ -5,12 +5,12 @@ import json
 from odoo.addons.website_sale.controllers.main import WebsiteSale
 import logging
 import re
+from werkzeug.exceptions import Forbidden, NotFound
 _logger = logging.getLogger(__name__)
 
 class WebsiteSaleExtend(WebsiteSale):
 
     def _get_mandatory_billing_fields(self):
-
         res = super(WebsiteSaleExtend,self)._get_mandatory_billing_fields()
         res.append("vat")
         res.append("l10n_latam_identification_type_id")
@@ -151,14 +151,18 @@ class WebsiteSaleExtend(WebsiteSale):
             return False
 
     def _checkout_form_save(self, mode, checkout, all_values):
-
+        _logger.info(mode)
+        _logger.info(all_values)
+        _logger.info(checkout)
         Partner = request.env['res.partner']
         if mode[0] == 'new':
-            partner_id = Partner.sudo().with_context(tracking_disable=True).create(checkout)
-            partner_id.state_id = int(all_values['state_id'])
-            partner_id.province_id = int(all_values['province_id'])
-            partner_id.district_id = int(all_values['district_id'])
-            partner_id = partner_id.id
+            partner = Partner.sudo().with_context(tracking_disable=True).create(checkout)
+            partner.state_id = int(all_values['state_id'])
+            partner.province_id = int(all_values['province_id'])
+            partner.district_id = int(all_values['district_id'])
+            if partner.district_id:
+                    partner.ubigeo = partner.district_id.code or ""
+            partner_id = partner.id
         elif mode[0] == 'edit':
             partner_id = int(all_values.get('partner_id', 0))
             if partner_id:
@@ -167,5 +171,12 @@ class WebsiteSaleExtend(WebsiteSale):
                 shippings = Partner.sudo().search([("id", "child_of", order.partner_id.commercial_partner_id.ids)])
                 if partner_id not in shippings.mapped('id') and partner_id != order.partner_id.id:
                     return Forbidden()
-                Partner.browse(partner_id).sudo().write(checkout)
+                partner = Partner.browse(partner_id).sudo()
+                partner.write(checkout)
+                partner.state_id = int(all_values['state_id'])
+                partner.province_id = int(all_values['province_id'])
+                partner.district_id = int(all_values['district_id'])
+                _logger.info(partner.district_id.code)
+                if partner.district_id:
+                    partner.ubigeo = partner.district_id.code or ""
         return partner_id

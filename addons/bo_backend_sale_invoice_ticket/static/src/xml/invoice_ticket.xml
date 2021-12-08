@@ -75,7 +75,7 @@
             </t> -->
             <!-- <t t-if="widget.model_id" -->
             <div class="pos-center-align type-docu">
-                <h4>
+                <h4 class="display_name_document">
                     <t t-if="widget.model_id == 'account.move'">
                         <t t-if="receipt.invoice_type_code == '03'">
                             <b> BOLETA DE VENTA ELECTRÓNICA</b><br/>
@@ -177,7 +177,7 @@
             
             <!-- <br/> -->
             <table class='receipt-total' style="width:100%">
-                <tr>
+                <tr name="total_op_gravadas">
                     <td><b>OP. GRAVADAS</b></td>
                     <td class="pos-right-align">
                         <t t-esc="widget.format_currency(receipt.total_venta_gravado,2)" />
@@ -191,7 +191,7 @@
                         <!-- <t t-esc="receipt.total_descuentos"/> -->
                     </td>
                 </tr>
-                <tr>
+                <tr name="total_igv">
                     <td><b>IGV 18% Venta</b></td>
                     <td class="pos-right-align">
                         <t t-esc="widget.format_currency(receipt.amount_igv,2)" />
@@ -199,7 +199,7 @@
                     </td>
                 </tr>
 
-                <tr class="emph">
+                <tr name="total_venta">
                     <td><b>IMPORTE TOTAL:</b></td>
                     <td class="pos-right-align">
                         <t t-esc="widget.format_currency(Math.abs(receipt.amount_total),2)"/>

@@ -3,7 +3,7 @@
     <template id="checkout_select_invoice_type" inherit_id="website_sale.address">
 
         <xpath expr="//input[@name='field_required']" position="attributes">
-            <attribute name="t-att-value">'phone,name,l10n_latam_identification_type_id,vat'</attribute>
+            <attribute name="t-att-value">'phone,name,street'</attribute>
         </xpath>
 
         <xpath expr="//div[contains(@t-attf-class,'div_street')]/label" position="attributes">
@@ -28,7 +28,9 @@
 
         <xpath expr="//div[hasclass('card')]" position="before">
             <div class="d-flex flex-row  pt-4  pb-3 align-items-center">
-                <span class="pr-4"><b>Tipo de Comprobante</b></span>
+                <span class="pr-4">
+                    <b>Tipo de Comprobante</b>
+                </span>
                 <t t-if="website_sale_order.state =='draft'">
                     <div class="d-flex flex-column">
                         <div class="form-check">
@@ -57,22 +59,27 @@
     <template id="website_sale.address_b2b" inherit_id="website_sale.address" name="Show b2b fields" customize_show="True">
 
         <xpath expr="//div[contains(@t-attf-class, 'div_name')]" position="replace">
-            <label class="col-form-label" for="name">Nomre</label>
+            <label class="col-form-label" for="name">Nombre</label>
             <input type="text" name="name" id="name_aux" t-attf-class="form-control #{error.get('name') and 'is-invalid' or ''}" t-att-value="'name' in checkout and checkout['name']" />
         </xpath>
 
         <xpath expr="//div[contains(@t-attf-class, 'div_street')]" position="replace">
-          <label class="col-form-label" for="street">Calle <span class="d-none d-md-inline"> y Número</span></label>
-          <input type="text" name="street" id="street_aux" t-attf-class="form-control #{error.get('street') and 'is-invalid' or ''}" t-att-value="'street' in checkout and checkout['street']" />
+            <label class="col-form-label" for="street">Calle <span class="d-none d-md-inline"> y número</span>
+            </label>
+            <input type="text" 
+                    name="street" 
+                    id="street_aux" 
+                    t-attf-class="form-control #{error.get('street') and 'is-invalid' or ''}" 
+                    t-att-value="'street' in checkout and checkout['street']"/>
         </xpath>
 
         <xpath expr="//div[@id='div_phone']" position="after">
-            <div class="col-12">
+            <div class="col-12" t-if="mode[1] == 'billing'">
                 <label class="col-form-label" for="vat">Tipo de documento de identidad </label>
                 <div class="form-group d-flex flex-row justify-content-between flex-wrap">
                     <t t-foreach="request.env['l10n_latam.identification.type'].sudo().search([])" t-as="idt">
                         <div class="form-check pt-2">
-                            <input class="form-check-input" type="radio" name="l10n_latam_identification_type_id" id="l10n_latam_identification_type_id" t-att-id="idt.name" t-att-value="idt.id" t-att-data-itc="idt.l10n_pe_vat_code" t-att-checked="'l10n_latam_identification_type_id' in checkout and checkout['l10n_latam_identification_type_id'] == idt.id or idt.name=='DNI'" />
+                            <input class="form-check-input" type="radio" name="l10n_latam_identification_type_id" id="l10n_latam_identification_type_id" t-att-id="idt.name" t-att-value="idt.id" t-att-data-itc="idt.l10n_pe_vat_code" t-att-checked="'l10n_latam_identification_type_id' in checkout and checkout['l10n_latam_identification_type_id'].id == idt.id or idt.name=='DNI'" />
                             <label class="form-check-label" t-att-for="idt.name" style="font-weight:100 !important">
                                 <t t-esc="idt.name"/>
                             </label>
@@ -80,20 +87,16 @@
                     </t>
                 </div>
             </div>
+            <!-- <t t-esc="checkout.vat"/> -->
+
             <t t-if="mode == ('new', 'billing') or (mode == ('edit', 'billing') and (can_edit_vat or 'vat' in checkout and checkout['vat']))">
                 <div t-attf-class="form-group #{error.get('vat') and 'o_has_error' or ''} col-lg-6 div_vat">
                     <label class="col-form-label " for="vat">Número de documento </label>
-                    <input type="text" name="vat" id="vat"
-                            t-attf-class="form-control #{error.get('vat') and 'is-invalid' or ''}"
-                            t-att-value="'vat' in checkout and checkout['vat']" t-att-readonly="'1' if 'vat' in checkout and checkout['vat'] and not can_edit_vat else None" t-att-title="'Changing VAT number is not allowed once document(s) have been issued for your account. Please contact us directly for this operation.' if 'vat' in checkout and checkout['vat'] and not can_edit_vat else None" />
+                    <input type="text" name="vat" id="vat" t-attf-class="form-control #{error.get('vat') and 'is-invalid' or ''}" t-att-value="'vat' in checkout and checkout['vat']" t-att-readonly="'1' if 'vat' in checkout and checkout['vat'] and not can_edit_vat else None" t-att-title="'Changing VAT number is not allowed once document(s) have been issued for your account. Please contact us directly for this operation.' if 'vat' in checkout and checkout['vat'] and not can_edit_vat else None" />
                 </div>
                 <div t-attf-class="form-group #{error.get('company_name') and 'o_has_error' or ''} col-lg-6 div_company">
                     <label class="col-form-label label-optional" for="company_name">Nombre de empresa o razón social</label>
-                    <input type="text" name="company_name" id="company_name"
-                            t-attf-class="form-control #{error.get('company_name') and 'is-invalid' or ''}"
-                            t-att-value="'commercial_company_name' in checkout and checkout['commercial_company_name'] or 'company_name' in checkout and checkout['company_name']"
-                            t-att-readonly="'1' if 'vat' in checkout and checkout['vat'] and not can_edit_vat else None"
-                            t-att-title="'Changing company name is not allowed once document(s) have been issued for your account. Please contact us directly for this operation.' if 'vat' in checkout and checkout['vat'] and not can_edit_vat else None" />
+                    <input type="text" name="company_name" id="company_name" t-attf-class="form-control #{error.get('company_name') and 'is-invalid' or ''}" t-att-value="'commercial_company_name' in checkout and checkout['commercial_company_name'] or 'company_name' in checkout and checkout['company_name']" t-att-readonly="'1' if 'vat' in checkout and checkout['vat'] and not can_edit_vat else None" t-att-title="'Changing company name is not allowed once document(s) have been issued for your account. Please contact us directly for this operation.' if 'vat' in checkout and checkout['vat'] and not can_edit_vat else None" />
                 </div>
             </t>
         </xpath>
@@ -101,9 +104,14 @@
         <xpath expr="//div[contains(@t-attf-class, 'div_country')]" position="replace">
             <div class="col-md-3 pt-3">
                 <div class="form-floating pais">
-                    <select class="form-select" id="country" aria-label="Floating label select" required="">
+                    <select class="form-select" id="country" aria-label="Floating label select" required="" >
                         <option value="0" selected="" disabled="">Seleccionar</option>
-                        <option value="1">Perú</option>
+                        <!-- <option value="1">Perú</option> -->
+                        <t t-foreach="countries" t-as="c">
+                            <option t-att-value="c.id" t-att-selected="c.id == (country and country.id or -1)">
+                                <t t-esc="c.name" />
+                            </option>
+                        </t>
                     </select>
                     <label for="country" class="form-label">País</label>
                 </div>
@@ -114,13 +122,38 @@
         </xpath>
 
         <xpath expr="//div[contains(@t-attf-class, 'div_state')]" position="replace">
-            <div class="col-md-3 pt-3">
+            <!-- <t t-esc="mode"/> 
+             <t t-esc="checkout"/> -->
+             <!-- <t t-esc="mode"/> 
+             <t t-esc="error"/> -->
+            <t t-set="departamentos" t-value="request.env['res.country.state']"/>
+            <t t-set="provincias" t-value="request.env['res.country.state']"/>
+            <t t-set="distritos" t-value="request.env['res.country.state']"/>
+
+            <t t-if="mode == ('edit','billing') or checkout != {}">
+                <t t-if="country">
+                    <t t-set="departamentos" t-value="request.env['res.country.state'].sudo().search([('country_id','=',country.id),('state_id','=',False),('province_id','=',False)])"/>
+                </t>
+                <t t-set="departamento" t-value="checkout.state_id"/>
+
+                <t t-if="departamento.exists()">
+                    <t t-set="provincias" t-value="request.env['res.country.state'].sudo().search([('country_id','=',country.id),('state_id','=',departamento.id),('province_id','=',False)])"/>
+                </t>
+                <t t-set="provincia" t-value="checkout.province_id"/>
+
+                <t t-if="provincia.exists()">
+                    <t t-set="distritos" t-value="request.env['res.country.state'].sudo().search([('country_id','=',country.id),('state_id','=',departamento.id),('province_id','=',provincia.id)])"/>
+                </t>
+                <t t-set="distrito" t-value="checkout.district_id"/>
+            </t>
+
+            <div class="col-md-3 pt-3 pb-3">
                 <div class="form-floating departamento">
-                    <select class="form-select" name="state_id" id="departamento" aria-label="Floating label select" required="">
+                    <select class="form-select" name="state_id" id="departamento" aria-label="Floating label select" required="" >
                         <option value="0" selected="" disabled="">Seleccionar</option>
-                        <t t-foreach="departamentos" t-as="departamento">
-                            <option t-att-value="departamento.id">
-                                <t t-esc="departamento.name"/>
+                        <t t-foreach="departamentos" t-as="d">
+                            <option t-att-value="d.id" t-att-selected="d.id == (departamento and departamento.id or -1)">
+                                <t t-esc="d.name"/>
                             </option>
                         </t>
                     </select>
@@ -130,10 +163,15 @@
                     Please select a valid department.
                 </div>
             </div>
-            <div class="col-md-3 pt-3">
+            <div class="col-md-3 pt-3 pb-3">
                 <div class="form-floating">
-                    <select class="form-select"  name="province_id" id="provincia" aria-label="Floating label select" required="">
+                    <select class="form-select" name="province_id" id="provincia" aria-label="Floating label select" required="" >
                         <option value="0" selected="" disabled="">Seleccionar</option>
+                        <t t-foreach="provincias" t-as="p">
+                            <option t-att-value="p.id" t-att-selected="p.id == (provincia and provincia.id or -1)">
+                                <t t-esc="p.name"/>
+                            </option>
+                        </t>
                     </select>
                     <label for="provincia" class="form-label">Provincia</label>
                 </div>
@@ -141,10 +179,15 @@
                     Please provide a valid state.
                 </div>
             </div>
-            <div class="col-md-3 pt-3">
+            <div class="col-md-3 pt-3 pb-3">
                 <div class="form-floating">
-                    <select class="form-select" name="district_id" id="distrito" aria-label="Floating label select" required="">
+                    <select class="form-select" name="district_id" id="distrito" aria-label="Floating label select" required="" >
                         <option value="0" selected="" disabled="">Seleccionar</option>
+                        <t t-foreach="distritos" t-as="d">
+                            <option t-att-value="d.id" t-att-selected="d.id == (distrito and distrito.id or -1)">
+                                <t t-esc="d.name"/>
+                            </option>
+                        </t>
                     </select>
                     <label for="distrito" class="form-label">Distrito</label>
                 </div>
@@ -164,13 +207,13 @@
     <template id="total" inherit_id="website_sale.total">
 
         <xpath expr="//tr[@id='order_total_untaxed']/td[last()]" position="replace">
-            <td class="text-xl-right border-0" >
+            <td class="text-xl-right border-0">
                 <span t-field="website_sale_order.total_venta_gravado" class="monetary_field" style="white-space: nowrap;" t-options="{'widget': 'monetary', 'display_currency': website_sale_order.currency_id}"/>
             </td>
         </xpath>
 
         <xpath expr="//tr[@id='order_total_taxes']/td[last()]" position="replace">
-            <td class="text-xl-right border-0" >
+            <td class="text-xl-right border-0">
                 <span t-field="website_sale_order.total_igv" class="monetary_field" style="white-space: nowrap;" t-options="{'widget': 'monetary', 'display_currency': website_sale_order.currency_id}" />
             </td>
         </xpath>
