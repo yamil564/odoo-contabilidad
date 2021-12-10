@@ -452,7 +452,7 @@
                 </div>
                 <div class="col-4 p-0">
                     <table class="w-100" name="invoice-table-total">
-                        <tr t-if="o.descuento_global &gt; 0">
+                        <tr t-if="o.descuento_global &gt; 0" name="descuento_global">
                             <td>
                                 <strong>Dscto. Global
                                     <t t-esc="'('+str(o.descuento_global)+'%)'"/>
@@ -462,7 +462,7 @@
                                 <span t-field="o.total_descuento_global"/>
                             </td>
                         </tr>
-                        <tr t-if="o.total_descuentos &gt; 0">
+                        <tr t-if="o.total_descuentos &gt; 0" name="total_descuentos">
                             <td>
                                 <strong>Total de Descuentos</strong>
                             </td>
@@ -470,7 +470,7 @@
                                 <span t-field="o.total_descuentos"/>
                             </td>
                         </tr>
-                        <tr>
+                        <tr name="total_venta_gravado">
                             <td>
                                 <strong>Monto Gravado</strong>
                             </td>
@@ -478,7 +478,7 @@
                                 <span t-field="o.total_venta_gravado"/>
                             </td>
                         </tr>
-                        <tr t-if="o.total_venta_inafecto &gt; 0">
+                        <tr t-if="o.total_venta_inafecto &gt; 0"  name="total_venta_inafecto">
                             <td>
                                 <strong>Monto Inafecto</strong>
                             </td>
@@ -486,7 +486,7 @@
                                 <span t-field="o.total_venta_inafecto"/>
                             </td>
                         </tr>
-                        <tr t-if="o.total_venta_exonerada &gt; 0">
+                        <tr t-if="o.total_venta_exonerada &gt; 0" name="total_venta_exonerada">
                             <td>
                                 <strong>Monto Exonerado</strong>
                             </td>
@@ -494,7 +494,7 @@
                                 <span t-field="o.total_venta_exonerada"/>
                             </td>
                         </tr>
-                        <tr t-if="o.total_venta_gratuito &gt; 0">
+                        <tr t-if="o.total_venta_gratuito &gt; 0" name="total_venta_gratuito">
                             <td>
                                 <strong>Monto Gratuito</strong>
                             </td>
@@ -502,15 +502,15 @@
                                 <span t-field="o.total_venta_gratuito"/>
                             </td>
                         </tr>
-                        <tr>
+                        <tr name="total_igv">
                             <td>
                                 <strong>IGV 18% Venta</strong>
                             </td>
-                            <td class="text-right">
+                            <td class="text-right" >
                                 <span t-field="o.amount_igv"/>
                             </td>
                         </tr>
-                        <tr class="border-black o_total">
+                        <tr class="border-black o_total" name="total_venta">
                             <td>
                                 <strong>Total</strong>
                             </td>

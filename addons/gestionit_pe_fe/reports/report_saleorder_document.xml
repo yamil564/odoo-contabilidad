@@ -249,7 +249,7 @@
                                 <span t-field="doc.total_igv"/>
                             </td>
                         </tr>
-                        <tr class="border-black o_total">
+                        <tr class="border-black o_total" name="total_venta">
                             <td>
                                 <strong>Total</strong>
                             </td>
