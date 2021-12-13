@@ -35,9 +35,9 @@
                 <field name="msg_error"/>
                 <field name="estado_contribuyente" placeholder="Estado del Contribuyente"/>
             </div>
-            <xpath expr="//field[@name='city']" position="after">
+            <!-- <xpath expr="//field[@name='city']" position="after">
                 <field name="ubigeo" />
-            </xpath>
+            </xpath> -->
         </field>
     </record>
 

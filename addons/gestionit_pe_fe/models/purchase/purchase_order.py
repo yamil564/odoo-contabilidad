@@ -11,7 +11,7 @@ class PurchaseOrder(models.Model):
         res = super(PurchaseOrder, self).action_view_invoice()
         res["context"].update({"default_invoice_type_code": "01", 
                                 "default_journal_type": "purchase"})
-        _logger.info(res)
+        # _logger.info(res)
         return res
 
     def to_word(self, monto, moneda):

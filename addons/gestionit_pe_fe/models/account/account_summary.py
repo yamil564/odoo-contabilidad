@@ -122,55 +122,57 @@ class AccountSummary(models.Model):
 
     def load_summary(self):
         if self.cod_operacion in ["2","3"]:
-            raise UserError("La carga de comprobantes solo esta disponible para el código de operación 1-Adicionar")
+            account_invoices = self.account_invoice_ids
+            # raise UserError("La carga de comprobantes solo esta disponible para el código de operación 1-Adicionar")
         if not self.fecha_emision_documentos:
             raise UserError("La fecha de emisión de los documentos es obligatoria.")
         if not self.company_id:
             raise UserError("Debe seleccionar una compañía")
 
-        # Boletas de Venta
-        account_invoices = self.env["account.move"].search([("invoice_date","=",self.fecha_emision_documentos),
-                                                                ("state","in",["posted"]),
-                                                                ("journal_id.invoice_type_code_id","=","03"),
-                                                                ("partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code","in",["0","1","6"]),
-                                                                ("partner_id.vat","!=",False),
-                                                                ("company_id","=",self.company_id.id),
-                                                                ("estado_comprobante_electronico", "in", ["-", False, "0_NO_EXISTE"])])
-
-        account_invoices = account_invoices.filtered(lambda r:r.account_summary_id.estado_emision in [False,"N","R"])
-
-        # Listar las notas de Crédito
-        nota_credito_ids = self.env["account.move"].search([("invoice_date","=",self.fecha_emision_documentos),
+        if self.cod_operacion == "1":
+            # Boletas de Venta
+            account_invoices = self.env["account.move"].search([("invoice_date","=",self.fecha_emision_documentos),
                                                                     ("state","in",["posted"]),
-                                                                    ("journal_id.invoice_type_code_id","=","07"),
-                                                                    ("partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code","in",["0","1","6"]),
+                                                                    ("journal_id.invoice_type_code_id","=","03"),
+                                                                    ("partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code","in",["0","1","6","7","4"]),
                                                                     ("partner_id.vat","!=",False),
-                                                                    ("reversed_entry_id","!=",False),
                                                                     ("company_id","=",self.company_id.id),
                                                                     ("estado_comprobante_electronico", "in", ["-", False, "0_NO_EXISTE"])])
 
-        # nota_credito_ids = [nc for nc in nota_credito_ids if nc.reversed_entry_id.invoice_type_code == "03"]
-        nota_credito_ids = nota_credito_ids.filtered(lambda nc: nc.reversed_entry_id.invoice_type_code == "03" and \
-                                                                nc.reversed_entry_id.estado_comprobante_electronico == "1_ACEPTADO" and \
-                                                                nc.account_summary_id.estado_emision in [False,"N","R"])
+            account_invoices = account_invoices.filtered(lambda r:r.account_summary_id.estado_emision in [False,"N","R"])
 
-        # Listar las notas de Débito
-        nota_debito_ids = self.env["account.move"].search([("invoice_date","=",self.fecha_emision_documentos),
-                                                                    ("state","in",["posted"]),
-                                                                    ("journal_id.invoice_type_code_id","=","08"),
-                                                                    ("partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code","in",["0","1","6"]),
-                                                                    ("partner_id.vat","!=",False),
-                                                                    ("company_id","=",self.company_id.id),
-                                                                    ("reversed_entry_id.estado_comprobante_electronico","=","1_ACEPTADO"),
-                                                                    ("estado_comprobante_electronico", "in", ["-", False, "0_NO_EXISTE"])])
+            # Listar las notas de Crédito
+            nota_credito_ids = self.env["account.move"].search([("invoice_date","=",self.fecha_emision_documentos),
+                                                                        ("state","in",["posted"]),
+                                                                        ("journal_id.invoice_type_code_id","=","07"),
+                                                                        ("partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code","in",["0","1","6","7","4"]),
+                                                                        ("partner_id.vat","!=",False),
+                                                                        ("reversed_entry_id","!=",False),
+                                                                        ("company_id","=",self.company_id.id),
+                                                                        ("estado_comprobante_electronico", "in", ["-", False, "0_NO_EXISTE"])])
+            _logger.info(nota_credito_ids)
+            # nota_credito_ids = [nc for nc in nota_credito_ids if nc.reversed_entry_id.invoice_type_code == "03"]
+            nota_credito_ids = nota_credito_ids.filtered(lambda nc: nc.reversed_entry_id.invoice_type_code == "03" and \
+                                                                    nc.reversed_entry_id.estado_comprobante_electronico == "1_ACEPTADO" and \
+                                                                    nc.account_summary_id.estado_emision in [False,"N","R"])
 
-        # nota_debito_ids = [nd for nd in nota_debito_ids if nd.reversed_entry_id.invoice_type_code == "03"]
-        nota_debito_ids = nota_debito_ids.filtered(lambda nd: nd.debit_origin_id.invoice_type_code == "03" and \
-                                                                nd.debit_origin_id.estado_comprobante_electronico == "1_ACEPTADO" and \
-                                                                nd.account_summary_id.estado_emision in [False,"N","R"])
+            # Listar las notas de Débito
+            nota_debito_ids = self.env["account.move"].search([("invoice_date","=",self.fecha_emision_documentos),
+                                                                        ("state","in",["posted"]),
+                                                                        ("journal_id.invoice_type_code_id","=","08"),
+                                                                        ("partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code","in",["0","1","6","7","4"]),
+                                                                        ("partner_id.vat","!=",False),
+                                                                        ("company_id","=",self.company_id.id),
+                                                                        ("reversed_entry_id.estado_comprobante_electronico","=","1_ACEPTADO"),
+                                                                        ("estado_comprobante_electronico", "in", ["-", False, "0_NO_EXISTE"])])
 
-        # Consolidado Boleta y Notas Asociadas
-        account_invoices = account_invoices + nota_credito_ids + nota_debito_ids
+            # nota_debito_ids = [nd for nd in nota_debito_ids if nd.reversed_entry_id.invoice_type_code == "03"]
+            nota_debito_ids = nota_debito_ids.filtered(lambda nd: nd.debit_origin_id.invoice_type_code == "03" and \
+                                                                    nd.debit_origin_id.estado_comprobante_electronico == "1_ACEPTADO" and \
+                                                                    nd.account_summary_id.estado_emision in [False,"N","R"])
+
+            # Consolidado Boleta y Notas Asociadas
+            account_invoices = account_invoices + nota_credito_ids + nota_debito_ids
 
         account_summary_lines = [{
             "invoice_id": invoice.id,
@@ -275,7 +277,7 @@ class AccountSummary(models.Model):
     def action_generate_and_signed_xml(self):
         if not self.company_id:
             raise UserError("El campo de compañía es Obligatoria.")
-        tipo_envio = self.company_id.tipo_envio
+        # tipo_envio = self.company_id.tipo_envio
         summary_json = self._generate_summary_json()
         credentials = summary_json.get("company")
   
@@ -305,22 +307,37 @@ class AccountSummary(models.Model):
             self.current_log_status_id.write(result)
         except Exception as e:
             return result
+    
+    def cron_action_send_summary_pending(self):
+        summarys = self.env["account.summary"].search([("current_log_status_id.status","=","P")])
+        for summ in summarys:
+            if summ.cod_operacion == "1":
+                summ.action_send_summary()
+            elif summ.cod_operacion in ["2","3"]:
+                if all(summ.account_invoice_ids.mapped(lambda inv:inv.estado_comprobante_electronico == "1_ACEPTADO")):
+                    summ.action_send_summary()
 
     def post(self):
         self.ensure_one()
         self.load_summary()
         if len(self.account_invoice_ids) == 0:
             raise UserError("Al menos debe existir 1 comprobante a publicar. La lista de comprobantes esta vacía")
-
-        if not self.current_log_status_id:
-            self.action_send_summary()
+        
+        if self.cod_operacion == "1":
+            if not self.current_log_status_id:
+                self.action_send_summary()
+        elif self.cod_operacion == "3":
+            self.action_generate_and_signed_xml()
 
     def action_request_status_ticket(self):
         if not self.current_log_status_id:
             raise UserError("El campo de ticket esta vacío")
         response = self.current_log_status_id.action_request_status_ticket_summary()
-        if response.get("status") == "A":
+
+        if response.get("status") == "A" and self.cod_operacion == "1":
             self.account_invoice_ids.write({'estado_comprobante_electronico':'1_ACEPTADO'})
+        if response.get("status") == "A" and self.cod_operacion == "3":
+            self.account_invoice_ids.write({'estado_comprobante_electronico':'2_ANULADO'})
             
     def cron_action_request_status_ticket(self):
         summary_objs = self.env["account.summary"].search([["estado_emision", "in", ["E","N"]]])
@@ -400,17 +417,20 @@ class AccountSummaryVoided(models.TransientModel):
     _name = 'account.summary.anulacion'
     _description = 'Anular Comprobante'
 
-    account_invoice_id = fields.Many2one("account.move", string="Comprobante Electrónico")
+    account_invoice_id = fields.Many2one("account.move", string="Comprobante Electrónico",required=True)
+    company_id = fields.Many2one("res.company",string="Compañía",required=True)
 
     def btn_anular_comprobante(self):
         resumen = {
             "fecha_generacion": fields.Date.today(),
             "fecha_emision_documentos": self.account_invoice_id.invoice_date,
             "cod_operacion": "3",
-            "account_invoice_ids": [(6, 0, [self.account_invoice_id.id])]
+            "account_invoice_ids": [(6, 0, [self.account_invoice_id.id])],
+            "company_id":self.company_id.id
         }
         resumen_obj = self.env["account.summary"].create(resumen)
         self.account_invoice_id.resumen_anulacion_id = resumen_obj.id
+        resumen_obj.post()
         # resumen_obj.generar_identificador_resumen()
         # resumen_obj.cargar_resumen_lineas()
         # resumen_obj.generar_resumen_diario()

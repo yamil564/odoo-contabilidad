@@ -22,7 +22,8 @@ from ..efact21.PaymentTerms import PaymentTerms
 import yaml
 import flex
 import re
-
+import logging
+_logger = logging.getLogger(__name__)
 patron_cuota = re.compile("Cuota[0-9]{3}$")
 
 # def validate_json(data):
@@ -303,8 +304,8 @@ def build_factura(data):
     mntTotalIgv = documento.get('mntTotalIgv', 0.0)
     mntTotalIsc = documento.get('mntTotalIsc', 0.0)
     mntICBPER = documento.get("mntICBPER", 0.0)
-    # fechaVencimiento = documento.get('fechaVencimiento', 0.0)
-
+    fechaVencimiento = documento.get('fechaVencimiento', 0.0)
+    
     # glosaDocumento = documento.get('glosaDocumento', '')
     # codCentroCosto = documento.get('codCentroCosto', '')
     # tipoCambioDestino = documento.get('tipoCambioDestino', '')
@@ -401,6 +402,9 @@ def build_factura(data):
                                                             allowance_total_amount=allowance_total_amount,
                                                             charge_total_amount=charge_total_amount,
                                                             tax_inclusive_amount=tax_inclusive_amount)
+    # FECHA DE VENCIMIENTO
+    due_date = General.DueDate(due_date=fechaVencimiento) if fechaVencimiento else None
+    # _logger.info(due_date)
 
     # FECHA DE EMISIÓN
     issue_date = General.IssueDate(date=fechaEmision)
@@ -516,7 +520,7 @@ def build_factura(data):
     # FACTURA
     id = serie + "-" + str(correlativo).zfill(8)
     fact = Factura(ubl_extensions=None, ubl_version="2.1", id=id,
-                   issue_date=issue_date, issue_time=None, due_date=None,
+                   issue_date=issue_date, issue_time=None, due_date=due_date,
                    invoice_type_code=invoice_type_code, document_currency_code=tipoMoneda,
                    customization="2.0",accounting_supplier_party=proveedor, accounting_customer_party=cliente,
                    legal_monetary_total=legal_monetary_total, tax_total=tax_total,
@@ -573,7 +577,7 @@ def build_factura(data):
         tasaICBPER = line.get("tasa_ICBPER", 10)
         afectacion_icbper = line.get("afectacionICBPER", False)
 
-        tasaIgv = 18.0
+        tasaIgv = line.get("tasaIgv",0)
         # 1000 - IGV Impuesto General a las Ventas
         if cod_afectacion_igv in ["10"]:
             tax_scheme = TaxScheme("1000", "IGV", "VAT")

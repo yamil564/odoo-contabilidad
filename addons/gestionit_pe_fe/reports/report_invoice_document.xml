@@ -33,7 +33,7 @@
                                 <label t-esc="'CLIENTE: '"/>
                             </th>
                             <td class="label">
-                                <span t-esc="((o.partner_id.registration_name if o.partner_id.registration_name else o.partner_id.name)  or '').upper()"/>
+                                <span t-esc="((o.partner_id.registration_name if o.partner_id.registration_name not in ('-',False,'') else o.partner_id.name)  or '').upper()"/>
                             </td>
                             <!-- N° COT -->
                             <th>
@@ -54,10 +54,10 @@
                             </td>
                             <!-- VENDEDOR -->
                             <th>
-                                <label t-esc="'VENDEDOR: '"/>
+                                <label t-esc="'VENDEDOR: '" name="label_vendedor"/>
                             </th>
-                            <td class="label">
-                                <span t-esc="o.user_id.name"/>
+                            <td class="label" >
+                                <span t-esc="o.user_id.name or ''" name="value_vendedor"/>
                             </td>
                         </tr>
                         <tr>
@@ -66,7 +66,7 @@
                                 <label t-esc="'DIRECCIÓN: '"/>
                             </th>
                             <td class="label">
-                                <span t-esc="'{} {}-{}-{}'.format(o.partner_id.street,o.partner_id.state_id.name or '',o.partner_id.province_id.name or '',o.partner_id.district_id.name or '').upper()"/>
+                                <span t-esc="'{} {}-{}-{}'.format(o.partner_id.street or '',o.partner_id.state_id.name or '',o.partner_id.province_id.name or '',o.partner_id.district_id.name or '').upper()"/>
                             </td>
                             <!-- MONEDA -->
                             <th>
@@ -98,23 +98,25 @@
                                 <label t-esc="'TÉRMINO PAGO: '"/>
                             </th>
                             <td class="label">
-                                <t t-if="o.invoice_payment_term_id">
-                                    <span t-esc="o.invoice_payment_term_id.note"/>
+                                <t t-if="o.invoice_payment_term_type == 'Credito'">
+                                    <span t-esc="'Crédito'"/>
                                 </t>
                                 <t t-else="">
-                                    <t t-if="o.invoice_date == o.invoice_date_due">
+                                    <t t-if="o.invoice_date == o.invoice_date_due or o.invoice_payment_term_type == 'Contado'">
                                         <span>Contado</span>
                                     </t>
                                 </t>
                             </td>
                             <!-- N° GUÍA -->
                             <th>
-                                <label t-esc="'N° GUÍA: '"/>
+                                <label t-esc="'N° GUÍA: '" 
+                                        name="label_n_guia"/>
                             </th>
-                            <td class="label">
+                            <td class="label" >
                                 <!-- <div name="reference" class="d-none"></div> -->
                                 <!-- <span t-esc="o.ref" t-if="o.ref"/> -->
-                                <span t-esc="';'.join([g.numero for g in o.guia_remision_ids.filtered(lambda r:r.state == 'validado')])" t-if="len(o.guia_remision_ids.filtered(lambda r:r.state == 'validado')) &gt; 0"/>
+                                <span name="value_n_guia" 
+                                      t-esc="';'.join([g.numero for g in o.guia_remision_ids.filtered(lambda r:r.state == 'validado')])" t-if="len(o.guia_remision_ids.filtered(lambda r:r.state == 'validado')) &gt; 0"/>
                             </td>
                         </tr>
                         <tr>
@@ -131,7 +133,7 @@
                             </th>
                             <td class="label">
                                 <t t-if="len(o.document_reference_ids) &gt; 0">
-                                    <span t-esc="','.join(['[{}] {}'.format(d.document_type_code,d.document_number) for d in o.document_reference_ids])"/>
+                                    <span t-esc="','.join(['[{}] {}'.format(d.get_name_tdr(d.document_type_code),d.document_number) for d in o.document_reference_ids])"/>
                                 </t>
                             </td>
                         </tr>
@@ -277,7 +279,13 @@
                 </div>
             </div>
         </xpath>
-        <xpath expr="//table[hasclass('o_main_table')]" position="replace">
+        <xpath expr="//table[hasclass('o_main_table')]/thead" position="attributes">
+            <attribute name="class">d-none</attribute>
+        </xpath>
+        <xpath expr="//table[hasclass('o_main_table')]/tbody" position="attributes">
+            <attribute name="class">d-none</attribute>
+        </xpath>
+        <xpath expr="//table[hasclass('o_main_table')]" position="after">
             <!-- Is there a discount on at least one line? -->
             <t t-set="display_discount" t-value="any([l.discount for l in o.invoice_line_ids])"/>
             <div class="table-invoice-lines row pt-2 pb-2">
@@ -297,48 +305,63 @@
                     <tbody class="invoice_tbody">
                         <t t-set="item" t-value="1"/>
                         <t t-set="invoice_lines" t-value="o.invoice_line_ids.filtered(lambda r:not r.is_charge_or_discount)"/>
-                        <tr t-foreach="invoice_lines" t-as="l">
-                            <t t-set="is_free" t-value="len(l.tax_ids.filtered(lambda r:r.tax_group_id.tipo_afectacion == '31')) == 0"/>
-                            <td class="v_item">
-                                <span t-esc="item"/>
-                            </td>
-                            <td class="v_quantity">
-                                <span t-esc="l.quantity"/>
-                            </td>
-                            <td class="v_product_uom_id">
-                                <span t-field="l.product_uom_id.name"/>
-                            </td>
-                            <td class="v_name">
-                                <span t-field="l.name"/>
-                            </td>
-                            <td class="v_value_unit">
-                                <span t-esc="round((l.price_subtotal/l.quantity)/(1-l.discount/100),2)" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
-                            </td>
-                            <td class="v_price_unit">
-                                <t t-if="is_free">
-                                    <span t-esc="round((l.price_total/l.quantity)/(1-l.discount/100),2)" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
-                                </t>
-                                <t t-else="">
-                                    <span t-esc="float('0')" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
-                                </t>
-                            </td>
-                            <td class="v_discount" t-if="display_discount">
-                                <span t-if="l.discount &gt; 0">
-                                    <span t-esc="round(l.price_total/l.quantity,4)" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
-                                    <span t-esc="'('+str(l.discount)+'%)'"/>
-                                </span>
-                            </td>
-                            <td class="v_price_total">
-                                <t t-if="is_free">
-                                    <span t-field="l.price_total" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
-                                </t>
-                                <t t-else="">
-                                    <span t-esc="'*Bonif*'"/>
-                                </t>
-                            </td>
-                            <t t-set="item" t-value="item+1"/>
+                        <tr t-foreach="invoice_lines.sorted('sequence')" t-as="l">
+                            <t t-if="not l.display_type">
+                                <t t-set="is_free" t-value="len(l.tax_ids.filtered(lambda r:r.tax_group_id.tipo_afectacion == '31')) == 0"/>
+                                <td class="v_item">
+                                    <span t-esc="item"/>
+                                </td>
+                                <td class="v_quantity">
+                                    <span t-esc="l.quantity"/>
+                                </td>
+                                <td class="v_product_uom_id">
+                                    <span t-field="l.product_uom_id.name"/>
+                                </td>
+                                <td class="v_name">
+                                    <span t-field="l.name"/>
+                                </td>
+                                <td class="v_value_unit">
+                                    <span t-esc="round((l.price_subtotal/l.quantity)/(1-l.discount/100),2)" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                </td>
+                                <td class="v_price_unit">
+                                    <t t-if="is_free">
+                                        <span t-esc="round((l.price_total/l.quantity)/(1-l.discount/100),2)" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                    </t>
+                                    <t t-else="">
+                                        <span t-esc="float('0')" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                    </t>
+                                </td>
+                                <td class="v_discount" t-if="display_discount">
+                                    <span t-if="l.discount &gt; 0">
+                                        <span t-esc="round(l.price_total/l.quantity,4)" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                        <span t-esc="'('+str(l.discount)+'%)'"/>
+                                    </span>
+                                </td>
+                                <td class="v_price_total">
+                                    <t t-if="is_free">
+                                        <span t-field="l.price_total" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                    </t>
+                                    <t t-else="">
+                                        <span t-esc="'*Bonif*'"/>
+                                    </t>
+                                </td>
+                                <t t-set="item" t-value="item+1"/>
+                            </t>
+                            <t t-if="l.display_type == 'line_section'">
+                                <td colspan="99">
+                                    <span t-field="l.name" t-options="{'widget': 'text'}"/>
+                                </td>
+                                <t t-set="current_section" t-value="l"/>
+                                <t t-set="current_subtotal" t-value="0"/>
+                            </t>
+                            <t t-if="l.display_type == 'line_note'">
+                                <td colspan="99">
+                                    <span t-field="l.name" t-options="{'widget': 'text'}"/>
+                                </td>
+                            </t>
+                            
                         </tr>
-                        <t t-if="len(invoice_lines) &lt; 35">
+                        <!-- <t t-if="len(invoice_lines) &lt; 35">
                             <tr t-foreach="range(35-len(invoice_lines))" t-as="x" class="empty">
                                 <td class="empty"></td>
                                 <td class="empty"></td>
@@ -349,7 +372,7 @@
                                 <td class="empty" t-if="display_discount"></td>
                                 <td class="empty"></td>
                             </tr>
-                        </t>
+                        </t> -->
                     </tbody>
                 </table>
             </div>
@@ -360,6 +383,9 @@
         <xpath expr="//div[hasclass('clearfix')]" position="after">
             <div class="row invoice-content-total" id="total">
                 <div class="col-8 additional-information">
+                    <div class="pb-3" name="amount_letter">
+                        <span t-esc="'SON: {}'.format(o.to_word(o.amount_total,o.currency_id.name).upper())"/>
+                    </div>
                     <div style="border: solid gray 1px;padding:8px" t-if="o.has_detraction">
                         <div>
                             <strong>% Detracción: </strong>
@@ -376,34 +402,33 @@
                             </span>
                         </div>
                     </div>
-                    <t t-if="o.invoice_payment_term_id">
-                        <t t-if="o.invoice_payment_term_id.type == 'Credito'">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Cuota</th>
-                                        <th>Fecha de Venc.</th>
-                                        <th>Monto</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <t t-set="cuota" t-value="1"/>
-                                    <tr t-foreach="o.paymentterm_line.sorted(lambda r: r.date_due)" t-as="line">
-                                        <td width="80px">
-                                            <span t-esc="'Cuota{:03.0f}'.format(cuota)"/>
-                                        </td>
-                                        <td width="90px">
-                                            <span t-field="line.date_due"/>
-                                        </td>
-                                        <td width="80px">
-                                            <span t-field="line.amount" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
-                                        </td>
-                                        <t t-set="cuota" t-value="cuota+1"/>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </t>
+                    <t t-if="o.invoice_payment_term_type == 'Credito'">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Cuota</th>
+                                    <th>Fecha de Venc.</th>
+                                    <th>Monto</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-set="cuota" t-value="1"/>
+                                <tr t-foreach="o.paymentterm_line.sorted(lambda r: r.date_due)" t-as="line">
+                                    <td width="80px">
+                                        <span t-esc="'Cuota{:03.0f}'.format(cuota)"/>
+                                    </td>
+                                    <td width="90px">
+                                        <span t-field="line.date_due"/>
+                                    </td>
+                                    <td width="80px">
+                                        <span t-field="line.amount" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                    </td>
+                                    <t t-set="cuota" t-value="cuota+1"/>
+                                </tr>
+                            </tbody>
+                        </table>
                     </t>
+                    <br/>
                     <!-- <div style="font-size: 12px; width: 100%">
                         <div>
                             <b>SON: </b>
@@ -416,17 +441,18 @@
                     <!-- <p t-if="o.invoice_payment_term_id and o.amount_total!=0.0">
                         <span t-field="o.invoice_payment_term_id.note"/>
                     </p> -->
-                    <div t-if="len(o.company_id.bank_ids) &gt; 0" class="banks" name="company_banks">
+                    <div t-if="len(o.company_id.bank_ids) &gt; 0" name="company_banks" class="banks">
                         <ul>
                             <li t-foreach="o.company_id.partner_id.bank_ids" t-as="bank">
-                                <span t-esc="'{} : {}'.format(bank.bank_id.name,bank.acc_number)"></span>
+                                <span t-esc="'{} {}: {}'.format(bank.bank_id.name or '',bank.description or '',bank.acc_number or '')"></span>
                             </li>
                         </ul>
+                        <br/>
                     </div>
                 </div>
                 <div class="col-4 p-0">
-                    <table class="w-100">
-                        <tr t-if="o.descuento_global &gt; 0">
+                    <table class="w-100" name="invoice-table-total">
+                        <tr t-if="o.descuento_global &gt; 0" name="descuento_global">
                             <td>
                                 <strong>Dscto. Global
                                     <t t-esc="'('+str(o.descuento_global)+'%)'"/>
@@ -436,7 +462,7 @@
                                 <span t-field="o.total_descuento_global"/>
                             </td>
                         </tr>
-                        <tr t-if="o.total_descuentos &gt; 0">
+                        <tr t-if="o.total_descuentos &gt; 0" name="total_descuentos">
                             <td>
                                 <strong>Total de Descuentos</strong>
                             </td>
@@ -444,7 +470,7 @@
                                 <span t-field="o.total_descuentos"/>
                             </td>
                         </tr>
-                        <tr>
+                        <tr name="total_venta_gravado">
                             <td>
                                 <strong>Monto Gravado</strong>
                             </td>
@@ -452,7 +478,7 @@
                                 <span t-field="o.total_venta_gravado"/>
                             </td>
                         </tr>
-                        <tr t-if="o.total_venta_inafecto &gt; 0">
+                        <tr t-if="o.total_venta_inafecto &gt; 0"  name="total_venta_inafecto">
                             <td>
                                 <strong>Monto Inafecto</strong>
                             </td>
@@ -460,7 +486,7 @@
                                 <span t-field="o.total_venta_inafecto"/>
                             </td>
                         </tr>
-                        <tr t-if="o.total_venta_exonerada &gt; 0">
+                        <tr t-if="o.total_venta_exonerada &gt; 0" name="total_venta_exonerada">
                             <td>
                                 <strong>Monto Exonerado</strong>
                             </td>
@@ -468,7 +494,7 @@
                                 <span t-field="o.total_venta_exonerada"/>
                             </td>
                         </tr>
-                        <tr t-if="o.total_venta_gratuito &gt; 0">
+                        <tr t-if="o.total_venta_gratuito &gt; 0" name="total_venta_gratuito">
                             <td>
                                 <strong>Monto Gratuito</strong>
                             </td>
@@ -476,15 +502,15 @@
                                 <span t-field="o.total_venta_gratuito"/>
                             </td>
                         </tr>
-                        <tr>
+                        <tr name="total_igv">
                             <td>
                                 <strong>IGV 18% Venta</strong>
                             </td>
-                            <td class="text-right">
+                            <td class="text-right" >
                                 <span t-field="o.amount_igv"/>
                             </td>
                         </tr>
-                        <tr class="border-black o_total">
+                        <tr class="border-black o_total" name="total_venta">
                             <td>
                                 <strong>Total</strong>
                             </td>
@@ -497,11 +523,11 @@
             </div>
             <div class="row">
                 <div class="col-12" t-if="'{}_{}'.format(o.type,o.journal_id.invoice_type_code_id) in ['out_invoice_01','out_invoice_03','out_refund_07','out_invoice_08']">
-                    <div class="pb-3">
+                    <!-- <div class="pb-3" name="amount_letter">
                         <span t-esc="'SON: {}'.format(o.to_word(o.amount_total,o.currency_id.name).upper())"/>
-                    </div>
+                    </div> -->
                     <div t-if="o.state in ['posted','paid']" class="d-flex flex-row">
-                        <div>
+                        <div name="electronic_invoice_qr">
                             <img t-att-src="'/report/barcode/?type=%s&amp;value=%s&amp;width=%s&amp;height=%s'%('QR', o.generate_text_qr(o), 80, 80)"/>
                         </div>
                         <div class="pl-3">
@@ -516,6 +542,9 @@
             </div>
         </xpath>
         <xpath expr="//p[@t-if]" position="attributes">
+            <attribute name="class">d-none</attribute>
+        </xpath>
+        <xpath expr="//p[@t-if='o.invoice_payment_term_id']" position="attributes">
             <attribute name="class">d-none</attribute>
         </xpath>
     </template>

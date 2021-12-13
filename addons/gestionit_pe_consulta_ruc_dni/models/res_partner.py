@@ -32,7 +32,7 @@ class ResPartner(models.Model):
     def default_get(self,field_list):
         res = super(ResPartner, self).default_get(field_list)
         if self.env.context.get("no_doc"):
-            res.update({"l10n_latam_identification_type_id": self.env.ref("l10n_pe.it_NDTD").id,"vat":"0"})
+            res.update({"l10n_latam_identification_type_id": self.env.ref("l10n_pe.it_NDTD").id,"vat":res.get("vat","0")})
         return res
 
     def _get_name(self):

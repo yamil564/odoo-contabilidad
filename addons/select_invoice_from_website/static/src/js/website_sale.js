@@ -57,28 +57,30 @@ odoo.define("select_invoice_from_website.website_sale",function(require){
         click_l10n_latam_identification_type_id:function(ev){
             var itc = $(ev.currentTarget).data("itc")
             $("input[type='radio'][name='invoice_type_code']:checked").attr("checked",false)
+            // $("input[name='invoice_type_code']").trigger("change")
             if(itc=="6"){
                 $(".div_company label").removeClass("label-optional")
                 $(".div_country label").removeClass("label-optional")
                 $(".div_state label").removeClass("label-optional")
                 $(".div_street label").removeClass("label-optional")
-                $("input[value='01']").attr("checked",true)
+                $("input[value='01']").attr("checked",true).trigger("change")
 
             }else{
                 $(".div_company label").addClass("label-optional")
                 $(".div_country label").addClass("label-optional")
                 $(".div_street label").addClass("label-optional")
                 $(".div_state label").addClass("label-optional")
-                $("input[value='03']").attr("checked",true)
+                $("input[value='03']").attr("checked",true).trigger("change")
             }
 
             if(itc == "0"){
                 $("input[name='vat']").val("0")
                 $("div_vat").addClass("d-none")
-            }else{
-                $("input[name='vat']").val("")
-                $("div_vat").removeClass("d-none")
             }
+            // else{
+            //     $("input[name='vat']").val("")
+            //     $("div_vat").removeClass("d-none")
+            // }
             if(itc == "1" || itc == "7" || itc == "4"){
                 $(".div_company").addClass("d-none")
             }else{
@@ -91,8 +93,10 @@ odoo.define("select_invoice_from_website.website_sale",function(require){
           var vat = $('#vat').val();
           var country = $('#country').val()
           var self = this
-          ajax.jsonRpc('/change_vat', 'call', {'type': type, 'vat': vat, 'country': country}).then(function (result) {
-
+          ajax.jsonRpc('/change_vat', 
+                        'call', 
+                        {'type': type, 'vat': vat, 'country': country})
+            .then(function (result) {
               if (result.validate){
                 $('#country').val(1);
                 $('#departamento').val(0)

@@ -21,7 +21,7 @@ class ReferenceDate(DateType):
         super(ReferenceDate, self).__init__(date, "cbc:ReferenceDate")
 
 
-class DueDate:
+class DueDate(DateType):
     def __init__(self, due_date):
         super(DueDate, self).__init__(due_date, "cbc:DueDate")
 
