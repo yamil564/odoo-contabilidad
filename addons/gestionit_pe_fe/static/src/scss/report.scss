@@ -52,11 +52,13 @@
             margin: auto;
         }
         th {
-            text-align: end;
+            text-align: start;
             width: 12%;
+            padding-left: 12px;
         }
         th,
         td {
+            word-break: break-word;
             padding-top: 3px;
         }
     }
