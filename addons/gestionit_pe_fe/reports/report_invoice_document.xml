@@ -29,17 +29,17 @@
                     <table class="w-100" t-if="'{}_{}'.format(o.type,o.journal_id.invoice_type_code_id) in ['out_invoice_01','out_invoice_03']">
                         <tr>
                             <!-- CLIENTE -->
-                            <th>
+                            <th width="50%">
                                 <label t-esc="'CLIENTE: '"/>
                             </th>
-                            <td class="label">
+                            <td class="label" width="50%">
                                 <span t-esc="((o.partner_id.registration_name if o.partner_id.registration_name not in ('-',False,'') else o.partner_id.name)  or '').upper()"/>
                             </td>
                             <!-- N° COT -->
-                            <th>
+                            <th width="10%">
                                 <label t-esc="'N° COT: '"/>
                             </th>
-                            <td class="label">
+                            <td class="label" width="30%">
                                 <!-- <span t-esc="o.ref" t-if="o.ref"/> -->
                                 <span t-esc="o.invoice_origin" />
                             </td>

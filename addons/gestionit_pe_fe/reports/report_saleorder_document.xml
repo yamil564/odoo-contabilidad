@@ -6,17 +6,17 @@
                 <table class="w-100">
                     <tr>
                         <!-- CLIENTE -->
-                        <th class="l_partner">
+                        <th class="l_partner" width="10%">
                             <label t-esc="'CLIENTE : '"/>
                         </th>
-                        <td class="v_partner">
+                        <td class="v_partner" width="50%">
                             <span t-esc="((doc.partner_id.registration_name if doc.partner_id.registration_name not in ('-',False,'') else doc.partner_id.name)  or '').upper()"/>
                         </td>
                         <!-- TELÉFONO -->
-                        <th class="l_mobile">
-                            <label t-esc="'TELÉFONO : '"/>
+                        <th class="l_mobile" width="10%">
+                            <label t-esc="'TELÉFONO : '" />
                         </th>
-                        <td class="v_mobile">
+                        <td class="v_mobile" width="30%">
                             <span t-esc="'{} {}'.format(doc.partner_id.phone or '',doc.partner_id.mobile or '').upper()"/>
                         </td>
                     </tr>
@@ -46,7 +46,7 @@
                         </td>
                         <!-- FECHA EMISIÓN -->
                         <th>
-                            <label t-esc="'FECHA EMISIÓN : '"/>
+                            <label t-esc="'F. EMISIÓN : '"/>
                         </th>
                         <td>
                             <span t-esc="doc.date_order" t-if="doc.date_order"/>

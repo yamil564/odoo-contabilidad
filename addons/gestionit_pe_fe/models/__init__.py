@@ -1,3 +1,4 @@
+from . import ir_qweb_fields
 from . import parameters
 from . import product
 from . import purchase
