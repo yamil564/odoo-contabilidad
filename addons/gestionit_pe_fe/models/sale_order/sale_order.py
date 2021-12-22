@@ -100,6 +100,7 @@ class SaleOrder(models.Model):
         res.update({
             "invoice_type_code": self.tipo_documento,
             "descuento_global": self.descuento_global,
+            "apply_global_discount": True if self.descuento_global > 0 else False,
             "apply_same_discount_on_all_lines": self.apply_same_discount_on_all_lines,
             "discount_on_all_lines": self.discount_on_all_lines
         })

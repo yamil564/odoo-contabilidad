@@ -367,7 +367,7 @@ class AccountMove(models.Model):
         states={'draft': [('readonly', False)]},
         default=0.0)
 
-    @api.onchange('invoice_line_ids', 'descuento_global', 'apply_global_discount')
+    @api.onchange('invoice_line_ids', 'descuento_global', 'apply_global_discount','id')
     def _onchange_invoice_line_ids(self):
         for record in self:
             if not record.apply_global_discount:
@@ -377,7 +377,8 @@ class AccountMove(models.Model):
             if len(line_discount_global_ids) > 1:
                 raise UserError(
                     "El comprobante tiene más de un descuento global, para corregir esto, establezca el valor a 0 guarde, y vuelva a establecer el valor del descuento global")
-
+            
+            _logger.info(record.descuento_global)
             if record.descuento_global > 0:
                 # _logger.info(line_discount_global_ids)
                 if len(line_discount_global_ids) == 1:
@@ -520,11 +521,13 @@ class AccountMove(models.Model):
         'line_ids.amount_residual',
         'line_ids.amount_residual_currency',
         'line_ids.payment_id.state',
-        'descuento_global')
+        'descuento_global',
+        'apply_global_discount')
     def _compute_amount(self):
         invoice_ids = [move.id for move in self if move.id and move.is_invoice(
             include_receipts=True)]
         self.env['account.payment'].flush(['state'])
+        
         if invoice_ids:
             self._cr.execute(
                 '''
@@ -558,6 +561,7 @@ class AccountMove(models.Model):
             in_payment_set = {}
 
         for move in self:
+            
             # move.total_descuento_global = sum(
             #     [
             #         line.price_subtotal
@@ -698,6 +702,10 @@ class AccountMove(models.Model):
                     move.invoice_payment_state = 'paid'
             else:
                 move.invoice_payment_state = 'not_paid'
+        
+        # for move in self:
+        #     if move.apply_global_discount:
+        #         move._onchange_invoice_line_ids()
 
     def button_draft(self):
         super(AccountMove,self).button_draft()

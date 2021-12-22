@@ -18,7 +18,8 @@ class SaleOrder(models.Model):
         if len(self.invoice_ids) == 0:
             self.tipo_documento = "01"
             # self.action_invoice_create(final=True)
-            self._create_invoices(final=True)
+            move = self._create_invoices(final=True)
+            move._onchange_invoice_line_ids()
 
         return self.action_view_invoice()
 
@@ -34,5 +35,6 @@ class SaleOrder(models.Model):
 
         if len(self.invoice_ids) == 0:
             self.tipo_documento = "03"
-            self._create_invoices(final=True)
+            move = self._create_invoices(final=True)
+            move._onchange_invoice_line_ids()
         return self.action_view_invoice()
