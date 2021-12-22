@@ -217,6 +217,7 @@ odoo.define("gestionit_pe_fe_pos.models",[
             res['invoice_type'] = this.invoice_type
             res['credit_note_type'] = this.credit_note_type
             res['credit_note_comment'] = this.credit_note_comment
+            res['sale_type'] = this.sale_type || "sale"
             res['refund_invoice'] = this.refund_invoice
             res['refund_invoice_type_code'] = this.refund_invoice_type_code
             return res;
