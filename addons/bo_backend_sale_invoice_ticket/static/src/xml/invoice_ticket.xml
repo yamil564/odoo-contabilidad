@@ -290,8 +290,7 @@
                         colorLight : "#ffffff",
                         correctLevel : QRCode.CorrectLevel.H
                     });
-                    qrcode.makeCode("
-                    <t t-esc="receipt.qr_string"/>");
+                    qrcode.makeCode("<t t-esc="receipt.qr_string"/>");
                 </script>
                 <!-- <br/> -->
                 <!-- <t t-esc="receipt.digest_value"/> -->

@@ -285,9 +285,6 @@ class AccountMove(models.Model):
                 else:
                     record.invoice_payment_term_type = "Contado"
                     
-                
-
-    # @api.constrains("invoice_payment_term_id")
     def check_paymenttermn_lines(self):
         for record in self:
             if record.type in ['out_invoice', 'in_invoice']:

@@ -68,7 +68,7 @@ class ResPartner(models.Model):
     @api.constrains('vat','l10n_latam_identification_type_id')
     def _check_valid_numero_documento(self):
         vat_str = (self.vat or "").strip()
-        if self.l10n_latam_identification_type_id and self.type in ["contact"]:
+        if self.l10n_latam_identification_type_id and self.type in ["contact"] and self.parent_id is False:
             if self.l10n_latam_identification_type_id.l10n_pe_vat_code == "6":
                 if not self._check_valid_ruc(vat_str):
                     raise UserError("El número de RUC ingresado es inválido.")
