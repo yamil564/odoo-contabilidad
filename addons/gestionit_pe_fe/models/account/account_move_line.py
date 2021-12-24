@@ -19,6 +19,14 @@ class AccountMoveLine(models.Model):
     is_charge_or_discount = fields.Boolean(string="Es Cargo/Descuento/Deducción?")
     type_charge_or_discount_code = fields.Char("Código de cargo, descuento u otra deducción")
 
+    # def unlink(self):
+    #     log.info("self.is_charge_or_discount")
+    #     log.info(self.is_charge_or_discount)
+    #     if self.is_charge_or_discount:
+    #         raise UserError("No puede eliminar desde aquí la línea de descuento global.")
+    #     else:
+    #         return super(AccountMoveLine, self).unlink()
+
     @api.onchange('discount')
     def _onchange_discount(self):
         for record in self:

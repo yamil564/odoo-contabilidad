@@ -21,6 +21,21 @@
                     <span attrs="{'invisible': ['|', '|', ('type', '!=', 'in_receipt'), ('state', '!=', 'draft'), ('name', '!=', '/')]}">Draft Purchase Receipt</span>
                 </h1>
             </xpath>
+            <xpath expr="//field[@name='invoice_line_ids']//tree//field[@name='price_unit']" position="attributes">
+                <attribute name="attrs">{'readonly':[('price_unit','&lt;',0)]}</attribute>
+            </xpath>
+            <xpath expr="//field[@name='invoice_line_ids']//tree//field[@name='tax_ids']" position="attributes">
+                <attribute name="attrs">{'readonly':[('price_unit','&lt;',0)]}</attribute>
+            </xpath>
+            <xpath expr="//field[@name='invoice_line_ids']//tree//field[@name='quantity']" position="attributes">
+                <attribute name="attrs">{'readonly':[('price_unit','&lt;',0)]}</attribute>
+            </xpath>
+            <xpath expr="//field[@name='invoice_line_ids']//tree//field[@name='product_id']" position="attributes">
+                <attribute name="attrs">{'readonly':[('price_unit','&lt;',0)]}</attribute>
+            </xpath>
+            <!-- <xpath expr="//field[@name='invoice_line_ids']//tree//field[@name='discount']" position="attributes">
+                <attribute name="attrs">{'readonly':[('price_unit','&lt;',0)]}</attribute>
+            </xpath> -->
             <xpath expr="//field[@name='invoice_line_ids']//tree//field[@name='price_total']" position="before">
                 <field name="price_subtotal" string="Subtotal"/>
             </xpath>
@@ -28,7 +43,7 @@
                 <attribute name="invisible">1</attribute>
             </xpath>
             <xpath expr="//field[@name='invoice_line_ids']//tree//field[@name='discount']" position="attributes">
-                <attribute name="attrs">{'column_invisible':[('parent.type','in',['out_refund','in_refund'])]}</attribute>
+                <attribute name="attrs">{'column_invisible':[('parent.type','in',['out_refund','in_refund'])],'readonly':[('price_unit','&lt;',0)]}</attribute>
             </xpath>
             <xpath expr="//field[@name='ref']" position="replace">
                 <field name="inv_supplier_ref" attrs="{'invisible': [('type','in',['out_refund','out_invoice'])],'required':[('type','in',['in_invoice','in_refund'])]}" placeholder="Factura / Boleta / RHE"/>
@@ -215,8 +230,10 @@
                         attrs="{'invisible':[('apply_global_discount','=',False),('type','in',['out_refund','in_refund'])]}" 
                         groups="gestionit_pe_fe.group_fe_discount_global_sale_invoices"/>
                 
-                <field name="total_venta_gravado" string="Monto Gravado"/>
+                <field name="amount_untaxed" string="Sub-Total"/>
                 <!-- <field name="amount_tax"/> -->
+                <!-- <field name="amount_by_group" widget="text"/> -->
+                <field name="total_venta_gravado" string="Monto Gravado"/>
                 <field name="amount_igv"/>
                 <field name="total_venta_inafecto" string="Monto Inafecto"/>
                 <field name="total_venta_exonerada" string="Monto Exonerado"/>
