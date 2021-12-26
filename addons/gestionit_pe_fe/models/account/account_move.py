@@ -515,7 +515,7 @@ class AccountMove(models.Model):
                 if move.is_invoice(include_receipts=True):
                     # === Invoices ===
 
-                    if not line.exclude_from_invoice_tab or line.type_charge_or_discount_code in ["02"]:
+                    if not line.exclude_from_invoice_tab or line.is_charge_or_discount:
                         # Untaxed amount.
                         total_untaxed += line.balance
                         total_untaxed_currency += line.amount_currency
