@@ -367,102 +367,134 @@ class AccountMove(models.Model):
         states={'draft': [('readonly', False)]},
         default=0.0)
 
-    @api.onchange('invoice_line_ids', 'descuento_global', 'apply_global_discount','id')
-    def _onchange_invoice_line_ids(self):
+    @api.onchange('line_ids','descuento_global', 'apply_global_discount', 'invoice_payment_term_id', 'invoice_date_due', 'invoice_cash_rounding_id', 'invoice_vendor_bill_id')
+    def _onchange_recompute_dynamic_lines(self):
         for record in self:
             if not record.apply_global_discount:
                 record.descuento_global = 0
-            line_discount_global_ids = record.invoice_line_ids.filtered(
-                lambda r: r.is_charge_or_discount and r.type_charge_or_discount_code in ["02"])
-            # if len(line_discount_global_ids) > 1:
-            #     raise UserError("El comprobante tiene más de un descuento global, para corregir esto, establezca el valor a 0 guarde, y vuelva a establecer el valor del descuento global")
-            
-            # _logger.info(record.descuento_global)
+
+            line_discount_global_ids = record.line_ids.filtered(lambda r: r.is_charge_or_discount and r.type_charge_or_discount_code in ["02"])
+            # _logger.info("line_discount_global_ids")
+            # _logger.info(line_discount_global_ids)
+            # _logger.info([(ldg.id,ldg.name,ldg.balance) for ldg in line_discount_global_ids])
+
+            record.line_ids = [(2, ldg.id) for ldg in line_discount_global_ids]
+            record.line_ids._onchange_price_subtotal()
+            record._recompute_dynamic_lines(recompute_all_taxes=True)
+
+            line_ids = []
+
             if record.descuento_global > 0:
-                # _logger.info(line_discount_global_ids)
-                if len(line_discount_global_ids) >= 1:
-                    # line_id = line_discount_global_ids.id
-                    # for l in line_discount_global_ids:
-                    for ldg in line_discount_global_ids:
-                        record.invoice_line_ids = [
-                            (2, ldg.id)]
-
-                        # record.line_ids._onchange_price_subtotal()
-                        # record._onchange_invoice_line_ids()
-                        super(AccountMove, self.with_context(
-                            recursive_onchanges=False))._onchange_invoice_line_ids()
-                        record._onchange_recompute_dynamic_lines()
-                    # record.invoice_line_ids = [(1,line_id,{
-                    #                             "price_unit":record.amount_total*record.descuento_global/100,
-                    #                             })]
-
                 product = record.env.company.default_product_global_discount_id
                 company = record.company_id
-                # _logger.info(record)
                 if not product:
-                    raise UserError(
-                        "Debes configurar el producto de descuento global en la sección de configuración de ventas")
+                    raise UserError("Debes configurar el producto de descuento global en la sección de configuración de ventas")
 
-                # _logger.info(company)
-                # _logger.info(company.currency_id._convert(self.amount_total*self.descuento_global/100, self.currency_id, company, self.date),)
-                # total_venta = {"gravado":record.total_venta_gravado,
-                #                 "inafecto":record.total_venta_inafecto,
-                #                 "exonerada":record.total_venta_exonerada}
-                tax_ids = record.line_ids.filtered(lambda r:not r.is_charge_or_discount).mapped("tax_ids")
-                _logger.info(tax_ids)
-
-                invoice_line_ids = []
+                tax_ids = record.line_ids.filtered(lambda r:not r._origin.is_charge_or_discount).mapped("tax_ids")
+                
                 for tax in tax_ids.filtered(lambda r:r.tax_group_id.tipo_afectacion in ["10","20","30","40"]):
-                    base_amount = sum(record.line_ids.filtered(lambda r:not r.is_charge_or_discount and tax in r.tax_ids).mapped('price_total'))
-                    _logger.info("tax")
-                    _logger.info(base_amount)
-                    _logger.info(tax)
+                    # base_amount = abs(sum(record.line_ids.filtered(lambda r:not r.is_charge_or_discount and tax._origin.id in r.tax_ids.ids).mapped('balance')))
+                    # _logger.info("tax")
+                    # _logger.info([(l.name,l.is_charge_or_discount,l.tax_ids,l.balance) for l in record.line_ids])
+                    # _logger.info([(l._origin.name,l._origin.is_charge_or_discount,l._origin.tax_ids,l._origin.balance) for l in record.line_ids])
+                    # _logger.info(base_amount)
+                    # _logger.info((base_amount)*record.descuento_global/100)
+                    # _logger.info(tax)
+                    # amount_tax = tax._compute_amount((base_amount)*record.descuento_global/100,0)
+                    # _logger.info(amount_tax)
+                    if tax.price_include:
+                        base_amount = abs(sum(record.line_ids.filtered(lambda r:not r.is_charge_or_discount and tax._origin.id in r.tax_ids.ids).mapped('price_total')))
+                        price_unit = (base_amount)*record.descuento_global/100
+                    else:
+                        base_amount = abs(sum(record.line_ids.filtered(lambda r:not r.is_charge_or_discount and tax._origin.id in r.tax_ids.ids).mapped('price_subtotal')))
+                        price_unit = (base_amount)*record.descuento_global/100 
+                    # _logger.info(price_unit)
                     values = {
                         "sequence":10000,
                         "product_id": product.id,
-                        # "tax_ids": [(6, 0, [tax.id for tax in product.taxes_id])],
                         "tax_ids": [(6, 0, [tax._origin.id])],
                         "name": product.name,
                         "product_uom_id": product.uom_id.id,
-                        # "price_unit": -round(company.currency_id._convert(record.amount_total*record.descuento_global/100, record.currency_id, company, record.date), 6),
-                        "price_unit": -round((base_amount)*record.descuento_global/100, 6),
-                        # "debit":company.currency_id._convert(record.amount_total*record.descuento_global/100, record.currency_id, company, record.date),
-                        # "balance":-company.currency_id._convert(record.amount_total*record.descuento_global/100, record.currency_id, company, record.date),
-                        # "credit":0,
-                        # "currency_id":record._origin.currency_id.id,
+                        "price_unit": -round(price_unit, 6),
                         "move_id": record._origin.id,
                         "move_name": record._origin.name,
                         "quantity": 1,
-                        # "is_rounding_line":True,
                         "account_id": product.product_tmpl_id.property_account_income_id.id,
                         "company_id": company.id,
-                        # "currency_id": company.currency_id.id,
                         "is_charge_or_discount": True,
                         "recompute_tax_line": True,
                         "type_charge_or_discount_code": "02",
                         "exclude_from_invoice_tab": True
                     }
-                    invoice_line_ids.append((0, 0, values))
+                    line_ids.append((0, 0, values))
                     
-                record.invoice_line_ids = invoice_line_ids
-                # record.line_ids = [(0,0,values)]
-                # line = record.invoice_line_ids.new(values)
-                # line = line._onchange_balance()
-                # _logger.info("line")
-                # _logger.info(line)
-                # record.invoice_line_ids._onchange_price_subtotal()
-                record.invoice_line_ids._onchange_price_subtotal()
-                # record._onchange_invoice_line_ids()
-                super(AccountMove, self.with_context(recursive_onchanges=False))._onchange_invoice_line_ids()
-                record._onchange_recompute_dynamic_lines()
-                # record._compute_amount()
-            else:
-                if line_discount_global_ids.exists():
-                    for l in line_discount_global_ids:
-                        record.invoice_line_ids = [(2, l.id)]
+                record.line_ids = line_ids
+                record.line_ids._onchange_price_subtotal()
+                record._recompute_dynamic_lines(recompute_all_taxes=True)
 
-        super(AccountMove, self.with_context(
-            recursive_onchanges=False))._onchange_invoice_line_ids()
+        super(AccountMove, self)._onchange_recompute_dynamic_lines()
+
+    # @api.onchange( 'invoice_line_ids','descuento_global', 'apply_global_discount')
+    # def _onchange_invoice_line_ids(self):
+    #     for record in self:
+    #         if not record.apply_global_discount:
+    #             record.descuento_global = 0
+    #         line_discount_global_ids = record.line_ids.filtered(lambda r: r.is_charge_or_discount and r.type_charge_or_discount_code in ["02"])
+
+    #         if record.descuento_global > 0:
+    #             if len(line_discount_global_ids) >= 1:
+    #                 for ldg in line_discount_global_ids:
+    #                     record.line_ids = [(2, ldg.id)]
+    #                     super(AccountMove, self.with_context(recursive_onchanges=False))._onchange_invoice_line_ids()
+    #                     record._onchange_recompute_dynamic_lines()
+
+    #             product = record.env.company.default_product_global_discount_id
+    #             company = record.company_id
+    #             if not product:
+    #                 raise UserError(
+    #                     "Debes configurar el producto de descuento global en la sección de configuración de ventas")
+
+    #             tax_ids = record.line_ids.filtered(lambda r:not r._origin.is_charge_or_discount).mapped("tax_ids")
+    #             _logger.info("record.line_ids")
+    #             _logger.info(record.line_ids)
+    #             _logger.info(record.line_ids.mapped(lambda r:[r._origin.is_charge_or_discount,r._origin.tax_ids]))
+
+    #             line_ids = []
+    #             for tax in tax_ids.filtered(lambda r:r.tax_group_id.tipo_afectacion in ["10","20","30","40"]):
+    #                 base_amount = abs(sum(record.line_ids.filtered(lambda r:not r._origin.is_charge_or_discount and tax._origin.id in r._origin.tax_ids.ids).mapped('balance')))
+    #                 _logger.info("tax")
+                    
+    #                 _logger.info(base_amount)
+    #                 _logger.info(tax)
+    #                 values = {
+    #                     "sequence":10000,
+    #                     "product_id": product.id,
+    #                     "tax_ids": [(6, 0, [tax._origin.id])],
+    #                     "name": product.name,
+    #                     "product_uom_id": product.uom_id.id,
+    #                     "price_unit": -round((base_amount)*record.descuento_global/100, 6),
+    #                     "move_id": record._origin.id,
+    #                     "move_name": record._origin.name,
+    #                     "quantity": 1,
+    #                     "account_id": product.product_tmpl_id.property_account_income_id.id,
+    #                     "company_id": company.id,
+    #                     "is_charge_or_discount": True,
+    #                     "recompute_tax_line": True,
+    #                     "type_charge_or_discount_code": "02",
+    #                     "exclude_from_invoice_tab": True
+    #                 }
+    #                 line_ids.append((0, 0, values))
+                    
+    #             record.line_ids = line_ids
+    #             record.line_ids._onchange_price_subtotal()
+    #             super(AccountMove, self.with_context(recursive_onchanges=False))._onchange_invoice_line_ids()
+    #             record._onchange_recompute_dynamic_lines()
+    #         else:
+    #             if line_discount_global_ids.exists():
+    #                 for l in line_discount_global_ids:
+    #                     record.line_ids = [(2, l.id)]
+
+    #     super(AccountMove, self.with_context(recursive_onchanges=False))._onchange_invoice_line_ids()
 
     total_tax_discount = fields.Monetary(
         string="Total Descuento Impuesto",
@@ -558,7 +590,7 @@ class AccountMove(models.Model):
                 if move.is_invoice(include_receipts=True):
                     # === Invoices ===
 
-                    if not line.exclude_from_invoice_tab:
+                    if not line.exclude_from_invoice_tab or line.is_charge_or_discount:
                         # Untaxed amount.
                         total_untaxed += line.balance
                         total_untaxed_currency += line.amount_currency
@@ -584,9 +616,7 @@ class AccountMove(models.Model):
                 sign = 1
             else:
                 sign = -1
-            _logger.info("total_currency")
-            _logger.info(total_currency)
-            _logger.info(currencies)
+
             move.amount_untaxed = sign * (total_untaxed_currency if len(currencies) == 1 else total_untaxed)
             move.amount_tax = sign * (total_tax_currency if len(currencies) == 1 else total_tax)
             move.amount_total = sign * (total_currency if len(currencies) == 1 else total)
@@ -603,7 +633,7 @@ class AccountMove(models.Model):
         for move in self:
             move.total_venta_gravado = sum([
                 line.price_subtotal
-                for line in move.invoice_line_ids
+                for line in move.line_ids
                 if len([line.price_subtotal for line_tax in line.tax_ids
                                                 if line_tax.tax_group_id.tipo_afectacion in ["10"]])
             ])
@@ -611,7 +641,7 @@ class AccountMove(models.Model):
 
             move.total_venta_inafecto = sum([
                 line.price_subtotal
-                for line in move.invoice_line_ids
+                for line in move.line_ids
                 if len(
                     [line.price_subtotal for line_tax in line.tax_ids
                      if line_tax.tax_group_id.tipo_afectacion in ["40", "30"]])
@@ -620,7 +650,7 @@ class AccountMove(models.Model):
 
             move.total_venta_exonerada = sum([
                 line.price_subtotal
-                for line in move.invoice_line_ids
+                for line in move.line_ids
                 if len(
                     [line.price_subtotal for line_tax in line.tax_ids
                      if line_tax.tax_group_id.tipo_afectacion in ["20"]])
@@ -629,7 +659,7 @@ class AccountMove(models.Model):
 
             move.amount_igv = sum([
                  line.price_total - line.price_subtotal
-                 for line in move.invoice_line_ids
+                 for line in move.line_ids
                  if len([line.price_subtotal for line_tax in line.tax_ids
                          if line_tax.tax_group_id.tipo_afectacion in ["10"]])
              ])
@@ -639,7 +669,7 @@ class AccountMove(models.Model):
 
             move.total_venta_gratuito = sum([
                 line.price_unit*line.quantity
-                for line in move.invoice_line_ids
+                for line in move.line_ids
                 if len([1 for line_tax in line.tax_ids
                         if line_tax.tax_group_id.tipo_afectacion in ["31", "32", "33", "34", "35", "36", "37"]])
             ])
@@ -647,208 +677,19 @@ class AccountMove(models.Model):
             move.total_descuentos = sum([
                 ((line.price_subtotal / (1-line.discount/100.0))
                  * line.discount/100.0) + line.descuento_unitario
-                for line in move.invoice_line_ids
+                for line in move.line_ids
                 if line.discount < 100
             ])+move.total_descuento_global
 
-            move.amount_untaxed = move.total_venta_gravado + \
-                    move.total_venta_exonerada + \
-                    move.total_venta_inafecto
+            # move.amount_untaxed = move.total_venta_gravado + \
+            #         move.total_venta_exonerada + \
+            #         move.total_venta_inafecto
                     
 
-            move.amount_total = move.amount_untaxed + \
-                                move.amount_igv
+            # move.amount_total = move.amount_untaxed + \
+            #                     move.amount_igv
 
-            move.amount_residual = - move.amount_total
-    # @api.depends(
-    #     'line_ids.debit',
-    #     'line_ids.credit',
-    #     'line_ids.currency_id',
-    #     'line_ids.amount_currency',
-    #     'line_ids.amount_residual',
-    #     'line_ids.amount_residual_currency',
-    #     'line_ids.payment_id.state',
-    #     'descuento_global',
-    #     'apply_global_discount')
-    # def _compute_amount(self):
-    #     invoice_ids = [move.id for move in self if move.id and move.is_invoice(
-    #         include_receipts=True)]
-    #     self.env['account.payment'].flush(['state'])
-        
-    #     if invoice_ids:
-    #         self._cr.execute(
-    #             '''
-    #                 SELECT move.id
-    #                 FROM account_move move
-    #                 JOIN account_move_line line ON line.move_id = move.id
-    #                 JOIN account_partial_reconcile part ON part.debit_move_id = line.id OR part.credit_move_id = line.id
-    #                 JOIN account_move_line rec_line ON
-    #                     (rec_line.id = part.debit_move_id AND line.id = part.credit_move_id)
-    #                 JOIN account_payment payment ON payment.id = rec_line.payment_id
-    #                 JOIN account_journal journal ON journal.id = rec_line.journal_id
-    #                 WHERE payment.state IN ('posted', 'sent')
-    #                 AND journal.post_at = 'bank_rec'
-    #                 AND move.id IN %s
-    #             UNION
-    #                 SELECT move.id
-    #                 FROM account_move move
-    #                 JOIN account_move_line line ON line.move_id = move.id
-    #                 JOIN account_partial_reconcile part ON part.debit_move_id = line.id OR part.credit_move_id = line.id
-    #                 JOIN account_move_line rec_line ON
-    #                     (rec_line.id = part.credit_move_id AND line.id = part.debit_move_id)
-    #                 JOIN account_payment payment ON payment.id = rec_line.payment_id
-    #                 JOIN account_journal journal ON journal.id = rec_line.journal_id
-    #                 WHERE payment.state IN ('posted', 'sent')
-    #                 AND journal.post_at = 'bank_rec'
-    #                 AND move.id IN %s
-    #             ''', [tuple(invoice_ids), tuple(invoice_ids)]
-    #         )
-    #         in_payment_set = set(res[0] for res in self._cr.fetchall())
-    #     else:
-    #         in_payment_set = {}
-
-    #     for move in self:
-            
-    #         # move.total_descuento_global = sum(
-    #         #     [
-    #         #         line.price_subtotal
-    #         #         for line in move.invoice_line_ids
-    #         #         if len([line.price_subtotal for line_tax in line.tax_ids
-    #         #                 if line_tax.tax_group_id.tipo_afectacion not in ["31", "32", "33", "34", "35", "36"]])
-    #         #     ])*move.descuento_global/100.0
-    #         move.total_descuento_global = abs(sum([
-    #             line.price_subtotal
-    #             for line in move.invoice_line_ids
-    #             if line.is_charge_or_discount and line.type_charge_or_discount_code in ["02"]
-    #         ]))
-
-    #         move.total_venta_gravado = sum([
-    #             line.price_subtotal
-    #             for line in move.invoice_line_ids
-    #             if len([line.price_subtotal for line_tax in line.tax_ids
-    #                     if line_tax.tax_group_id.tipo_afectacion in ["10"]])
-    #         ])
-    #         # ])*(1-move.descuento_global/100.0)
-
-    #         move.total_venta_inafecto = sum([
-    #             line.price_subtotal
-    #             for line in move.invoice_line_ids
-    #             if len(
-    #                 [line.price_subtotal for line_tax in line.tax_ids
-    #                  if line_tax.tax_group_id.tipo_afectacion in ["40", "30"]])
-    #         ])
-    #         # ])*(1-move.descuento_global/100.0)
-
-    #         move.total_venta_exonerada = sum([
-    #             line.price_subtotal
-    #             for line in move.invoice_line_ids
-    #             if len(
-    #                 [line.price_subtotal for line_tax in line.tax_ids
-    #                  if line_tax.tax_group_id.tipo_afectacion in ["20"]])
-    #         ])
-    #         # ])*(1-move.descuento_global/100.0)
-
-    #         move.total_venta_gratuito = sum([
-    #             line.price_unit*line.quantity
-    #             for line in move.invoice_line_ids
-    #             if len([1 for line_tax in line.tax_ids
-    #                     if line_tax.tax_group_id.tipo_afectacion in ["31", "32", "33", "34", "35", "36", "37"]])
-    #         ])
-
-    #         move.total_descuentos = sum([
-    #             ((line.price_subtotal / (1-line.discount/100.0))
-    #              * line.discount/100.0) + line.descuento_unitario
-    #             for line in move.invoice_line_ids
-    #             if line.discount < 100
-    #         ])+move.total_descuento_global
-
-    #         total_untaxed = 0.0
-    #         total_untaxed_currency = 0.0
-    #         total_tax = 0.0
-    #         total_tax_currency = 0.0
-    #         total_residual = 0.0
-    #         total_residual_currency = 0.0
-    #         total = 0.0
-    #         total_currency = 0.0
-    #         currencies = set()
-
-    #         for line in move.line_ids:
-    #             if line.currency_id:
-    #                 currencies.add(line.currency_id)
-
-    #             if move.is_invoice(include_receipts=True):
-    #                 # === Invoices ===
-
-    #                 if not line.exclude_from_invoice_tab:
-    #                     # Untaxed amount.
-    #                     # if line.tax_ids[0].tax_group_id.tipo_afectacion not in ["31", "32", "33", "34", "35", "36", "37"]:
-    #                     total_untaxed += line.balance
-    #                     total_untaxed_currency += line.amount_currency
-    #                     total += line.balance
-    #                     total_currency += line.amount_currency
-    #                 elif line.tax_line_id:
-    #                     # Tax amount.
-    #                     total_tax += line.balance
-    #                     total_tax_currency += line.amount_currency
-    #                     total += line.balance
-    #                     total_currency += line.amount_currency
-    #                 elif line.account_id.user_type_id.type in ('receivable', 'payable'):
-    #                     # Residual amount.
-    #                     total_residual += line.amount_residual
-    #                     total_residual_currency += line.amount_residual_currency
-    #             else:
-    #                 # === Miscellaneous journal entry ===
-    #                 if line.debit:
-    #                     total += line.balance
-    #                     total_currency += line.amount_currency
-
-    #         if move.type == 'entry' or move.is_outbound():
-    #             sign = 1
-    #         else:
-    #             sign = -1
-    #         move.amount_untaxed = sign * \
-    #             (total_untaxed_currency if len(currencies) == 1 else total_untaxed)
-    #         move.amount_tax = sign * \
-    #             (total_tax_currency if len(currencies) == 1 else total_tax)
-
-    #         # move.amount_igv = (move.amount_tax + move.total_venta_gratuito)*(1-move.descuento_global/100.0)
-    #         move.amount_igv = sum([
-    #             line.price_total - line.price_subtotal
-    #             for line in move.invoice_line_ids
-    #             if len([line.price_subtotal for line_tax in line.tax_ids
-    #                     if line_tax.tax_group_id.tipo_afectacion in ["10"]])
-    #         ])
-
-    #         move.amount_total = sign * (total_currency if len(currencies) ==1 else total) - move.total_descuentos
-    #         # _logger.info(move.total_descuento_global)
-            
-    #         # move.amount_total = move.total_venta_gravado + \
-    #         #     move.total_venta_exonerada + move.total_venta_inafecto + move.amount_igv
-
-    #         move.amount_residual = -sign * \
-    #             (total_residual_currency if len(currencies) == 1 else total_residual)
-    #         move.amount_untaxed_signed = -total_untaxed
-    #         move.amount_tax_signed = -total_tax
-    #         move.amount_total_signed = abs(
-    #             total) if move.type == 'entry' else -total
-    #         move.amount_residual_signed = total_residual
-
-    #         currency = len(currencies) == 1 and currencies.pop(
-    #         ) or move.company_id.currency_id
-    #         is_paid = currency and currency.is_zero(
-    #             move.amount_residual) or not move.amount_residual
-
-    #         # Compute 'invoice_payment_state'.
-    #         if move.type == 'entry':
-    #             move.invoice_payment_state = False
-    #         elif move.state == 'posted' and is_paid:
-    #             if move.id in in_payment_set:
-    #                 move.invoice_payment_state = 'in_payment'
-    #             else:
-    #                 move.invoice_payment_state = 'paid'
-    #         else:
-    #             move.invoice_payment_state = 'not_paid'
-
+            # move.amount_residual = - move.amount_total
 
     def button_draft(self):
         super(AccountMove,self).button_draft()

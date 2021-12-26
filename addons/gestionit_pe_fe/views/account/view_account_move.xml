@@ -21,16 +21,16 @@
                     <span attrs="{'invisible': ['|', '|', ('type', '!=', 'in_receipt'), ('state', '!=', 'draft'), ('name', '!=', '/')]}">Draft Purchase Receipt</span>
                 </h1>
             </xpath>
-            <xpath expr="//field[@name='invoice_line_ids']//tree//field[@name='price_unit']" position="attributes">
+            <xpath expr="//field[@name='line_ids']//tree//field[@name='price_unit']" position="attributes">
                 <attribute name="attrs">{'readonly':[('price_unit','&lt;',0)]}</attribute>
             </xpath>
-            <xpath expr="//field[@name='invoice_line_ids']//tree//field[@name='tax_ids']" position="attributes">
+            <xpath expr="//field[@name='line_ids']//tree//field[@name='tax_ids']" position="attributes">
                 <attribute name="attrs">{'readonly':[('price_unit','&lt;',0)]}</attribute>
             </xpath>
-            <xpath expr="//field[@name='invoice_line_ids']//tree//field[@name='quantity']" position="attributes">
+            <xpath expr="//field[@name='line_ids']//tree//field[@name='quantity']" position="attributes">
                 <attribute name="attrs">{'readonly':[('price_unit','&lt;',0)]}</attribute>
             </xpath>
-            <xpath expr="//field[@name='invoice_line_ids']//tree//field[@name='product_id']" position="attributes">
+            <xpath expr="//field[@name='line_ids']//tree//field[@name='product_id']" position="attributes">
                 <attribute name="attrs">{'readonly':[('price_unit','&lt;',0)]}</attribute>
             </xpath>
             <!-- <xpath expr="//field[@name='invoice_line_ids']//tree//field[@name='discount']" position="attributes">
@@ -231,7 +231,7 @@
                         groups="gestionit_pe_fe.group_fe_discount_global_sale_invoices"/>
                 
                 <field name="amount_untaxed" string="Sub-Total"/>
-                <!-- <field name="amount_tax"/> -->
+                <field name="amount_tax"/>
                 <!-- <field name="amount_by_group" widget="text"/> -->
                 <field name="total_venta_gravado" string="Monto Gravado"/>
                 <field name="amount_igv"/>
