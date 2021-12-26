@@ -220,7 +220,13 @@
         <field name="model">account.move</field>
         <field name="inherit_id" ref="account.view_move_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//field[@name='amount_untaxed']" position="replace">
+            <xpath expr="//field[@name='amount_untaxed']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='amount_by_group']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='amount_untaxed']" position="after">
                 <field name="apply_global_discount" 
                         string="Aplicar descuento Global?" 
                         attrs="{'invisible':[('type','in',['out_refund','in_refund'])]}" 
@@ -230,8 +236,8 @@
                         attrs="{'invisible':[('apply_global_discount','=',False),('type','in',['out_refund','in_refund'])]}" 
                         groups="gestionit_pe_fe.group_fe_discount_global_sale_invoices"/>
                 
-                <field name="amount_untaxed" string="Sub-Total"/>
-                <field name="amount_tax"/>
+                <!-- <field name="amount_untaxed" string="Sub-Total"/>
+                <field name="amount_tax"/> -->
                 <!-- <field name="amount_by_group" widget="text"/> -->
                 <field name="total_venta_gravado" string="Monto Gravado"/>
                 <field name="amount_igv"/>
@@ -240,8 +246,6 @@
                 <field name="total_venta_gratuito" string="Monto Gratuito"/>
                 <field name="total_descuento_global" attrs="{'invisible':[('invoice_type_code','not in',['01','03'])]}" string="Descuento Global"/>
                 <field name="total_descuentos" string="Total de Descuentos"/>
-            </xpath>
-            <xpath expr="//field[@name='amount_by_group']" position="replace">
             </xpath>
             <div class="oe_button_box" position="inside">
                 <button type="object" class="oe_stat_button" name="action_view_credit_notes" icon="fa-minus" attrs="{'invisible': [('credit_note_count', '=', 0)]}">

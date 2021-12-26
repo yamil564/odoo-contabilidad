@@ -35,7 +35,7 @@
     </record>
 
     <record id="action_view_catalog_53" model="ir.actions.act_window">
-        <field name="name">Catg 53 - Detracciones</field>
+        <field name="name">Catg 53 - Descuentos,Cargos y Deducciones</field>
         <field name="res_model">sunat.catalog.53</field>
         <field name="view_mode">tree,form</field>
         <field name="domain">['|',('active','=',True),('active','=',False)]</field>
