@@ -8,6 +8,7 @@ from odoo.tools import float_is_zero, float_compare, DEFAULT_SERVER_DATETIME_FOR
 from odoo.tools.misc import formatLang
 from itertools import groupby
 from datetime import datetime, timedelta
+from pytz import timezone
 from werkzeug.urls import url_encode
 from odoo.addons.gestionit_pe_fe.models.parameters.catalogs import tdi
 from odoo.addons.gestionit_pe_fe.models.number_to_letter import to_word
@@ -37,8 +38,56 @@ class SaleOrderLine(models.Model):
                 record.qty_by_location = 0
 
 
+class SalePaymenttermLine(models.Model):
+    _name = "sale.paymentterm.line"
+    _order = "date_due ASC"
+
+    currency_id = fields.Many2one(
+        "res.currency", related="order_id.currency_id")
+    order_id = fields.Many2one("sale.order", "Sale order")
+    date_due = fields.Date("Fecha de vencimiento")
+    amount = fields.Float("Monto")
+
+
 class SaleOrder(models.Model):
     _inherit = "sale.order"
+
+    # * INICIO: Cuotas de pago en orden de venta
+    paymentterm_line = fields.One2many("sale.paymentterm.line", "order_id")
+    payment_term_type = fields.Char(compute="_compute_payment_term_type")
+
+    @api.depends("payment_term_id")
+    def _compute_payment_term_type(self):
+        for record in self:
+            record.payment_term_type = "Contado"
+            if record.payment_term_id:
+                record.payment_term_type = record.payment_term_id.type
+
+    def check_paymenttermn_lines(self):
+        for record in self:
+            if record.payment_term_id:
+                if record.payment_term_type == "Credito":
+                    amount_total = round(
+                        sum(record.paymentterm_line.mapped("amount")), 4)
+
+                    if amount_total != round(record.amount_total, 4):
+                        raise UserError(
+                            "El monto total de los plazos de pago debe ser igual al total de la venta.")
+                    if record.date_order:
+                        if min(record.paymentterm_line.mapped("date_due")) < record.date_order.date():
+                            raise UserError(
+                                "La fecha de vencimiento de la cuota debe ser mayor o igual a la fecha de la venta")
+                    else:
+                        if min(record.paymentterm_line.mapped("date_due")) < datetime.now(tz=timezone("America/Lima")).date():
+                            raise UserError(
+                                "La fecha de vencimiento de la cuota debe ser mayor o igual a la fecha de la venta")
+
+    def action_confirm(self):
+        self.check_paymenttermn_lines()
+        res = super(SaleOrder, self).action_confirm()
+        return res
+
+    # * FIN: Cuotas de pago en orden de venta
 
     def to_word(self, monto, moneda):
         return to_word(monto, moneda)
@@ -97,17 +146,26 @@ class SaleOrder(models.Model):
 
     def _prepare_invoice(self):
         res = super(SaleOrder, self)._prepare_invoice()
+
+        paymentterm_lines = []
+        for pl in self.paymentterm_line:
+            paymentterm_lines.append(self.env['paymentterm.line'].create(
+                {'currency_id': pl.currency_id, 'date_due': pl.date_due, 'amount': pl.amount}).id)
+
         res.update({
             "invoice_type_code": self.tipo_documento,
             "descuento_global": self.descuento_global,
             "apply_global_discount": True if self.descuento_global > 0 else False,
             "apply_same_discount_on_all_lines": self.apply_same_discount_on_all_lines,
-            "discount_on_all_lines": self.discount_on_all_lines
+            "discount_on_all_lines": self.discount_on_all_lines,
+            "paymentterm_line": [(6, 0, paymentterm_lines)],
         })
+
         warehouse_id = self.warehouse_id
         if warehouse_id:
             res["warehouse_id"] = warehouse_id.id
-            journals = self.env["stock.warehouse"].browse(warehouse_id.id).journal_ids.filtered(lambda r: r.invoice_type_code_id == self.tipo_documento and r.type == "sale")
+            journals = self.env["stock.warehouse"].browse(warehouse_id.id).journal_ids.filtered(
+                lambda r: r.invoice_type_code_id == self.tipo_documento and r.type == "sale")
             if len(journals) > 0:
                 res["journal_id"] = journals[0].id
             else:
@@ -229,7 +287,7 @@ class SaleOrder(models.Model):
                 'total_venta_gratuito': total_venta_gratuito,
                 'total_descuentos': total_descuentos,
                 'total_igv': total_igv,
-                'amount_untaxed':total_venta_gravado + total_venta_exonerada + total_venta_inafecto,
+                'amount_untaxed': total_venta_gravado + total_venta_exonerada + total_venta_inafecto,
                 'amount_total': total_venta_gravado + total_venta_exonerada + total_venta_inafecto + total_igv
             })
 
