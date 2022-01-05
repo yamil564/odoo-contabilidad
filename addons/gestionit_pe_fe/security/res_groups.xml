@@ -1,7 +1,7 @@
 <odoo>
-    
-        <!--ACCESO DE LECTURA DE TABLA DE PARÁMETROS DE FACTURACIÓN ELECTRÓNICA PARA EMPLEADOS-->
-        <!-- <record model="ir.model.access" id="gestionit_pe_fe.access_model_tipo_afectacion">
+
+    <!--ACCESO DE LECTURA DE TABLA DE PARÁMETROS DE FACTURACIÓN ELECTRÓNICA PARA EMPLEADOS-->
+    <!-- <record model="ir.model.access" id="gestionit_pe_fe.access_model_tipo_afectacion">
             <field name="name">gestionit_pe_fe.access.model.tipo.afectacion</field>
             <field name="model_id" ref="gestionit_pe_fe.model_tipo_afectacion"/>
             <field name="perm_read">1</field>
@@ -24,6 +24,16 @@
     <record id="acces_model_paymentterm_line" model="ir.model.access">
         <field name="name">gestionit_pe_fe.paymentterm.line</field>
         <field name="model_id" ref="gestionit_pe_fe.model_paymentterm_line"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="1"/>
+        <field name="perm_unlink" eval="1"/>
+        <field name="perm_create" eval="1"/>
+        <field name="group_id" ref="account.group_account_invoice"/>
+    </record>
+
+    <record id="acces_model_sale_paymentterm_line" model="ir.model.access">
+        <field name="name">gestionit_pe_fe.sale.paymentterm.line</field>
+        <field name="model_id" ref="gestionit_pe_fe.model_sale_paymentterm_line"/>
         <field name="perm_read" eval="1"/>
         <field name="perm_write" eval="1"/>
         <field name="perm_unlink" eval="1"/>
@@ -78,7 +88,7 @@
         <field name="perm_create">1</field>
         <field name="group_id" ref="base.group_user"/>
     </record>
-    
+
     <record model="ir.model.access" id="gestionit_pe_fe.access_model_gestionit_guia_remision_line_remitente">
         <field name="name">gestionit.access.model.gestionit.guia.remision.line.remitente</field>
         <field name="model_id" ref="gestionit_pe_fe.model_gestionit_guia_remision_line"/>
@@ -197,6 +207,6 @@
         <field name="perm_unlink" eval="0"/>
     </record>
 
-    
+
 
 </odoo>
