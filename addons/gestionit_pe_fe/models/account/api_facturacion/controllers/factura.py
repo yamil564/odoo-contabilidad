@@ -20,7 +20,6 @@ from ..efact21.TaxTotal import TaxTotal, TaxSubtotal, TaxCategory, TaxScheme, Ca
 from ..efact21.TaxScheme import TaxSchemeID
 from ..efact21.PaymentTerms import PaymentTerms
 import yaml
-import flex
 import re
 import logging
 _logger = logging.getLogger(__name__)

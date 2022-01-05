@@ -270,7 +270,7 @@
                     </tr>
                 </table>
             </div> -->
-            <div class="receipt-user">
+            <div class="receipt-user" id ="receipt_cashier">
                 <b>SON:</b>
                 <t t-esc="receipt.son"/>
                 <br />
