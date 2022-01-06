@@ -514,7 +514,7 @@ def crear_json_fac_bol(self):
         for line in self.paymentterm_line.sorted(lambda r:r.date_due):
             creditoCuotas.append({"nombre":"Cuota{:03.0f}".format(cuota),
                                         "fechaVencimiento":line.date_due.strftime("%Y-%m-%d"),
-                                        "monto":line.amount})
+                                        "monto":round(line.amount,2)})
             cuota = cuota + 1
         payment_term.update({"creditoCuotas":creditoCuotas})
 
