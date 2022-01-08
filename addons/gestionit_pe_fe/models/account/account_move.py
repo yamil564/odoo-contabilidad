@@ -291,7 +291,7 @@ class AccountMove(models.Model):
                 if record.invoice_payment_term_id:
                     if record.invoice_payment_term_type == "Credito":
                         amount_total = round(sum(record.paymentterm_line.mapped("amount")) + record.detraction_amount,4)
-                        if amount_total != round(record.amount_total,4):
+                        if amount_total != round(record.amount_total,2):
                             raise UserError(
                                 "El monto total de los plazos de pago debe ser igual al total de la factura.")
                         if record.invoice_date:
@@ -374,9 +374,10 @@ class AccountMove(models.Model):
                 record.descuento_global = 0
 
             line_discount_global_ids = record.line_ids.filtered(lambda r: r.is_charge_or_discount and r.type_charge_or_discount_code in ["02"])
-            record.line_ids = [(2, ldg.id) for ldg in line_discount_global_ids]
-            record.line_ids._onchange_price_subtotal()
-            record._recompute_dynamic_lines(recompute_all_taxes=True)
+            if len(line_discount_global_ids) > 0:
+                record.line_ids = [(2, ldg.id) for ldg in line_discount_global_ids]
+                record.line_ids._onchange_price_subtotal()
+                record._recompute_dynamic_lines(recompute_all_taxes=True)
 
             line_ids = []
 
@@ -414,11 +415,11 @@ class AccountMove(models.Model):
                         "exclude_from_invoice_tab": True
                     }
                     line_ids.append((0, 0, values))
+                    record.line_ids = line_ids
+                    record.line_ids._onchange_price_subtotal()
                     
-                record.line_ids = line_ids
-                record.line_ids._onchange_price_subtotal()
+                # record.line_ids._onchange_price_subtotal()
                 record._recompute_dynamic_lines(recompute_all_taxes=True)
-
         super(AccountMove, self)._onchange_recompute_dynamic_lines()
 
     # total_tax_discount = fields.Monetary(
