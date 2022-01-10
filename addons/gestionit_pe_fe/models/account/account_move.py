@@ -267,7 +267,7 @@ class AccountMove(models.Model):
     detraction_amount = fields.Float("Monto de Detracción", compute="_compute_amount_detraction", store=True)
     detraction_medio_pago = fields.Many2one("sunat.catalog.59",
                                             string="Medio de Pago",
-                                            default=lambda self:self.env.ref("gestionit_pe_fe.catalog_59_001"))
+                                            default=lambda self:self.env.ref("gestionit_pe_fe.catalog_59_001", raise_if_not_found=False))
     paymentterm_line = fields.One2many("paymentterm.line", "move_id")
 
     invoice_payment_term_type = fields.Char(compute="_compute_invoice_payment_term_type")
@@ -348,7 +348,9 @@ class AccountMove(models.Model):
 
     tipo_operacion = fields.Selection(selection=[("01", "Venta Interna"), ("02", "Exportación")], default="01", required=True, copy=False)
 
-    invoice_type_code_catalog_51  = fields.Many2one("sunat.catalog.51",string="Tipo de Operación",default=lambda self:self.env.ref("gestionit_pe_fe.catalog_51_0101", raise_if_not_found=False))
+    invoice_type_code_catalog_51  = fields.Many2one("sunat.catalog.51",
+                                                    string="Tipo de Operación",
+                                                    default=lambda self:self.env.ref("gestionit_pe_fe.catalog_51_0101", raise_if_not_found=False))
 
     apply_same_discount_on_all_lines = fields.Boolean("Aplicar el mismo descuento en todas las líneas?", states={
                                                       'draft': [('readonly', False)]}, readonly=True)
@@ -755,12 +757,15 @@ class AccountMove(models.Model):
 
     def validar_fecha_emision(self):
         errors = []
-        now = datetime.strptime(fields.Date.today(), "%Y-%m-%d")
-        if now < datetime.strptime(self.invoice_date, "%Y-%m-%d"):
+        
+        # now = datetime.strptime(fields.Date.today(), "%Y-%m-%d")
+        now = datetime.now(tz=timezone("America/Lima")).date()
+        # if now < datetime.strptime(self.invoice_date, "%Y-%m-%d"):
+        if now < self.invoice_date:
             errors.append("* La fecha de la emisión del comprobante debe ser menor o igual a la fecha del día de hoy.")
-        elif abs(datetime.strptime(self.invoice_date, "%Y-%m-%d") - now).days > 3:
-            errors.append(
-                "* La fecha de Emisión debe tener como máximo una antiguedad de 3 días.")
+        elif abs(self.invoice_date - now).days > 3:
+        # elif abs(datetime.strptime(self.invoice_date, "%Y-%m-%d") - now).days > 3:
+            errors.append("* La fecha de Emisión debe tener como máximo una antiguedad de 3 días.")
 
         return errors
 
