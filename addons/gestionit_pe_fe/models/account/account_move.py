@@ -264,9 +264,10 @@ class AccountMove(models.Model):
     detraction_rate = fields.Float("Tasa %", default=0)
     detraction_code = fields.Char("Código")
     bank_account_number_national = fields.Char("Banco de la nación")
-    detraction_amount = fields.Float(
-        "Monto de Detracción", compute="_compute_amount_detraction", store=True)
-
+    detraction_amount = fields.Float("Monto de Detracción", compute="_compute_amount_detraction", store=True)
+    detraction_medio_pago = fields.Many2one("sunat.catalog.59",
+                                            string="Medio de Pago",
+                                            default=lambda self:self.env.ref("gestionit_pe_fe.catalog_59_001"))
     paymentterm_line = fields.One2many("paymentterm.line", "move_id")
 
     invoice_payment_term_type = fields.Char(compute="_compute_invoice_payment_term_type")
@@ -290,7 +291,7 @@ class AccountMove(models.Model):
             if record.type in ['out_invoice', 'in_invoice']:
                 if record.invoice_payment_term_id:
                     if record.invoice_payment_term_type == "Credito":
-                        amount_total = round(sum(record.paymentterm_line.mapped("amount")) + record.detraction_amount,4)
+                        amount_total = round(sum(record.paymentterm_line.mapped("amount")) + record.detraction_amount,2)
                         if amount_total != round(record.amount_total,2):
                             raise UserError(
                                 "El monto total de los plazos de pago debe ser igual al total de la factura.")
@@ -345,8 +346,9 @@ class AccountMove(models.Model):
         string="Tipo de cambio a la fecha de factura",
         default=1.0)
 
-    tipo_operacion = fields.Selection(selection=[(
-        "01", "Venta Interna"), ("02", "Exportación")], default="01", required=True, copy=False)
+    tipo_operacion = fields.Selection(selection=[("01", "Venta Interna"), ("02", "Exportación")], default="01", required=True, copy=False)
+
+    invoice_type_code_catalog_51  = fields.Many2one("sunat.catalog.51",string="Tipo de Operación",default=lambda self:self.env.ref("gestionit_pe_fe.catalog_51_0101", raise_if_not_found=False))
 
     apply_same_discount_on_all_lines = fields.Boolean("Aplicar el mismo descuento en todas las líneas?", states={
                                                       'draft': [('readonly', False)]}, readonly=True)
@@ -652,7 +654,7 @@ class AccountMove(models.Model):
                     msg_error = []
                     msg_error += move.validar_datos_compania()
                     msg_error += move.validar_diario()
-                    # msg_error += move.validar_fecha_emision()
+                    msg_error += move.validar_fecha_emision()
                     msg_error += move.validar_lineas()
 
                     if move.journal_id.invoice_type_code_id == "01":
@@ -755,11 +757,10 @@ class AccountMove(models.Model):
         errors = []
         now = datetime.strptime(fields.Date.today(), "%Y-%m-%d")
         if now < datetime.strptime(self.invoice_date, "%Y-%m-%d"):
+            errors.append("* La fecha de la emisión del comprobante debe ser menor o igual a la fecha del día de hoy.")
+        elif abs(datetime.strptime(self.invoice_date, "%Y-%m-%d") - now).days > 3:
             errors.append(
-                "* La fecha de la emisión del comprobante debe ser menor o igual a la fecha del día de hoy.")
-        elif abs(datetime.strptime(self.invoice_date, "%Y-%m-%d") - now).days > 7:
-            errors.append(
-                "* La fecha de Emisión debe tener como máximo una antiguedad de 7 días.")
+                "* La fecha de Emisión debe tener como máximo una antiguedad de 3 días.")
 
         return errors
 

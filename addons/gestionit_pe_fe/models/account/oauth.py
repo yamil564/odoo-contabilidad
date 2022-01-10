@@ -459,24 +459,26 @@ def crear_json_fac_bol(self):
             "codigo":self.detraction_code,
             "monto":self.detraction_amount,
             "numero_cuenta_banco_nacion":self.bank_account_number_national,
+            "medio_pago":self.detraction_medio_pago.code
         },
         "descuento": {
             # "mntDescuentoGlobal": round(self.total_descuento_global, 2),
             "mntTotalDescuentos": round(self.total_descuentos, 2)
         },
+        "tipoOperacion":self.invoice_type_code_catalog_51.code
         # solo factura y boleta
         # "servicioHospedaje": { },
         # solo factura y boleta, con expecciones
 
-        "indicadores": {
+        # "indicadores": {
             # VERIFICAR ESTOS CAMPOS
-            "indVentaInterna": True if self.tipo_operacion == "01" else 0,
-            "indExportacion": True if self.tipo_operacion == "02" else 0,
+            # "indVentaInterna": True if self.tipo_operacion == "0101" else 0,
+            # "indExportacion": True if self.tipo_operacion == "02" else 0,
             # "indNoDomiciliados" : False, #valido para notas
-            "indAnticipo": True if self.tipo_operacion == "04" else 0,
+            # "indAnticipo": True if self.tipo_operacion == "04" else 0,
             # "indDeduccionAnticipos" : False,
             # "indServiciosHospedaje" : False,
-            "indVentaItinerante": True if self.tipo_operacion == "05" else 0
+            # "indVentaItinerante": True if self.tipo_operacion == "05" else 0
             # "indTrasladoBienesConRepresentacionImpresa" : False,
             # "indVentaArrozPilado" : False,
             # "indComprobantePercepcion" : False,
@@ -484,7 +486,7 @@ def crear_json_fac_bol(self):
             # "indServiciosPrestadosAmazonia" : False,
             # "indContratosConstruccionEjecutadosAmazonia" : False
 
-        },
+        # },
 
         # solo factura y boleta
         # "percepcion": {

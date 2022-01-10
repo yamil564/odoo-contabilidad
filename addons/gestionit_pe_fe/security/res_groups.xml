@@ -207,6 +207,45 @@
         <field name="perm_unlink" eval="0"/>
     </record>
 
+    <!-- Permisos de catálogo 51:  Código de tipo de operación -->
+    <record model="ir.model.access" id="gestionit_pe_fe.access_model_sunat_catalog_51_manager">
+        <field name="name">access.model.sunat.catalog.51.manager</field>
+        <field name="model_id" ref="gestionit_pe_fe.model_sunat_catalog_51"/>
+        <field name="group_id" ref="account.group_account_manager"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_create" eval="1"/>
+        <field name="perm_write" eval="1"/>
+        <field name="perm_unlink" eval="1"/>
+    </record>
 
+    <record model="ir.model.access" id="gestionit_pe_fe.access_model_sunat_catalog_51_user">
+        <field name="name">access.model.sunat.catalog.51.user</field>
+        <field name="model_id" ref="gestionit_pe_fe.model_sunat_catalog_51"/>
+        <field name="group_id" ref="account.group_account_invoice"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_create" eval="0"/>
+        <field name="perm_write" eval="0"/>
+        <field name="perm_unlink" eval="0"/>
+    </record>
 
+    <!-- Permisos de catálogo 59:  Medios de Pago -->
+    <record model="ir.model.access" id="gestionit_pe_fe.access_model_sunat_catalog_59_manager">
+        <field name="name">access.model.sunat.catalog.59.manager</field>
+        <field name="model_id" ref="gestionit_pe_fe.model_sunat_catalog_59"/>
+        <field name="group_id" ref="account.group_account_manager"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_create" eval="1"/>
+        <field name="perm_write" eval="1"/>
+        <field name="perm_unlink" eval="1"/>
+    </record>
+
+    <record model="ir.model.access" id="gestionit_pe_fe.access_model_sunat_catalog_59_user">
+        <field name="name">access.model.sunat.catalog.59.user</field>
+        <field name="model_id" ref="gestionit_pe_fe.model_sunat_catalog_59"/>
+        <field name="group_id" ref="account.group_account_invoice"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_create" eval="0"/>
+        <field name="perm_write" eval="0"/>
+        <field name="perm_unlink" eval="0"/>
+    </record>
 </odoo>

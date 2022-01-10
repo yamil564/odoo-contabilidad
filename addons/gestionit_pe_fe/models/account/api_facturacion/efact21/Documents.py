@@ -32,7 +32,7 @@ class Factura(Xmleable):
                  despatch_document_reference=None, signature=None,
                  accounting_supplier_party=None, accounting_customer_party=None,
                  legal_monetary_total=None, tax_total=None, descuento_global=None,
-                 order_reference=None):
+                 order_reference=None,payment_means_detraction=None,payment_terms_detraction=None):
         self.invoice_lines = []
         self.notes = []
         self.tax_total = tax_total
@@ -57,6 +57,8 @@ class Factura(Xmleable):
         self.descuento_global = descuento_global
         self.payment_terms = []
         self.order_reference = order_reference
+        self.payment_means_detraction = payment_means_detraction
+        self.payment_terms_detraction = payment_terms_detraction
 
     def set_file_name(self, name):
         self.file_name = name
@@ -135,6 +137,7 @@ class Factura(Xmleable):
             type(self.descuento_global) == AllowanceCharge
         assert self.order_reference is None or type(self.order_reference) == OrderReference
 
+
     def generate_root(self):
         self.doc = default_document.createElement("Invoice")
         self.doc.setAttribute(
@@ -212,6 +215,13 @@ class Factura(Xmleable):
 
         # Datos del receptor
         self.doc.appendChild(self.accounting_customer_party.get_document())
+
+        #Detraccion
+        if self.payment_means_detraction != None:
+            self.doc.appendChild(self.payment_means_detraction.get_document())
+
+        if self.payment_terms_detraction != None:
+            self.doc.appendChild(self.payment_terms_detraction.get_document())
 
         #Formas de Pago
         for pt in self.payment_terms:

@@ -67,7 +67,7 @@ class SaleOrder(models.Model):
         for record in self:
             if record.payment_term_id:
                 if record.payment_term_type == "Credito":
-                    amount_total = round(sum(record.paymentterm_line.mapped("amount")), 4)
+                    amount_total = round(sum(record.paymentterm_line.mapped("amount")), 2)
 
                     if amount_total != round(record.amount_total, 2):
                         raise UserError("El monto total de los plazos de pago debe ser igual al total de la venta.")
