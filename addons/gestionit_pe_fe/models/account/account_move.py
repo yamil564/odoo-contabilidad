@@ -1183,7 +1183,7 @@ class AccountMove(models.Model):
 
         now = datetime.now(tz=timezone("America/Lima"))
         for inv in invoices:
-            if abs((inv.invoice_date - now.date()).days) <= 7:
+            if abs((inv.invoice_date - now.date()).days) <= 3:
                 try:
                     inv.action_send_invoice()
                 except Exception as e:
