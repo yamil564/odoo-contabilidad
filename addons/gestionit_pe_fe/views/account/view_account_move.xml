@@ -69,7 +69,14 @@
 
                 <field name="account_journal_national_bank" options="{'no_open':True,'no_create':True,'no_quick_create':True}" string="Número de cuenta del Banco de la Nación" groups="gestionit_pe_fe.group_fe_detraction_user" attrs="{'required':[('has_detraction','=',True)],'invisible':[('has_detraction','=',False)],'readonly':[['state','not in',['draft']]]}"/>
                 <field name="bank_account_number_national" groups="gestionit_pe_fe.group_fe_detraction_user" attrs="{'required':[('has_detraction','=',True)],'readonly':[['state','not in',['draft']]]}" invisible="1"/>
-                <field name="detraction_amount" groups="gestionit_pe_fe.group_fe_detraction_user" attrs="{'required':[('has_detraction','=',True)],'invisible':[('has_detraction','=',False)],'readonly':[['state','not in',['draft']]]}"/>
+                <field name="detraction_amount" 
+                        groups="gestionit_pe_fe.group_fe_detraction_user" 
+                        widget="monetary" options="{'currency_field': 'currency_id'}"
+                        attrs="{'required':[('has_detraction','=',True)],'invisible':[('has_detraction','=',False)],'readonly':[['state','not in',['draft']]]}"/>
+                <field name="detraction_amount_pen" 
+                        groups="gestionit_pe_fe.group_fe_detraction_user" 
+                        widget="monetary" options="{'currency_field': 'company_currency_id'}"
+                        attrs="{'required':[('has_detraction','=',True)],'invisible':[('has_detraction','=',False)],'readonly':[['state','not in',['draft']]]}"/>
                 <field name="detraction_medio_pago" 
                         groups="gestionit_pe_fe.group_fe_detraction_user" 
                         attrs="{'required':[('has_detraction','=',True)],'invisible':[('has_detraction','=',False)],'readonly':[['state','not in',['draft']]]}"

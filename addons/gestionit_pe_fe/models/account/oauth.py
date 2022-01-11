@@ -454,13 +454,6 @@ def crear_json_fac_bol(self):
             ]
             # "mntTotalLetras": to_word(round(self.amount_total, 2), self.currency_id.name),
         },
-        "detraccion":{
-            "tasa":self.detraction_rate,
-            "codigo":self.detraction_code,
-            "monto":self.detraction_amount,
-            "numero_cuenta_banco_nacion":self.bank_account_number_national,
-            "medio_pago":self.detraction_medio_pago.code
-        },
         "descuento": {
             # "mntDescuentoGlobal": round(self.total_descuento_global, 2),
             "mntTotalDescuentos": round(self.total_descuentos, 2)
@@ -497,6 +490,18 @@ def crear_json_fac_bol(self):
         # },
         # "datosAdicionales": {},
     }
+
+    if self.has_detraction:
+        data.update({
+            "detraccion":{
+                "tasa":self.detraction_rate,
+                "codigo":self.detraction_code,
+                "monto":self.detraction_amount_pen,
+                "numero_cuenta_banco_nacion":self.bank_account_number_national,
+                "medio_pago":self.detraction_medio_pago.code
+            }
+        })
+
     data_impuesto = []
     data_detalle = []
     data_referencia = []  # solo para notas

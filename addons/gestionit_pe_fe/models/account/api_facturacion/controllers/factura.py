@@ -352,7 +352,7 @@ def build_factura(data):
         payment_terms_detraction = PaymentTerms(id="Detraccion",
                                                 payment_means_id=detraccion.get("codigo"),
                                                 payment_percent=detraccion.get("tasa"),
-                                                amount=Amount(detraccion.get("monto"),currencyID=tipoMoneda),
+                                                amount=Amount(detraccion.get("monto"),currencyID="PEN"),
                                                 detraction=True)
 
     # PROVEEDOR

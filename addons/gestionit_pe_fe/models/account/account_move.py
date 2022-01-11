@@ -254,6 +254,12 @@ class AccountMove(models.Model):
     def _compute_amount_detraction(self):
         for record in self:
             record.detraction_amount = round(record.amount_total*record.detraction_rate/100, 2)
+            record.detraction_amount_pen = round(record.exchange_rate_day*record.amount_total*record.detraction_rate/100,2)
+
+    # @api.onchange("amount_total", "type_detraction","detraction_rate")
+    # def onchange_amount_detraction(self):
+    #     for record in self:
+    #         record.detraction_amount_pen = round(record.exchange_rate_day*record.amount_total*record.detraction_rate/100,2)
 
     has_detraction = fields.Boolean("Detracción?")
     type_detraction = fields.Many2one(
@@ -265,6 +271,7 @@ class AccountMove(models.Model):
     detraction_code = fields.Char("Código")
     bank_account_number_national = fields.Char("Banco de la nación")
     detraction_amount = fields.Float("Monto de Detracción", compute="_compute_amount_detraction", store=True)
+    detraction_amount_pen = fields.Float("Monto de Detracción PEN", compute="_compute_amount_detraction", store=True)
     detraction_medio_pago = fields.Many2one("sunat.catalog.59",
                                             string="Medio de Pago",
                                             default=lambda self:self.env.ref("gestionit_pe_fe.catalog_59_001", raise_if_not_found=False))
