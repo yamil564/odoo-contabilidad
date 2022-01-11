@@ -1,4 +1,4 @@
-<odoo>
+<odoo noupdate="1">
     <!-- <record id="catalog_54_{}" model="sunat.catalog.54"><field name="name">{}</field><field name="code">{}</field><field name="rate">{}</field></record> -->
     <record id="catalog_54_001" model="sunat.catalog.54"><field name="code">001</field><field name="name">Azúcar y melaza de caña</field><field name="rate" eval="10"/></record>
     <record id="catalog_54_002" model="sunat.catalog.54"><field name="code">002</field><field name="name">Arroz</field><field name="rate" eval="0"/></record>

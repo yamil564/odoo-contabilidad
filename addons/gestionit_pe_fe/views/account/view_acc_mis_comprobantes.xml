@@ -30,7 +30,8 @@
                     <field name="amount_total" string="Total" optional="show"/>
                     <field name="amount_total_signed" string="Total" optional="hide"/>
                     <field name="exchange_rate_day" string="T/C" optional="hide"/>
-                    <field name="detraction_amount" string="Detracción"  optional="hide"/>
+                    <field name="detraction_amount" string="Detracción"  optional="hide" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                    <field name="detraction_amount_pen" string="Detracción PEN"  optional="hide" widget="monetary" options="{'currency_field': 'company_currency_id'}"/>
                     <!-- <field name="residual_signed" string="Monto adeudado" sum="Amount Due"/> -->
                     <field name="currency_id" invisible="1" string="Moneda"/>
                     <field name="company_currency_id" invisible="1"/>

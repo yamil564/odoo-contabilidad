@@ -10,10 +10,12 @@ from datetime import datetime, timedelta
 from odoo.addons.gestionit_pe_fe.models.account.oauth import send_doc_xml, generate_and_signed_xml
 import base64
 import re
-import urllib
-import json
+# import urllib
+# import json
 import logging
-import requests
+# import requests
+from collections import defaultdict
+from odoo.tools import float_is_zero
 _logger = logging.getLogger(__name__)
 
 codigo_unidades_de_medida = [
@@ -894,6 +896,16 @@ class AccountMove(models.Model):
             errors.append("* No es posible aplicar un descuento global a una Nota de crédito. Esta opción solo esta disponible para Facturas y Boletas")
         return errors
 
+    @api.constrains("has_detraction","invoice_type_code_catalog_51")
+    def check_detraction(self):
+        for record in self:
+            if not(record.has_detraction and record.invoice_type_code_catalog_51.code == "1001"):
+                if record.has_detraction:
+                    raise UserError("Si la factura tiene detracción, entonces el tipo de operación es 'Operación sujeta a detracción'")
+                if record.invoice_type_code_catalog_51.code == "1001":
+                    raise UserError("Si el tipo de operación es 'Operación sujeta a detracción' entonces la debe activar el campo 'Detracción?'.")
+
+
     def generar_nota_debito(self):
         self.ensure_one()
         new_moves = self.env['account.move']
@@ -1249,6 +1261,81 @@ class AccountMove(models.Model):
 
         return self.env.ref("account_debit_note.action_view_account_move_debit").read()[0]
 
+    def _get_invoiced_lot_values(self):
+        """ Get and prepare data to show a table of invoiced lot on the invoice's report. """
+        self.ensure_one()
+
+        if self.state == 'draft':
+            return []
+
+        sale_orders = self.mapped('invoice_line_ids.sale_line_ids.order_id')
+        stock_move_lines = sale_orders.mapped('picking_ids.move_lines.move_line_ids')
+
+        # Get the other customer invoices and refunds.
+        ordered_invoice_ids = sale_orders.mapped('invoice_ids')\
+            .filtered(lambda i: i.state not in ['draft', 'cancel'])\
+            .sorted(lambda i: (i.invoice_date, i.id))
+
+        # Get the position of self in other customer invoices and refunds.
+        self_index = None
+        i = 0
+        for invoice in ordered_invoice_ids:
+            if invoice.id == self.id:
+                self_index = i
+                break
+            i += 1
+
+        # Get the previous invoice if any.
+        previous_invoices = ordered_invoice_ids[:self_index]
+        last_invoice = previous_invoices[-1] if len(previous_invoices) else None
+
+        # Get the incoming and outgoing sml between self.invoice_date and the previous invoice (if any).
+        self_datetime = max(self.invoice_line_ids.mapped('write_date')) if self.invoice_line_ids else None
+        last_invoice_datetime = max(last_invoice.invoice_line_ids.mapped('write_date')) if last_invoice else None
+
+        def _filter_incoming_sml(ml):
+            if ml.state == 'done' and ml.location_id.usage == 'customer' and ml.lot_id:
+                if last_invoice_datetime:
+                    return last_invoice_datetime <= ml.date <= self_datetime
+                else:
+                    return ml.date <= self_datetime
+            return False
+
+        def _filter_outgoing_sml(ml):
+            if ml.state == 'done' and ml.location_dest_id.usage == 'customer' and ml.lot_id:
+                if last_invoice_datetime:
+                    return last_invoice_datetime <= ml.date <= self_datetime
+                else:
+                    return ml.date <= self_datetime
+            return False
+
+        incoming_sml = stock_move_lines.filtered(_filter_incoming_sml)
+        outgoing_sml = stock_move_lines.filtered(_filter_outgoing_sml)
+
+        # Prepare and return lot_values
+        qties_per_lot = defaultdict(lambda: 0)
+        if self.type == 'out_refund':
+            for ml in outgoing_sml:
+                qties_per_lot[ml.lot_id] -= ml.product_uom_id._compute_quantity(ml.qty_done, ml.product_id.uom_id)
+            for ml in incoming_sml:
+                qties_per_lot[ml.lot_id] += ml.product_uom_id._compute_quantity(ml.qty_done, ml.product_id.uom_id)
+        else:
+            for ml in outgoing_sml:
+                qties_per_lot[ml.lot_id] += ml.product_uom_id._compute_quantity(ml.qty_done, ml.product_id.uom_id)
+            for ml in incoming_sml:
+                qties_per_lot[ml.lot_id] -= ml.product_uom_id._compute_quantity(ml.qty_done, ml.product_id.uom_id)
+        lot_values = []
+        for lot_id, qty in qties_per_lot.items():
+            if float_is_zero(qty, precision_rounding=lot_id.product_id.uom_id.rounding):
+                continue
+            lot_values.append({
+                'product_id':lot_id.product_id.id,
+                'product_name': lot_id.product_id.display_name,
+                'quantity': qty,
+                'uom_name': lot_id.product_uom_id.name,
+                'lot_name': lot_id.name,
+            })
+        return lot_values
 
 class AccountMoveReversal(models.TransientModel):
     _inherit = 'account.move.reversal'

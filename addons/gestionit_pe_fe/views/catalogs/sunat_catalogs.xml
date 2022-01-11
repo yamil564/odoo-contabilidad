@@ -1,4 +1,4 @@
-<odoo>
+<odoo noupdate="1">
 
     <!-- Detracciones -->
     <record id="view_tree_catalog_54" model="ir.ui.view">
