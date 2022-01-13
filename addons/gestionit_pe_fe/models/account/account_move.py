@@ -75,7 +75,7 @@ class AccountMove(models.Model):
                     "Para crear un comprobante de venta/compra su usuario debe estar asociado a un almacén de la compañia. Comuníquese con su administrador.")
         return False
 
-    warehouse_id = fields.Many2one("stock.warehouse")
+    warehouse_id = fields.Many2one("stock.warehouse",string="Almacén")
 
     warehouses_allowed_ids = fields.Many2many(
         "stock.warehouse", string="Almacenes Permitidos", default=_get_default_warehouse_ids)
@@ -766,9 +766,12 @@ class AccountMove(models.Model):
 
     def validar_fecha_emision(self):
         errors = []
-        
-        # now = datetime.strptime(fields.Date.today(), "%Y-%m-%d")
         now = datetime.now(tz=timezone("America/Lima")).date()
+
+        if not self.invoice_date:
+            self.invoice_date = now
+        # now = datetime.strptime(fields.Date.today(), "%Y-%m-%d")
+        
         # if now < datetime.strptime(self.invoice_date, "%Y-%m-%d"):
         if now < self.invoice_date:
             errors.append("* La fecha de la emisión del comprobante debe ser menor o igual a la fecha del día de hoy.")
