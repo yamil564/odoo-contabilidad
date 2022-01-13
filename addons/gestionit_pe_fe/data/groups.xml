@@ -1,0 +1,5 @@
+<odoo>
+    <record id="res_groups_standard_price" model="res.groups">
+        <field name="name">Visualización de Costos de Venta</field>
+    </record>
+</odoo>

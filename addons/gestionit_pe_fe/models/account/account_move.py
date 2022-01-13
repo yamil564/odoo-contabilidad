@@ -284,8 +284,8 @@ class AccountMove(models.Model):
                         record.invoice_payment_term_type = "Credito"
                 else:
                     record.invoice_payment_term_type = "Contado"
-                    
-                
+
+
 
     # @api.constrains("invoice_payment_term_id")
     def check_paymenttermn_lines(self):
@@ -357,9 +357,9 @@ class AccountMove(models.Model):
         "Descuento (%)", states={'draft': [('readonly', False)]}, readonly=True)
 
     def action_apply_same_discount_on_all_lines(self):
-        self.invoice_line_ids = [(1, line.id, {"discount": self.discount_on_all_lines if all([(True if ta not in ["31", "32", "33", "34", "35", "36", "37"] else False) 
-                                                                                                        for ta in line.tax_ids.mapped("tax_group_id.tipo_afectacion") ]) else 0 }) 
-                                                    for line in self.invoice_line_ids 
+        self.invoice_line_ids = [(1, line.id, {"discount": self.discount_on_all_lines if all([(True if ta not in ["31", "32", "33", "34", "35", "36", "37"] else False)
+                                                                                                        for ta in line.tax_ids.mapped("tax_group_id.tipo_afectacion") ]) else 0 })
+                                                    for line in self.invoice_line_ids
                                 ]
 
     apply_global_discount = fields.Boolean("Aplicar descuento global", default=False, states={
@@ -710,7 +710,7 @@ class AccountMove(models.Model):
             else:
                 if move.current_log_status_id:
                     move.current_log_status_id.action_set_last_log_unlink()
-        
+
 
     def post(self):
         # Validar journal
@@ -751,7 +751,7 @@ class AccountMove(models.Model):
                         if len(msg_error) > 0:
                             msg = "\n\n".join(msg_error)
                             raise UserError(msg)
-                    
+
                     if move.journal_id.invoice_type_code_id == "07":
                         msg_error += move.validacion_nota_credito()
                         if len(msg_error) > 0:
@@ -1359,7 +1359,7 @@ class AccountMoveReversal(models.TransientModel):
     def _prepare_default_reversal(self, move):
         res = super(AccountMoveReversal, self)._prepare_default_reversal(move)
         res.update({"sustento_nota": self.reason,
-                    "tipo_nota_credito": self.credit_note_type, 
+                    "tipo_nota_credito": self.credit_note_type,
                     "invoice_type_code": "07"})
         if self.credit_note_type in ["04"]:
             res.update({"line_ids":[]})
