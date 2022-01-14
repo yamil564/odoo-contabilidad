@@ -1,15 +1,98 @@
-odoo.define('gestionit_pe_fe_pos.screens',[
-    'point_of_sale.screens',
-    'web.core',
-    'web.rpc'
-],function(require){
+odoo.define('gestionit_pe_fe_pos.screens', function(require){
+    "use strict";
+
     var screens = require('point_of_sale.screens');
+    var gui = require('point_of_sale.gui');
     var core = require('web.core');
-    var rpc = require("web.rpc")
+    var rpc = require("web.rpc");
     var QWeb = core.qweb;
+    var Qweb = core.qweb;
     var exports = {}
-    // var DomCache = screens.DomCache
-    
+
+    var OrderListScreenWidget = screens.ScreenWidget.extend({
+        template: 'OrderListScreenWidget',
+        events: {
+            'click .back': function () {
+                this.gui.back();
+            },
+            'keydown input#searchbox': "search_orders",
+            "click .order-list-contents>tr": "select_order"
+        },
+        show: function () {
+            this._super();
+            this.$('.order-list-contents').empty();
+            this.$('input#searchbox').focus();
+        },
+        search_orders: function (e) {
+            var self = this;
+            var textSearch = "";
+            var code = (e.keyCode ? e.keyCode : e.which);
+            if (code === 13) {
+                textSearch = e.currentTarget.value;
+            } else {
+                return true;
+            }
+            rpc.query({
+                model: 'pos.order',
+                method: 'search_read',
+                domain: ['|', ['partner_id.name', 'ilike', textSearch], '|', ['name', 'ilike', textSearch], ['lines.pack_lot_ids.lot_name', 'ilike', textSearch]],
+                fields: ['name', 'partner_id', 'date_order'],
+                order: 'date_order desc',
+                limit: 30
+            }).then(function (res) {
+                // alert('Hola Luis');
+                // alert(res);
+                self.$el.find('.order-list-contents').html(Qweb.render('OrderListLines', {orders: res}));
+            });
+        },
+        select_order: function (e) {
+            var self = this;
+            var order_id = e.currentTarget.dataset.id;
+            rpc.query({
+                model: 'pos.order.line',
+                method: 'search_read',
+                domain: [['order_id.id', '=', order_id], ['product_incomming', '=', false]],
+                fields: ['product_id', 'pack_lot_ids', 'qty', 'price_subtotal_incl'],
+            }).then(function (res) {
+                var order_lines = res;
+                var pack_lot_ids = [];
+                res.forEach(function (item) {
+                    item.pack_lot_ids.forEach(function (i) {
+                        pack_lot_ids.push(i);
+                    });
+                });
+                rpc.query({
+                    model: 'pos.pack.operation.lot',
+                    method: 'read',
+                    args: [pack_lot_ids, ['display_name']]
+                }).then(function (res) {
+                    var pack_lots = {};
+                    res.forEach(function (item) {
+                        pack_lots[item.id] = item;
+                    });
+                    self.pos.gui.show_popup('line_return_popup', {
+                        order_lines: order_lines,
+                        pack_lots: pack_lots,
+                    });
+                })
+            });
+        }
+    });
+
+    gui.define_screen({name: 'orderlist', widget: OrderListScreenWidget});
+
+    var ShowOrderList = screens.ActionButtonWidget.extend({
+        template: 'ShowOrderList',
+        button_click: function () {
+            this.gui.show_screen('orderlist');
+        },
+    });
+
+    screens.define_action_button({
+        'name': 'showorderlist',
+        'widget': ShowOrderList,
+    });
+
     screens.PaymentScreenWidget.include({
         validate_order: function(force_validation) {
             self = this;
@@ -61,7 +144,7 @@ odoo.define('gestionit_pe_fe_pos.screens',[
                 }
             }
             var journal = order.get_invoice_journal_id()?self.pos.db.journal_by_id[order.get_invoice_journal_id()]:undefined;
-            
+
             var total = 0;
             var error_msg_subtotal = ""
             order.get_orderlines().forEach(function(orderline,index) {
@@ -317,7 +400,7 @@ odoo.define('gestionit_pe_fe_pos.screens',[
         get_receipt_render_env:function(){
             var res = this._super()
             // console.log(res)
-            return res 
+            return res
         }
     })
     exports.screens = screens

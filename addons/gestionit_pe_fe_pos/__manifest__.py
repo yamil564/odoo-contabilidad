@@ -18,6 +18,7 @@
         "static/src/xml/client_screen.xml",
         "static/src/xml/payment_screen.xml",
         "static/src/xml/order_receipt.xml",
-        "static/src/xml/products.xml"
+        "static/src/xml/products.xml",
+        "static/src/xml/pos.xml",
     ]
 }
