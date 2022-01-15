@@ -55,7 +55,7 @@
         <div class="pos-receipt">
             <div class="logo" t-if="receipt.company.logo">
                 <div class="pos-center-align">
-                    <img t-att-src='receipt.company.logo' />
+                    <img t-att-src='receipt.company.logo' width="100%"/>
                 </div>
             </div>
             <div class="pos-center-align">

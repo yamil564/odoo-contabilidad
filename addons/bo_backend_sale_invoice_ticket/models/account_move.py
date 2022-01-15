@@ -131,7 +131,7 @@ class AccountMove(models.Model):
                     'city': company['city'],
                     'country_id': company['country_id'] and company['country_id'][1] or "",
                     'phone': company['phone'],
-                    'logo':  '/web/binary/company_logo'
+                    'logo':  '/web/image?model=res.company&id={}&field=logo'.format(company['id'])
                 }
             }
             # Generar QR

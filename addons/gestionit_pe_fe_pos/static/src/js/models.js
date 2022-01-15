@@ -229,6 +229,12 @@ odoo.define("gestionit_pe_fe_pos.models",[
         get_digest_value:function(){
             return this.digest_value || "*"
         },
+        set_invoice_portal_url:function(invoice_portal_url){
+            this.invoice_portal_url = invoice_portal_url
+        },
+        get_invoice_portal_url:function(){
+            return this.invoice_portal_url
+        },
         get_sale_type: function(){
             return this.sale_type
         },

@@ -112,7 +112,6 @@
                         <th class="h_price_total">P.V.</th>
                     </tr>
                 </thead>
-                <!-- <tbody class="sale_order_tbody"> -->
                 <tbody>
                     <t t-set="item" t-value="1"/>
                     <t t-set="order_line" t-value="o.order_line"/>
