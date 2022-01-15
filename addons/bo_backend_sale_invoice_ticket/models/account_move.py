@@ -72,11 +72,18 @@ class AccountMove(models.Model):
             lines_ids = lines_env_ids.read(fields_line)
 
             # _logger.info("lines_ids: %s" % str(lines_ids))
-
+            lot_values = move_env._get_invoiced_lot_values()
             json_lines = []
+            _logger.info(lines_ids)
+            _logger.info(lot_values)
             for line in lines_ids:
                 # _logger.info("line: %s" % str(line))
-                line.update({'product_name': line['product_id'][1]})
+                lot_name = ""
+                product_search = [lot  for lot in lot_values if lot.get("product_id") == line['product_id'][0]]
+                if len(product_search) > 0:
+                    lot_name = "\nSerie:"+";".join([p["lot_name"] for p in product_search])
+
+                line.update({'product_name': line['product_id'][1] + lot_name})
                 json_lines.append(line)
 
             # _logger.info("company_env: %s" % str(company_env.read(fields_company)))
@@ -132,22 +139,27 @@ class AccountMove(models.Model):
                     'country_id': company['country_id'] and company['country_id'][1] or "",
                     'phone': company['phone'],
                     'logo':  '/web/image?model=res.company&id={}&field=logo'.format(company['id'])
-                }
+                },
+                'qr_string':False
             }
             # Generar QR
-            qr_string = (
-                data['company']['vat'],
-                data['name'].split("-")[0],
-                data['name'].split("-")[1],
-                str(data['amount_igv']),
-                str(data['amount_total']),
-                l10n_latam['l10n_pe_vat_code'],
-                move['digest_value'] if move['digest_value'] else "" + "*"
-            )
-            # _logger.info("qr_string: %s" % str(qr_string))
-            data.update({
-                'qr_string': "|".join(qr_string)
-            })
+            _logger.info(move_env.state)
+            if move_env.state == "posted":
+                qr_string = (
+                    data['company']['vat'],
+                    data['name'].split("-")[0],
+                    data['name'].split("-")[1],
+                    str(data['amount_igv']),
+                    str(data['amount_total']),
+                    l10n_latam['l10n_pe_vat_code'],
+                    move['digest_value'] if move['digest_value'] else "" + "*"
+                )
+                data.update({
+                    'qr_string': "|".join(qr_string)
+                })
+            # else:
+            #     qr_string = []
+                
             # _logger.info("data: %s" % str(data))
             return data
         else:
