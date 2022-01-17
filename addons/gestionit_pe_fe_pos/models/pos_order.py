@@ -34,7 +34,8 @@ class PosOrder(models.Model):
         for order in self:
             invoice = order.account_move
             if invoice:
-                res.update({"digest_value":invoice.digest_value if invoice.digest_value else "*",
+                res.update({"pos_order_id":order.id,
+                            "digest_value":invoice.digest_value if invoice.digest_value else "*",
                             "name":invoice.name if invoice.digest_value else "*",
                             "invoice_portal_url":invoice.get_portal_url(report_type="pdf",download=True)})
             

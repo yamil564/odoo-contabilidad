@@ -242,6 +242,7 @@ odoo.define('gestionit_pe_fe_pos.screens',[
                             args: [server_ids],
                             kwargs: {}
                         }).then(function (res) {
+                            orser.set_pos_order_id(res.pos_order_id)
                             order.set_digest_value(res.digest_value || false);
                             order.set_number(res.name);
                             order.set_sequence_number(res.name);

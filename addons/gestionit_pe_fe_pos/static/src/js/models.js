@@ -223,6 +223,12 @@ odoo.define("gestionit_pe_fe_pos.models",[
             }
             return res
         },
+        set_pos_order_id:function(pos_order_id){
+            this.pos_order_id = pos_order_id
+        },
+        get_pos_order_id:function(pos_order_id){
+            return this.pos_order_id
+        },
         set_digest_value:function(digest_value){
             this.digest_value = digest_value
         },
