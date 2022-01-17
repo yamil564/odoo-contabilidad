@@ -9,6 +9,31 @@ odoo.define('gestionit_pe_fe_pos.screens', function(require){
     var Qweb = core.qweb;
     var exports = {}
 
+    var LineReturnPopup = PopupWidget.extend({
+        template: 'LineReturnPopup',
+        renderElement: function () {
+            var self = this;
+            this._super();
+            if (this.options.order_lines) {
+                var order_lines = {};
+                this.options.order_lines.forEach(function (item) {
+                    order_lines[item.id] = item
+                })
+            }
+            this.$('.btn-return').click(function () {
+                var orderLine = order_lines[$(this).closest('tr').data("line-id")];
+                var order = self.pos.get_order();
+                var product = self.pos.db.get_product_by_id(orderLine.product_id[0]);
+                order.add_product_with_lot(product, self.options.pack_lots[orderLine.pack_lot_ids[0]].display_name, true)
+                var selected_orderline = order.get_selected_orderline();
+                selected_orderline.price_manually_set = true;
+                selected_orderline.set_unit_price(-orderLine.price_subtotal_incl)
+                self.gui.show_screen('products');
+            })
+        }
+    });
+    gui.define_popup({name: 'line_return_popup', widget: LineReturnPopup});
+
     var OrderListScreenWidget = screens.ScreenWidget.extend({
         template: 'OrderListScreenWidget',
         events: {
@@ -51,7 +76,7 @@ odoo.define('gestionit_pe_fe_pos.screens', function(require){
             rpc.query({
                 model: 'pos.order.line',
                 method: 'search_read',
-                domain: [['order_id.id', '=', order_id], ['product_incomming', '=', false]],
+                domain: [['order_id.id', '=', order_id]],
                 fields: ['product_id', 'pack_lot_ids', 'qty', 'price_subtotal_incl'],
             }).then(function (res) {
                 var order_lines = res;
