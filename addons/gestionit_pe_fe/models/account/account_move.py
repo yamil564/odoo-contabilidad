@@ -724,7 +724,9 @@ class AccountMove(models.Model):
     # @api.model
     def _validate_inv_supplier_ref(self):
         if self.inv_supplier_ref:
-            if not (re.match("^F\w{3}[-]\d{1,8}$", self.inv_supplier_ref) or re.match("^B\w{3}[-]\d{1,8}$", self.inv_supplier_ref)):
+            if not (re.match("^F\w{3}[-]\d{1,8}$", self.inv_supplier_ref) or 
+                    re.match("^B\w{3}[-]\d{1,8}$", self.inv_supplier_ref) or 
+                    re.match("^E\w{3}[-]\d{1,8}$", self.inv_supplier_ref)):
                 raise UserError(
                     "La referencia debe tener el formato XXXX-########")
         else:
