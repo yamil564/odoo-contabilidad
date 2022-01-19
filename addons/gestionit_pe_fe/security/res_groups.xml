@@ -165,9 +165,9 @@
         <field name="name">Habilitar generación y envío de XML de forma manual</field>
     </record>
 
-    <record id="group_fe_allow_generate_send_xml" model="res.groups">
+    <!-- <record id="group_fe_allow_generate_send_xml" model="res.groups">
         <field name="name">vISUALI</field>
-    </record>
+    </record> -->
 
     <!-- Permisos de catálogo 54: Detracciones -->
     <record model="ir.model.access" id="gestionit_pe_fe.access_model_sunat_catalog_54_manager">
