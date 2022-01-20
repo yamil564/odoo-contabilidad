@@ -50,6 +50,10 @@
                         <span class='label'>Phone</span>
                         <input class='detail client-phone'  name='phone'    type='tel'      t-att-value='partner.phone || ""'></input>
                     </div>
+                    <div class='client-detail'>
+                        <span class='label'>Celular</span>
+                        <input class='detail client-mobile'  name='mobile'    type='tel'      t-att-value='partner.mobile || ""'></input>
+                    </div>
                     
                     <div t-attf-class='client-detail #{widget.pos.pricelists.length &lt;= 1 ? "oe_hidden" : ""}'>
                         <span class='label'>Pricelist</span>
@@ -135,6 +139,15 @@
                         </t>
                         <t t-if='!partner.phone'>
                             <span class='detail client-phone empty'>N/A</span>
+                        </t>
+                    </div>
+                    <div class='client-detail'>
+                        <span class='label'>Celular</span>
+                        <t t-if='partner.mobile'>
+                            <span class='detail client-mobile'><t t-esc='partner.mobile' /></span>
+                        </t>
+                        <t t-if='!partner.mobile'>
+                            <span class='detail client-mobile empty'>N/A</span>
                         </t>
                     </div>
                     <div t-attf-class='client-detail #{widget.pos.pricelists.length &lt;= 1 ? "oe_hidden" : ""}'>

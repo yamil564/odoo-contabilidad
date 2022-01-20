@@ -54,8 +54,6 @@ class AccountMoveLine(models.Model):
 
         # Compute 'price_total'.
         if taxes:
-            # log.info(taxes.mapped("tax_group_id.tipo_afectacion"))
-            # log.info(all(tax in ["31", "32", "33", "34", "35", "36", "37"] for tax in taxes.mapped("tax_group_id.tipo_afectacion")))
             if not all(tax in ["31", "32", "33", "34", "35", "36", "37"] for tax in taxes.mapped("tax_group_id.tipo_afectacion")):
                 taxes_res = taxes._origin.compute_all(price_unit_wo_discount,quantity=quantity, currency=currency, product=product, partner=partner, is_refund=move_type in ('out_refund', 'in_refund'))
                 res['price_subtotal'] = taxes_res['total_excluded']
@@ -84,9 +82,6 @@ class AccountMoveLine(models.Model):
         self.tipo_afectacion_igv_type = self.tax_ids[0].tax_group_id.tipo_afectacion if self.tax_ids else False
         self.tipo_afectacion_igv_code = self.tax_ids[0].tax_group_id.codigo if self.tax_ids else False
         self.tipo_afectacion_igv_name = self.tax_ids[0].tax_group_id.descripcion if self.tax_ids else False
-
-        # log.info("tipo_afectacion line")
-        # log.info(self.tax_ids)
 
 
     

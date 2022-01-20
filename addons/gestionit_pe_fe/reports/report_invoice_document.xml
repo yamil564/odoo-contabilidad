@@ -288,6 +288,7 @@
         <xpath expr="//table[hasclass('o_main_table')]" position="after">
             <!-- Is there a discount on at least one line? -->
             <t t-set="display_discount" t-value="any([l.discount for l in o.invoice_line_ids])"/>
+            <t t-set="lot_values" t-value="o._get_invoiced_lot_values()"/>
             <div class="table-invoice-lines row pt-2 pb-2">
                 <table class="w-100">
                     <thead>
@@ -296,6 +297,7 @@
                             <th class="h_quantity">Cant.</th>
                             <th class="h_product_uom_id">U.M.</th>
                             <th class="h_name">Descripción</th>
+                            <th class="h_lot" t-if="lot_values">Serie/Lote</th>
                             <th class="h_value_unit">V.U.</th>
                             <th class="h_price_unit">P.U.</th>
                             <th class="h_discount" t-if="display_discount">Dscto.(%)</th>
@@ -319,6 +321,9 @@
                                 </td>
                                 <td class="v_name">
                                     <span t-field="l.name"/>
+                                </td>
+                                <td class="v_lot"  t-if="lot_values">
+                                    <span t-esc="';'.join(['{}'.format(serie.get('lot_name')) for serie in o._get_invoiced_lot_values() if serie.get('product_id') == l.product_id.id])"/>
                                 </td>
                                 <td class="v_value_unit">
                                     <span t-esc="round((l.price_subtotal/l.quantity)/(1-l.discount/100),2)" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
@@ -393,7 +398,7 @@
                         </div>
                         <div>
                             <strong>Monto Detracción: </strong>
-                            <span t-field="o.detraction_amount"></span>
+                            <span t-field="o.detraction_amount_pen" t-options="{'widget': 'monetary', 'display_currency': o.company_currency_id}"></span>
                         </div>
                         <div>
                             <strong>Descripción: </strong>

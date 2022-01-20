@@ -10,10 +10,12 @@ from datetime import datetime, timedelta
 from odoo.addons.gestionit_pe_fe.models.account.oauth import send_doc_xml, generate_and_signed_xml
 import base64
 import re
-import urllib
-import json
+# import urllib
+# import json
 import logging
-import requests
+# import requests
+from collections import defaultdict
+from odoo.tools import float_is_zero
 _logger = logging.getLogger(__name__)
 
 codigo_unidades_de_medida = [
@@ -73,7 +75,7 @@ class AccountMove(models.Model):
                     "Para crear un comprobante de venta/compra su usuario debe estar asociado a un almacén de la compañia. Comuníquese con su administrador.")
         return False
 
-    warehouse_id = fields.Many2one("stock.warehouse")
+    warehouse_id = fields.Many2one("stock.warehouse",string="Almacén")
 
     warehouses_allowed_ids = fields.Many2many(
         "stock.warehouse", string="Almacenes Permitidos", default=_get_default_warehouse_ids)
@@ -254,6 +256,12 @@ class AccountMove(models.Model):
     def _compute_amount_detraction(self):
         for record in self:
             record.detraction_amount = round(record.amount_total*record.detraction_rate/100, 2)
+            record.detraction_amount_pen = round(record.exchange_rate_day*record.amount_total*record.detraction_rate/100,2)
+
+    # @api.onchange("amount_total", "type_detraction","detraction_rate")
+    # def onchange_amount_detraction(self):
+    #     for record in self:
+    #         record.detraction_amount_pen = round(record.exchange_rate_day*record.amount_total*record.detraction_rate/100,2)
 
     has_detraction = fields.Boolean("Detracción?")
     type_detraction = fields.Many2one(
@@ -264,9 +272,11 @@ class AccountMove(models.Model):
     detraction_rate = fields.Float("Tasa %", default=0)
     detraction_code = fields.Char("Código")
     bank_account_number_national = fields.Char("Banco de la nación")
-    detraction_amount = fields.Float(
-        "Monto de Detracción", compute="_compute_amount_detraction", store=True)
-
+    detraction_amount = fields.Float("Monto de Detracción", compute="_compute_amount_detraction", store=True)
+    detraction_amount_pen = fields.Float("Monto de Detracción PEN", compute="_compute_amount_detraction", store=True)
+    detraction_medio_pago = fields.Many2one("sunat.catalog.59",
+                                            string="Medio de Pago",
+                                            default=lambda self:self.env.ref("gestionit_pe_fe.catalog_59_001", raise_if_not_found=False))
     paymentterm_line = fields.One2many("paymentterm.line", "move_id")
 
     invoice_payment_term_type = fields.Char(compute="_compute_invoice_payment_term_type")
@@ -284,17 +294,14 @@ class AccountMove(models.Model):
                         record.invoice_payment_term_type = "Credito"
                 else:
                     record.invoice_payment_term_type = "Contado"
-
-
-
-    # @api.constrains("invoice_payment_term_id")
+                    
     def check_paymenttermn_lines(self):
         for record in self:
             if record.type in ['out_invoice', 'in_invoice']:
                 if record.invoice_payment_term_id:
                     if record.invoice_payment_term_type == "Credito":
-                        amount_total = round(sum(record.paymentterm_line.mapped("amount")) + record.detraction_amount,4)
-                        if amount_total != round(record.amount_total,4):
+                        amount_total = round(sum(record.paymentterm_line.mapped("amount")) + record.detraction_amount,2)
+                        if amount_total != round(record.amount_total,2):
                             raise UserError(
                                 "El monto total de los plazos de pago debe ser igual al total de la factura.")
                         if record.invoice_date:
@@ -348,8 +355,11 @@ class AccountMove(models.Model):
         string="Tipo de cambio a la fecha de factura",
         default=1.0)
 
-    tipo_operacion = fields.Selection(selection=[(
-        "01", "Venta Interna"), ("02", "Exportación")], default="01", required=True, copy=False)
+    tipo_operacion = fields.Selection(selection=[("01", "Venta Interna"), ("02", "Exportación")], default="01", required=True, copy=False)
+
+    invoice_type_code_catalog_51  = fields.Many2one("sunat.catalog.51",
+                                                    string="Tipo de Operación",
+                                                    default=lambda self:self.env.ref("gestionit_pe_fe.catalog_51_0101", raise_if_not_found=False))
 
     apply_same_discount_on_all_lines = fields.Boolean("Aplicar el mismo descuento en todas las líneas?", states={
                                                       'draft': [('readonly', False)]}, readonly=True)
@@ -357,9 +367,9 @@ class AccountMove(models.Model):
         "Descuento (%)", states={'draft': [('readonly', False)]}, readonly=True)
 
     def action_apply_same_discount_on_all_lines(self):
-        self.invoice_line_ids = [(1, line.id, {"discount": self.discount_on_all_lines if all([(True if ta not in ["31", "32", "33", "34", "35", "36", "37"] else False)
-                                                                                                        for ta in line.tax_ids.mapped("tax_group_id.tipo_afectacion") ]) else 0 })
-                                                    for line in self.invoice_line_ids
+        self.invoice_line_ids = [(1, line.id, {"discount": self.discount_on_all_lines if all([(True if ta not in ["31", "32", "33", "34", "35", "36", "37"] else False) 
+                                                                                                        for ta in line.tax_ids.mapped("tax_group_id.tipo_afectacion") ]) else 0 }) 
+                                                    for line in self.invoice_line_ids 
                                 ]
 
     apply_global_discount = fields.Boolean("Aplicar descuento global", default=False, states={
@@ -370,92 +380,65 @@ class AccountMove(models.Model):
         states={'draft': [('readonly', False)]},
         default=0.0)
 
-    @api.onchange('invoice_line_ids', 'descuento_global', 'apply_global_discount')
-    def _onchange_invoice_line_ids(self):
+    @api.onchange('line_ids','descuento_global', 'apply_global_discount', 'invoice_payment_term_id', 'invoice_date_due', 'invoice_cash_rounding_id', 'invoice_vendor_bill_id')
+    def _onchange_recompute_dynamic_lines(self):
         for record in self:
             if not record.apply_global_discount:
                 record.descuento_global = 0
-            line_discount_global_ids = record.invoice_line_ids.filtered(
-                lambda r: r.is_charge_or_discount and r.type_charge_or_discount_code in ["02"])
-            if len(line_discount_global_ids) > 1:
-                raise UserError(
-                    "El comprobante tiene más de un descuento global, para corregir esto, establezca el valor a 0 guarde, y vuelva a establecer el valor del descuento global")
 
-            if record.descuento_global > 0:
-                # _logger.info(line_discount_global_ids)
-                if len(line_discount_global_ids) == 1:
-                    # line_id = line_discount_global_ids.id
-                    # for l in line_discount_global_ids:
-                    record.invoice_line_ids = [
-                        (2, line_discount_global_ids.id)]
+            line_discount_global_ids = record.line_ids.filtered(lambda r: r.is_charge_or_discount and r.type_charge_or_discount_code in ["02"])
+            if len(line_discount_global_ids) > 0:
+                record.line_ids = [(2, ldg.id) for ldg in line_discount_global_ids]
+                record.line_ids._onchange_price_subtotal()
+                record._recompute_dynamic_lines(recompute_all_taxes=True)
 
-                    # record.line_ids._onchange_price_subtotal()
-                    # record._onchange_invoice_line_ids()
-                    super(AccountMove, self.with_context(
-                        recursive_onchanges=False))._onchange_invoice_line_ids()
-                    record._onchange_recompute_dynamic_lines()
-                    # record.invoice_line_ids = [(1,line_id,{
-                    #                             "price_unit":record.amount_total*record.descuento_global/100,
-                    #                             })]
+            line_ids = []
 
+            if abs(record.descuento_global) > 0:
+                record.descuento_global = abs(record.descuento_global)
                 product = record.env.company.default_product_global_discount_id
                 company = record.company_id
-                # _logger.info(record)
                 if not product:
-                    raise UserError(
-                        "Debes configurar el producto de descuento global en la sección de configuración de ventas")
+                    raise UserError("Debes configurar el producto de descuento global en la sección de configuración de ventas")
 
-                # _logger.info(company)
-                # _logger.info(company.currency_id._convert(self.amount_total*self.descuento_global/100, self.currency_id, company, self.date),)
-                values = {
-                    "product_id": product.id,
-                    "tax_ids": [(6, 0, [tax.id for tax in product.taxes_id])],
-                    "name": product.name,
-                    "product_uom_id": product.uom_id.id,
-                    # "price_unit": -round(company.currency_id._convert(record.amount_total*record.descuento_global/100, record.currency_id, company, record.date), 6),
-                    "price_unit": -round(record.amount_total*record.descuento_global/100, 6),
-                    # "debit":company.currency_id._convert(record.amount_total*record.descuento_global/100, record.currency_id, company, record.date),
-                    # "balance":-company.currency_id._convert(record.amount_total*record.descuento_global/100, record.currency_id, company, record.date),
-                    # "credit":0,
-                    # "currency_id":record._origin.currency_id.id,
-                    "move_id": record._origin.id,
-                    "move_name": record._origin.name,
-                    "quantity": 1,
-                    # "is_rounding_line":True,
-                    "account_id": product.product_tmpl_id.property_account_income_id.id,
-                    "company_id": company.id,
-                    # "currency_id": company.currency_id.id,
-                    "is_charge_or_discount": True,
-                    "recompute_tax_line": True,
-                    "type_charge_or_discount_code": "02",
-                    "exclude_from_invoice_tab": False
-                }
-                # _logger.info(values)
-                record.invoice_line_ids = [(0, 0, values)]
-                # record.line_ids = [(0,0,values)]
-                # line = record.invoice_line_ids.new(values)
-                # line = line._onchange_balance()
-                # _logger.info("line")
-                # _logger.info(line)
-                # record.invoice_line_ids._onchange_price_subtotal()
-                record.invoice_line_ids._onchange_price_subtotal()
-                # record._onchange_invoice_line_ids()
-                super(AccountMove, self.with_context(
-                    recursive_onchanges=False))._onchange_invoice_line_ids()
-                record._onchange_recompute_dynamic_lines()
-                # record._compute_amount()
-            else:
-                if line_discount_global_ids.exists():
-                    for l in line_discount_global_ids:
-                        record.invoice_line_ids = [(2, l.id)]
+                tax_ids = record.line_ids.filtered(lambda r:not r._origin.is_charge_or_discount).mapped("tax_ids")
+                
+                for tax in tax_ids.filtered(lambda r:r.tax_group_id.tipo_afectacion in ["10","20","30","40"]):
+                    if tax.price_include:
+                        base_amount = abs(sum(record.line_ids.filtered(lambda r:not r.is_charge_or_discount and tax._origin.id in r.tax_ids.ids).mapped('price_total')))
+                        price_unit = (base_amount)*record.descuento_global/100
+                    else:
+                        base_amount = abs(sum(record.line_ids.filtered(lambda r:not r.is_charge_or_discount and tax._origin.id in r.tax_ids.ids).mapped('price_subtotal')))
+                        price_unit = (base_amount)*record.descuento_global/100 
+                    values = {
+                        "sequence":10000,
+                        "product_id": product.id,
+                        "tax_ids": [(6, 0, [tax._origin.id])],
+                        "name": product.name,
+                        "product_uom_id": product.uom_id.id,
+                        "price_unit": -round(price_unit, 6),
+                        "move_id": record._origin.id,
+                        "move_name": record._origin.name,
+                        "quantity": 1,
+                        "account_id": product.product_tmpl_id.property_account_income_id.id,
+                        "company_id": company.id,
+                        "is_charge_or_discount": True,
+                        "recompute_tax_line": True,
+                        "type_charge_or_discount_code": "02",
+                        "exclude_from_invoice_tab": True
+                    }
+                    line_ids.append((0, 0, values))
+                    record.line_ids = line_ids
+                    record.line_ids._onchange_price_subtotal()
+                    
+                # record.line_ids._onchange_price_subtotal()
+                record._recompute_dynamic_lines(recompute_all_taxes=True)
+        super(AccountMove, self)._onchange_recompute_dynamic_lines()
 
-        super(AccountMove, self.with_context(
-            recursive_onchanges=False))._onchange_invoice_line_ids()
-
-    total_tax_discount = fields.Monetary(
-        string="Total Descuento Impuesto",
-        default=0.0,
-        compute="_compute_amount")
+    # total_tax_discount = fields.Monetary(
+    #     string="Total Descuento Impuesto",
+    #     default=0.0,
+    #     compute="_compute_amount")
 
     total_venta_gravado = fields.Monetary(
         string="Gravado",
@@ -523,97 +506,12 @@ class AccountMove(models.Model):
         'line_ids.amount_residual',
         'line_ids.amount_residual_currency',
         'line_ids.payment_id.state',
-        'descuento_global')
+        'descuento_global',
+        'apply_global_discount')
     def _compute_amount(self):
-        invoice_ids = [move.id for move in self if move.id and move.is_invoice(
-            include_receipts=True)]
-        self.env['account.payment'].flush(['state'])
-        if invoice_ids:
-            self._cr.execute(
-                '''
-                    SELECT move.id
-                    FROM account_move move
-                    JOIN account_move_line line ON line.move_id = move.id
-                    JOIN account_partial_reconcile part ON part.debit_move_id = line.id OR part.credit_move_id = line.id
-                    JOIN account_move_line rec_line ON
-                        (rec_line.id = part.debit_move_id AND line.id = part.credit_move_id)
-                    JOIN account_payment payment ON payment.id = rec_line.payment_id
-                    JOIN account_journal journal ON journal.id = rec_line.journal_id
-                    WHERE payment.state IN ('posted', 'sent')
-                    AND journal.post_at = 'bank_rec'
-                    AND move.id IN %s
-                UNION
-                    SELECT move.id
-                    FROM account_move move
-                    JOIN account_move_line line ON line.move_id = move.id
-                    JOIN account_partial_reconcile part ON part.debit_move_id = line.id OR part.credit_move_id = line.id
-                    JOIN account_move_line rec_line ON
-                        (rec_line.id = part.credit_move_id AND line.id = part.debit_move_id)
-                    JOIN account_payment payment ON payment.id = rec_line.payment_id
-                    JOIN account_journal journal ON journal.id = rec_line.journal_id
-                    WHERE payment.state IN ('posted', 'sent')
-                    AND journal.post_at = 'bank_rec'
-                    AND move.id IN %s
-                ''', [tuple(invoice_ids), tuple(invoice_ids)]
-            )
-            in_payment_set = set(res[0] for res in self._cr.fetchall())
-        else:
-            in_payment_set = {}
+        super(AccountMove, self)._compute_amount()
 
         for move in self:
-            # move.total_descuento_global = sum(
-            #     [
-            #         line.price_subtotal
-            #         for line in move.invoice_line_ids
-            #         if len([line.price_subtotal for line_tax in line.tax_ids
-            #                 if line_tax.tax_group_id.tipo_afectacion not in ["31", "32", "33", "34", "35", "36"]])
-            #     ])*move.descuento_global/100.0
-            move.total_descuento_global = abs(sum([
-                line.price_subtotal
-                for line in move.invoice_line_ids
-                if line.is_charge_or_discount and line.type_charge_or_discount_code in ["02"]
-            ]))
-
-            move.total_venta_gravado = sum([
-                line.price_subtotal
-                for line in move.invoice_line_ids
-                if len([line.price_subtotal for line_tax in line.tax_ids
-                        if line_tax.tax_group_id.tipo_afectacion in ["10"]])
-            ])
-            # ])*(1-move.descuento_global/100.0)
-
-            move.total_venta_inafecto = sum([
-                line.price_subtotal
-                for line in move.invoice_line_ids
-                if len(
-                    [line.price_subtotal for line_tax in line.tax_ids
-                     if line_tax.tax_group_id.tipo_afectacion in ["40", "30"]])
-            ])
-            # ])*(1-move.descuento_global/100.0)
-
-            move.total_venta_exonerada = sum([
-                line.price_subtotal
-                for line in move.invoice_line_ids
-                if len(
-                    [line.price_subtotal for line_tax in line.tax_ids
-                     if line_tax.tax_group_id.tipo_afectacion in ["20"]])
-            ])
-            # ])*(1-move.descuento_global/100.0)
-
-            move.total_venta_gratuito = sum([
-                line.price_unit*line.quantity
-                for line in move.invoice_line_ids
-                if len([1 for line_tax in line.tax_ids
-                        if line_tax.tax_group_id.tipo_afectacion in ["31", "32", "33", "34", "35", "36", "37"]])
-            ])
-
-            move.total_descuentos = sum([
-                ((line.price_subtotal / (1-line.discount/100.0))
-                 * line.discount/100.0) + line.descuento_unitario
-                for line in move.invoice_line_ids
-                if line.discount < 100
-            ])+move.total_descuento_global
-
             total_untaxed = 0.0
             total_untaxed_currency = 0.0
             total_tax = 0.0
@@ -631,9 +529,8 @@ class AccountMove(models.Model):
                 if move.is_invoice(include_receipts=True):
                     # === Invoices ===
 
-                    if not line.exclude_from_invoice_tab:
+                    if not line.exclude_from_invoice_tab or line.is_charge_or_discount:
                         # Untaxed amount.
-                        # if line.tax_ids[0].tax_group_id.tipo_afectacion not in ["31", "32", "33", "34", "35", "36", "37"]:
                         total_untaxed += line.balance
                         total_untaxed_currency += line.amount_currency
                         total += line.balance
@@ -658,49 +555,80 @@ class AccountMove(models.Model):
                 sign = 1
             else:
                 sign = -1
-            move.amount_untaxed = sign * \
-                (total_untaxed_currency if len(currencies) == 1 else total_untaxed)
-            move.amount_tax = sign * \
-                (total_tax_currency if len(currencies) == 1 else total_tax)
 
-            # move.amount_igv = (move.amount_tax + move.total_venta_gratuito)*(1-move.descuento_global/100.0)
-            move.amount_igv = sum([
-                line.price_total - line.price_subtotal
-                for line in move.invoice_line_ids
-                if len([line.price_subtotal for line_tax in line.tax_ids
-                        if line_tax.tax_group_id.tipo_afectacion in ["10"]])
-            ])
-
-            # move.amount_total = sign * \
-            #     (total_currency if len(currencies) ==
-            #      1 else total) - move.total_descuentos
-            # _logger.info(move.total_descuento_global)
-            move.amount_total = move.total_venta_gravado + \
-                move.total_venta_exonerada + move.total_venta_inafecto + move.amount_igv
-
-            move.amount_residual = -sign * \
-                (total_residual_currency if len(currencies) == 1 else total_residual)
+            move.amount_untaxed = sign * (total_untaxed_currency if len(currencies) == 1 else total_untaxed)
+            move.amount_tax = sign * (total_tax_currency if len(currencies) == 1 else total_tax)
+            move.amount_total = sign * (total_currency if len(currencies) == 1 else total)
+            move.amount_residual = -sign * (total_residual_currency if len(currencies) == 1 else total_residual)
+            
             move.amount_untaxed_signed = -total_untaxed
             move.amount_tax_signed = -total_tax
-            move.amount_total_signed = abs(
-                total) if move.type == 'entry' else -total
+            move.amount_total_signed = abs(total) if move.type == 'entry' else -total
             move.amount_residual_signed = total_residual
 
-            currency = len(currencies) == 1 and currencies.pop(
-            ) or move.company_id.currency_id
-            is_paid = currency and currency.is_zero(
-                move.amount_residual) or not move.amount_residual
+            currency = len(currencies) == 1 and currencies.pop() or move.company_id.currency_id
+            is_paid = currency and currency.is_zero(move.amount_residual) or not move.amount_residual
 
-            # Compute 'invoice_payment_state'.
-            if move.type == 'entry':
-                move.invoice_payment_state = False
-            elif move.state == 'posted' and is_paid:
-                if move.id in in_payment_set:
-                    move.invoice_payment_state = 'in_payment'
-                else:
-                    move.invoice_payment_state = 'paid'
-            else:
-                move.invoice_payment_state = 'not_paid'
+        for move in self:
+            move.total_venta_gravado = sum([
+                line.price_subtotal
+                for line in move.line_ids
+                if len([line.price_subtotal for line_tax in line.tax_ids
+                                                if line_tax.tax_group_id.tipo_afectacion in ["10"]])
+            ])
+            # *(1-move.descuento_global/100.0)
+
+            move.total_venta_inafecto = sum([
+                line.price_subtotal
+                for line in move.line_ids
+                if len(
+                    [line.price_subtotal for line_tax in line.tax_ids
+                     if line_tax.tax_group_id.tipo_afectacion in ["40", "30"]])
+            ])
+            # *(1-move.descuento_global/100.0)
+
+            move.total_venta_exonerada = sum([
+                line.price_subtotal
+                for line in move.line_ids
+                if len(
+                    [line.price_subtotal for line_tax in line.tax_ids
+                     if line_tax.tax_group_id.tipo_afectacion in ["20"]])
+            ])
+            # *(1-move.descuento_global/100.0)
+
+            move.amount_igv = sum([
+                 line.price_total - line.price_subtotal
+                 for line in move.line_ids
+                 if len([line.price_subtotal for line_tax in line.tax_ids
+                         if line_tax.tax_group_id.tipo_afectacion in ["10"]])
+             ])
+            #  *(1-move.descuento_global/100.0)
+
+            move.total_descuento_global = (move.total_venta_gravado + move.total_venta_exonerada + move.total_venta_inafecto )*(move.descuento_global/100.0)/(1-move.descuento_global/100.0)
+
+            move.total_venta_gratuito = sum([
+                line.price_unit*line.quantity
+                for line in move.line_ids
+                if len([1 for line_tax in line.tax_ids
+                        if line_tax.tax_group_id.tipo_afectacion in ["31", "32", "33", "34", "35", "36", "37"]])
+            ])
+
+            move.total_descuentos = sum([
+                ((line.price_subtotal / (1-line.discount/100.0))
+                 * line.discount/100.0) + line.descuento_unitario
+                for line in move.line_ids
+                if line.discount < 100
+            ])+move.total_descuento_global
+
+            # move.amount_untaxed = move.total_venta_gravado + \
+            #         move.total_venta_exonerada + \
+            #         move.total_venta_inafecto
+                    
+
+            # move.amount_total = move.amount_untaxed + \
+            #                     move.amount_igv
+
+            # move.amount_residual = - move.amount_total
 
     def button_draft(self):
         super(AccountMove,self).button_draft()
@@ -710,7 +638,7 @@ class AccountMove(models.Model):
             else:
                 if move.current_log_status_id:
                     move.current_log_status_id.action_set_last_log_unlink()
-
+        
 
     def post(self):
         # Validar journal
@@ -737,7 +665,7 @@ class AccountMove(models.Model):
                     msg_error = []
                     msg_error += move.validar_datos_compania()
                     msg_error += move.validar_diario()
-                    # msg_error += move.validar_fecha_emision()
+                    msg_error += move.validar_fecha_emision()
                     msg_error += move.validar_lineas()
 
                     if move.journal_id.invoice_type_code_id == "01":
@@ -751,7 +679,7 @@ class AccountMove(models.Model):
                         if len(msg_error) > 0:
                             msg = "\n\n".join(msg_error)
                             raise UserError(msg)
-
+                    
                     if move.journal_id.invoice_type_code_id == "07":
                         msg_error += move.validacion_nota_credito()
                         if len(msg_error) > 0:
@@ -838,13 +766,18 @@ class AccountMove(models.Model):
 
     def validar_fecha_emision(self):
         errors = []
-        now = datetime.strptime(fields.Date.today(), "%Y-%m-%d")
-        if now < datetime.strptime(self.invoice_date, "%Y-%m-%d"):
-            errors.append(
-                "* La fecha de la emisión del comprobante debe ser menor o igual a la fecha del día de hoy.")
-        elif abs(datetime.strptime(self.invoice_date, "%Y-%m-%d") - now).days > 7:
-            errors.append(
-                "* La fecha de Emisión debe tener como máximo una antiguedad de 7 días.")
+        now = datetime.now(tz=timezone("America/Lima")).date()
+
+        if not self.invoice_date:
+            self.invoice_date = now
+        # now = datetime.strptime(fields.Date.today(), "%Y-%m-%d")
+        
+        # if now < datetime.strptime(self.invoice_date, "%Y-%m-%d"):
+        if now < self.invoice_date:
+            errors.append("* La fecha de la emisión del comprobante debe ser menor o igual a la fecha del día de hoy.")
+        elif abs(self.invoice_date - now).days > 3:
+        # elif abs(datetime.strptime(self.invoice_date, "%Y-%m-%d") - now).days > 3:
+            errors.append("* La fecha de Emisión debe tener como máximo una antiguedad de 3 días.")
 
         return errors
 
@@ -965,6 +898,16 @@ class AccountMove(models.Model):
         if self.descuento_global != 0 or self.apply_global_discount:
             errors.append("* No es posible aplicar un descuento global a una Nota de crédito. Esta opción solo esta disponible para Facturas y Boletas")
         return errors
+
+    @api.constrains("has_detraction","invoice_type_code_catalog_51")
+    def check_detraction(self):
+        for record in self:
+            if not(record.has_detraction and record.invoice_type_code_catalog_51.code == "1001"):
+                if record.has_detraction:
+                    raise UserError("Si la factura tiene detracción, entonces el tipo de operación es 'Operación sujeta a detracción'")
+                if record.invoice_type_code_catalog_51.code == "1001":
+                    raise UserError("Si el tipo de operación es 'Operación sujeta a detracción' entonces la debe activar el campo 'Detracción?'.")
+
 
     def generar_nota_debito(self):
         self.ensure_one()
@@ -1267,7 +1210,7 @@ class AccountMove(models.Model):
 
         now = datetime.now(tz=timezone("America/Lima"))
         for inv in invoices:
-            if abs((inv.invoice_date - now.date()).days) <= 7:
+            if abs((inv.invoice_date - now.date()).days) <= 3:
                 try:
                     inv.action_send_invoice()
                 except Exception as e:
@@ -1321,6 +1264,81 @@ class AccountMove(models.Model):
 
         return self.env.ref("account_debit_note.action_view_account_move_debit").read()[0]
 
+    def _get_invoiced_lot_values(self):
+        """ Get and prepare data to show a table of invoiced lot on the invoice's report. """
+        self.ensure_one()
+
+        if self.state == 'draft':
+            return []
+
+        sale_orders = self.mapped('invoice_line_ids.sale_line_ids.order_id')
+        stock_move_lines = sale_orders.mapped('picking_ids.move_lines.move_line_ids')
+
+        # Get the other customer invoices and refunds.
+        ordered_invoice_ids = sale_orders.mapped('invoice_ids')\
+            .filtered(lambda i: i.state not in ['draft', 'cancel'])\
+            .sorted(lambda i: (i.invoice_date, i.id))
+
+        # Get the position of self in other customer invoices and refunds.
+        self_index = None
+        i = 0
+        for invoice in ordered_invoice_ids:
+            if invoice.id == self.id:
+                self_index = i
+                break
+            i += 1
+
+        # Get the previous invoice if any.
+        previous_invoices = ordered_invoice_ids[:self_index]
+        last_invoice = previous_invoices[-1] if len(previous_invoices) else None
+
+        # Get the incoming and outgoing sml between self.invoice_date and the previous invoice (if any).
+        self_datetime = max(self.invoice_line_ids.mapped('write_date')) if self.invoice_line_ids else None
+        last_invoice_datetime = max(last_invoice.invoice_line_ids.mapped('write_date')) if last_invoice else None
+
+        def _filter_incoming_sml(ml):
+            if ml.state == 'done' and ml.location_id.usage == 'customer' and ml.lot_id:
+                if last_invoice_datetime:
+                    return last_invoice_datetime <= ml.date <= self_datetime
+                else:
+                    return ml.date <= self_datetime
+            return False
+
+        def _filter_outgoing_sml(ml):
+            if ml.state == 'done' and ml.location_dest_id.usage == 'customer' and ml.lot_id:
+                if last_invoice_datetime:
+                    return last_invoice_datetime <= ml.date <= self_datetime
+                else:
+                    return ml.date <= self_datetime
+            return False
+
+        incoming_sml = stock_move_lines.filtered(_filter_incoming_sml)
+        outgoing_sml = stock_move_lines.filtered(_filter_outgoing_sml)
+
+        # Prepare and return lot_values
+        qties_per_lot = defaultdict(lambda: 0)
+        if self.type == 'out_refund':
+            for ml in outgoing_sml:
+                qties_per_lot[ml.lot_id] -= ml.product_uom_id._compute_quantity(ml.qty_done, ml.product_id.uom_id)
+            for ml in incoming_sml:
+                qties_per_lot[ml.lot_id] += ml.product_uom_id._compute_quantity(ml.qty_done, ml.product_id.uom_id)
+        else:
+            for ml in outgoing_sml:
+                qties_per_lot[ml.lot_id] += ml.product_uom_id._compute_quantity(ml.qty_done, ml.product_id.uom_id)
+            for ml in incoming_sml:
+                qties_per_lot[ml.lot_id] -= ml.product_uom_id._compute_quantity(ml.qty_done, ml.product_id.uom_id)
+        lot_values = []
+        for lot_id, qty in qties_per_lot.items():
+            if float_is_zero(qty, precision_rounding=lot_id.product_id.uom_id.rounding):
+                continue
+            lot_values.append({
+                'product_id':lot_id.product_id.id,
+                'product_name': lot_id.product_id.display_name,
+                'quantity': qty,
+                'uom_name': lot_id.product_uom_id.name,
+                'lot_name': lot_id.name,
+            })
+        return lot_values
 
 class AccountMoveReversal(models.TransientModel):
     _inherit = 'account.move.reversal'
@@ -1359,7 +1377,7 @@ class AccountMoveReversal(models.TransientModel):
     def _prepare_default_reversal(self, move):
         res = super(AccountMoveReversal, self)._prepare_default_reversal(move)
         res.update({"sustento_nota": self.reason,
-                    "tipo_nota_credito": self.credit_note_type,
+                    "tipo_nota_credito": self.credit_note_type, 
                     "invoice_type_code": "07"})
         if self.credit_note_type in ["04"]:
             res.update({"line_ids":[]})

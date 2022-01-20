@@ -55,7 +55,7 @@
         <div class="pos-receipt">
             <div class="logo" t-if="receipt.company.logo">
                 <div class="pos-center-align">
-                    <img t-att-src='receipt.company.logo' />
+                    <img t-att-src='receipt.company.logo' width="100%"/>
                 </div>
             </div>
             <div class="pos-center-align">
@@ -189,6 +189,9 @@
                     </td>
                     <td>
                         <t t-esc="orderline.product_name"/>
+                        <!-- <t t-esc="receipt.lot_values.find(function(el)(orderline.product_id == el.product_id))">
+
+                        </t> -->
                         <!-- <t t-if="orderline.has_product_lot">
                             <t t-foreach="orderline.pack_lot_lines.models" t-as="line">
                                 <t t-esc="line.get('lot_name')+' '"/>
@@ -270,7 +273,7 @@
                     </tr>
                 </table>
             </div> -->
-            <div class="receipt-user">
+            <div class="receipt-user" id ="receipt_cashier">
                 <b>SON:</b>
                 <t t-esc="receipt.son"/>
                 <br />
@@ -279,22 +282,21 @@
                 <br />
             </div>
             <br/>
-            <t t-if="['01','03','07'].indexOf(receipt.invoice_type_code) >= 0 and receipt.qr_string">
-                <div id="qrcode" style="align-items: center;flex-direction: column;display: flex;"></div>
-                <script type="text/javascript">
-                    var qrcode = new QRCode('qrcode' , {
-                        text: "http://jindo.dev.naver.com/collie",
-                        width: 150,
-                        height: 150,
-                        colorDark : "#000000",
-                        colorLight : "#ffffff",
-                        correctLevel : QRCode.CorrectLevel.H
-                    });
-                    qrcode.makeCode("
-                    <t t-esc="receipt.qr_string"/>");
-                </script>
-                <!-- <br/> -->
-                <!-- <t t-esc="receipt.digest_value"/> -->
+            <t t-if="receipt.qr_string">
+                <t t-if="['01','03','07'].indexOf(receipt.invoice_type_code) &gt; 0  or ['01','03','07'].indexOf(receipt.invoice_type_code) == 0">
+                    <div id="qrcode" style="align-items: center;flex-direction: column;display: flex;"></div>
+                    <script type="text/javascript">
+                        var qrcode = new QRCode('qrcode' , {
+                            text: "http://jindo.dev.naver.com/collie",
+                            width: 150,
+                            height: 150,
+                            colorDark : "#000000",
+                            colorLight : "#ffffff",
+                            correctLevel : QRCode.CorrectLevel.H
+                        });
+                        qrcode.makeCode("<t t-esc="receipt.qr_string"/>");
+                    </script>
+                </t>
             </t>
             <!-- <t t-if="widget.pos.config.is_header_or_footer">
                 <div style='text-align:center'>

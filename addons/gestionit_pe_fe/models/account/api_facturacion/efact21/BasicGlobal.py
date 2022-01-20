@@ -81,8 +81,7 @@ class InvoiceTypeCode(Xmleable):
             })
 
     def generate_doc(self):
-        self.doc = createElementContent(
-            'cbc:InvoiceTypeCode', str(self.invoice_type_code))
+        self.doc = createElementContent('cbc:InvoiceTypeCode', str(self.invoice_type_code))
         self.doc.setAttribute("listID", self.listID)
         self.doc.setAttribute("listAgencyName", self.listAgencyName)
         self.doc.setAttribute("listName", self.listName)

@@ -6,6 +6,7 @@
             <div class="pos-receipt">
 				<div class="logo" t-if="widget.pos.config.receipt_show_logo">
 					<div class="pos-center-align">
+						<!-- <img t-att-src='widget.pos.company_logo_base64' style="width: 85%;padding-bottom: 15px;"/> -->
 						<img t-att-src='widget.pos.company_logo_base64' style="width: 85%;padding-bottom: 15px;"/>
 					</div>
 				</div>

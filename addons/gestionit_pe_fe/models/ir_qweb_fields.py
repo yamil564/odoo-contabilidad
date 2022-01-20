@@ -15,7 +15,7 @@ class MonetaryConverter(models.AbstractModel):
     def value_to_html(self, value, options):
         display_currency = options['display_currency']
         # _logger.info(options)
-        decimal_places = options.get('decimal_places',False)
+        decimal_places = options.get('decimal_places',-1)
 
         if not isinstance(value, (int, float)):
             raise ValueError(_("The value send to monetary field is not a number."))
@@ -28,7 +28,7 @@ class MonetaryConverter(models.AbstractModel):
         fmt = "%.{0}f".format(display_currency.decimal_places)
 
         # _logger.info(decimal_places)
-        if decimal_places != False:
+        if decimal_places >= 0:
             fmt = "%.{0}f".format(int(decimal_places))
 
         if options.get('from_currency'):

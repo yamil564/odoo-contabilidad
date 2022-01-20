@@ -454,29 +454,24 @@ def crear_json_fac_bol(self):
             ]
             # "mntTotalLetras": to_word(round(self.amount_total, 2), self.currency_id.name),
         },
-        "detraccion":{
-            "tasa":self.detraction_rate,
-            "codigo":self.detraction_code,
-            "monto":self.detraction_amount,
-            "numero_cuenta_banco_nacion":self.bank_account_number_national,
-        },
         "descuento": {
             # "mntDescuentoGlobal": round(self.total_descuento_global, 2),
             "mntTotalDescuentos": round(self.total_descuentos, 2)
         },
+        "tipoOperacion":self.invoice_type_code_catalog_51.code
         # solo factura y boleta
         # "servicioHospedaje": { },
         # solo factura y boleta, con expecciones
 
-        "indicadores": {
+        # "indicadores": {
             # VERIFICAR ESTOS CAMPOS
-            "indVentaInterna": True if self.tipo_operacion == "01" else 0,
-            "indExportacion": True if self.tipo_operacion == "02" else 0,
+            # "indVentaInterna": True if self.tipo_operacion == "0101" else 0,
+            # "indExportacion": True if self.tipo_operacion == "02" else 0,
             # "indNoDomiciliados" : False, #valido para notas
-            "indAnticipo": True if self.tipo_operacion == "04" else 0,
+            # "indAnticipo": True if self.tipo_operacion == "04" else 0,
             # "indDeduccionAnticipos" : False,
             # "indServiciosHospedaje" : False,
-            "indVentaItinerante": True if self.tipo_operacion == "05" else 0
+            # "indVentaItinerante": True if self.tipo_operacion == "05" else 0
             # "indTrasladoBienesConRepresentacionImpresa" : False,
             # "indVentaArrozPilado" : False,
             # "indComprobantePercepcion" : False,
@@ -484,7 +479,7 @@ def crear_json_fac_bol(self):
             # "indServiciosPrestadosAmazonia" : False,
             # "indContratosConstruccionEjecutadosAmazonia" : False
 
-        },
+        # },
 
         # solo factura y boleta
         # "percepcion": {
@@ -495,6 +490,18 @@ def crear_json_fac_bol(self):
         # },
         # "datosAdicionales": {},
     }
+
+    if self.has_detraction:
+        data.update({
+            "detraccion":{
+                "tasa":self.detraction_rate,
+                "codigo":self.detraction_code,
+                "monto":self.detraction_amount_pen,
+                "numero_cuenta_banco_nacion":self.bank_account_number_national,
+                "medio_pago":self.detraction_medio_pago.code
+            }
+        })
+
     data_impuesto = []
     data_detalle = []
     data_referencia = []  # solo para notas
@@ -514,7 +521,7 @@ def crear_json_fac_bol(self):
         for line in self.paymentterm_line.sorted(lambda r:r.date_due):
             creditoCuotas.append({"nombre":"Cuota{:03.0f}".format(cuota),
                                         "fechaVencimiento":line.date_due.strftime("%Y-%m-%d"),
-                                        "monto":line.amount})
+                                        "monto":round(line.amount,2)})
             cuota = cuota + 1
         payment_term.update({"creditoCuotas":creditoCuotas})
 

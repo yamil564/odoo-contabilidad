@@ -2,4 +2,7 @@
     <record id="res_groups_standard_price" model="res.groups">
         <field name="name">Visualización de Costos de Venta</field>
     </record>
+    <record id="res_groups_anulacion_buttons" model="res.groups">
+        <field name="name">Permitir Anulaciones de Comprobantes</field>
+    </record>
 </odoo>

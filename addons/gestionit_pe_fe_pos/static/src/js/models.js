@@ -1,19 +1,52 @@
 odoo.define("gestionit_pe_fe_pos.models",[
     "gestionit_pe_fe_pos.DB",
     "point_of_sale.models",
-    "web.rpc"
+    "web.rpc",
+    "web.session"
 ],function(require){
     "use strict";
     var models = require("point_of_sale.models")
     var PosDB = require("gestionit_pe_fe_pos.DB")
-    
+    var session = require('web.session');
     var PosModelSuper = models.PosModel;
     var OrderSuper = models.Order
     var exports = {}
 
-    _.find(PosModelSuper.prototype.models,function(el){return el.model == 'res.partner'}).fields.push('l10n_latam_identification_type_id');
+    _.find(PosModelSuper.prototype.models,function(el){return el.model == 'res.partner'}).fields.push('l10n_latam_identification_type_id','mobile');
     _.find(PosModelSuper.prototype.models,function(el){return el.model == 'res.company'}).fields.push('logo','street','phone','website_invoice_search');
     _.find(PosModelSuper.prototype.models,function(el){return el.model == 'account.tax'}).fields.push('tax_group_id')
+    _.find(PosModelSuper.prototype.models,function(el){return el.label == 'pictures'}).loaded = function (self) {
+        self.company_logo = new Image();
+        return new Promise(function (resolve, reject) {
+            self.company_logo.onload = function () {
+                var img = self.company_logo;
+                var ratio = 1;
+                var targetwidth = 300;
+                var maxheight = 150;
+                if( img.width !== targetwidth ){
+                    ratio = targetwidth / img.width;
+                }
+                if( img.height * ratio > maxheight ){
+                    ratio = maxheight / img.height;
+                }
+                var width  = Math.floor(img.width * ratio);
+                var height = Math.floor(img.height * ratio);
+                var c = document.createElement('canvas');
+                c.width  = width;
+                c.height = height;
+                var ctx = c.getContext('2d');
+                ctx.drawImage(self.company_logo,0,0, width, height);
+
+                self.company_logo_base64 = c.toDataURL();
+                resolve();
+            };
+            self.company_logo.onerror = function () {
+                reject();
+            };
+            self.company_logo.crossOrigin = "anonymous";
+            self.company_logo.src = '/web/image?model=res.company&id='+self.company.id+'&field=logo'+ '&dbname=' + session.db + '&_' + Math.random();
+        });
+    }
 
     PosModelSuper.prototype.models.push({
         model: 'account.journal',
@@ -167,6 +200,7 @@ odoo.define("gestionit_pe_fe_pos.models",[
             var client = self.pos.get_client()
             var client_identification_type_code = undefined;
             var identification_type = undefined;
+            // var company = this.pos.company;
             if(client){
                 if(client.l10n_latam_identification_type_id){
                     identification_type = self.pos.db.identification_type_by_id[client.l10n_latam_identification_type_id[0]]
@@ -189,11 +223,23 @@ odoo.define("gestionit_pe_fe_pos.models",[
             }
             return res
         },
+        set_pos_order_id:function(pos_order_id){
+            this.pos_order_id = pos_order_id
+        },
+        get_pos_order_id:function(pos_order_id){
+            return this.pos_order_id
+        },
         set_digest_value:function(digest_value){
             this.digest_value = digest_value
         },
         get_digest_value:function(){
             return this.digest_value || "*"
+        },
+        set_invoice_portal_url:function(invoice_portal_url){
+            this.invoice_portal_url = invoice_portal_url
+        },
+        get_invoice_portal_url:function(){
+            return this.invoice_portal_url
         },
         get_sale_type: function(){
             return this.sale_type
@@ -217,6 +263,7 @@ odoo.define("gestionit_pe_fe_pos.models",[
             res['invoice_type'] = this.invoice_type
             res['credit_note_type'] = this.credit_note_type
             res['credit_note_comment'] = this.credit_note_comment
+            res['sale_type'] = this.sale_type || "sale"
             res['refund_invoice'] = this.refund_invoice
             res['refund_invoice_type_code'] = this.refund_invoice_type_code
             return res;

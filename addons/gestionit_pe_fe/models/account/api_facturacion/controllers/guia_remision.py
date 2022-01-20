@@ -1,7 +1,6 @@
 
 from ..efact21.Documents import DespatchAdvice
 import yaml
-import flex
 from ..efact21.OrderReference import OrderReference, OrderTypeCode
 from ..efact21.DocumentReference import AdditionalDocumentReference
 from ..efact21.SupplierParty import DespatchSupplierParty

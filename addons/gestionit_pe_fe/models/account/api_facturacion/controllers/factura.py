@@ -10,7 +10,7 @@ from ..efact21 import Party
 from ..efact21.AllowanceCharge import AllowanceCharge
 from ..efact21.AmountTypes import Amount,PriceAmount, PrepaidAmount, ChargeTotalAmount, LineExtensionAmount, \
     AllowanceTotalAmount, PayableAmount, TaxInclusiveAmount
-from ..efact21.BasicGlobal import RegistrationName
+from ..efact21.BasicGlobal import RegistrationName,Note
 from ..efact21.DocumentReference import DespatchDocumentReference, DocumentTypeCode,AdditionalDocumentReference
 from ..efact21.OrderReference import OrderReference
 from ..efact21.Lines import PricingReference, Item, Price
@@ -19,8 +19,9 @@ from ..efact21.RegistrationAddress import RegistrationAddress
 from ..efact21.TaxTotal import TaxTotal, TaxSubtotal, TaxCategory, TaxScheme, CategoryID, TaxableAmount, TaxAmount, BaseUnitMeasure, PerUnitAmount
 from ..efact21.TaxScheme import TaxSchemeID
 from ..efact21.PaymentTerms import PaymentTerms
-import yaml
-import flex
+from ..efact21.PaymentMeans import PaymentMeans
+
+# import yaml
 import re
 import logging
 _logger = logging.getLogger(__name__)
@@ -58,43 +59,45 @@ def build_factura(data):
     # tipoEnvio = data.get('tipoEnvio', -1)
     # anticipos = data.get('anticipos', [])
     # facturaGuia = data.get("facturaGuia", {})
-    indicadores = data.get('indicadores', False)
+    # indicadores = data.get('indicadores', False)
+    tipoOperacion = data.get("tipoOperacion",False)
 
-    indExportacion = False
-    if indicadores:
-        indAnticipo = indicadores.get("indAnticipo", False)
-        indExportacion = indicadores.get('indExportacion', False)
-        indVentaItinerante = indicadores.get("indVentaItinerante", False)
-        indVentaInterna = indicadores.get("indVentaInterna", False)
 
-        arr = [["indAnticipo", (1 if indAnticipo else 0)],
-               ["indExportacion", (1 if indExportacion else 0)],
-               ["indVentaInterna", (1 if indVentaInterna else 0)],
-               ["indVentaItinerante", (1 if indVentaItinerante else 0)]]
+    # indExportacion = False
+    # if indicadores:
+    #     indAnticipo = indicadores.get("indAnticipo", False)
+    #     indExportacion = indicadores.get('indExportacion', False)
+    #     indVentaItinerante = indicadores.get("indVentaItinerante", False)
+    #     indVentaInterna = indicadores.get("indVentaInterna", False)
 
-        mas_de_un_indicador = sum([x[1] for x in arr]) > 1
-        sin_indicador = sum([x[1] for x in arr]) == 0
+    #     arr = [["indAnticipo", (1 if indAnticipo else 0)],
+    #            ["indExportacion", (1 if indExportacion else 0)],
+    #            ["indVentaInterna", (1 if indVentaInterna else 0)],
+    #            ["indVentaItinerante", (1 if indVentaItinerante else 0)]]
 
-        if mas_de_un_indicador:
-            flag_error = True
-            errors.append({
-                "status": 400,
-                "code": "-",
-                "detail": "Sólo puede habilitar un indicador en el comprobante"
-            })
-        elif sin_indicador:
-            flag_error = True
-            errors.append({
-                "status": 400,
-                "code": "-",
-                "detail": "Debe asignar un indicador al comprobante. Los indicadores disponibles son: 'indAnticipo','indExportacion','indVentaInterna','indVentaItinerante' "
-            })
-    else:
-        errors.append({
-            "status": 400,
-            "code": "-",
-            "detail": "No se ha encontrado el atributo 'indicadores'."
-        })
+    #     mas_de_un_indicador = sum([x[1] for x in arr]) > 1
+    #     sin_indicador = sum([x[1] for x in arr]) == 0
+
+    #     if mas_de_un_indicador:
+    #         flag_error = True
+    #         errors.append({
+    #             "status": 400,
+    #             "code": "-",
+    #             "detail": "Sólo puede habilitar un indicador en el comprobante"
+    #         })
+    #     elif sin_indicador:
+    #         flag_error = True
+    #         errors.append({
+    #             "status": 400,
+    #             "code": "-",
+    #             "detail": "Debe asignar un indicador al comprobante. Los indicadores disponibles son: 'indAnticipo','indExportacion','indVentaInterna','indVentaItinerante' "
+    #         })
+    # else:
+    #     errors.append({
+    #         "status": 400,
+    #         "code": "-",
+    #         "detail": "No se ha encontrado el atributo 'indicadores'."
+    #     })
 
     # if tipoEnvio < 0 or tipoEnvio > 2:
     #     flag_error = True
@@ -315,28 +318,42 @@ def build_factura(data):
     # tipoFormatoRepresentacionImpresa = documento.get('tipoFormatoRepresentacionImpresa', '')
     # numero_guia = documento.get("numero_guia", False)
     # percepcion = data.get("percepcion", None)
-    # detraccion = data.get("detraccion", None)
+    detraccion = data.get("detraccion", None)
 
     mntDescuentoGlobal = descuento.get('mntDescuentoGlobal', 0.0)
     mntTotalDescuentos = descuento.get('mntTotalDescuentos', 0.0)
 
-    if indExportacion:
-        for line in detalle:
-            if line.get('codAfectacionIgv') != "40":
-                return {
-                    "errors": [{
-                        "status": 400,
-                        "code": "51",
-                        "detail": validacion.error_list["51"] +
-                        " El Tipo de Afectacion IGV(codAfectacionIgv) del detalle deber ser igual a '40' "
-                        "en caso de exportaciones."
-                    }]
-                }
+    # if indExportacion:
+    #     for line in detalle:
+    #         if line.get('codAfectacionIgv') != "40":
+    #             return {
+    #                 "errors": [{
+    #                     "status": 400,
+    #                     "code": "51",
+    #                     "detail": validacion.error_list["51"] +
+    #                     " El Tipo de Afectacion IGV(codAfectacionIgv) del detalle deber ser igual a '40' "
+    #                     "en caso de exportaciones."
+    #                 }]
+    #             }
 
     # TIPO DE DOCUMENTO
-    invoice_type_code = BasicGlobal.InvoiceTypeCode(tipoDocumento, listID="0101")
+    invoice_type_code = BasicGlobal.InvoiceTypeCode(tipoDocumento, listID=tipoOperacion)
 
     
+    # DETRACCION
+    payment_terms_detraction = None
+    payment_means_detraction = None
+
+    if detraccion != None:
+        payment_means_detraction = PaymentMeans(id="Detraccion",
+                                                payment_means_code=detraccion.get("medio_pago"),
+                                                payee_financial_account=detraccion.get("numero_cuenta_banco_nacion"))
+        
+        payment_terms_detraction = PaymentTerms(id="Detraccion",
+                                                payment_means_id=detraccion.get("codigo"),
+                                                payment_percent=detraccion.get("tasa"),
+                                                amount=Amount(detraccion.get("monto"),currencyID="PEN"),
+                                                detraction=True)
 
     # PROVEEDOR
     registration_name = RegistrationName(registration_name=nombreEmisor)
@@ -404,7 +421,6 @@ def build_factura(data):
                                                             tax_inclusive_amount=tax_inclusive_amount)
     # FECHA DE VENCIMIENTO
     due_date = General.DueDate(due_date=fechaVencimiento) if fechaVencimiento else None
-    # _logger.info(due_date)
 
     # FECHA DE EMISIÓN
     issue_date = General.IssueDate(date=fechaEmision)
@@ -524,18 +540,23 @@ def build_factura(data):
                    invoice_type_code=invoice_type_code, document_currency_code=tipoMoneda,
                    customization="2.0",accounting_supplier_party=proveedor, accounting_customer_party=cliente,
                    legal_monetary_total=legal_monetary_total, tax_total=tax_total,
-                   descuento_global=descuento_global,order_reference=order_reference)
+                   descuento_global=descuento_global,order_reference=order_reference,
+                   payment_means_detraction=payment_means_detraction,payment_terms_detraction=payment_terms_detraction)
     
+    if detraccion != None:
+        fact.add_note(Note("Operación sujeta a detracción",languageLocaleID="2006"))
+
     if formaPago == "Credito":
-        amount = Amount(mntTotal,currencyID=tipoMoneda)
+        formaPago_credito_total = round(sum([cuota.get("monto") for cuota in creditoCuotas]),2)
+        amount = Amount(formaPago_credito_total,currencyID=tipoMoneda)
         fact.add_payment_terms(PaymentTerms(id="FormaPago",
                                             payment_means_id=formaPago,
                                             amount=amount))
         for cuota in creditoCuotas:
-            amount = Amount(cuota["monto"],currencyID=tipoMoneda)
+            monto_cuota = Amount(cuota["monto"],currencyID=tipoMoneda)
             fact.add_payment_terms(PaymentTerms(id="FormaPago",
                                                 payment_means_id=cuota["nombre"],
-                                                amount=amount,
+                                                amount=monto_cuota,
                                                 payment_due_date=cuota["fechaVencimiento"]))
     elif formaPago == "Contado":
         fact.add_payment_terms(PaymentTerms(id="FormaPago",

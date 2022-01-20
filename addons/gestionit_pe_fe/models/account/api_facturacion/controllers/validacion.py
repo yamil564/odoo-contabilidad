@@ -30,8 +30,8 @@ fields_required = {'tipoDocumento': ' Es necesario el tipo de Documento a enviar
                    #'impuesto': ' Es necesaria la información de los impuestos.',
                    'detalle': ' Es necesario el detalle del documento a enviar.',
                    'descuento': ' Es necesario la información de descuentos del documento a enviar.',
-                   'indicadores': ' Es necesario algunos indicadores del documento a enviar.'}
-                #    'tipoEnvio': ' Es necesario especificar el tipo de Envio (0=Desarrollo, 1=Producción).'}
+                #    'indicadores': ' Es necesario algunos indicadores del documento a enviar.'
+                   }
 
 fields_required_doc_fac_bol = {'serie': ' Es necesario la serie del documento con formato (AXXX).',
                                'correlativo': ' Es necesario el correlativo del documento.',

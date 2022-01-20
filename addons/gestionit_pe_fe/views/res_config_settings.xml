@@ -1,6 +1,6 @@
 <odoo>
     <record id="guia_remision_setting" model="ir.ui.view">
-        <field name="name">Opciones de guía de remisión</field>
+        <field name="name">Opciones de Facturación Electrónica BigOdoo</field>
         <field name="model">res.config.settings</field>
         <field name="inherit_id" ref="base.res_config_settings_view_form" />
         <field name="arch" type="xml">
@@ -22,7 +22,7 @@
                     </div>
                     <h2>Descuento Global</h2>
                     <div class="row mt16 o_settings_container">
-                        <div class="col-12 col-lg-6 o_setting_box" title="Apply manual discounts on sales order lines or display discounts computed from pricelists (option to activate in the pricelist configuration).">
+                        <div class="col-12 col-lg-6 o_setting_box" >
                             <div class="o_setting_left_pane">
                             </div>
                             <div class="o_setting_right_pane">
