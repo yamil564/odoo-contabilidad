@@ -85,6 +85,13 @@
             <div class="pos-center-align type-docu">
                 <h4 class="display_name_document">
                     <t t-if="widget.model_id == 'account.move'">
+                        <t t-if="receipt.invoice_type_code == '00'">
+                            <b> NOTA DE VENTA ELECTRÓNICA</b>
+                            <br/>
+                            <b>
+                                <t t-esc="receipt.name" />
+                            </b>
+                        </t>
                         <t t-if="receipt.invoice_type_code == '03'">
                             <b> BOLETA DE VENTA ELECTRÓNICA</b>
                             <br/>
@@ -130,7 +137,7 @@
                     </div>
                     <div class="receipt-user">
                         <b>
-                            <t t-esc="receipt.partner.vat_label || ''"/>:
+                            <t t-esc="receipt.partner.vat_label || ''"/>
                         </b>
                         <t t-esc="receipt.partner.vat || ''"/>
                     </div>
@@ -182,7 +189,7 @@
                         <b>IMPORTE</b>
                     </th>
                 </tr>
-                <tr t-foreach="receipt.orderlines" t-as="orderline"  style="border-bottom: 1px black dotted">
+                <tr t-foreach="receipt.orderlines" t-as="orderline" style="border-bottom: 1px black dotted">
                     <td class="pos-left-align">
                         <t t-esc="widget.format_currency_no_symbol(Math.abs(orderline.quantity),2)"/>
                         <!-- <t t-esc="orderline.quantity"/> -->
@@ -294,7 +301,7 @@
                             colorLight : "#ffffff",
                             correctLevel : QRCode.CorrectLevel.H
                         });
-                        qrcode.makeCode("<t t-esc="receipt.qr_string"/>");
+                        qrcode.makeCode("<t t-esc='receipt.qr_string'></t>");
                     </script>
                 </t>
             </t>
@@ -309,13 +316,15 @@
                     <span t-if="receipt.invoice_type_code == '01'" style="font-size:14px">
                         <b> Representación impresa de, FACTURA ELECTRÓNICA
                             <t t-if="receipt.company.website_invoice_search"> consulte en
-                                <t t-esc="receipt.company.website_invoice_search"/></t>
+                                <t t-esc="receipt.company.website_invoice_search"/>
+                            </t>
                         </b>
                     </span>
                     <span t-if="receipt.invoice_type_code == '03'" style="font-size:14px">
                         <b>Representación impresa de, BOLETA ELECTRÓNICA
                             <t t-if="receipt.company.website_invoice_search"> consulte en
-                                <t t-esc="receipt.company.website_invoice_search"/></t>
+                                <t t-esc="receipt.company.website_invoice_search"/>
+                            </t>
                         </b>
                     </span>
                     <br/>

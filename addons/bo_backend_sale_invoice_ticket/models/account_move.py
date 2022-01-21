@@ -5,6 +5,7 @@ import logging
 from odoo.addons.bo_backend_sale_invoice_ticket.models.number_to_letter import to_word
 _logger = logging.getLogger(__name__)
 
+
 class AccountMove(models.Model):
     _inherit = 'account.move'
     _description = 'Account Move'
@@ -79,9 +80,11 @@ class AccountMove(models.Model):
             for line in lines_ids:
                 # _logger.info("line: %s" % str(line))
                 lot_name = ""
-                product_search = [lot  for lot in lot_values if lot.get("product_id") == line['product_id'][0]]
+                product_search = [lot for lot in lot_values if lot.get(
+                    "product_id") == line['product_id'][0]]
                 if len(product_search) > 0:
-                    lot_name = "\nSerie:"+";".join([p["lot_name"] for p in product_search])
+                    lot_name = "\nSerie:" + \
+                        ";".join([p["lot_name"] for p in product_search])
 
                 line.update({'product_name': line['product_id'][1] + lot_name})
                 json_lines.append(line)
@@ -99,7 +102,8 @@ class AccountMove(models.Model):
                 'invoice_date': move['invoice_date'],
                 'payment_id': move['invoice_payment_term_id'] and move['invoice_payment_term_id'][1] or "Contado",
                 'cashier': move['invoice_user_id'] and move['invoice_user_id'][1] or move['user_id'][1],
-                'invoice_type_code': move['invoice_type_code'],
+                # 'invoice_type_code': move['invoice_type_code'],
+                'invoice_type_code': move_env.journal_id.invoice_type_code_id,
                 'total_venta_gravado': move['total_venta_gravado'],
                 'amount_igv': move['amount_igv'],
                 'total_venta_inafecto': move['total_venta_inafecto'],
@@ -140,7 +144,7 @@ class AccountMove(models.Model):
                     'phone': company['phone'],
                     'logo':  '/web/image?model=res.company&id={}&field=logo'.format(company['id'])
                 },
-                'qr_string':False
+                'qr_string': False
             }
             # Generar QR
             _logger.info(move_env.state)
@@ -159,7 +163,7 @@ class AccountMove(models.Model):
                 })
             # else:
             #     qr_string = []
-                
+
             # _logger.info("data: %s" % str(data))
             return data
         else:
