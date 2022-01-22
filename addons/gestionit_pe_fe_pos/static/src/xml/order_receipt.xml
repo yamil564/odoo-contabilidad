@@ -65,14 +65,14 @@
 					<div>
 						<b>Término de pago:</b> Contado
 					</div>
-				</div> 
+				</div>
 				<div t-if="order.invoice_type_code_id == '07'">
                     <span><b>Comprobante a rectificar: </b> <t t-esc="order.get_refund_invoice().name"/></span><br/>
                     <span><b>Sustento de nota: </b> <t t-esc="order.get_credit_note_comment()"/></span><br/>
                     <span><b>Tipo de nota de crédito: </b> <t t-esc="order.get_credit_note_type_name()"/></span><br/>
                 </div>
 				<br/>
-				
+
 				<table class='receipt-orderlines' style="border-top: 1px black dotted">
 					<colgroup>
 						<col width='15%' />
@@ -92,6 +92,7 @@
 						</td>
 
 						<td>
+              <t t-if="orderline.get_product().default_code">[<t t-esc="orderline.get_product().default_code"/>]-</t>
 							<t t-esc="orderline.get_product().display_name"/>
 							<t t-if="orderline.has_product_lot">
 								<t t-foreach="orderline.pack_lot_lines.models" t-as="line">
@@ -112,7 +113,7 @@
 						</td>
 					</tr>
 				</table>
-				
+
 				<br/>
 				<table class='receipt-total' style="width:100%">
 					<tr>
@@ -141,7 +142,7 @@
 						</td>
 					</tr>
 				</table>
-				
+
 				<br />
 
 				<div id="paymentlines">
@@ -164,13 +165,13 @@
 						</tr>
 					</table>
 				</div>
-				
+
 				<div class="receipt-user">
 					<b>Usuario:</b> <t t-esc="widget.pos.cashier ? widget.pos.cashier.name : widget.pos.user.name"/><br />
 				</div>
 				<br/>
 
-				
+
 				<t t-if="['01','03','07'].indexOf(order.invoice_type_code_id) >= 0">
 					<div id="qrcode" style="align-items: center;flex-direction: column;display: flex;"></div>
 					<script type="text/javascript">
