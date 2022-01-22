@@ -253,7 +253,7 @@
                 
                 <!-- <field name="amount_untaxed" string="Sub-Total"/>
                 <field name="amount_tax"/> -->
-                <!-- <field name="amount_by_group" widget="text"/> -->
+                <field name="amount_by_group" widget="text" attrs="{'invisible':[('type','in',['out_invoice','out_refund'])]}"/>
                 <field name="total_venta_gravado" string="Monto Gravado"/>
                 <field name="amount_igv"/>
                 <field name="total_venta_inafecto" string="Monto Inafecto"/>
