@@ -1,6 +1,8 @@
 from odoo import models, api, fields
 import re
 from odoo.exceptions import UserError, ValidationError
+import logging
+_logger = logging.getLogger(__name__)
 
 patron_dni = re.compile("\d{8}$")
 patron_ruc = re.compile("[12]\d{10}$")
@@ -19,7 +21,13 @@ class SaleOrder(models.Model):
             self.tipo_documento = "01"
             # self.action_invoice_create(final=True)
             move = self._create_invoices(final=True)
-            move._onchange_invoice_line_ids()
+            # # move.descuento_global = 0
+            # _logger.info(move.read())
+            # res = move.onchange(move.read()[0],
+            #                     "descuento_global",
+            #                     {r:"" for r in move.read()[0]})
+            # _logger.info(res)
+            move._onchange_recompute_dynamic_lines()
 
         return self.action_view_invoice()
 
@@ -36,5 +44,6 @@ class SaleOrder(models.Model):
         if len(self.invoice_ids) == 0:
             self.tipo_documento = "03"
             move = self._create_invoices(final=True)
-            move._onchange_invoice_line_ids()
+            # move.onchange({"descuento_global":move.descuento_global},"descuento_global",{"descuento_global":""})
+            move._onchange_recompute_dynamic_lines()
         return self.action_view_invoice()

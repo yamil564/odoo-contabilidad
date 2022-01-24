@@ -323,7 +323,15 @@
                                     <span t-field="l.name"/>
                                 </td>
                                 <td class="v_lot"  t-if="lot_values">
-                                    <span t-esc="';'.join(['{}'.format(serie.get('lot_name')) for serie in o._get_invoiced_lot_values() if serie.get('product_id') == l.product_id.id])"/>
+                                    <t t-as="serie" t-foreach="o._get_invoiced_lot_values()">
+                                        <t t-if="serie.get('product_id') == l.product_id.id">
+                                            <span t-esc="serie.get('lot_name')"/>
+                                            <!-- <t t-if="serie.get('quantity')&gt;1">
+                                                <span t-esc="'{} {}'.format(serie.get('quantity'),serie.get('uom_name'))"/>
+                                            </t> -->
+                                            <br/>
+                                        </t>
+                                    </t>
                                 </td>
                                 <td class="v_value_unit">
                                     <span t-esc="round((l.price_subtotal/l.quantity)/(1-l.discount/100),2)" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>

@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="ShowOrderList">
+        <div class="control-button show_order_list">
+            <i class="fa fa-star" aria-hidden="true"></i>
+            Ordenes de venta
+        </div>
+    </t>
+
+    <t t-name="OrderListScreenWidget">
+        <div class="orderlist-screen screen">
+            <div class="screen-content">
+                <section class="top-content">
+                    <span class='button back'>
+                        <i class='fa fa-angle-double-left'/>
+                        Cancel
+                    </span>
+                    <div class="searchbox">
+                        <input id="searchbox" placeholder="Buscar por Referencia, Cliente, Serie"/>
+                        <span class="search-clear left">
+                            <i class="fa fa-search"/>
+                        </span>
+                    </div>
+                </section>
+                <section class="full-content">
+                    <div class='window'>
+                        <section class='subwindow collapsed'>
+                            <div class='subwindow-container collapsed'>
+                                <div class='subwindow-container-fix order-details-contents'>
+                                </div>
+                            </div>
+                        </section>
+                        <section class='subwindow'>
+                            <div class='subwindow-container'>
+                                <div id="order-list-container"
+                                     class='subwindow-container-fix touch-scrollable scrollable-y'>
+                                    <table class='order-list'>
+                                        <thead>
+                                            <tr>
+                                                <th>Referencia</th>
+                                                <th>Cliente</th>
+                                                <th>Fecha de la orden</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class='order-list-contents'>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="OrderListLines">
+        <t t-if="orders.length &gt; 0">
+            <t t-foreach="orders" t-as="order">
+                <tr t-att-data-id="order.id">
+                    <td t-esc="order.name"/>
+                    <td t-esc="order.partner_id[1]"/>
+                    <td t-esc="order.date_order"/>
+                </tr>
+            </t>
+        </t>
+        <t t-else="">
+            <tr>
+                <td colspan="3" style="text-align:center">No se encontraron coincidencias</td>
+            </tr>
+        </t>
+    </t>
+
+    <t t-name="LineReturnPopup">
+        <div class="modal-dialog">
+            <div class="popup popup_return_line">
+                <p class="title">Retornar productos</p>
+                <div class="return_orderline">
+                    <table class="popup-orderline-list">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th>Serie</th>
+                            </tr>
+                        </thead>
+                        <tbody class="popup-orderline-list-contents">
+                            <t t-if="widget.options.order_lines">
+                                <t t-foreach="widget.options.order_lines" t-as="orderline">
+                                    <tr t-att-data-line-id="orderline.id">
+                                        <td><t t-esc="orderline.product_id ? orderline.product_id[1] : ''" /></td>
+                                        <t t-if="widget.options.pack_lots[orderline.pack_lot_ids[0]]">
+                                          <td><t t-esc="widget.options.pack_lots[orderline.pack_lot_ids[0]].display_name" /></td>
+                                          <td><button class="btn-return">Retornar</button></td>
+                                        </t>
+                                    </tr>
+                                </t>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="footer">
+                    <div class="button cancel">
+                        Cancelar
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

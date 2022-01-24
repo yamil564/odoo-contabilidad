@@ -56,55 +56,55 @@
                 <field name="account_summary_id" attrs="{'invisible': [('invoice_type_code','!=','03')]}" />
                 <field name="estado_comprobante_electronico" readonly="1" force_save="1"/>
                 <!-- Detracciones -->
-                <field name="has_detraction" 
-                            groups="gestionit_pe_fe.group_fe_detraction_user" 
+                <field name="has_detraction"
+                            groups="gestionit_pe_fe.group_fe_detraction_user"
                             attrs="{'readonly':[['state','not in',['draft']]],'invisible':[('type','in',['out_refund','in_refund'])]}"/>
-                <field name="type_detraction" options="{'no_open':True,'no_create':True,'no_quick_create':True}" 
-                            groups="gestionit_pe_fe.group_fe_detraction_user" 
+                <field name="type_detraction" options="{'no_open':True,'no_create':True,'no_quick_create':True}"
+                            groups="gestionit_pe_fe.group_fe_detraction_user"
                             attrs="{'required':[('has_detraction','=',True)],'invisible':[('has_detraction','=',False)],'readonly':[['state','not in',['draft']]]}" />
-                <field name="detraction_rate" 
-                            groups="gestionit_pe_fe.group_fe_detraction_user" 
+                <field name="detraction_rate"
+                            groups="gestionit_pe_fe.group_fe_detraction_user"
                             attrs="{'required':[('has_detraction','=',True)],'invisible':[('has_detraction','=',False)],'readonly':[['state','not in',['draft']]]}"/>
                 <field name="detraction_code" groups="gestionit_pe_fe.group_fe_detraction_user" attrs="{'required':[('has_detraction','=',True)],'invisible':[('has_detraction','=',False)],'readonly':[['state','not in',['draft']]]}"/>
 
                 <field name="account_journal_national_bank" options="{'no_open':True,'no_create':True,'no_quick_create':True}" string="Número de cuenta del Banco de la Nación" groups="gestionit_pe_fe.group_fe_detraction_user" attrs="{'required':[('has_detraction','=',True)],'invisible':[('has_detraction','=',False)],'readonly':[['state','not in',['draft']]]}"/>
                 <field name="bank_account_number_national" groups="gestionit_pe_fe.group_fe_detraction_user" attrs="{'required':[('has_detraction','=',True)],'readonly':[['state','not in',['draft']]]}" invisible="1"/>
-                <field name="detraction_amount" 
-                        groups="gestionit_pe_fe.group_fe_detraction_user" 
+                <field name="detraction_amount"
+                        groups="gestionit_pe_fe.group_fe_detraction_user"
                         widget="monetary" options="{'currency_field': 'currency_id'}"
                         attrs="{'required':[('has_detraction','=',True)],'invisible':[('has_detraction','=',False)],'readonly':[['state','not in',['draft']]]}"/>
-                <field name="detraction_amount_pen" 
-                        groups="gestionit_pe_fe.group_fe_detraction_user" 
+                <field name="detraction_amount_pen"
+                        groups="gestionit_pe_fe.group_fe_detraction_user"
                         widget="monetary" options="{'currency_field': 'company_currency_id'}"
                         attrs="{'required':[('has_detraction','=',True)],'invisible':[('has_detraction','=',False)],'readonly':[['state','not in',['draft']]]}"/>
-                <field name="detraction_medio_pago" 
-                        groups="gestionit_pe_fe.group_fe_detraction_user" 
+                <field name="detraction_medio_pago"
+                        groups="gestionit_pe_fe.group_fe_detraction_user"
                         attrs="{'required':[('has_detraction','=',True)],'invisible':[('has_detraction','=',False)],'readonly':[['state','not in',['draft']]]}"
                         options="{ 'no_open': True,'no_create':True,'no_edit':True,'no_create_edit':True}"
                         />
 
                 <!-- Mismo descuento en todas las líneas-->
-                <field name="apply_same_discount_on_all_lines" 
+                <field name="apply_same_discount_on_all_lines"
                         groups="product.group_discount_per_so_line"
                         attrs="{'readonly':[['state','not in',['draft']]],'invisible':[('type','in',['out_refund','in_refund'])]}"/>
-                <field name="discount_on_all_lines" 
-                        string="Descuento (%)" 
+                <field name="discount_on_all_lines"
+                        string="Descuento (%)"
                         attrs="{'required':[('apply_same_discount_on_all_lines','=',True)],'invisible':['|',('apply_same_discount_on_all_lines','=',False),('type','in',['out_refund','in_refund'])  ]}"/>
-                <button name="action_apply_same_discount_on_all_lines" 
-                        string="Aplicar dscto (%) en todas las líneas" 
-                        type="object" 
-                        class="oe_highlight" 
+                <button name="action_apply_same_discount_on_all_lines"
+                        string="Aplicar dscto (%) en todas las líneas"
+                        type="object"
+                        class="oe_highlight"
                         attrs="{'invisible':['|',('apply_same_discount_on_all_lines','=',False),('type','in',['out_refund','in_refund'])  ]}"/>
 
             </xpath>
             <xpath expr="//field[@name='journal_id']" position="replace">
                 <!-- <field name="tipo_operacion" string="Tipo de Operación" attrs="{'readonly':[['state','not in',['draft']]]}" widget="radio" /> -->
-                <field name="invoice_type_code_catalog_51" 
-                        string="Tipo de Operación" 
-                        attrs="{'readonly':[['state','not in',['draft']]]}" 
+                <field name="invoice_type_code_catalog_51"
+                        string="Tipo de Operación"
+                        attrs="{'readonly':[['state','not in',['draft']]]}"
                         widget="selection"
                         options="{'no_create': True, 'no_open': True, 'no_create_edit': True}"
-                        />                
+                        />
                 <field name="documento_baja_id" readonly="1" invisible="1"/>
                 <field name="documento_baja_state" readonly="1" invisible="1"/>
 
@@ -192,7 +192,7 @@
             </xpath>
             <xpath expr="//page[@id='aml_tab']" position="after">
                 <field name="invoice_payment_term_type" invisible="1"/>
-                <page string="Plazos de pago" 
+                <page string="Plazos de pago"
                         attrs="{'invisible':[('invoice_payment_term_type','!=','Credito')]}">
                     <field name="paymentterm_line" always_reload="1" attrs="{'readonly':[('state','not in','draft')]}">
                         <tree editable="bottom">
@@ -242,18 +242,18 @@
                 <attribute name="invisible">1</attribute>
             </xpath>
             <xpath expr="//field[@name='amount_untaxed']" position="after">
-                <field name="apply_global_discount" 
-                        string="Aplicar descuento Global?" 
-                        attrs="{'invisible':[('type','in',['out_refund','in_refund'])]}" 
+                <field name="apply_global_discount"
+                        string="Aplicar descuento Global?"
+                        attrs="{'invisible':[('type','in',['out_refund','in_refund'])]}"
                         groups="gestionit_pe_fe.group_fe_discount_global_sale_invoices"/>
-                <field name="descuento_global" 
-                        string="Descuento Global (%)" 
-                        attrs="{'invisible':[('apply_global_discount','=',False),('type','in',['out_refund','in_refund'])]}" 
+                <field name="descuento_global"
+                        string="Descuento Global (%)"
+                        attrs="{'invisible':[('apply_global_discount','=',False),('type','in',['out_refund','in_refund'])]}"
                         groups="gestionit_pe_fe.group_fe_discount_global_sale_invoices"/>
-                
+
                 <!-- <field name="amount_untaxed" string="Sub-Total"/>
                 <field name="amount_tax"/> -->
-                <!-- <field name="amount_by_group" widget="text"/> -->
+                <field name="amount_by_group" widget="text" attrs="{'invisible':[('type','in',['out_invoice','out_refund'])]}"/>
                 <field name="total_venta_gravado" string="Monto Gravado"/>
                 <field name="amount_igv"/>
                 <field name="total_venta_inafecto" string="Monto Inafecto"/>
@@ -322,10 +322,10 @@
                     <button name="generar_nota_debito" string="Generar Nota de Débito" class="oe_highlight" type="object" attrs="{'invisible': ['|','|',('invoice_type_code','not in',['00','01','03']),('state','in',('cancel','draft'))]}"/> -->
             </xpath>
             <xpath expr="//button[@name='button_draft']" position="after">
-                <button name="action_validez_comprobante" 
-                        string="Validez de comprobante" 
-                        type="object" 
-                        class="oe_highlight" 
+                <button name="action_validez_comprobante"
+                        string="Validez de comprobante"
+                        type="object"
+                        class="oe_highlight"
                         attrs="{'invisible': ['|',('type','in',['in_invoice','in_refund']),('state','not in',('posted'))]}"/>
             </xpath>
             <xpath expr="//button[@name='button_draft']" position="attributes">
@@ -343,22 +343,23 @@
                 </button>
             </xpath>
             <xpath expr="//button[@name='preview_invoice']" position="after">
-                <button name="action_generate_and_signed_xml" 
-                        string="Generar XML" 
-                        class="oe_highlight" 
-                        type="object" 
-                        groups="gestionit_pe_fe.group_fe_allow_generate_send_xml" 
+                <button name="action_generate_and_signed_xml"
+                        string="Generar XML"
+                        class="oe_highlight"
+                        type="object"
+                        groups="gestionit_pe_fe.group_fe_allow_generate_send_xml"
                         attrs="{'invisible': ['|',('state','!=','posted'),('type','not in',['out_invoice','out_refund'])]}"/>
                 <button name="action_send_invoice" string="Enviar XML" class="oe_highlight" type="object" groups="gestionit_pe_fe.group_fe_allow_generate_send_xml" attrs="{'invisible': ['|',('state','!=','posted'),('type','not in',['out_invoice','out_refund'])]}"/>
-                <button name="btn_comunicacion_baja" 
-                            string="Anular Comprobante" 
-                            class="oe_highlight" 
-                            type="object" 
+                <button name="btn_comunicacion_baja"
+                            string="Anular Comprobante"
+                            class="oe_highlight"
+                            type="object"
+                            groups="gestionit_pe_fe.res_groups_anulacion_buttons"
                             attrs="{'invisible': ['|','|',('estado_comprobante_electronico','=','2_ANULADO'),('state','not in',['posted']),('type','in',['in_invoice','in_refund'])]}"/>
-                <button name="action_open_guia_remision" 
-                            string="Generar Guía de Remisión" 
-                            class="oe_highlight" 
-                            type="object" 
+                <button name="action_open_guia_remision"
+                            string="Generar Guía de Remisión"
+                            class="oe_highlight"
+                            type="object"
                             attrs="{'invisible': ['|',('guia_remision_count','!=',0),('type','in',['in_invoice','in_refund'])]}"/>
             </xpath>
         </field>
