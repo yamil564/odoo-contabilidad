@@ -382,17 +382,16 @@ class AccountMove(models.Model):
 
     @api.onchange('line_ids','descuento_global', 'apply_global_discount', 'invoice_payment_term_id', 'invoice_date_due', 'invoice_cash_rounding_id', 'invoice_vendor_bill_id')
     def _onchange_recompute_dynamic_lines(self):
+        super(AccountMove, self)._onchange_recompute_dynamic_lines()
         for record in self:
             if not record.apply_global_discount:
                 record.descuento_global = 0
 
+            line_ids = []
             line_discount_global_ids = record.line_ids.filtered(lambda r: r.is_charge_or_discount and r.type_charge_or_discount_code in ["02"])
             if len(line_discount_global_ids) > 0:
-                record.line_ids = [(2, ldg.id) for ldg in line_discount_global_ids]
-                record.line_ids._onchange_price_subtotal()
-                record._recompute_dynamic_lines(recompute_all_taxes=True)
-
-            line_ids = []
+                line_ids += [(2, ldg.id) for ldg in line_discount_global_ids]
+                record.line_ids = line_ids
 
             if abs(record.descuento_global) > 0:
                 record.descuento_global = abs(record.descuento_global)
@@ -417,8 +416,6 @@ class AccountMove(models.Model):
                         "name": product.name,
                         "product_uom_id": product.uom_id.id,
                         "price_unit": -round(price_unit, 6),
-                        "move_id": record._origin.id,
-                        "move_name": record._origin.name,
                         "quantity": 1,
                         "account_id": product.product_tmpl_id.property_account_income_id.id,
                         "company_id": company.id,
@@ -428,17 +425,14 @@ class AccountMove(models.Model):
                         "exclude_from_invoice_tab": True
                     }
                     line_ids.append((0, 0, values))
-                    record.line_ids = line_ids
-                    record.line_ids._onchange_price_subtotal()
-                    
-                # record.line_ids._onchange_price_subtotal()
-                record._recompute_dynamic_lines(recompute_all_taxes=True)
-        super(AccountMove, self)._onchange_recompute_dynamic_lines()
 
-    # total_tax_discount = fields.Monetary(
-    #     string="Total Descuento Impuesto",
-    #     default=0.0,
-    #     compute="_compute_amount")
+            if len(line_ids) > 0:
+                record.invoice_line_ids = line_ids
+            
+            record.invoice_line_ids._onchange_price_subtotal()
+            record.line_ids._onchange_price_subtotal()
+            record._recompute_dynamic_lines(recompute_all_taxes=True)
+
 
     total_venta_gravado = fields.Monetary(
         string="Gravado",
