@@ -5,16 +5,9 @@
             <field name="name">view.tree.comprobantes.venta</field>
             <field name="model">account.move</field>
             <field name="arch" type="xml">
-                <tree string="Comprobantes"
-                    create="0"
-                    decoration-info="state == 'draft'" 
-                    decoration-muted="state == 'cancel'"
-                    decoration-warning="estado_emision == 'N'" 
-                    decoration-danger="estado_emision == 'R'" 
-                    decoration-success="estado_emision == 'E'" 
-                    decoration-bf="estado_emision in ['A','O']">
+                <tree string="Comprobantes" create="0" decoration-info="state == 'draft'" decoration-muted="state == 'cancel'" decoration-warning="estado_emision == 'N'" decoration-danger="estado_emision == 'R'" decoration-success="estado_emision == 'E'" decoration-bf="estado_emision in ['A','O']">
                     <field name="partner_id" groups="base.group_user" string="Cliente"/>
-                    
+
                     <field name="name" string="Número"/>
                     <field name="reversed_entry_id" string="Comp. Ref."/>
                     <field name="debit_origin_id" string="Comp. Ref."/>
@@ -28,10 +21,11 @@
                     <field name="invoice_date_due" string="F.Venc" optional="show"/>
                     <!-- <field name="origin" string="Origen"/> -->
                     <field name="amount_total" string="Total" optional="show"/>
+                    <field name="amount_residual" string="Monto adeudado" optional="hide"/>
                     <field name="amount_total_signed" string="Total" optional="hide"/>
                     <field name="exchange_rate_day" string="T/C" optional="hide"/>
-                    <field name="detraction_amount" string="Detracción"  optional="hide" widget="monetary" options="{'currency_field': 'currency_id'}"/>
-                    <field name="detraction_amount_pen" string="Detracción PEN"  optional="hide" widget="monetary" options="{'currency_field': 'company_currency_id'}"/>
+                    <field name="detraction_amount" string="Detracción" optional="hide" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                    <field name="detraction_amount_pen" string="Detracción PEN" optional="hide" widget="monetary" options="{'currency_field': 'company_currency_id'}"/>
                     <!-- <field name="residual_signed" string="Monto adeudado" sum="Amount Due"/> -->
                     <field name="currency_id" invisible="1" string="Moneda"/>
                     <field name="company_currency_id" invisible="1"/>
@@ -45,18 +39,18 @@
             </field>
         </record>
 
-        
+
         <record id="gestionit_pe_fe.view_form_comprobantes_venta" model="ir.ui.view">
             <field name="name">view.form.comprobantes.venta</field>
             <field name="model">account.move</field>
             <field name="inherit_id" ref="account.view_move_form"/>
             <field name="arch" type="xml">
-                <xpath expr="//form" position="attributes"> 
-                    <attribute name="create">0</attribute>    
+                <xpath expr="//form" position="attributes">
+                    <attribute name="create">0</attribute>
                 </xpath>
             </field>
         </record>
-        
+
         <!-- MIS COMPROBANTES DE VENTA BEGIN -->
         <record id="action_mis_comprobantes_venta" model="ir.actions.act_window">
             <field name="name">Comprobantes de Venta</field>
@@ -82,10 +76,7 @@
             <field name="act_window_id" ref="gestionit_pe_fe.action_mis_comprobantes_venta" />
         </record>
 
-        <menuitem name="Comprobantes de Venta" 
-                    id="menu_mis_comprobantes_venta" 
-                    action="action_mis_comprobantes_venta" 
-                    parent="gestionit_pe_fe.menu_principal_comprobantes" sequence="0" />
+        <menuitem name="Comprobantes de Venta" id="menu_mis_comprobantes_venta" action="action_mis_comprobantes_venta" parent="gestionit_pe_fe.menu_principal_comprobantes" sequence="0" />
         <!-- MIS COMPROBANTES DE VENTA START -->
     </data>
 </odoo>
