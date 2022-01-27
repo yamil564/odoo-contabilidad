@@ -427,12 +427,14 @@ class AccountMove(models.Model):
                         "exclude_from_invoice_tab": True
                     }
                     line_ids.append((0, 0, values))
-                    _logger.info(line_ids)
             if len(line_ids) > 0:
-                record.invoice_line_ids = line_ids
-                record.invoice_line_ids._onchange_price_subtotal()
-                record.line_ids._onchange_price_subtotal()
-                record._recompute_dynamic_lines(recompute_all_taxes=True)
+                if type(self.id) == int:
+                    record.write({"invoice_line_ids": line_ids})
+                else:
+                    record.invoice_line_ids = line_ids
+                    record.invoice_line_ids._onchange_price_subtotal()
+                    record.line_ids._onchange_price_subtotal()
+                    record._recompute_dynamic_lines(recompute_all_taxes=True)
 
 
     total_venta_gravado = fields.Monetary(
