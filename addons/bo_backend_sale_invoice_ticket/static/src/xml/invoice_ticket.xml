@@ -295,8 +295,8 @@
                     <script type="text/javascript">
                         var qrcode = new QRCode('qrcode' , {
                             text: "http://jindo.dev.naver.com/collie",
-                            width: 150,
-                            height: 150,
+                            width: 100,
+                            height: 100,
                             colorDark : "#000000",
                             colorLight : "#ffffff",
                             correctLevel : QRCode.CorrectLevel.H
