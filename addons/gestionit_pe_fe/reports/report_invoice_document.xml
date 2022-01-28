@@ -133,7 +133,10 @@
                             </th>
                             <td class="label">
                                 <t t-if="len(o.document_reference_ids) &gt; 0">
-                                    <span t-esc="','.join(['[{}] {}'.format(d.get_name_tdr(d.document_type_code),d.document_number) for d in o.document_reference_ids])"/>
+                                    <!-- <span t-esc="','.join(['[{}] {}'.format(d.get_name_tdr(d.document_type_code),d.document_number) for d in o.document_reference_ids])"/> -->
+                                    <t t-as="d" t-foreach="o.document_reference_ids">
+                                        <span t-esc="'[{}] {}'.format(d.get_name_tdr(d.document_type_code),d.document_number)"/><br/>
+                                    </t>
                                 </t>
                             </td>
                         </tr>

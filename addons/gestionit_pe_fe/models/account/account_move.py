@@ -417,6 +417,8 @@ class AccountMove(models.Model):
                         "product_uom_id": product.uom_id.id,
                         "price_unit": -round(price_unit, 6),
                         "quantity": 1,
+                        "currency_id": False if self.currency_id == company.currency_id else self.currency_id.id,
+                        "company_currency_id":company.currency_id.id,
                         "account_id": product.product_tmpl_id.property_account_income_id.id,
                         "company_id": company.id,
                         "is_charge_or_discount": True,
@@ -425,13 +427,14 @@ class AccountMove(models.Model):
                         "exclude_from_invoice_tab": True
                     }
                     line_ids.append((0, 0, values))
-
             if len(line_ids) > 0:
-                record.invoice_line_ids = line_ids
-            
-            record.invoice_line_ids._onchange_price_subtotal()
-            record.line_ids._onchange_price_subtotal()
-            record._recompute_dynamic_lines(recompute_all_taxes=True)
+                if type(self.id) == int:
+                    record.write({"invoice_line_ids": line_ids})
+                else:
+                    record.invoice_line_ids = line_ids
+                    record.invoice_line_ids._onchange_price_subtotal()
+                    record.line_ids._onchange_price_subtotal()
+                    record._recompute_dynamic_lines(recompute_all_taxes=True)
 
 
     total_venta_gravado = fields.Monetary(
