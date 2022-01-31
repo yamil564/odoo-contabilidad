@@ -169,13 +169,13 @@
                                 <span t-field="l.name"/>
                             </td>
                         </t>
-                        
+
                     </tr>
                 </tbody>
             </table>
         </xpath>
         <xpath expr="//div[@name='so_total_summary']" position="attributes">
-            <attribute name="class">d-none</attribute>
+            <attribute name="style">display:none !important</attribute>
         </xpath>
         <xpath expr="//div[@name='so_total_summary']" position="after">
             <div class="row sale-content-total mt16" id="total">
