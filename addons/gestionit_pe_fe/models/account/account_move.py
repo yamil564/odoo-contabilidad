@@ -16,6 +16,7 @@ import logging
 # import requests
 from collections import defaultdict
 from odoo.tools import float_is_zero
+patron_dni = re.compile("\d{8}$")
 _logger = logging.getLogger(__name__)
 
 codigo_unidades_de_medida = [
@@ -849,10 +850,7 @@ class AccountMove(models.Model):
 
     def validacion_factura(self):
         errors = []
-        # if self.partner_id.company_type != "company":
-        #     errors.append('''* El cliente seleccionado debe ser de tipo Compañía para las facturas
-        #                     Recuerda: que para un cliente de tipo compañía, los campos de tipo de documento,
-        #                     Documento y Razón Social son Obligatorios. Además el tipo de Documento debe ser RUC.''')
+        
         if self.partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code != "6":
             errors.append(
                 "* El cliente seleccionado debe tener como tipo de documento el RUC, esto es necesario para facturas.")
@@ -862,13 +860,7 @@ class AccountMove(models.Model):
         elif len(self.partner_id.vat) != 11:
             errors.append(
                 "* El RUC del cliente selecionado debe tener 11 dígitos")
-        # if not self.partner_id.ubigeo:
-        #     errors.append(
-        #         "* El cliente selecionado no tiene configurado el Ubigeo.")
-        """
-        if not self.partner_id.email:
-            errors.append("* El cliente selecionado no tiene email.")
-        """
+
         for line in self.invoice_line_ids:
             if len(line.tax_ids) == 0:
                 errors.append(
@@ -886,10 +878,16 @@ class AccountMove(models.Model):
 
     def validacion_boleta(self):
         errors = []
-        """
-        if not self.partner_id.email:
-            errors.append("* El cliente selecionado no tiene email.")
-        """
+        if abs(self.amount_residual_signed) >= 700 and self.journal_id.invoice_type_code_id == '03':
+            if self.partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code not in ['1','4','6','7']:
+                errors.append("* El tipo de documento de identidad del cliente debe ser DNI/RUC/CE. Obligatorio para Boletas de venta mayores a S/ 700.")
+            else:
+                if self.partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code == '1':
+                    if not patron_dni.match(self.partner_id.vat or ""):
+                        errors.append("* El Documento de identidad (DNI/CE) del cliente no tiene un formato válido. Obligatorio para Boletas de venta mayores a S/ 700.")
+                elif self.partner_id.vat in ["0",False,""]:
+                    errors.append("* El Documento de identidad (DNI/CE) del cliente no tiene un formato válido. Obligatorio para Boletas de venta mayores a S/ 700.")
+
         return errors
 
     def validacion_nota_credito(self):

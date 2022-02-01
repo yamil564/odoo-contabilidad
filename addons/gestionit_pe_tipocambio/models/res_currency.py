@@ -1,7 +1,7 @@
 import odoo
 import requests
 from odoo import api, models, fields
-from datetime import date,datetime
+from datetime import date,datetime,timedelta
 import json
 from pytz import timezone
 from odoo.exceptions import ValidationError, UserError
@@ -188,6 +188,32 @@ class Tipocambio(models.Model):
                     res = self.api_migo_usd_pen_exchange_latest()
                 except Exception as e:
                     raise UserError(e)
+
+        rate = float(res.get("precio_venta", False))
+        rate = 1/rate if rate != 0.0 else 0.0
+        self.rate =  rate
+        self.factor =  1/rate
+        self.env.user.notify_success('El T/C PEN -> USD: {}'.format(self.factor),"T/C de compra actualizado")
+        
+
+    def action_update_rate_sale_pen_usd_recursive(self,date):
+        if not self.name:
+            raise UserError("La fecha del T/C es obligatoria.")
+
+        if not self.currency_id:
+            raise UserError("La moneda es obligatoria.")
+        
+        if not(self.type == "sale" and self.currency_id.name == "USD"):
+            raise UserError("Esta opción solo esta disponible para la moneda USD de tipo Venta.")
+        
+        if not self.company_id:
+            raise UserError("La compañia del tipo de cambio es obligatoria.")
+
+        try:
+            res = self.api_migo_usd_pen_exchange_date(date.strftime("%Y-%m-%d"))
+            _logger.info(res)
+        except Exception as e:
+            return self.action_update_rate_sale_pen_usd_recursive(date-timedelta(days=1))
 
         rate = float(res.get("precio_venta", False))
         rate = 1/rate if rate != 0.0 else 0.0
