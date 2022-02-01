@@ -1,12 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <template id="gestionit_report_invoice_document" inherit_id="account.report_invoice_document">
-        <xpath expr="//address" position="replace">
+        <xpath expr="//address" position="attributes">
+            <attribute name="class">d-none</attribute>
         </xpath>
-        <xpath expr="//div[hasclass('mt16')]" position="replace">
-            <div/>
+        <xpath expr="//div[hasclass('mt16')]" position="attributes">
+            <attribute name="class">d-none</attribute>
         </xpath>
-        <xpath expr="//div[hasclass('page')]/h2" position="replace">
+        <xpath expr="//div[hasclass('page')]/h2" position="attributes">
+            <attribute name="class">d-none</attribute>
+        </xpath>
+        <xpath expr="//div[hasclass('page')]/h2" position="before">
             <t t-set="company" t-value="o.company_id"/>
             <t t-set="documents" t-value="{'out_invoice_01':'FACTURA ELECTRÓNICA',
                                            'out_invoice_03':'BOLETA ELECTRÓNICA',
@@ -56,7 +60,7 @@
                             <th>
                                 <label t-esc="'VENDEDOR: '" name="label_vendedor"/>
                             </th>
-                            <td class="label" >
+                            <td class="label">
                                 <span t-esc="o.user_id.name or ''" name="value_vendedor"/>
                             </td>
                         </tr>
@@ -109,14 +113,12 @@
                             </td>
                             <!-- N° GUÍA -->
                             <th>
-                                <label t-esc="'N° GUÍA: '" 
-                                        name="label_n_guia"/>
+                                <label t-esc="'N° GUÍA: '" name="label_n_guia"/>
                             </th>
-                            <td class="label" >
+                            <td class="label">
                                 <!-- <div name="reference" class="d-none"></div> -->
                                 <!-- <span t-esc="o.ref" t-if="o.ref"/> -->
-                                <span name="value_n_guia" 
-                                      t-esc="';'.join([g.numero for g in o.guia_remision_ids.filtered(lambda r:r.state == 'validado')])" t-if="len(o.guia_remision_ids.filtered(lambda r:r.state == 'validado')) &gt; 0"/>
+                                <span name="value_n_guia" t-esc="';'.join([g.numero for g in o.guia_remision_ids.filtered(lambda r:r.state == 'validado')])" t-if="len(o.guia_remision_ids.filtered(lambda r:r.state == 'validado')) &gt; 0"/>
                             </td>
                         </tr>
                         <tr>
@@ -135,7 +137,8 @@
                                 <t t-if="len(o.document_reference_ids) &gt; 0">
                                     <!-- <span t-esc="','.join(['[{}] {}'.format(d.get_name_tdr(d.document_type_code),d.document_number) for d in o.document_reference_ids])"/> -->
                                     <t t-as="d" t-foreach="o.document_reference_ids">
-                                        <span t-esc="'[{}] {}'.format(d.get_name_tdr(d.document_type_code),d.document_number)"/><br/>
+                                        <span t-esc="'[{}] {}'.format(d.get_name_tdr(d.document_type_code),d.document_number)"/>
+                                        <br/>
                                     </t>
                                 </t>
                             </td>
@@ -325,7 +328,7 @@
                                 <td class="v_name">
                                     <span t-field="l.name"/>
                                 </td>
-                                <td class="v_lot"  t-if="lot_values">
+                                <td class="v_lot" t-if="lot_values">
                                     <t t-as="serie" t-foreach="o._get_invoiced_lot_values()">
                                         <t t-if="serie.get('product_id') == l.product_id.id">
                                             <span t-esc="serie.get('lot_name')"/>
@@ -375,7 +378,7 @@
                                     <span t-field="l.name" t-options="{'widget': 'text'}"/>
                                 </td>
                             </t>
-                            
+
                         </tr>
                         <!-- <t t-if="len(invoice_lines) &lt; 35">
                             <tr t-foreach="range(35-len(invoice_lines))" t-as="x" class="empty">
@@ -394,7 +397,7 @@
             </div>
         </xpath>
         <xpath expr="//div[hasclass('clearfix')]" position="attributes">
-            <attribute name="class">clearfix d-none</attribute>
+            <attribute name="style">display:none !important</attribute>
         </xpath>
         <xpath expr="//div[hasclass('clearfix')]" position="after">
             <div class="row invoice-content-total" id="total">
@@ -494,7 +497,7 @@
                                 <span t-field="o.total_venta_gravado"/>
                             </td>
                         </tr>
-                        <tr t-if="o.total_venta_inafecto &gt; 0"  name="total_venta_inafecto">
+                        <tr t-if="o.total_venta_inafecto &gt; 0" name="total_venta_inafecto">
                             <td>
                                 <strong>Monto Inafecto</strong>
                             </td>
@@ -522,7 +525,7 @@
                             <td>
                                 <strong>IGV 18% Venta</strong>
                             </td>
-                            <td class="text-right" >
+                            <td class="text-right">
                                 <span t-field="o.amount_igv"/>
                             </td>
                         </tr>

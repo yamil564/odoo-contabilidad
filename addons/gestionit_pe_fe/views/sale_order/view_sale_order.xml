@@ -16,8 +16,15 @@
                 <a t-if="!read_only_mode" type="delete" class="fa fa-times pull-right"/>
             </xpath>
 
-            <field name="amount_tax" position="replace"/>
-            <field name="amount_untaxed" position="replace">
+            <!-- <field name="amount_tax" position="replace"/> -->
+            <!-- <field name="amount_untaxed" position="replace"> -->
+            <field name="amount_tax" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+            <field name="amount_untaxed" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+            <field name="amount_untaxed" position="after">
                 <field name="descuento_global" groups="gestionit_pe_fe.group_fe_discount_global_sale_invoices"/>
                 <field name="total_venta_gravado"/>
                 <field name="total_venta_inafecto"/>
