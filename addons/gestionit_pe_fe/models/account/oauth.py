@@ -432,7 +432,7 @@ def crear_json_fac_bol(self):
             "mntExe": round(self.total_venta_inafecto, 2),
             "mntExo": round(self.total_venta_exonerada, 2),
             "mntTotalIgv": round(self.amount_igv, 2),
-            "mntTotal": round(self.amount_total, 2),
+            "mntTotal": round(self.amount_total+self.amount_retention, 2),
             # solo para facturas y boletas
             "mntTotalGrat": round(self.total_venta_gratuito, 2),
             "fechaVencimiento": str(self.invoice_date_due) if self.invoice_date_due else datetime.now().strftime("%Y-%m-%d"),
@@ -533,6 +533,13 @@ def crear_json_fac_bol(self):
             "montoDescuento": round(self.total_descuento_global, 2),
             # El atributo amount_untaxed es el monto del total de ventas sin impuestos
             "montoBase": round(self.total_venta_gravado + self.total_venta_exonerada + self.total_venta_inafecto + self.total_descuento_global, 2)
+        }
+    if self.apply_retention:
+        data["documento"]["retencion"] = {
+            "factor": round(self.retention_rate/100.00, 4),
+            "montoRetencion": round(self.amount_retention, 2),
+            # El atributo amount_untaxed es el monto del total de ventas sin impuestos
+            "montoBase": round(self.total_venta_gravado + self.total_venta_exonerada + self.total_venta_inafecto + self.amount_igv + self.total_descuento_global, 2)
         }
 
     # if self.numero_guia_remision:

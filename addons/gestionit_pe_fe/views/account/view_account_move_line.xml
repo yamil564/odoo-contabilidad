@@ -15,8 +15,10 @@
                 <field name="is_charge_or_discount" optional="hide"/>
                 <field name="type_charge_or_discount_code" optional="hide"/>
                 <field name="company_currency_id" optional="hide"/>
-                <field name="currency_id" optional="hide"/>
+                <!-- <field name="currency_id" optional="hide"/>
                 <field name="price_unit" optional="hide"/>
+                <field name="price_total" optional="hide"/>
+                <field name="price_subtotal" optional="hide"/> -->
             </xpath>
         </field>
     </record>

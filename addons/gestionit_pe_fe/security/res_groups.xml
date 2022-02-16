@@ -168,6 +168,10 @@
         <field name="name">Descuento global en ventas y facturas</field>
     </record>
 
+    <record id="group_fe_apply_retention" model="res.groups">
+        <field name="name">Permitir aplicar Retención en facturas de venta</field>
+    </record>
+
     <record id="group_fe_restrict_edit_price_from_sale" model="res.groups">
         <field name="name">Restricción para editar el precio en ventas</field>
     </record>

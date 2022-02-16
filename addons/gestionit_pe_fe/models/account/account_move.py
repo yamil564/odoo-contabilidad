@@ -380,19 +380,35 @@ class AccountMove(models.Model):
         readonly=True,
         states={'draft': [('readonly', False)]},
         default=0.0)
+    
+    apply_retention = fields.Boolean("Aplicar Retención",default=False,states={'draft': [('readonly', False)]}, readonly=True)
 
-    @api.onchange('line_ids','descuento_global', 'apply_global_discount', 'invoice_payment_term_id', 'invoice_date_due', 'invoice_cash_rounding_id', 'invoice_vendor_bill_id')
+    retention_rate = fields.Float("% de Retención",default=3,states={'draft': [('readonly', False)]}, readonly=True)
+
+
+    @api.onchange('line_ids',
+                'descuento_global', 
+                'apply_retention',
+                'apply_global_discount', 
+                'retention_rate',
+                'invoice_payment_term_id', 
+                'invoice_date_due', 
+                'invoice_cash_rounding_id', 
+                'invoice_vendor_bill_id')
     def _onchange_recompute_dynamic_lines(self):
         super(AccountMove, self)._onchange_recompute_dynamic_lines()
         for record in self:
+            line_ids = []
+
+            # Descuento Global
             if not record.apply_global_discount:
                 record.descuento_global = 0
 
-            line_ids = []
-            line_discount_global_ids = record.line_ids.filtered(lambda r: r.is_charge_or_discount and r.type_charge_or_discount_code in ["02"])
+            line_discount_global_ids = record.line_ids.filtered(lambda r: r.type_charge_or_discount_code == "02")
             if len(line_discount_global_ids) > 0:
-                line_ids += [(2, ldg.id) for ldg in line_discount_global_ids]
-                record.line_ids = line_ids
+                # line_ids += [(2, ldg.id) for ldg in line_discount_global_ids]
+                # record.line_ids = line_ids
+                record.line_ids = [(2, ldg.id) for ldg in line_discount_global_ids]
 
             if abs(record.descuento_global) > 0:
                 record.descuento_global = abs(record.descuento_global)
@@ -401,14 +417,14 @@ class AccountMove(models.Model):
                 if not product:
                     raise UserError("Debes configurar el producto de descuento global en la sección de configuración de ventas")
 
-                tax_ids = record.line_ids.filtered(lambda r:not r._origin.is_charge_or_discount).mapped("tax_ids")
+                tax_ids = record.line_ids.filtered(lambda r:r.type_charge_or_discount_code != "02").mapped("tax_ids")
                 
                 for tax in tax_ids.filtered(lambda r:r.tax_group_id.tipo_afectacion in ["10","20","30","40"]):
                     if tax.price_include:
-                        base_amount = abs(sum(record.line_ids.filtered(lambda r:not r.is_charge_or_discount and tax._origin.id in r.tax_ids.ids).mapped('price_total')))
+                        base_amount = abs(sum(record.line_ids.filtered(lambda r:r.type_charge_or_discount_code != "02" and tax._origin.id in r.tax_ids.ids).mapped('price_total')))
                         price_unit = (base_amount)*record.descuento_global/100
                     else:
-                        base_amount = abs(sum(record.line_ids.filtered(lambda r:not r.is_charge_or_discount and tax._origin.id in r.tax_ids.ids).mapped('price_subtotal')))
+                        base_amount = abs(sum(record.line_ids.filtered(lambda r:r.type_charge_or_discount_code != "02" and tax._origin.id in r.tax_ids.ids).mapped('price_subtotal')))
                         price_unit = (base_amount)*record.descuento_global/100 
                     values = {
                         "sequence":10000,
@@ -428,6 +444,7 @@ class AccountMove(models.Model):
                         "exclude_from_invoice_tab": True
                     }
                     line_ids.append((0, 0, values))
+            
             if len(line_ids) > 0:
                 if type(self.id) == int:
                     record.write({"invoice_line_ids": line_ids})
@@ -436,6 +453,58 @@ class AccountMove(models.Model):
                     record.invoice_line_ids._onchange_price_subtotal()
                     record.line_ids._onchange_price_subtotal()
                     record._recompute_dynamic_lines(recompute_all_taxes=True)
+            #Fin Descuento Global
+
+            # Retención
+            # line_ids = []
+
+            # if not record.apply_retention:
+            #     record.retention_rate = 0
+            # elif record.retention_rate == 0:
+            #     record.retention_rate = 3
+
+            # line_retention_id = record.line_ids.filtered(lambda r:r.type_charge_or_discount_code == "62")
+            # if len(line_retention_id) == 1:
+            #     record.line_ids = [(2, lr.id) for lr in line_retention_id]
+
+            # if abs(record.retention_rate) > 0:
+            #     record.retention_rate = abs(record.retention_rate)
+            #     account_account_retention_id = record.env.company.default_account_account_retention_id
+            #     company = record.company_id
+            #     if not account_account_retention_id:
+            #         raise UserError("Debes configurar la cuenta de retención en la sección de ajustes de facturación electrónica")
+
+            #     base_amount = abs(sum(record.line_ids.filtered(lambda r: r.type_charge_or_discount_code != '62' and (len(r.tax_ids) > 0 or r._origin.tax_ids) ).mapped('price_total')))
+
+            #     values = {
+            #         "sequence":10000,
+            #         "tax_ids": [],
+            #         "name": account_account_retention_id.name,
+            #         "price_unit": -round(abs(base_amount*record.retention_rate/100), 6),
+            #         "quantity": 1,
+            #         "currency_id": False if self.currency_id == company.currency_id else self.currency_id.id,
+            #         "company_currency_id":company.currency_id.id,
+            #         "account_id": account_account_retention_id.id,
+            #         "company_id": company.id,
+            #         "is_charge_or_discount": True,
+            #         "recompute_tax_line": True,
+            #         "type_charge_or_discount_code": "62",
+            #         "exclude_from_invoice_tab": True
+            #     }
+            #     line_ids.append((0, 0, values))
+            
+            
+            # Fin Retención
+
+            
+            # if len(line_ids) > 0:
+            #     if type(self.id) == int:
+            #         record.write({"invoice_line_ids": line_ids})
+            #     else:
+            #         record.invoice_line_ids = line_ids
+            #         record.invoice_line_ids._onchange_price_subtotal()
+            #         record.line_ids._onchange_price_subtotal()
+            #         record._recompute_dynamic_lines(recompute_all_taxes=True)
 
 
     total_venta_gravado = fields.Monetary(
@@ -468,6 +537,8 @@ class AccountMove(models.Model):
         string="Total Descuentos Global",
         default=0.0,
         compute="_compute_amount")
+
+    amount_retention = fields.Monetary(string="Retención",default=0,compute="_compute_amount")
 
     # monto_en_letras = fields.Char("Monto en letras",compute=_compute_monto_en_letras)
     tiene_guia_remision = fields.Boolean(
@@ -505,7 +576,9 @@ class AccountMove(models.Model):
         'line_ids.amount_residual_currency',
         'line_ids.payment_id.state',
         'descuento_global',
-        'apply_global_discount')
+        'apply_global_discount',
+        'retention_rate',
+        'apply_retention')
     def _compute_amount(self):
         super(AccountMove, self)._compute_amount()
 
@@ -616,7 +689,9 @@ class AccountMove(models.Model):
                  * line.discount/100.0) + line.descuento_unitario
                 for line in move.line_ids
                 if line.discount < 100
-            ])+move.total_descuento_global
+            ]) + move.total_descuento_global
+
+            move.amount_retention = (move.total_venta_gravado + move.total_venta_exonerada + move.total_venta_inafecto + move.amount_igv)*move.retention_rate/100
 
             # move.amount_untaxed = move.total_venta_gravado + \
             #         move.total_venta_exonerada + \

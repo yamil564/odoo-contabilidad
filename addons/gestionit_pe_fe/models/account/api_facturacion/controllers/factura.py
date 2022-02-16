@@ -400,6 +400,20 @@ def build_factura(data):
                                                    "montoBase"),
                                                currency_id=tipoMoneda)
 
+    #RETENCIÓN
+    retencion = None
+    if "retencion" in documento:
+        documento_retencion = documento["retencion"]
+        if ("factor" in documento_retencion) and ("montoRetencion" in documento_retencion) and ("montoBase" in documento_retencion):
+            retencion = AllowanceCharge(charge_indicator=False,
+                                                allowance_charge_reason_code="62",
+                                                multiplier_factor_numeric=documento_retencion.get(
+                                                    "factor", 0.0),  # Porcentaje de la retención
+                                                amount=documento_retencion.get(
+                                                    "montoRetencion"),
+                                                base_amount=documento_retencion.get(
+                                                    "montoBase"),
+                                                currency_id=tipoMoneda)
     # MONTO DE PAGO
     prepaid_amount = None
     charge_total_amount = None
@@ -540,7 +554,7 @@ def build_factura(data):
                    invoice_type_code=invoice_type_code, document_currency_code=tipoMoneda,
                    customization="2.0",accounting_supplier_party=proveedor, accounting_customer_party=cliente,
                    legal_monetary_total=legal_monetary_total, tax_total=tax_total,
-                   descuento_global=descuento_global,order_reference=order_reference,
+                   descuento_global=descuento_global,retencion=retencion,order_reference=order_reference,
                    payment_means_detraction=payment_means_detraction,payment_terms_detraction=payment_terms_detraction)
     
     if detraccion != None:

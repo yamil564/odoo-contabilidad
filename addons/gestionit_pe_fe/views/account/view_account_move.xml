@@ -96,6 +96,7 @@
                         class="oe_highlight"
                         attrs="{'invisible':['|',('apply_same_discount_on_all_lines','=',False),('type','in',['out_refund','in_refund'])  ]}"/>
 
+
             </xpath>
             <xpath expr="//field[@name='journal_id']" position="replace">
                 <!-- <field name="tipo_operacion" string="Tipo de Operación" attrs="{'readonly':[['state','not in',['draft']]]}" widget="radio" /> -->
@@ -242,6 +243,7 @@
                 <attribute name="invisible">1</attribute>
             </xpath>
             <xpath expr="//field[@name='amount_untaxed']" position="after">
+                <!-- Descuento Global-->
                 <field name="apply_global_discount"
                         string="Aplicar descuento Global?"
                         attrs="{'invisible':[('type','in',['out_refund','in_refund'])]}"
@@ -250,6 +252,17 @@
                         string="Descuento Global (%)"
                         attrs="{'invisible':[('apply_global_discount','=',False),('type','in',['out_refund','in_refund'])]}"
                         groups="gestionit_pe_fe.group_fe_discount_global_sale_invoices"/>
+
+                <!--Retenciones-->
+                <field name="apply_retention"
+                        string="Aplicar Retención?"
+                        attrs="{'invisible':[('type','in',['out_refund','in_refund'])]}"
+                        groups="gestionit_pe_fe.group_fe_apply_retention"/>
+                <field name="retention_rate"
+                        string="Retención (%)"
+                        attrs="{'invisible':[('apply_retention','=',False),('type','in',['out_refund','in_refund'])]}"
+                        groups="gestionit_pe_fe.group_fe_apply_retention"/>
+                <field name="amount_retention" string="Monto de Retención"/>
 
                 <!-- <field name="amount_untaxed" string="Sub-Total"/>
                 <field name="amount_tax"/> -->

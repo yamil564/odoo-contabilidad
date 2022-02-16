@@ -24,7 +24,7 @@ class AllowanceChargeReasonCode(Xmleable):
 
     def validate(self, errs, obs):
         assert type(self.allowance_charge_reason_code) == str
-        assert self.allowance_charge_reason_code in ["00", "01", "02"]
+        assert self.allowance_charge_reason_code in ["00", "01", "02","62"]
 
     def generate_doc(self):
         self.doc = createElementContent(
@@ -62,7 +62,7 @@ class AllowanceCharge(Xmleable):
         if type(self.charge_indicator) == bool:
             self.charge_indicator = ChargeIndicator(
                 "true" if self.charge_indicator else "false")
-        if self.allowance_charge_reason_code in ["00", "01", "02"]:
+        if self.allowance_charge_reason_code in ["00", "01", "02","62"]:
             self.allowance_charge_reason_code = AllowanceChargeReasonCode(
                 self.allowance_charge_reason_code)
         if type(self.multiplier_factor_numeric) == float:

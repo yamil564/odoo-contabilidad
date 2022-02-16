@@ -14,6 +14,7 @@ class ResCompany(models.Model):
     website_invoice_search = fields.Char("Web de consulta de comprobante")
     default_national_bank_account_id = fields.Many2one("res.partner.bank",string="Cuenta de detracciones del Banco de la Nación",domain=[("is_national_bank_detraction","=",True)])
     default_product_global_discount_id = fields.Many2one("product.product",domain=[('is_charge_or_discount','=',True),('type_charge_or_discount_id','in',['02'])])
+    default_account_account_retention_id = fields.Many2one("account.account")
 
     def get_username_sunat(self):
         return "{}{}".format(self.vat,self.sunat_user)
@@ -22,4 +23,5 @@ class ResCompany(models.Model):
 class ResConfigSettings(models.TransientModel):
     _inherit = "res.config.settings"
 
-    product_global_discount_id = fields.Many2one(related="company_id.default_product_global_discount_id",readonly=False)
+    product_global_discount_id = fields.Many2one("product.product",related="company_id.default_product_global_discount_id",readonly=False)
+    account_account_retention_id = fields.Many2one("account.account",related="company_id.default_account_account_retention_id",readonly=False)

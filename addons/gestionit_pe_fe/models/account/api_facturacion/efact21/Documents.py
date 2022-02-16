@@ -31,7 +31,7 @@ class Factura(Xmleable):
                  invoice_type_code=None, document_currency_code=None, customization="2.0",
                  despatch_document_reference=None, signature=None,
                  accounting_supplier_party=None, accounting_customer_party=None,
-                 legal_monetary_total=None, tax_total=None, descuento_global=None,
+                 legal_monetary_total=None, tax_total=None, descuento_global=None,retencion=None,
                  order_reference=None,payment_means_detraction=None,payment_terms_detraction=None):
         self.invoice_lines = []
         self.notes = []
@@ -54,6 +54,7 @@ class Factura(Xmleable):
         self.legal_monetary_total = legal_monetary_total
         self.file_name = None
         self.line_count_numeric = 0
+        self.retencion = retencion
         self.descuento_global = descuento_global
         self.payment_terms = []
         self.order_reference = order_reference
@@ -131,10 +132,9 @@ class Factura(Xmleable):
         assert type(self.accounting_supplier_party) == AccountingSupplierParty
         assert type(self.legal_monetary_total) == LegalMonetaryTotal
         assert type(self.accounting_customer_party) == AccountingCustomerParty
-        assert self.despatch_document_reference is None or \
-            type(self.despatch_document_reference) == DespatchDocumentReference
-        assert self.descuento_global is None or \
-            type(self.descuento_global) == AllowanceCharge
+        assert self.despatch_document_reference is None or type(self.despatch_document_reference) == DespatchDocumentReference
+        assert self.descuento_global is None or type(self.descuento_global) == AllowanceCharge
+        assert self.retencion is None or type(self.retencion) == AllowanceCharge
         assert self.order_reference is None or type(self.order_reference) == OrderReference
 
 
@@ -230,6 +230,10 @@ class Factura(Xmleable):
         # Descuento Global
         if self.descuento_global:
             self.doc.appendChild(self.descuento_global.get_document())
+        
+        # Retención
+        if self.retencion:
+            self.doc.appendChild(self.retencion.get_document())
 
         # Datos del comprador: falta
 
