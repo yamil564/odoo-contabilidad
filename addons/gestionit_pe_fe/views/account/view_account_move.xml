@@ -195,13 +195,20 @@
                 <field name="invoice_payment_term_type" invisible="1"/>
                 <page string="Plazos de pago"
                         attrs="{'invisible':[('invoice_payment_term_type','!=','Credito')]}">
-                    <field name="paymentterm_line" always_reload="1" attrs="{'readonly':[('state','not in','draft')]}">
-                        <tree editable="bottom">
-                            <field name="currency_id" invisible="1"/>
-                            <field name="date_due" string="Fecha de Vencimiento"/>
-                            <field name="amount" widget="monetary" options="{'currency_field': 'currency_id'}"/>
-                        </tree>
-                    </field>
+                    <group>
+                        <group>
+                            <field name="paymentterm_line" always_reload="1" attrs="{'readonly':[('state','not in','draft')]}" string="Plazos de pago">
+                                <tree editable="bottom">
+                                    <field name="currency_id" invisible="1"/>
+                                    <field name="date_due" string="Fecha de Vencimiento"/>
+                                    <field name="amount" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                </tree>
+                            </field>
+                        </group>
+                        <group>
+                            <field name="residual_credit_paymentterm"/>
+                        </group>
+                    </group>
                 </page>
             </xpath>
             <xpath expr="//field[@name='invoice_origin']" position="after">

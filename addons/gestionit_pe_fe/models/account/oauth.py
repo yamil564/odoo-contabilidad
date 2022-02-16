@@ -432,7 +432,7 @@ def crear_json_fac_bol(self):
             "mntExe": round(self.total_venta_inafecto, 2),
             "mntExo": round(self.total_venta_exonerada, 2),
             "mntTotalIgv": round(self.amount_igv, 2),
-            "mntTotal": round(self.amount_total+self.amount_retention, 2),
+            "mntTotal": round(self.amount_total, 2),
             # solo para facturas y boletas
             "mntTotalGrat": round(self.total_venta_gratuito, 2),
             "fechaVencimiento": str(self.invoice_date_due) if self.invoice_date_due else datetime.now().strftime("%Y-%m-%d"),
