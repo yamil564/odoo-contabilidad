@@ -458,10 +458,10 @@ class AccountMove(models.Model):
             # Retención
             # line_ids = []
 
-            # if not record.apply_retention:
-            #     record.retention_rate = 0
-            # elif record.retention_rate == 0:
-            #     record.retention_rate = 3
+            if not record.apply_retention:
+                record.retention_rate = 0
+            elif record.retention_rate == 0:
+                record.retention_rate = 3
 
             # line_retention_id = record.line_ids.filtered(lambda r:r.type_charge_or_discount_code == "62")
             # if len(line_retention_id) == 1:

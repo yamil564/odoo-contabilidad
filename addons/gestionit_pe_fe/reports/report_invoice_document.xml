@@ -471,6 +471,16 @@
                 </div>
                 <div class="col-4 p-0">
                     <table class="w-100" name="invoice-table-total">
+                        <tr t-if="o.amount_retention &gt; 0" name="amount_retention">
+                            <td>
+                                <strong>
+                                    <t t-esc="'Retención ('+str(o.retention_rate)+'%)'"/>
+                                </strong>
+                            </td>
+                            <td class="text-right">
+                                <span t-field="o.amount_retention"/>
+                            </td>
+                        </tr>
                         <tr t-if="o.descuento_global &gt; 0" name="descuento_global">
                             <td>
                                 <strong>Dscto. Global
