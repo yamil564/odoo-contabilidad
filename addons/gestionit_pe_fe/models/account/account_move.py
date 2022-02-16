@@ -296,7 +296,7 @@ class AccountMove(models.Model):
                 else:
                     record.invoice_payment_term_type = "Contado"
 
-    residual_credit_paymentterm = fields.Monetary("Saldo restante de plazos a crédito crédito",compute = "_compute_residual_credit_paymentterm")
+    residual_credit_paymentterm = fields.Monetary("Saldo restante de plazos de pago a crédito",compute = "_compute_residual_credit_paymentterm")
 
     @api.depends("paymentterm_line",
                     "paymentterm_line.amount")
