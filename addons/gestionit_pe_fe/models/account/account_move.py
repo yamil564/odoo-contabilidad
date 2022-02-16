@@ -299,7 +299,10 @@ class AccountMove(models.Model):
     residual_credit_paymentterm = fields.Monetary("Saldo restante de plazos de pago a crédito",compute = "_compute_residual_credit_paymentterm")
 
     @api.depends("paymentterm_line",
-                    "paymentterm_line.amount")
+                    "paymentterm_line.amount",
+                    "amount_total",
+                    "amount_retention",
+                    "detraction_amount")
     def _compute_residual_credit_paymentterm(self):
         for move in self:
             move.residual_credit_paymentterm = round(self.amount_total - self.detraction_amount - self.amount_retention - sum(move.paymentterm_line.mapped("amount")),2)
