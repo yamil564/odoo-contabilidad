@@ -34,6 +34,7 @@
         'views/product/view_product_uom.xml',
         'views/product/view_product_product.xml',
         'views/sale_order/view_sale_order.xml',
+        'views/purchase_order/view_purchase_order.xml',
         'views/catalogs/sunat_catalogs.xml',
         'views/account/view_account_journal.xml',
         'views/account/view_account_move.xml',

@@ -69,7 +69,7 @@ class AccountMove(models.Model):
             lines_env_ids = self.env['account.move.line'].search(
                 [('move_id', '=', move_env.id), ('product_id', '!=', False)])
             fields_line = {'product_id', 'quantity',
-                           'price_unit', 'price_subtotal'}
+                           'price_unit', 'price_subtotal','display_type'}
             lines_ids = lines_env_ids.read(fields_line)
 
             # _logger.info("lines_ids: %s" % str(lines_ids))
@@ -79,15 +79,16 @@ class AccountMove(models.Model):
             _logger.info(lot_values)
             for line in lines_ids:
                 # _logger.info("line: %s" % str(line))
-                lot_name = ""
-                product_search = [lot for lot in lot_values if lot.get(
-                    "product_id") == line['product_id'][0]]
-                if len(product_search) > 0:
-                    lot_name = "\nSerie:" + \
-                        ";".join([p["lot_name"] for p in product_search])
+                if line['display_type'] not in ['line_section', 'line_note']:
+                    lot_name = ""
+                    product_search = [lot for lot in lot_values if lot.get(
+                        "product_id") == line['product_id'][0]]
+                    if len(product_search) > 0:
+                        lot_name = "\nSerie:" + \
+                            ";".join([p["lot_name"] for p in product_search])
 
-                line.update({'product_name': line['product_id'][1] + lot_name})
-                json_lines.append(line)
+                    line.update({'product_name': line['product_id'][1] + lot_name})
+                    json_lines.append(line)
 
             # _logger.info("company_env: %s" % str(company_env.read(fields_company)))
 

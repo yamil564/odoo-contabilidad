@@ -37,6 +37,9 @@
             <xpath expr="//tree/field[@name='price_unit']" position="after">
                 <field name="qty_by_location" invisible="1"/>
             </xpath>
+            <xpath expr="//tree/field[@name='product_uom']" position="attributes">
+                <attribute name="options">{'no_create':True,'no_open': True,'no_create_edit':True}</attribute>
+            </xpath>
 
             <xpath expr="//page[@name='order_lines']" position="after">
                 <field name="payment_term_type" invisible="1"/>
