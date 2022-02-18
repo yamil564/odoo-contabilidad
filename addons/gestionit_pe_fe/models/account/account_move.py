@@ -392,9 +392,9 @@ class AccountMove(models.Model):
         states={'draft': [('readonly', False)]},
         default=0.0)
     
-    apply_retention = fields.Boolean("Aplicar Retención",default=False,states={'draft': [('readonly', False)]}, readonly=True)
+    apply_retention = fields.Boolean("Aplicar Retención", default=False , states={'draft': [('readonly', False)]}, readonly=True)
 
-    retention_rate = fields.Float("% de Retención",default=3,states={'draft': [('readonly', False)]}, readonly=True)
+    retention_rate = fields.Float("% de Retención", default=0 , states={'draft': [('readonly', False)]}, readonly=True)
 
 
     @api.onchange('line_ids',
