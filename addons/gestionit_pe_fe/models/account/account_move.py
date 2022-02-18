@@ -1538,13 +1538,13 @@ class accountInvoiceSend(models.TransientModel):
                     data_signed_xml = log_status.signed_xml_data_without_format
 
                     if data_signed_xml:
-                        datas = base64.b64encode(data_signed_xml.encode())
+                        datas = base64.b64encode(data_signed_xml.encode("ISO-8859-1"))
                         attach_ids.append(invoice.env["ir.attachment"].create(
                             {"name": fname, "type": "binary", "datas": datas, "mimetype": "text/xml", "res_model": "account.move", "res_id": invoice.id, "res_name": invoice.name}).id)
 
                     response_xml = log_status.response_xml_without_format
                     if response_xml:
-                        datas = base64.b64encode(response_xml.encode())
+                        datas = base64.b64encode(response_xml.encode("ISO-8859-1"))
                         attach_ids.append(invoice.env["ir.attachment"].create(
                             {"name": cdr_fname, "type": "binary", "datas": datas, "mimetype": "text/xml", "res_model": "account.move", "res_id": invoice.id, "res_name": invoice.name}).id)
 
