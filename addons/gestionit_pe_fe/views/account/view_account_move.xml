@@ -33,6 +33,9 @@
             <xpath expr="//field[@name='line_ids']//tree//field[@name='product_id']" position="attributes">
                 <attribute name="attrs">{'readonly':[('price_unit','&lt;',0)]}</attribute>
             </xpath>
+            <xpath expr="//field[@name='invoice_line_ids']//tree//field[@name='product_uom_id']" position="attributes">
+                <attribute name="options">{'no_create':True,'no_open': True,'no_create_edit':True}</attribute>
+            </xpath>
             <!-- <xpath expr="//field[@name='invoice_line_ids']//tree//field[@name='discount']" position="attributes">
                 <attribute name="attrs">{'readonly':[('price_unit','&lt;',0)]}</attribute>
             </xpath> -->

@@ -66,7 +66,7 @@ class SaleOrder(models.Model):
             lines_env_ids = self.env['sale.order.line'].search(
                 [('order_id', '=', env.id)])
             fields_line = {'product_id', 'product_uom_qty',
-                           'price_unit', 'price_subtotal'}
+                           'price_unit', 'price_subtotal','display_type'}
             lines_ids = lines_env_ids.read(fields_line)
 
             # _logger.info("lines_ids: %s" % str(lines_ids))
@@ -74,9 +74,10 @@ class SaleOrder(models.Model):
             json_lines = []
             for line in lines_ids:
                 # _logger.info("line: %s" % str(line))
-                line.update({'product_name': line['product_id'][1]})
-                line.update({'quantity': line['product_uom_qty']})
-                json_lines.append(line)
+                if line['display_type'] not in ['line_section', 'line_note']:
+                    line.update({'product_name': line['product_id'][1]})
+                    line.update({'quantity': line['product_uom_qty']})
+                    json_lines.append(line)
 
             # _logger.info("company_env: %s" % str(company_env.read(fields_company)))
 
