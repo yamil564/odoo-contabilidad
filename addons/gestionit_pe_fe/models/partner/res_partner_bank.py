@@ -7,3 +7,4 @@ class ResPartnerBank(models.Model):
     is_national_bank_detraction = fields.Boolean(
         "Banco de la Nación para Detracciones")
     description = fields.Char(string="Descripción")
+    show_report_sale = fields.Boolean("Mostrar en ventas",default=True)

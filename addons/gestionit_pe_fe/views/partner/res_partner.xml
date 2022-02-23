@@ -17,6 +17,9 @@
             <xpath expr="//field[@name='bank_ids']//tree//field[@name='bank_id']" position="after">
                 <field name="description" string="Descripción"/>
             </xpath>
+            <xpath expr="//field[@name='bank_ids']//tree//field[@name='acc_number']" position="after">
+                <field name="show_report_sale" string="Mostrar en ventas"/>
+            </xpath>
         </field>
     </record>
 
