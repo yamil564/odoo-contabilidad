@@ -669,10 +669,9 @@ class AccountMove(models.Model):
                 total) if move.type == 'entry' else -total
             move.amount_residual_signed = total_residual
 
-            currency = len(currencies) == 1 and currencies.pop(
-            ) or move.company_id.currency_id
-            is_paid = currency and currency.is_zero(
-                move.amount_residual) or not move.amount_residual
+            # currency = len(currencies) == 1 and currencies.pop() or move.company_id.currency_id
+            # is_paid = currency and currency.is_zero(move.amount_residual) or not move.amount_residual
+
 
         for move in self:
             move.total_venta_gravado = sum([

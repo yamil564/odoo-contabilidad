@@ -172,12 +172,24 @@
         <field name="name">Permitir aplicar Retención en facturas de venta</field>
     </record>
 
+    <record id="group_fe_restrict_select_tax_sale_inv_line" model="res.groups">
+        <field name="name">Restringir cambiar el impuesto en las líneas de venta</field>
+    </record>
+
     <record id="group_fe_restrict_edit_price_from_sale" model="res.groups">
         <field name="name">Restricción para editar el precio en ventas</field>
     </record>
 
     <record id="group_fe_allow_generate_send_xml" model="res.groups">
         <field name="name">Habilitar generación y envío de XML de forma manual</field>
+    </record>
+
+    <record id="group_fe_allow_cancel_account_move" model="res.groups">
+        <field name="name">Permitir cancelar Asientos contables</field>
+    </record>
+
+    <record id="group_fe_allow_convert_draft_account_move" model="res.groups">
+        <field name="name">Permitir convertir a borrador asientos contables</field>
     </record>
 
     <!-- <record id="group_fe_allow_generate_send_xml" model="res.groups">
