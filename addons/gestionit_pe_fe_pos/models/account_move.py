@@ -1,4 +1,4 @@
-from odoo import models
+from odoo import models, fields, _
 import logging
 _logger = logging.getLogger(__name__)
 
@@ -22,6 +22,7 @@ class AccountMove(models.Model):
                 left join pos_pack_operation_lot ppol on ppol.pos_order_line_id = pol.id
                 left join uom_uom uu on aml.product_uom_id = uu.id
                 where am.id = {} and ppol.lot_name is not null
+                group by aml.product_id,aml.name,pol.qty,uu.name ,ppol.lot_name
         """
         _logger.info(sql.format(self.id))
         self.env.cr.execute(sql.format(self.id))

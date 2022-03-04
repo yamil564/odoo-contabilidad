@@ -303,7 +303,7 @@
                             <th class="h_quantity">Cant.</th>
                             <th class="h_product_uom_id">U.M.</th>
                             <th class="h_name">Descripción</th>
-                            <th class="h_lot" t-if="lot_values">Serie/Lote</th>
+                            <th class="h_lot" t-if="lot_values">Serie/Lotes</th>
                             <th class="h_value_unit">V.U.</th>
                             <th class="h_price_unit">P.U.</th>
                             <th class="h_discount" t-if="display_discount">Dscto.(%)</th>
@@ -329,15 +329,14 @@
                                     <span t-field="l.name"/>
                                 </td>
                                 <td class="v_lot" t-if="lot_values">
-                                    <t t-as="serie" t-foreach="o._get_invoiced_lot_values()">
+                                    <!-- <t t-as="serie" t-foreach="o._get_invoiced_lot_values()">
                                         <t t-if="serie.get('product_id') == l.product_id.id">
                                             <span t-esc="serie.get('lot_name')"/>
-                                            <!-- <t t-if="serie.get('quantity')&gt;1">
-                                                <span t-esc="'{} {}'.format(serie.get('quantity'),serie.get('uom_name'))"/>
-                                            </t> -->
+                                            
                                             <br/>
                                         </t>
-                                    </t>
+                                    </t> -->
+                                    <span t-field="l.lot_name"/>
                                 </td>
                                 <td class="v_value_unit">
                                     <span t-esc="round((l.price_subtotal/l.quantity)/(1-l.discount/100),2)" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
@@ -462,7 +461,7 @@
                     </p> -->
                     <div t-if="len(o.company_id.bank_ids) &gt; 0" name="company_banks" class="banks">
                         <ul>
-                            <t t-foreach="o.company_id.partner_id.bank_ids" t-as="bank" >
+                            <t t-foreach="o.company_id.partner_id.bank_ids" t-as="bank">
                                 <li t-if="bank.show_report_sale">
                                     <span t-esc="'{} {}: {}'.format(bank.bank_id.name or '',bank.description or '',bank.acc_number or '')"></span>
                                 </li>

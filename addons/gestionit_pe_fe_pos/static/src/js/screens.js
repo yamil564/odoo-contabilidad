@@ -173,11 +173,16 @@ odoo.define('gestionit_pe_fe_pos.screens', function(require){
             var total = 0;
             var error_msg_subtotal = ""
             order.get_orderlines().forEach(function(orderline,index) {
-                var subtotal = orderline.get_quantity() * orderline.get_unit_price() * (1-orderline.get_discount()/100.0)
-                total += subtotal
-                if(subtotal<=0){
-                    error_msg_subtotal +=" * item ("+(index+1).toString()+") - ["+orderline["product"]["default_code"]+"]"+orderline["product"]["display_name"]
+                if ((orderline.get_unit_price() < 0 && orderline.get_quantity() > 0) || (orderline.get_unit_price() > 0 && orderline.get_quantity() < 0)) {
+                    console.log("Puntos de fidelización")
+                } else {
+                    var subtotal = orderline.get_quantity() * orderline.get_unit_price() * (1-orderline.get_discount()/100.0)
+                    total += subtotal
+                    if(subtotal<=0){
+                        error_msg_subtotal +=" * item ("+(index+1).toString()+") - ["+orderline["product"]["default_code"]+"]"+orderline["product"]["display_name"]
+                    }
                 }
+                
             })
 
             // if (!order.get_client() && this.pos.config.anonymous_id) {
@@ -319,6 +324,16 @@ odoo.define('gestionit_pe_fe_pos.screens', function(require){
                         }
                     }
                 }
+            }
+            else {
+                self.gui.show_popup('confirm', {
+                    'title': 'No ha seleccionado diario para de venta',
+                    'body': 'Seleccione un diario o tipo de comprobante para la venta.',
+                    confirm: function() {
+                        self.gui.show_screen('clientlist');
+                    },
+                });
+                return false
             }
             return self._super(force_validation);
         },
