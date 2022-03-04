@@ -353,6 +353,11 @@
             </xpath>
             <xpath expr="//button[@name='button_draft']" position="attributes">
                 <attribute name="string">Convertir a borrador</attribute>
+                <attribute name="groups">gestionit_pe_fe.group_fe_allow_convert_draft_account_move</attribute>
+            </xpath>
+            <xpath expr="//button[@name='button_cancel']" position="attributes">
+                <attribute name="string">Cancelar</attribute>
+                <attribute name="groups">gestionit_pe_fe.group_fe_allow_cancel_account_move</attribute>
             </xpath>
             <xpath expr="//button[@name='preview_invoice']" position="attributes">
                 <attribute name="string">Pre-visualización</attribute>
