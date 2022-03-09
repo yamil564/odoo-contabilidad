@@ -6,6 +6,7 @@ import logging
 from odoo.addons.bo_backend_sale_invoice_ticket.models.number_to_letter import to_word
 _logger = logging.getLogger(__name__)
 
+
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
     _description = 'Sale Order'
@@ -66,7 +67,7 @@ class SaleOrder(models.Model):
             lines_env_ids = self.env['sale.order.line'].search(
                 [('order_id', '=', env.id)])
             fields_line = {'product_id', 'product_uom_qty',
-                           'price_unit', 'price_subtotal','display_type'}
+                           'price_unit', 'price_subtotal', 'display_type', 'price_total'}
             lines_ids = lines_env_ids.read(fields_line)
 
             # _logger.info("lines_ids: %s" % str(lines_ids))
@@ -91,7 +92,7 @@ class SaleOrder(models.Model):
                 'invoice_date': sale['date_order'],
                 'payment_id': sale['payment_term_id'] and sale['payment_term_id'][1] or "Contado",
                 # 'cashier': sale['user_id'][1],
-                'cashier': sale.get("user_id","-")[1] if sale.get("user_id",False) else "",
+                'cashier': sale.get("user_id", "-")[1] if sale.get("user_id", False) else "",
                 # 'invoice_type_code': sale['invoice_type_code'],
                 'total_venta_gravado': sale['total_venta_gravado'],
                 'amount_igv': sale['total_igv'],

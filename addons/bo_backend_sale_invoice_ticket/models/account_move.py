@@ -69,7 +69,7 @@ class AccountMove(models.Model):
             lines_env_ids = self.env['account.move.line'].search(
                 [('move_id', '=', move_env.id), ('product_id', '!=', False)])
             fields_line = ['product_id', 'quantity',
-                           'price_unit', 'price_subtotal', 'display_type', 'lot_name']
+                           'price_unit', 'price_subtotal', 'price_total', 'display_type', 'lot_name']
             lines_ids = lines_env_ids.read(fields_line)
 
             # _logger.info("lines_ids: %s" % str(lines_ids))
