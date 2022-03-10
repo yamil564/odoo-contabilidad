@@ -153,7 +153,8 @@
 							<t t-esc="orderline.get_product().display_name" />
 							<t t-if="orderline.has_product_lot">
 								<t t-foreach="orderline.pack_lot_lines.models" t-as="line">
-									<t t-esc="line.get('lot_name')+' '" />
+									<!-- <t t-esc="line.get('lot_name')+' '" /> -->
+									<p t-esc="line.get('lot_name')" />
 								</t>
 							</t>
 							<t t-if="orderline.get_discount() > 0">

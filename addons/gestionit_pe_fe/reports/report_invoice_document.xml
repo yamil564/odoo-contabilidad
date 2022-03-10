@@ -328,7 +328,8 @@
                                 <td class="v_name">
                                     <span t-field="l.name"/>
                                 </td>
-                                <td class="v_lot" t-if="lot_values">
+                                <!-- <td class="v_lot" t-if="lot_values"> -->
+                                <td class="v_lot" t-if="l.lot_name">
                                     <!-- <t t-as="serie" t-foreach="o._get_invoiced_lot_values()">
                                         <t t-if="serie.get('product_id') == l.product_id.id">
                                             <span t-esc="serie.get('lot_name')"/>
@@ -336,7 +337,16 @@
                                             <br/>
                                         </t>
                                     </t> -->
-                                    <span t-field="l.lot_name"/>
+                                    <!-- <span t-field="l.lot_name"/> -->
+                                    <t t-if="len(l.lot_name.split(',')) > 1">
+
+                                        <t t-foreach="l.lot_name.split(',')" t-as="lote">
+                                            <p t-esc="lote" style="margin:0 !important;padding:0 !important;"/>
+                                        </t>
+                                    </t>
+                                    <t t-else="">
+                                        <span t-field="l.lot_name"/>
+                                    </t>
                                 </td>
                                 <td class="v_value_unit">
                                     <span t-esc="round((l.price_subtotal/l.quantity)/(1-l.discount/100),2)" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>

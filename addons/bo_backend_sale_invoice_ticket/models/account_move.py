@@ -87,7 +87,13 @@ class AccountMove(models.Model):
                     # lot_name = "\nSerie:" + \
                     #     ";".join([p["lot_name"] for p in product_search])
                     if line["lot_name"]:
-                        lot_name = "\nSerie:" + line["lot_name"]
+                        lot_name = "\nSerie:"
+                        arr = line["lot_name"].split(',')
+                        if len(arr) > 1:
+                            for a in arr:
+                                lot_name += a+", "
+                        else:
+                            lot_name += line["lot_name"]
 
                     line.update(
                         {'product_name': line['product_id'][1] + lot_name})
