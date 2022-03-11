@@ -215,7 +215,7 @@
                         <!-- <t t-esc="orderline.price_unit"/> -->
                     </td>
                     <td class="pos-right-align">
-                        <t t-esc="widget.format_currency_no_symbol(Math.abs(orderline.price_subtotal),0)"/>
+                        <t t-esc="widget.format_currency_no_symbol(Math.abs(orderline.price_total),0)"/>
                         <!-- <t t-esc="orderline.price_subtotal"/> -->
                     </td>
                 </tr>

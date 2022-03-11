@@ -221,6 +221,7 @@ odoo.define("gestionit_pe_fe_pos.models",[
                                     this.get_digest_value()
                                     ].join("|")
             }
+            console.log(res["qr_string"])
             return res
         },
         set_pos_order_id:function(pos_order_id){

@@ -67,10 +67,12 @@ class SaleOrder(models.Model):
         for record in self:
             if record.payment_term_id:
                 if record.payment_term_type == "Credito":
-                    amount_total = round(sum(record.paymentterm_line.mapped("amount")), 2)
+                    amount_total = round(
+                        sum(record.paymentterm_line.mapped("amount")), 2)
 
                     if amount_total != round(record.amount_total, 2):
-                        raise UserError("El monto total de los plazos de pago debe ser igual al total de la venta.")
+                        raise UserError(
+                            "El monto total de los plazos de pago debe ser igual al total de la venta.")
                     if record.date_order:
                         if min(record.paymentterm_line.mapped("date_due")) < record.date_order.date():
                             raise UserError(
@@ -193,7 +195,7 @@ class SaleOrder(models.Model):
         string="Gratuita",
         default=0.0,
         compute="_amount_all",
-        currency_field='currency_id')
+        currency_field='currency_id', store=True)
     total_descuentos = fields.Monetary(
         string="Total Descuentos",
         default=0.0,

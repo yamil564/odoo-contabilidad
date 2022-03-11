@@ -55,9 +55,10 @@ class AccountMoveDocumentReference(models.Model):
         selection=tdr, string="Tipo de documento")
     document_number = fields.Char("Número de documento")
 
-    def get_name_tdr(self,code):
+    def get_name_tdr(self, code):
         res = [c[1] for c in tdr if c[0] == code]
-        return res[0] if len(res) >0 else ""
+        return res[0] if len(res) > 0 else ""
+
 
 class AccountMove(models.Model):
     _inherit = "account.move"
@@ -76,7 +77,7 @@ class AccountMove(models.Model):
                     "Para crear un comprobante de venta/compra su usuario debe estar asociado a un almacén de la compañia. Comuníquese con su administrador.")
         return False
 
-    warehouse_id = fields.Many2one("stock.warehouse",string="Almacén")
+    warehouse_id = fields.Many2one("stock.warehouse", string="Almacén")
 
     warehouses_allowed_ids = fields.Many2many(
         "stock.warehouse", string="Almacenes Permitidos", default=_get_default_warehouse_ids)
@@ -103,7 +104,8 @@ class AccountMove(models.Model):
     @api.depends('credit_note_ids')
     def _compute_credit_count(self):
         for inv in self:
-            self.env.cr.execute("select count(*) from account_move where reversed_entry_id = {}".format(inv.id))
+            self.env.cr.execute(
+                "select count(*) from account_move where reversed_entry_id = {}".format(inv.id))
             result = self.env.cr.fetchall()
             inv.credit_note_count = result[0][0]
 
@@ -253,11 +255,13 @@ class AccountMove(models.Model):
             else:
                 record.anulacion_comprobante = "-"
 
-    @api.depends("amount_total", "type_detraction","detraction_rate")
+    @api.depends("amount_total", "type_detraction", "detraction_rate")
     def _compute_amount_detraction(self):
         for record in self:
-            record.detraction_amount = round(record.amount_total*record.detraction_rate/100, 2)
-            record.detraction_amount_pen = round(record.exchange_rate_day*record.amount_total*record.detraction_rate/100,2)
+            record.detraction_amount = round(
+                record.amount_total*record.detraction_rate/100, 2)
+            record.detraction_amount_pen = round(
+                record.exchange_rate_day*record.amount_total*record.detraction_rate/100, 2)
 
     # @api.onchange("amount_total", "type_detraction","detraction_rate")
     # def onchange_amount_detraction(self):
@@ -273,16 +277,19 @@ class AccountMove(models.Model):
     detraction_rate = fields.Float("Tasa %", default=0)
     detraction_code = fields.Char("Código")
     bank_account_number_national = fields.Char("Banco de la nación")
-    detraction_amount = fields.Float("Monto de Detracción", compute="_compute_amount_detraction", store=True)
-    detraction_amount_pen = fields.Float("Monto de Detracción PEN", compute="_compute_amount_detraction", store=True)
+    detraction_amount = fields.Float(
+        "Monto de Detracción", compute="_compute_amount_detraction", store=True)
+    detraction_amount_pen = fields.Float(
+        "Monto de Detracción PEN", compute="_compute_amount_detraction", store=True)
     detraction_medio_pago = fields.Many2one("sunat.catalog.59",
                                             string="Medio de Pago",
-                                            default=lambda self:self.env.ref("gestionit_pe_fe.catalog_59_001", raise_if_not_found=False))
+                                            default=lambda self: self.env.ref("gestionit_pe_fe.catalog_59_001", raise_if_not_found=False))
     paymentterm_line = fields.One2many("paymentterm.line", "move_id")
 
-    invoice_payment_term_type = fields.Char(compute="_compute_invoice_payment_term_type")
+    invoice_payment_term_type = fields.Char(
+        compute="_compute_invoice_payment_term_type")
 
-    @api.depends("invoice_payment_term_id","invoice_date_due")
+    @api.depends("invoice_payment_term_id", "invoice_date_due")
     def _compute_invoice_payment_term_type(self):
         for record in self:
             record.invoice_payment_term_type = "Contado"
@@ -291,29 +298,32 @@ class AccountMove(models.Model):
             else:
                 if record.invoice_date_due:
                     if (record.invoice_date != False and record.invoice_date_due > record.invoice_date) or \
-                        (record.invoice_date == False and record.invoice_date_due > datetime.now(tz=timezone("America/Lima")).date()):
+                            (record.invoice_date == False and record.invoice_date_due > datetime.now(tz=timezone("America/Lima")).date()):
                         record.invoice_payment_term_type = "Credito"
                 else:
                     record.invoice_payment_term_type = "Contado"
 
-    residual_credit_paymentterm = fields.Monetary("Saldo restante de plazos de pago a crédito",compute = "_compute_residual_credit_paymentterm")
+    residual_credit_paymentterm = fields.Monetary(
+        "Saldo restante de plazos de pago a crédito", compute="_compute_residual_credit_paymentterm")
 
     @api.depends("paymentterm_line",
-                    "paymentterm_line.amount",
-                    "amount_total",
-                    "amount_retention",
-                    "detraction_amount")
+                 "paymentterm_line.amount",
+                 "amount_total",
+                 "amount_retention",
+                 "detraction_amount")
     def _compute_residual_credit_paymentterm(self):
         for move in self:
-            move.residual_credit_paymentterm = round(self.amount_total - self.detraction_amount - self.amount_retention - sum(move.paymentterm_line.mapped("amount")),2)
+            move.residual_credit_paymentterm = round(
+                self.amount_total - self.detraction_amount - self.amount_retention - sum(move.paymentterm_line.mapped("amount")), 2)
 
     def check_paymenttermn_lines(self):
         for record in self:
             if record.type in ['out_invoice', 'in_invoice']:
                 if record.invoice_payment_term_id:
                     if record.invoice_payment_term_type == "Credito":
-                        amount_total = round(sum(record.paymentterm_line.mapped("amount")) + record.detraction_amount + record.amount_retention,2)
-                        if amount_total != round(record.amount_total,2):
+                        amount_total = round(sum(record.paymentterm_line.mapped(
+                            "amount")) + record.detraction_amount + record.amount_retention, 2)
+                        if amount_total != round(record.amount_total, 2):
                             raise UserError(
                                 "El monto total de los plazos de pago debe ser igual al total de la factura.")
                         if record.invoice_date:
@@ -367,11 +377,12 @@ class AccountMove(models.Model):
         string="Tipo de cambio a la fecha de factura",
         default=1.0)
 
-    tipo_operacion = fields.Selection(selection=[("01", "Venta Interna"), ("02", "Exportación")], default="01", required=True, copy=False)
+    tipo_operacion = fields.Selection(selection=[(
+        "01", "Venta Interna"), ("02", "Exportación")], default="01", required=True, copy=False)
 
-    invoice_type_code_catalog_51  = fields.Many2one("sunat.catalog.51",
-                                                    string="Tipo de Operación",
-                                                    default=lambda self:self.env.ref("gestionit_pe_fe.catalog_51_0101", raise_if_not_found=False))
+    invoice_type_code_catalog_51 = fields.Many2one("sunat.catalog.51",
+                                                   string="Tipo de Operación",
+                                                   default=lambda self: self.env.ref("gestionit_pe_fe.catalog_51_0101", raise_if_not_found=False))
 
     apply_same_discount_on_all_lines = fields.Boolean("Aplicar el mismo descuento en todas las líneas?", states={
                                                       'draft': [('readonly', False)]}, readonly=True)
@@ -379,10 +390,10 @@ class AccountMove(models.Model):
         "Descuento (%)", states={'draft': [('readonly', False)]}, readonly=True)
 
     def action_apply_same_discount_on_all_lines(self):
-        self.invoice_line_ids = [(1, line.id, {"discount": self.discount_on_all_lines if all([(True if ta not in ["31", "32", "33", "34", "35", "36", "37"] else False) 
-                                                                                                        for ta in line.tax_ids.mapped("tax_group_id.tipo_afectacion") ]) else 0 }) 
-                                                    for line in self.invoice_line_ids 
-                                ]
+        self.invoice_line_ids = [(1, line.id, {"discount": self.discount_on_all_lines if all([(True if ta not in ["31", "32", "33", "34", "35", "36", "37"] else False)
+                                                                                              for ta in line.tax_ids.mapped("tax_group_id.tipo_afectacion")]) else 0})
+                                 for line in self.invoice_line_ids
+                                 ]
 
     apply_global_discount = fields.Boolean("Aplicar descuento global", default=False, states={
                                            'draft': [('readonly', False)]}, readonly=True)
@@ -391,21 +402,22 @@ class AccountMove(models.Model):
         readonly=True,
         states={'draft': [('readonly', False)]},
         default=0.0)
-    
-    apply_retention = fields.Boolean("Aplicar Retención", default=False , states={'draft': [('readonly', False)]}, readonly=True)
 
-    retention_rate = fields.Float("% de Retención", default=0 , states={'draft': [('readonly', False)]}, readonly=True)
+    apply_retention = fields.Boolean("Aplicar Retención", default=False, states={
+                                     'draft': [('readonly', False)]}, readonly=True)
 
+    retention_rate = fields.Float("% de Retención", default=0, states={
+                                  'draft': [('readonly', False)]}, readonly=True)
 
     @api.onchange('line_ids',
-                'descuento_global', 
-                'apply_retention',
-                'apply_global_discount', 
-                'retention_rate',
-                'invoice_payment_term_id', 
-                'invoice_date_due', 
-                'invoice_cash_rounding_id', 
-                'invoice_vendor_bill_id')
+                  'descuento_global',
+                  'apply_retention',
+                  'apply_global_discount',
+                  'retention_rate',
+                  'invoice_payment_term_id',
+                  'invoice_date_due',
+                  'invoice_cash_rounding_id',
+                  'invoice_vendor_bill_id')
     def _onchange_recompute_dynamic_lines(self):
         super(AccountMove, self)._onchange_recompute_dynamic_lines()
         for record in self:
@@ -415,30 +427,36 @@ class AccountMove(models.Model):
             if not record.apply_global_discount:
                 record.descuento_global = 0
 
-            line_discount_global_ids = record.line_ids.filtered(lambda r: r.type_charge_or_discount_code == "02")
+            line_discount_global_ids = record.line_ids.filtered(
+                lambda r: r.type_charge_or_discount_code == "02")
             if len(line_discount_global_ids) > 0:
                 # line_ids += [(2, ldg.id) for ldg in line_discount_global_ids]
                 # record.line_ids = line_ids
-                record.line_ids = [(2, ldg.id) for ldg in line_discount_global_ids]
+                record.line_ids = [(2, ldg.id)
+                                   for ldg in line_discount_global_ids]
 
             if abs(record.descuento_global) > 0:
                 record.descuento_global = abs(record.descuento_global)
                 product = record.env.company.default_product_global_discount_id
                 company = record.company_id
                 if not product:
-                    raise UserError("Debes configurar el producto de descuento global en la sección de configuración de ventas")
+                    raise UserError(
+                        "Debes configurar el producto de descuento global en la sección de configuración de ventas")
 
-                tax_ids = record.line_ids.filtered(lambda r:r.type_charge_or_discount_code != "02").mapped("tax_ids")
-                
-                for tax in tax_ids.filtered(lambda r:r.tax_group_id.tipo_afectacion in ["10","20","30","40"]):
+                tax_ids = record.line_ids.filtered(
+                    lambda r: r.type_charge_or_discount_code != "02").mapped("tax_ids")
+
+                for tax in tax_ids.filtered(lambda r: r.tax_group_id.tipo_afectacion in ["10", "20", "30", "40"]):
                     if tax.price_include:
-                        base_amount = abs(sum(record.line_ids.filtered(lambda r:r.type_charge_or_discount_code != "02" and tax._origin.id in r.tax_ids.ids).mapped('price_total')))
+                        base_amount = abs(sum(record.line_ids.filtered(
+                            lambda r: r.type_charge_or_discount_code != "02" and tax._origin.id in r.tax_ids.ids).mapped('price_total')))
                         price_unit = (base_amount)*record.descuento_global/100
                     else:
-                        base_amount = abs(sum(record.line_ids.filtered(lambda r:r.type_charge_or_discount_code != "02" and tax._origin.id in r.tax_ids.ids).mapped('price_subtotal')))
-                        price_unit = (base_amount)*record.descuento_global/100 
+                        base_amount = abs(sum(record.line_ids.filtered(
+                            lambda r: r.type_charge_or_discount_code != "02" and tax._origin.id in r.tax_ids.ids).mapped('price_subtotal')))
+                        price_unit = (base_amount)*record.descuento_global/100
                     values = {
-                        "sequence":10000,
+                        "sequence": 10000,
                         "product_id": product.id,
                         "tax_ids": [(6, 0, [tax._origin.id])],
                         "name": product.name,
@@ -446,7 +464,7 @@ class AccountMove(models.Model):
                         "price_unit": -round(price_unit, 6),
                         "quantity": 1,
                         "currency_id": False if self.currency_id == company.currency_id else self.currency_id.id,
-                        "company_currency_id":company.currency_id.id,
+                        "company_currency_id": company.currency_id.id,
                         "account_id": product.product_tmpl_id.property_account_income_id.id,
                         "company_id": company.id,
                         "is_charge_or_discount": True,
@@ -455,7 +473,7 @@ class AccountMove(models.Model):
                         "exclude_from_invoice_tab": True
                     }
                     line_ids.append((0, 0, values))
-            
+
             if len(line_ids) > 0:
                 if type(self.id) == int:
                     record.write({"invoice_line_ids": line_ids})
@@ -464,7 +482,7 @@ class AccountMove(models.Model):
                     record.invoice_line_ids._onchange_price_subtotal()
                     record.line_ids._onchange_price_subtotal()
                     record._recompute_dynamic_lines(recompute_all_taxes=True)
-            #Fin Descuento Global
+            # Fin Descuento Global
 
             # Retención
             # line_ids = []
@@ -503,11 +521,9 @@ class AccountMove(models.Model):
             #         "exclude_from_invoice_tab": True
             #     }
             #     line_ids.append((0, 0, values))
-            
-            
+
             # Fin Retención
 
-            
             # if len(line_ids) > 0:
             #     if type(self.id) == int:
             #         record.write({"invoice_line_ids": line_ids})
@@ -516,7 +532,6 @@ class AccountMove(models.Model):
             #         record.invoice_line_ids._onchange_price_subtotal()
             #         record.line_ids._onchange_price_subtotal()
             #         record._recompute_dynamic_lines(recompute_all_taxes=True)
-
 
     total_venta_gravado = fields.Monetary(
         string="Gravado",
@@ -554,7 +569,8 @@ class AccountMove(models.Model):
         default=0.0,
         compute="_compute_amount")
 
-    amount_retention = fields.Monetary(string="Retención",default=0,compute="_compute_amount")
+    amount_retention = fields.Monetary(
+        string="Retención", default=0, compute="_compute_amount")
 
     # monto_en_letras = fields.Char("Monto en letras",compute=_compute_monto_en_letras)
     tiene_guia_remision = fields.Boolean(
@@ -643,14 +659,19 @@ class AccountMove(models.Model):
             else:
                 sign = -1
 
-            move.amount_untaxed = sign * (total_untaxed_currency if len(currencies) == 1 else total_untaxed)
-            move.amount_tax = sign * (total_tax_currency if len(currencies) == 1 else total_tax)
-            move.amount_total = sign * (total_currency if len(currencies) == 1 else total)
-            move.amount_residual = -sign * (total_residual_currency if len(currencies) == 1 else total_residual)
-            
+            move.amount_untaxed = sign * \
+                (total_untaxed_currency if len(currencies) == 1 else total_untaxed)
+            move.amount_tax = sign * \
+                (total_tax_currency if len(currencies) == 1 else total_tax)
+            move.amount_total = sign * \
+                (total_currency if len(currencies) == 1 else total)
+            move.amount_residual = -sign * \
+                (total_residual_currency if len(currencies) == 1 else total_residual)
+
             move.amount_untaxed_signed = -total_untaxed
             move.amount_tax_signed = -total_tax
-            move.amount_total_signed = abs(total) if move.type == 'entry' else -total
+            move.amount_total_signed = abs(
+                total) if move.type == 'entry' else -total
             move.amount_residual_signed = total_residual
 
             # currency = len(currencies) == 1 and currencies.pop() or move.company_id.currency_id
@@ -662,7 +683,7 @@ class AccountMove(models.Model):
                 line.price_subtotal
                 for line in move.line_ids
                 if len([line.price_subtotal for line_tax in line.tax_ids
-                                                if line_tax.tax_group_id.tipo_afectacion in ["10"]])
+                        if line_tax.tax_group_id.tipo_afectacion in ["10"]])
             ])
             # *(1-move.descuento_global/100.0)
 
@@ -685,14 +706,15 @@ class AccountMove(models.Model):
             # *(1-move.descuento_global/100.0)
 
             move.amount_igv = sum([
-                 line.price_total - line.price_subtotal
-                 for line in move.line_ids
-                 if len([line.price_subtotal for line_tax in line.tax_ids
-                         if line_tax.tax_group_id.tipo_afectacion in ["10"]])
-             ])
+                line.price_total - line.price_subtotal
+                for line in move.line_ids
+                if len([line.price_subtotal for line_tax in line.tax_ids
+                        if line_tax.tax_group_id.tipo_afectacion in ["10"]])
+            ])
             #  *(1-move.descuento_global/100.0)
 
-            move.total_descuento_global = (move.total_venta_gravado + move.total_venta_exonerada + move.total_venta_inafecto )*(move.descuento_global/100.0)/(1-move.descuento_global/100.0)
+            move.total_descuento_global = (move.total_venta_gravado + move.total_venta_exonerada +
+                                           move.total_venta_inafecto)*(move.descuento_global/100.0)/(1-move.descuento_global/100.0)
 
             move.total_venta_gratuito = sum([
                 line.price_unit*line.quantity
@@ -715,12 +737,12 @@ class AccountMove(models.Model):
                 if line.discount < 100
             ]) + move.total_descuento_global
 
-            move.amount_retention = (move.total_venta_gravado + move.total_venta_exonerada + move.total_venta_inafecto + move.amount_igv)*move.retention_rate/100
+            move.amount_retention = (move.total_venta_gravado + move.total_venta_exonerada +
+                                     move.total_venta_inafecto + move.amount_igv)*move.retention_rate/100
 
             # move.amount_untaxed = move.total_venta_gravado + \
             #         move.total_venta_exonerada + \
             #         move.total_venta_inafecto
-                    
 
             # move.amount_total = move.amount_untaxed + \
             #                     move.amount_igv
@@ -728,14 +750,14 @@ class AccountMove(models.Model):
             # move.amount_residual = - move.amount_total
 
     def button_draft(self):
-        super(AccountMove,self).button_draft()
+        super(AccountMove, self).button_draft()
         for move in self:
-            if move.estado_emision in ["E","A","O"] or move.estado_comprobante_electronico in ["1_ACEPTADO","2_ANULADO"]:
-                raise UserError("Este comprobante ya fue enviado a SUNAT y no puede ser editado.")
+            if move.estado_emision in ["E", "A", "O"] or move.estado_comprobante_electronico in ["1_ACEPTADO", "2_ANULADO"]:
+                raise UserError(
+                    "Este comprobante ya fue enviado a SUNAT y no puede ser editado.")
             else:
                 if move.current_log_status_id:
                     move.current_log_status_id.action_set_last_log_unlink()
-        
 
     def post(self):
         # Validar journal
@@ -777,7 +799,7 @@ class AccountMove(models.Model):
                         if len(msg_error) > 0:
                             msg = "\n\n".join(msg_error)
                             raise UserError(msg)
-                    
+
                     if move.journal_id.invoice_type_code_id == "07":
                         msg_error += move.validacion_nota_credito()
                         if len(msg_error) > 0:
@@ -822,8 +844,8 @@ class AccountMove(models.Model):
     # @api.model
     def _validate_inv_supplier_ref(self):
         if self.inv_supplier_ref:
-            if not (re.match("^F\w{3}[-]\d{1,8}$", self.inv_supplier_ref) or 
-                    re.match("^B\w{3}[-]\d{1,8}$", self.inv_supplier_ref) or 
+            if not (re.match("^F\w{3}[-]\d{1,8}$", self.inv_supplier_ref) or
+                    re.match("^B\w{3}[-]\d{1,8}$", self.inv_supplier_ref) or
                     re.match("^E\w{3}[-]\d{1,8}$", self.inv_supplier_ref)):
                 raise UserError(
                     "La referencia debe tener el formato XXXX-########")
@@ -871,13 +893,15 @@ class AccountMove(models.Model):
         if not self.invoice_date:
             self.invoice_date = now
         # now = datetime.strptime(fields.Date.today(), "%Y-%m-%d")
-        
+
         # if now < datetime.strptime(self.invoice_date, "%Y-%m-%d"):
         if now < self.invoice_date:
-            errors.append("* La fecha de la emisión del comprobante debe ser menor o igual a la fecha del día de hoy.")
+            errors.append(
+                "* La fecha de la emisión del comprobante debe ser menor o igual a la fecha del día de hoy.")
         elif abs(self.invoice_date - now).days > 3:
-        # elif abs(datetime.strptime(self.invoice_date, "%Y-%m-%d") - now).days > 3:
-            errors.append("* La fecha de Emisión debe tener como máximo una antiguedad de 3 días.")
+            # elif abs(datetime.strptime(self.invoice_date, "%Y-%m-%d") - now).days > 3:
+            errors.append(
+                "* La fecha de Emisión debe tener como máximo una antiguedad de 3 días.")
 
         return errors
 
@@ -950,7 +974,7 @@ class AccountMove(models.Model):
 
     def validacion_factura(self):
         errors = []
-        
+
         if self.partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code != "6":
             errors.append(
                 "* El cliente seleccionado debe tener como tipo de documento el RUC, esto es necesario para facturas.")
@@ -1005,18 +1029,20 @@ class AccountMove(models.Model):
     def validacion_nota_credito(self):
         errors = []
         if self.descuento_global != 0 or self.apply_global_discount:
-            errors.append("* No es posible aplicar un descuento global a una Nota de crédito. Esta opción solo esta disponible para Facturas y Boletas")
+            errors.append(
+                "* No es posible aplicar un descuento global a una Nota de crédito. Esta opción solo esta disponible para Facturas y Boletas")
         return errors
 
-    @api.constrains("has_detraction","invoice_type_code_catalog_51")
+    @api.constrains("has_detraction", "invoice_type_code_catalog_51")
     def check_detraction(self):
         for record in self:
             if not(record.has_detraction and record.invoice_type_code_catalog_51.code == "1001"):
                 if record.has_detraction:
-                    raise UserError("Si la factura tiene detracción, entonces el tipo de operación es 'Operación sujeta a detracción'")
+                    raise UserError(
+                        "Si la factura tiene detracción, entonces el tipo de operación es 'Operación sujeta a detracción'")
                 if record.invoice_type_code_catalog_51.code == "1001":
-                    raise UserError("Si el tipo de operación es 'Operación sujeta a detracción' entonces la debe activar el campo 'Detracción?'.")
-
+                    raise UserError(
+                        "Si el tipo de operación es 'Operación sujeta a detracción' entonces la debe activar el campo 'Detracción?'.")
 
     def generar_nota_debito(self):
         self.ensure_one()
@@ -1246,7 +1272,7 @@ class AccountMove(models.Model):
                     "target": "new",
                     "context": {
                             "default_account_invoice_id": self.id,
-                            "default_company_id":self.company_id.id
+                            "default_company_id": self.company_id.id
                     }
                 }
 
@@ -1307,10 +1333,12 @@ class AccountMove(models.Model):
 
     def cron_action_send_invoice(self):
         invoices = self.env["account.move"].search([["estado_emision", "in", ["P", "", False]],
-                                                    ["name", "not in",[False, "/"]],
+                                                    ["name", "not in",
+                                                        [False, "/"]],
                                                     ["state", "=", "posted"],
                                                     ["estado_comprobante_electronico", "in", [False, "-", "0_NO_EXISTE"]]], order="invoice_date asc")
-        invoice_ids = invoices.filtered(lambda r: r.journal_id.invoice_type_code_id in ["01"] and re.match("^F\w{3}-\d{1,8}$", r.name))
+        invoice_ids = invoices.filtered(lambda r: r.journal_id.invoice_type_code_id in [
+                                        "01"] and re.match("^F\w{3}-\d{1,8}$", r.name))
 
         credit_and_debit_note_ids = invoices.filtered(lambda r: r.journal_id.invoice_type_code_id in ["07", "08"] and re.match("^F\w{3}-\d{1,8}$", r.name) and (
             r.reversed_entry_id.estado_comprobante_electronico == "1_ACEPTADO" or r.debit_origin_id.estado_comprobante_electronico == "1_ACEPTADO"))
@@ -1342,11 +1370,16 @@ class AccountMove(models.Model):
     def cron_action_validez_comprobante(self):
         today = fields.Date.today()
         invoices = self.env["account.move"].sudo().search([("journal_id.electronic_invoice", "=", True),
-                                                           ("state", "in",["posted"]),
-                                                           ("name", "not in",[False, "/"]),
-                                                           ("invoice_date","<=", today),
-                                                           ("journal_id.electronic_invoice","=",True),
-                                                           ("journal_id.invoice_type_code_id", "in", ["01", "03", "07", "08"]),
+                                                           ("state", "in",
+                                                            ["posted"]),
+                                                           ("name", "not in",
+                                                            [False, "/"]),
+                                                           ("invoice_date",
+                                                            "<=", today),
+                                                           ("journal_id.electronic_invoice",
+                                                            "=", True),
+                                                           ("journal_id.invoice_type_code_id", "in", [
+                                                            "01", "03", "07", "08"]),
                                                            ("estado_comprobante_electronico", "in", ["-", "0_NO_EXISTE"])], limit=50, order="invoice_date asc")
         # _logger.info(invoices.mapped("name"))
         for inv in invoices:
@@ -1381,7 +1414,8 @@ class AccountMove(models.Model):
             return []
 
         sale_orders = self.mapped('invoice_line_ids.sale_line_ids.order_id')
-        stock_move_lines = sale_orders.mapped('picking_ids.move_lines.move_line_ids')
+        stock_move_lines = sale_orders.mapped(
+            'picking_ids.move_lines.move_line_ids')
 
         # Get the other customer invoices and refunds.
         ordered_invoice_ids = sale_orders.mapped('invoice_ids')\
@@ -1399,11 +1433,14 @@ class AccountMove(models.Model):
 
         # Get the previous invoice if any.
         previous_invoices = ordered_invoice_ids[:self_index]
-        last_invoice = previous_invoices[-1] if len(previous_invoices) else None
+        last_invoice = previous_invoices[-1] if len(
+            previous_invoices) else None
 
         # Get the incoming and outgoing sml between self.invoice_date and the previous invoice (if any).
-        self_datetime = max(self.invoice_line_ids.mapped('write_date')) if self.invoice_line_ids else None
-        last_invoice_datetime = max(last_invoice.invoice_line_ids.mapped('write_date')) if last_invoice else None
+        self_datetime = max(self.invoice_line_ids.mapped(
+            'write_date')) if self.invoice_line_ids else None
+        last_invoice_datetime = max(last_invoice.invoice_line_ids.mapped(
+            'write_date')) if last_invoice else None
 
         def _filter_incoming_sml(ml):
             if ml.state == 'done' and ml.location_id.usage == 'customer' and ml.lot_id:
@@ -1428,34 +1465,43 @@ class AccountMove(models.Model):
         qties_per_lot = defaultdict(lambda: 0)
         if self.type == 'out_refund':
             for ml in outgoing_sml:
-                qties_per_lot[ml.lot_id] -= ml.product_uom_id._compute_quantity(ml.qty_done, ml.product_id.uom_id)
+                qties_per_lot[ml.lot_id] -= ml.product_uom_id._compute_quantity(
+                    ml.qty_done, ml.product_id.uom_id)
             for ml in incoming_sml:
-                qties_per_lot[ml.lot_id] += ml.product_uom_id._compute_quantity(ml.qty_done, ml.product_id.uom_id)
+                qties_per_lot[ml.lot_id] += ml.product_uom_id._compute_quantity(
+                    ml.qty_done, ml.product_id.uom_id)
         else:
             for ml in outgoing_sml:
-                qties_per_lot[ml.lot_id] += ml.product_uom_id._compute_quantity(ml.qty_done, ml.product_id.uom_id)
+                qties_per_lot[ml.lot_id] += ml.product_uom_id._compute_quantity(
+                    ml.qty_done, ml.product_id.uom_id)
             for ml in incoming_sml:
-                qties_per_lot[ml.lot_id] -= ml.product_uom_id._compute_quantity(ml.qty_done, ml.product_id.uom_id)
+                qties_per_lot[ml.lot_id] -= ml.product_uom_id._compute_quantity(
+                    ml.qty_done, ml.product_id.uom_id)
         lot_values = []
         for lot_id, qty in qties_per_lot.items():
             if float_is_zero(qty, precision_rounding=lot_id.product_id.uom_id.rounding):
                 continue
             lot_values.append({
-                'product_id':lot_id.product_id.id,
+                'product_id': lot_id.product_id.id,
                 'product_name': lot_id.product_id.display_name,
                 'quantity': qty,
                 'uom_name': lot_id.product_uom_id.name,
                 'lot_name': lot_id.name,
             })
+
         return lot_values
+
 
 class AccountMoveReversal(models.TransientModel):
     _inherit = 'account.move.reversal'
 
-    tipo_comprobante_a_rectificar = fields.Selection(selection=[("00", "Otros"), ("01", "Factura"), ("03", "Boleta")])
-    journal_type = fields.Selection(selection=[("sale", "Ventas"), ("purchase", "Compras")], string="Tipo de diario")
+    tipo_comprobante_a_rectificar = fields.Selection(
+        selection=[("00", "Otros"), ("01", "Factura"), ("03", "Boleta")])
+    journal_type = fields.Selection(
+        selection=[("sale", "Ventas"), ("purchase", "Compras")], string="Tipo de diario")
 
-    credit_note_type = fields.Selection(string='Tipo de Nota de Crédito', selection="_selection_credit_note_type")
+    credit_note_type = fields.Selection(
+        string='Tipo de Nota de Crédito', selection="_selection_credit_note_type")
 
     def _selection_credit_note_type(self):
         return tnc
@@ -1463,11 +1509,14 @@ class AccountMoveReversal(models.TransientModel):
     @api.model
     def default_get(self, fields):
         res = super(AccountMoveReversal, self).default_get(fields)
-        move_ids = self.env['account.move'].browse(self.env.context['active_ids']) if self.env.context.get('active_model') == 'account.move' else self.env['account.move']
+        move_ids = self.env['account.move'].browse(self.env.context['active_ids']) if self.env.context.get(
+            'active_model') == 'account.move' else self.env['account.move']
 
-        res['refund_method'] = (len(move_ids) > 1 or move_ids.type == 'entry') and 'cancel' or 'refund'
+        res['refund_method'] = (
+            len(move_ids) > 1 or move_ids.type == 'entry') and 'cancel' or 'refund'
         res['residual'] = len(move_ids) == 1 and move_ids.amount_residual or 0
-        res['currency_id'] = len(move_ids.currency_id) == 1 and move_ids.currency_id.id or False
+        res['currency_id'] = len(
+            move_ids.currency_id) == 1 and move_ids.currency_id.id or False
         res['move_type'] = len(move_ids) == 1 and move_ids.type or False
         res['move_id'] = move_ids[0].id if move_ids else False
         res['tipo_comprobante_a_rectificar'] = move_ids[0].journal_id.invoice_type_code_id if move_ids else False
@@ -1475,7 +1524,8 @@ class AccountMoveReversal(models.TransientModel):
 
         if move_ids.exists():
             journals = self.env["account.journal"].sudo().search([('tipo_comprobante_a_rectificar', '=', res['tipo_comprobante_a_rectificar']),
-                                                                  ("invoice_type_code_id","=", "07"),
+                                                                  ("invoice_type_code_id",
+                                                                   "=", "07"),
                                                                   ("type", "=", res['journal_type'])]).ids
             res['journal_id'] = journals[0] if len(journals) > 0 else False
         else:
@@ -1486,19 +1536,22 @@ class AccountMoveReversal(models.TransientModel):
     def _prepare_default_reversal(self, move):
         res = super(AccountMoveReversal, self)._prepare_default_reversal(move)
         res.update({"sustento_nota": self.reason,
-                    "tipo_nota_credito": self.credit_note_type, 
+                    "tipo_nota_credito": self.credit_note_type,
                     "invoice_type_code": "07"})
         if self.credit_note_type in ["04"]:
-            res.update({"line_ids":[]})
+            res.update({"line_ids": []})
         return res
 
 
 class AccountDebitNote(models.TransientModel):
     _inherit = 'account.debit.note'
 
-    debit_note_type = fields.Selection(string='Tipo de Nota de Débito', selection="_selection_debit_note_type")
-    tipo_comprobante_a_rectificar = fields.Selection(selection=[("00", "Otros"), ("01", "Factura"), ("03", "Boleta")])
-    journal_type = fields.Selection(selection=[("sale", "Ventas"), ("purchase", "Compras")], string="Tipo de diario")
+    debit_note_type = fields.Selection(
+        string='Tipo de Nota de Débito', selection="_selection_debit_note_type")
+    tipo_comprobante_a_rectificar = fields.Selection(
+        selection=[("00", "Otros"), ("01", "Factura"), ("03", "Boleta")])
+    journal_type = fields.Selection(
+        selection=[("sale", "Ventas"), ("purchase", "Compras")], string="Tipo de diario")
 
     def _selection_debit_note_type(self):
         return tnd
@@ -1510,10 +1563,12 @@ class AccountDebitNote(models.TransientModel):
             'active_model') == 'account.move' else self.env['account.move']
         if move_ids.exists():
             # _logger.info(move_ids)
-            res.update({"journal_type": move_ids[0].journal_id.type,"tipo_comprobante_a_rectificar": move_ids[0].journal_id.invoice_type_code_id})
+            res.update({"journal_type": move_ids[0].journal_id.type,
+                        "tipo_comprobante_a_rectificar": move_ids[0].journal_id.invoice_type_code_id})
 
             journals = self.env["account.journal"].sudo().search([('tipo_comprobante_a_rectificar', '=', res['tipo_comprobante_a_rectificar']),
-                                                                  ("invoice_type_code_id","=", "08"),
+                                                                  ("invoice_type_code_id",
+                                                                   "=", "08"),
                                                                   ("type", "=", res['journal_type'])]).ids
             res['journal_id'] = journals[0] if len(journals) > 0 else False
 
@@ -1564,13 +1619,15 @@ class accountInvoiceSend(models.TransientModel):
                     data_signed_xml = log_status.signed_xml_data_without_format
 
                     if data_signed_xml:
-                        datas = base64.b64encode(data_signed_xml.encode("ISO-8859-1"))
+                        datas = base64.b64encode(
+                            data_signed_xml.encode("ISO-8859-1"))
                         attach_ids.append(invoice.env["ir.attachment"].create(
                             {"name": fname, "type": "binary", "datas": datas, "mimetype": "text/xml", "res_model": "account.move", "res_id": invoice.id, "res_name": invoice.name}).id)
 
                     response_xml = log_status.response_xml_without_format
                     if response_xml:
-                        datas = base64.b64encode(response_xml.encode("ISO-8859-1"))
+                        datas = base64.b64encode(
+                            response_xml.encode("ISO-8859-1"))
                         attach_ids.append(invoice.env["ir.attachment"].create(
                             {"name": cdr_fname, "type": "binary", "datas": datas, "mimetype": "text/xml", "res_model": "account.move", "res_id": invoice.id, "res_name": invoice.name}).id)
 

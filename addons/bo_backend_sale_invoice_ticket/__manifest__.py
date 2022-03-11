@@ -8,7 +8,7 @@
     'license': 'LGPL-3',
     'category': 'Sale / Invoice',
     'depends': [
-        'account', 'sale'
+        'account', 'sale', 'gestionit_pe_fe'
     ],
     'data': [
         'views/assets.xml',
