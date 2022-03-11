@@ -535,6 +535,11 @@ class AccountMove(models.Model):
         default=0.0,
         compute="_compute_amount")
 
+    total_venta_exportacion = fields.Monetary(
+        string="Exportación",
+        default=0.0,
+        compute="_compute_amount")
+
     amount_igv = fields.Monetary(
         string="IGV",
         default=0.0,
@@ -666,7 +671,7 @@ class AccountMove(models.Model):
                 for line in move.line_ids
                 if len(
                     [line.price_subtotal for line_tax in line.tax_ids
-                     if line_tax.tax_group_id.tipo_afectacion in ["40", "30"]])
+                     if line_tax.tax_group_id.tipo_afectacion in ["30"]])
             ])
             # *(1-move.descuento_global/100.0)
 
@@ -694,6 +699,13 @@ class AccountMove(models.Model):
                 for line in move.line_ids
                 if len([1 for line_tax in line.tax_ids
                         if line_tax.tax_group_id.tipo_afectacion in ["31", "32", "33", "34", "35", "36", "37"]])
+            ])
+
+            move.total_venta_exportacion = sum([
+                line.price_unit*line.quantity
+                for line in move.line_ids
+                if len([1 for line_tax in line.tax_ids
+                        if line_tax.tax_group_id.tipo_afectacion in ["40"]])
             ])
 
             move.total_descuentos = sum([
@@ -752,6 +764,7 @@ class AccountMove(models.Model):
                     msg_error += move.validar_diario()
                     msg_error += move.validar_fecha_emision()
                     msg_error += move.validar_lineas()
+                    msg_error += move.validacion_exportacion()
 
                     if move.journal_id.invoice_type_code_id == "01":
                         msg_error += move.validacion_factura()
@@ -965,16 +978,28 @@ class AccountMove(models.Model):
 
     def validacion_boleta(self):
         errors = []
-        if abs(self.amount_residual_signed) >= 700 and self.journal_id.invoice_type_code_id == '03':
-            if self.partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code not in ['1','4','6','7']:
-                errors.append("* El tipo de documento de identidad del cliente debe ser DNI/RUC/CE. Obligatorio para Boletas de venta mayores a S/ 700.")
-            else:
-                if self.partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code == '1':
-                    if not patron_dni.match(self.partner_id.vat or ""):
+        if self.invoice_type_code_catalog_51.code not in ["0200","0201","0202","0203","0204","0205","0206","0207","0208"]:
+            if abs(self.amount_residual_signed) >= 700 and self.journal_id.invoice_type_code_id == '03':
+                if self.partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code not in ['1','4','6','7']:
+                    errors.append("* El tipo de documento de identidad del cliente debe ser DNI/RUC/CE. Obligatorio para Boletas de venta mayores a S/ 700.")
+                else:
+                    if self.partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code == '1':
+                        if not patron_dni.match(self.partner_id.vat or ""):
+                            errors.append("* El Documento de identidad (DNI/CE) del cliente no tiene un formato válido. Obligatorio para Boletas de venta mayores a S/ 700.")
+                    elif self.partner_id.vat in ["0",False,""]:
                         errors.append("* El Documento de identidad (DNI/CE) del cliente no tiene un formato válido. Obligatorio para Boletas de venta mayores a S/ 700.")
-                elif self.partner_id.vat in ["0",False,""]:
-                    errors.append("* El Documento de identidad (DNI/CE) del cliente no tiene un formato válido. Obligatorio para Boletas de venta mayores a S/ 700.")
+        return errors
 
+    def validacion_exportacion(self):
+        errors = []
+        if self.invoice_type_code_catalog_51.code in ["0200","0201","0202","0203","0204","0205","0206","0207","0208"]:
+            if not ( self.partner_id.vat == "-" and self.partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code == "0"):
+                errors.append("El cliente debe tener tipo de documento 'DOC.TRI.SIN.RUC' y número de documento '-' (guión)")
+            if "40" not in self.invoice_line_ids.mapped("tax_ids.tax_group_id.tipo_afectacion"):
+                errors.append("El comprobante de exportación debe tener todas sus líneas con el impuesto de exportación.")
+            for prod in self.invoice_line_ids.mapped("product_id"):
+                if not bool(prod.sunat_code) or not bool(re.compile("\d{8}$").match(prod.sunat_code)):
+                    errors.append("El código sunat del producto {} no es válido.".format(prod.sunat_code))
         return errors
 
     def validacion_nota_credito(self):
