@@ -329,7 +329,7 @@
                                     <span t-field="l.name"/>
                                 </td>
                                 <!-- <td class="v_lot" t-if="lot_values"> -->
-                                <td class="v_lot" t-if="l.lot_name">
+                                <td class="v_lot" t-if="lot_values">
                                     <!-- <t t-as="serie" t-foreach="o._get_invoiced_lot_values()">
                                         <t t-if="serie.get('product_id') == l.product_id.id">
                                             <span t-esc="serie.get('lot_name')"/>
