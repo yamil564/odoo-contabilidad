@@ -422,10 +422,10 @@ def build_factura(data):
     if mntTotalOtrosCargos > 0:
         charge_total_amount = ChargeTotalAmount(amount=round( mntTotalOtrosCargos, 2), currencyID=tipoMoneda)
 
-    line_extension_amount = LineExtensionAmount(amount=round( mntNeto + mntExe + mntExo, 2), currencyID=tipoMoneda)
+    line_extension_amount = LineExtensionAmount(amount=round( mntNeto + mntExe + mntExo + mntExportacion, 2), currencyID=tipoMoneda)
     allowance_total_amount = AllowanceTotalAmount(amount=round(0, 2), currencyID=tipoMoneda)
     payable_amount = PayableAmount(amount=round(mntTotal, 2), currencyID=tipoMoneda)
-    tax_inclusive_amount = TaxInclusiveAmount(amount=round(mntNeto + mntExe + mntExo + mntTotalIgv, 2), currencyID=tipoMoneda)
+    tax_inclusive_amount = TaxInclusiveAmount(amount=round(mntNeto + mntExe + mntExo + mntTotalIgv +mntExportacion, 2), currencyID=tipoMoneda)
 
     legal_monetary_total = MonetaryTotal.LegalMonetaryTotal(line_extension_amount=line_extension_amount,
                                                             prepaid_amount=prepaid_amount,
@@ -507,19 +507,20 @@ def build_factura(data):
         tax_total.add_tax_subtotal(tax_subtotal)
 
     # IGV
-    tax_scheme_id = TaxSchemeID("1000", True)
-    tax_scheme = TaxScheme(tax_scheme_id, "IGV", "VAT")
-    category_id = CategoryID(category_id="S", add_attributes=False)
-    tax_category = TaxCategory(category_id=category_id, tax_scheme=tax_scheme)
-    taxable_amount = TaxableAmount(amount=mntNeto,
-                                   currencyID=tipoMoneda)
-    tax_amount = TaxAmount(amount=mntTotalIgv,
-                           currencyID=tipoMoneda)
-    tax_subtotal = TaxSubtotal(tax_amount=tax_amount,
-                               taxable_amount=taxable_amount,
-                               tax_category=tax_category)
+    if mntExportacion == 0:
+        tax_scheme_id = TaxSchemeID("1000", True)
+        tax_scheme = TaxScheme(tax_scheme_id, "IGV", "VAT")
+        category_id = CategoryID(category_id="S", add_attributes=False)
+        tax_category = TaxCategory(category_id=category_id, tax_scheme=tax_scheme)
+        taxable_amount = TaxableAmount(amount=mntNeto,
+                                    currencyID=tipoMoneda)
+        tax_amount = TaxAmount(amount=mntTotalIgv,
+                            currencyID=tipoMoneda)
+        tax_subtotal = TaxSubtotal(tax_amount=tax_amount,
+                                taxable_amount=taxable_amount,
+                                tax_category=tax_category)
 
-    tax_total.add_tax_subtotal(tax_subtotal)
+        tax_total.add_tax_subtotal(tax_subtotal)
 
     # ISC
     if mntTotalIsc > 0:
@@ -633,7 +634,7 @@ def build_factura(data):
 
         # 9995 -	Exportación
         if cod_afectacion_igv in ["40"]:
-            tax_scheme = TaxScheme("9995", "EXP", "EXP")
+            tax_scheme = TaxScheme("9995", "EXP", "FRE")
             tax_category = TaxCategory(category_id="G",
                                        percent=tasaIgv,
                                        tax_exemption_reason_code=line.get(
@@ -724,7 +725,7 @@ def build_factura(data):
 
             tax_total.add_tax_subtotal(tax_subtotal=tax_subtotal)
 
-        item = Item(description=line.get('nombreItem'))
+        item = Item(description=line.get('nombreItem'),commodity_classification=line.get("sunatCode",None))
         price = Price(price_amount=line.get('precioItemSinIgv'),
                       currency_id=tipoMoneda)
 

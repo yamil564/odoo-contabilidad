@@ -279,9 +279,11 @@
                 <field name="amount_by_group" widget="text" attrs="{'invisible':[('type','in',['out_invoice','out_refund'])]}"/>
                 <field name="total_venta_gravado" string="Monto Gravado"/>
                 <field name="amount_igv"/>
+                <field name="total_venta_exportacion" string="Monto Exportación" attrs="{'invisible':[('total_venta_exportacion','=',0)]}"/>
                 <field name="total_venta_inafecto" string="Monto Inafecto"/>
                 <field name="total_venta_exonerada" string="Monto Exonerado"/>
                 <field name="total_venta_gratuito" string="Monto Gratuito"/>
+                
                 <field name="total_descuento_global" attrs="{'invisible':[('invoice_type_code','not in',['01','03'])]}" string="Descuento Global"/>
                 <field name="total_descuentos" string="Total de Descuentos"/>
             </xpath>

@@ -428,6 +428,7 @@ def crear_json_fac_bol(self):
             "tipoMoneda": self.currency_id.name,
             "sustento": replace_false(self.sustento_nota),  # solo notas
             "tipoMotivoNotaModificatoria": str(self.tipo_nota_credito if self.invoice_type_code == "07" else "-"),
+            "mntExportacion": round(self.total_venta_exportacion, 2),
             "mntNeto": round(self.total_venta_gravado, 2),
             "mntExe": round(self.total_venta_inafecto, 2),
             "mntExo": round(self.total_venta_exonerada, 2),
@@ -655,7 +656,6 @@ def crear_json_fac_bol(self):
             "precioItemSinIgv": round((item.price_subtotal/item.quantity)/(1-item.discount/100), 10) if len([item for line_tax in item.tax_ids if line_tax.tax_group_id.tipo_afectacion in ["31", "32", "33", "34", "35", "36"]]) == 0 else 0,
             # Monto total de la línea sin IGV
             "montoItem": round(item.price_unit*item.quantity, 2) if item.no_onerosa else round(item.price_subtotal, 2),
-
             # "descuentoMonto": round((item.price_subtotal*item.discount/100.0)/(1-item.discount/100.0), 2),  # solo factura y boleta
             "codAfectacionIgv": item.tax_ids[0].tax_group_id.tipo_afectacion if len(item.tax_ids) else "",
             "tasaIgv": round(tasaIgv*100, 2),
@@ -685,6 +685,8 @@ def crear_json_fac_bol(self):
                 "afectacionICBPER":True,
                 "tasa_ICBPER":icbper.amount
             })
+        if item.product_id.sunat_code:
+            datac.update({"sunatCode":item.product_id.sunat_code})
 
         data_detalle.append(datac)
 

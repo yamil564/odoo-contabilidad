@@ -29,7 +29,6 @@ class ResCompany(models.Model):
 class ResConfigSettings(models.TransientModel):
     _inherit = "res.config.settings"
 
-    product_global_discount_id = fields.Many2one(
-        "product.product", related="company_id.default_product_global_discount_id", readonly=False)
-    account_account_retention_id = fields.Many2one(
-        "account.account", related="company_id.default_account_account_retention_id", readonly=False)
+    product_global_discount_id = fields.Many2one("product.product",
+                            related="company_id.default_product_global_discount_id",readonly=False)
+    account_account_retention_id = fields.Many2one("account.account",related="company_id.default_account_account_retention_id",readonly=False)

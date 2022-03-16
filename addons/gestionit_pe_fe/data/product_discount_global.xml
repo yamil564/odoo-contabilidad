@@ -5,7 +5,7 @@
         <field name="sale_ok" eval="False"/>
         <field name="purchase_ok" eval="False"/>
         <field name="taxes_id" eval="[(4,ref('l10n_pe.1_sale_tax_igv_18_included'))]"/>
-        <field name="is_charge_or_discount" eval="True"/>
+        <field name="is_charge_or_discount" eval="1"/>
         <field name="type_charge_or_discount_id" ref="gestionit_pe_fe.catalog_53_02"/>
         <field name="property_account_income_id" ref="l10n_pe.1_chart7312"/>
     </record>
