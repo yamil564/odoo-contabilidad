@@ -303,7 +303,7 @@
                             <th class="h_quantity">Cant.</th>
                             <th class="h_product_uom_id">U.M.</th>
                             <th class="h_name">Descripción</th>
-                            <th class="h_lot" t-if="lot_values">Serie/Lotes</th>
+                            <th class="h_lot" t-if="len(o.invoice_line_ids.filtered(lambda r: r.lot_name != False)) > 0">Serie/Lotes</th>
                             <th class="h_value_unit">V.U.</th>
                             <th class="h_price_unit">P.U.</th>
                             <th class="h_discount" t-if="display_discount">Dscto.(%)</th>
@@ -329,7 +329,7 @@
                                     <span t-field="l.name"/>
                                 </td>
                                 <!-- <td class="v_lot" t-if="lot_values"> -->
-                                <td class="v_lot" t-if="lot_values">
+                                <td class="v_lot"  t-if="len(o.invoice_line_ids.filtered(lambda r: r.lot_name != False)) > 0">
                                     <!-- <t t-as="serie" t-foreach="o._get_invoiced_lot_values()">
                                         <t t-if="serie.get('product_id') == l.product_id.id">
                                             <span t-esc="serie.get('lot_name')"/>
@@ -338,8 +338,8 @@
                                         </t>
                                     </t> -->
                                     <!-- <span t-field="l.lot_name"/> -->
-                                    <t t-if="len(l.lot_name.split(',')) > 1">
-
+                                    
+                                    <t t-if="l.lot_name != False and len(l.lot_name.split(',')) > 1">
                                         <t t-foreach="l.lot_name.split(',')" t-as="lote">
                                             <p t-esc="lote" style="margin:0 !important;padding:0 !important;"/>
                                         </t>
