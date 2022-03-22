@@ -156,6 +156,13 @@ class WebsiteSaleExtend(WebsiteSale):
         _logger.info(checkout)
         Partner = request.env['res.partner']
         if mode[0] == 'new':
+            vat = checkout.get("vat")
+            if vat:
+                commercial_partner_id = Partner.sudo().search([("vat","=",vat),("parent_id","=",False)])
+                if commercial_partner_id.exists():                
+                    checkout.update({"commercial_partner_id":commercial_partner_id[0].id,"parent_id":commercial_partner_id[0].id})
+                del checkout["vat"]
+
             partner = Partner.sudo().with_context(tracking_disable=True).create(checkout)
             partner.state_id = int(all_values['state_id'])
             partner.province_id = int(all_values['province_id'])
