@@ -35,7 +35,7 @@
             }),
         ]"/>
     </record>
-
+<!--
     <record id="sale_tax_icbper" model="account.tax">
         <field name="name">ICBPER</field>
         <field name="description">ICBPER</field>
@@ -67,7 +67,7 @@
                 'account_id': ref('l10n_pe.chart6443'),
             }),
         ]"/>
-    </record>
+    </record>-->
 
     <record id="sale_tax_exp" model="account.tax">
         <field name="name">Exportación</field>
