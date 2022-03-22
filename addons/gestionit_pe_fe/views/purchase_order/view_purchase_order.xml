@@ -9,6 +9,12 @@
             <xpath expr="//field[@name='order_line']//tree//field[@name='product_uom']" position="attributes">
                 <attribute name="options">{'no_create':True,'no_open': True,'no_create_edit':True}</attribute>
             </xpath>
+
+            <field name="date_approve" position="after">
+                <field name="picking_type_id" position="move"/>
+            </field>
+
+            
         </field>
     </record>
 
