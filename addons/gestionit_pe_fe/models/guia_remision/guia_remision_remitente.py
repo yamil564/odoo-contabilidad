@@ -14,7 +14,7 @@ import json
 import re
 from odoo.addons.gestionit_pe_fe.models.account.oauth import send_doc_xml
 # from odoo.addons.gestionit_pe_fe.models.account.api_facturacion import api_models
-from odoo.addons.gestionit_pe_fe.models.account.api_facturacion.controllers import xml_validation, sunat_response_handle, main,firma
+from odoo.addons.gestionit_pe_fe.models.account.api_facturacion.controllers import xml_validation, sunat_response_handle, main, firma
 import logging
 _logger = logging.getLogger(__name__)
 
@@ -106,10 +106,12 @@ class GuiaRemisionLine(models.Model):
 class ResPartner(models.Model):
     _inherit = "res.partner"
     es_conductor = fields.Boolean(string="Es Conductor", default=False)
-    es_empresa_transporte_publico = fields.Boolean(string="Es empresa de transporte publico", default=False)
-    vehiculo_ids = fields.One2many("gestionit.vehiculo", "propietario_id", string="Vehículos")
+    es_empresa_transporte_publico = fields.Boolean(
+        string="Es empresa de transporte publico", default=False)
+    vehiculo_ids = fields.One2many(
+        "gestionit.vehiculo", "propietario_id", string="Vehículos")
     licencia = fields.Char("Licencia")
-    
+
     def action_view_conductores_privados(self):
         return {
             'name': 'Conductores Privados',
@@ -125,7 +127,7 @@ class ResPartner(models.Model):
                 "default_country_id": 173
             }
         }
-    
+
 
 class Vehiculo(models.Model):
     _name = 'gestionit.vehiculo'
@@ -301,7 +303,8 @@ class GuiaRemision(models.Model):
     @api.model
     def default_get(self, flds):
         res = super(GuiaRemision, self).default_get(flds)
-        journals = self.env["account.journal"].search([("invoice_type_code_id", "=", "09"),("company_id","=",res.get("company_id",False))])
+        journals = self.env["account.journal"].search(
+            [("invoice_type_code_id", "=", "09"), ("company_id", "=", res.get("company_id", False))])
         if len(journals) > 0:
             res.update({
                 "journal_id": journals[0].id
@@ -516,12 +519,26 @@ class GuiaRemision(models.Model):
                                                 "stock_picking_id": False,
                                                 } for inv_line in invoice_line]
 
+                # for line in guia_remision_lines:
+                #     if line["product_id"] not in guia_remision_lines_temp:
+                #         guia_remision_lines_temp[line["product_id"]] = line
+                #     else:
+                #         guia_remision_lines_temp[line["product_id"]
+                #                                  ]["qty"] += line["qty"]
+
+                index = 0
                 for line in guia_remision_lines:
-                    if line["product_id"] not in guia_remision_lines_temp:
-                        guia_remision_lines_temp[line["product_id"]] = line
+                    if (line["product_id"], line["uom_id"]) not in list(map(lambda x: (guia_remision_lines_temp[x]['product_id'], guia_remision_lines_temp[x]['uom_id']), guia_remision_lines_temp)):
+                        guia_remision_lines_temp[index] = line
                     else:
-                        guia_remision_lines_temp[line["product_id"]
+                        product_index = list(filter(lambda x: (guia_remision_lines_temp[x]['product_id'], guia_remision_lines_temp[x]['uom_id']) == (
+                            line["product_id"], line["uom_id"]), guia_remision_lines_temp))
+                        # _logger.info({'REPETIDO': list(filter(lambda x: (guia_remision_lines_temp[x]['product_id'], guia_remision_lines_temp[x]['uom_id']) == (
+                        #     line["product_id"], line["uom_id"]), guia_remision_lines_temp))})
+
+                        guia_remision_lines_temp[product_index[0]
                                                  ]["qty"] += line["qty"]
+                    index += 1
 
                 guia_remision_lines = list(guia_remision_lines_temp.values())
                 record.guia_remision_line_ids = [
@@ -555,8 +572,9 @@ class GuiaRemision(models.Model):
 
     # @api.depends("guia_remision_line_ids")
     def compute_peso_bruto(self):
-        self.peso_bruto_total = sum([line.product_id.weight*line.qty*(line.uom_id.factor_inv/line.product_id.uom_id.factor_inv) for line in self.guia_remision_line_ids])
- 
+        self.peso_bruto_total = sum([line.product_id.weight*line.qty*(line.uom_id.factor_inv /
+                                                                      line.product_id.uom_id.factor_inv) for line in self.guia_remision_line_ids])
+
         # ENVÍO
     fecha_emision = fields.Date(string="Fecha de Emisión", states={
                                 'validado': [('readonly', True)]})
@@ -565,7 +583,8 @@ class GuiaRemision(models.Model):
 
     peso_bruto_total = fields.Float(string="Peso Bruto Total (KGM)", states={
                                     'validado': [('readonly', True)]}, default=0.0)
-    calc_peso = fields.Boolean(string="Calc peso", related="company_id.calc_peso")
+    calc_peso = fields.Boolean(
+        string="Calc peso", related="company_id.calc_peso")
     # peso_bruto_total = fields.Float(string="Peso Bruto Total (KGM)", states={
     #                                 'validado': [('readonly', True)]}, compute="_compute_peso_bruto")
 
@@ -850,7 +869,6 @@ class GuiaRemision(models.Model):
             # record.estado_emision = "B"
             record.state = "borrador"
             record.numero = "Guía de Remisión Electrónica"
-            
 
     def validar_transporte(self):
         errors = []
@@ -934,11 +952,14 @@ class GuiaRemision(models.Model):
             next_number = self.journal_id.sequence_number_next
             numero = serie + "-" + str(next_number).zfill(8)
             if self.estado_emision in ["A", "O"]:
-                raise UserError("La Guía de Remisión ya ha sido emitida y tiene estado de Aceptada.")
+                raise UserError(
+                    "La Guía de Remisión ya ha sido emitida y tiene estado de Aceptada.")
             if self.estado_emision in ["R"]:
-                raise UserError("La Guía de Remisión ya ha sido emitida y tiene estado de Rechazada.")
+                raise UserError(
+                    "La Guía de Remisión ya ha sido emitida y tiene estado de Rechazada.")
             if not next_number or not re.match('[T]\d{3}[-]\d{1,8}$', str(numero)):
-                raise UserError("El codigo no tiene el formato correcto: " + str(numero))
+                raise UserError(
+                    "El codigo no tiene el formato correcto: " + str(numero))
         else:
             numero = self.name
             if not re.match('[T]\d{3}[-]\d{1,8}$', str(self.name)):
@@ -1077,19 +1098,21 @@ class GuiaRemision(models.Model):
             numero = serie + "-" + str(next_number).zfill(8)
             # _logger.info(self.env["gestionit.guia_remision"].search([("numero", "=", numero), ("state", '=', 'validado')]))
             if self.env["gestionit.guia_remision"].search([("numero", "=", numero), ("state", '=', 'validado')]).exists():
-                raise UserError("El documento de guía de remisión ya existe 1.")
+                raise UserError(
+                    "El documento de guía de remisión ya existe 1.")
             self.state = "validado"
             self.numero = self.journal_id.sequence_id.next_by_id()
             self.name = self.numero
         else:
             if self.env["gestionit.guia_remision"].search([("numero", "=", self.name), ("state", '=', 'validado')]).exists():
-                raise UserError("El documento de guía de remisión ya existe 2.")
+                raise UserError(
+                    "El documento de guía de remisión ya existe 2.")
             self.numero = self.name
             self.state = "validado"
-            
+
     def generar_log_envio(self):
         data = self.generar_comprobante_json()
-        self.request_json = json.dumps(data,indent=4)
+        self.request_json = json.dumps(data, indent=4)
         credentials = {
             "ruc": data["company"]["numDocEmisor"],
             'razon_social': data["company"]["nombreEmisor"],
@@ -1098,22 +1121,22 @@ class GuiaRemision(models.Model):
             'key_private': data["company"]["key_private"],
             'key_public': data["company"]["key_public"],
         }
-        request = main.handle(data,credentials)
+        request = main.handle(data, credentials)
         log_status = {
-            "guia_remision_id":self.id,
+            "guia_remision_id": self.id,
             "request_json": self.request_json,
             "name": self.name,
             "date_request": fields.Datetime.now(),
             "date_issue": self.fecha_emision,
-            "status":"P",
-            "digest_value":request.get("digest_value","-"),
-            "signed_xml_data":request.get("signed_xml","-"),
-            "signed_xml_with_creds":parseString(request.get("final_xml")).toprettyxml(" ") if request.get("final_xml",False) else "",
-            "company_id":self.company_id.id
+            "status": "P",
+            "digest_value": request.get("digest_value", "-"),
+            "signed_xml_data": request.get("signed_xml", "-"),
+            "signed_xml_with_creds": parseString(request.get("final_xml")).toprettyxml(" ") if request.get("final_xml", False) else "",
+            "company_id": self.company_id.id
         }
-        log_status_obj = self.env["account.log.status"].sudo().create(log_status)
+        log_status_obj = self.env["account.log.status"].sudo().create(
+            log_status)
         log_status_obj.sudo().action_set_last_log()
-
 
     def send_gr_xml(self):
         if not self.current_log_status_id:
@@ -1123,11 +1146,9 @@ class GuiaRemision(models.Model):
             self.current_log_status_id.write(result)
         except Exception as e:
             return result
-        
 
-
-    
     # Valida y registra la guía de remisión
+
     def post(self):
         errors = self.validar_restricciones()
         if errors:
@@ -1136,9 +1157,6 @@ class GuiaRemision(models.Model):
         self.generar_log_envio()
         if self.journal_id.send_async:
             self.send_gr_xml()
-            
-
-
 
     def btn_validar_comprobante(self):
         if self.state == "validado":
@@ -1152,9 +1170,8 @@ class GuiaRemision(models.Model):
         self.validar_comprobante()
         return self.enviar_comprobante()
 
-
-
     # @api.multi
+
     def unlink(self):
         l = []
         for record in self:
@@ -1213,7 +1230,7 @@ class GuiaRemision(models.Model):
                 'key_private': data["company"]["key_private"],
                 'key_public': data["company"]["key_public"],
             }
-            response = main.handle(data,credentials)
+            response = main.handle(data, credentials)
             # _logger.info("R json")
             # _logger.info(response)
             # self.response_json = json.dumps(r.json(), indent=4)
@@ -1313,6 +1330,7 @@ class ResCompany(models.Model):
     _inherit = 'res.company'
 
     calc_peso = fields.Boolean(string="Calcular peso")
+
 
 class ResConfigSettings(models.TransientModel):
     _inherit = "res.config.settings"

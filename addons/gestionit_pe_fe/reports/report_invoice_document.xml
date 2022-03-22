@@ -561,7 +561,7 @@
                     </table>
                 </div>
             </div>
-            <div class="row">
+            <div class="row" id="qr-section">
                 <div class="col-12" t-if="'{}_{}'.format(o.type,o.journal_id.invoice_type_code_id) in ['out_invoice_01','out_invoice_03','out_refund_07','out_invoice_08']">
                     <!-- <div class="pb-3" name="amount_letter">
                         <span t-esc="'SON: {}'.format(o.to_word(o.amount_total,o.currency_id.name).upper())"/>
