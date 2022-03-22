@@ -74,12 +74,33 @@
         </xpath>
 
         <xpath expr="//div[@id='div_phone']" position="after">
-            <div class="col-12" t-if="mode[1] == 'billing'">
+            <div class="col-12" t-if="mode == ('edit','billing')">
                 <label class="col-form-label" for="vat">Tipo de documento de identidad </label>
                 <div class="form-group d-flex flex-row justify-content-between flex-wrap">
                     <t t-foreach="request.env['l10n_latam.identification.type'].sudo().search([])" t-as="idt">
                         <div class="form-check pt-2">
-                            <input class="form-check-input" type="radio" name="l10n_latam_identification_type_id" id="l10n_latam_identification_type_id" t-att-id="idt.name" t-att-value="idt.id" t-att-data-itc="idt.l10n_pe_vat_code" t-att-checked="'l10n_latam_identification_type_id' in checkout and checkout['l10n_latam_identification_type_id'].id == idt.id or idt.name=='DNI'" />
+                            <input class="form-check-input" type="radio" name="l10n_latam_identification_type_id" 
+                                    id="l10n_latam_identification_type_id" 
+                                    t-att-id="idt.name" t-att-value="idt.id" 
+                                    t-att-data-itc="idt.l10n_pe_vat_code" 
+                                    t-att-checked="checkout.l10n_latam_identification_type_id.id == idt.id or idt.name=='DNI'" />
+                            <label class="form-check-label" t-att-for="idt.name" style="font-weight:100 !important">
+                                <t t-esc="idt.name"/>
+                            </label>
+                        </div>
+                    </t>
+                </div>
+            </div>
+            <div class="col-12" t-if="mode == ('new','billing')">
+                <label class="col-form-label" for="vat">Tipo de documento de identidad </label>
+                <div class="form-group d-flex flex-row justify-content-between flex-wrap">
+                    <t t-foreach="request.env['l10n_latam.identification.type'].sudo().search([])" t-as="idt">
+                        <div class="form-check pt-2">
+                            <input class="form-check-input" type="radio" name="l10n_latam_identification_type_id" 
+                                    id="l10n_latam_identification_type_id" 
+                                    t-att-id="idt.name" t-att-value="idt.id" 
+                                    t-att-data-itc="idt.l10n_pe_vat_code" 
+                                    t-att-checked="'l10n_latam_identification_type_id' in checkout and checkout['l10n_latam_identification_type_id'] == idt.id or idt.name=='DNI'" />
                             <label class="form-check-label" t-att-for="idt.name" style="font-weight:100 !important">
                                 <t t-esc="idt.name"/>
                             </label>
@@ -89,7 +110,8 @@
             </div>
             <!-- <t t-esc="checkout.vat"/> -->
 
-            <t t-if="mode == ('new', 'billing') or (mode == ('edit', 'billing') and (can_edit_vat or 'vat' in checkout and checkout['vat']))">
+            <!-- <t t-if="mode == ('new', 'billing') or (mode == ('edit', 'billing') and (can_edit_vat or 'vat' in checkout and checkout['vat']))"> -->
+            <t t-if="mode[1] == 'billing'">
                 <div t-attf-class="form-group #{error.get('vat') and 'o_has_error' or ''} col-lg-6 div_vat">
                     <label class="col-form-label " for="vat">Número de documento </label>
                     <input type="text" name="vat" id="vat" t-attf-class="form-control #{error.get('vat') and 'is-invalid' or ''}" t-att-value="'vat' in checkout and checkout['vat']" t-att-readonly="'1' if 'vat' in checkout and checkout['vat'] and not can_edit_vat else None" t-att-title="'Changing VAT number is not allowed once document(s) have been issued for your account. Please contact us directly for this operation.' if 'vat' in checkout and checkout['vat'] and not can_edit_vat else None" />
@@ -102,7 +124,7 @@
         </xpath>
 
         <xpath expr="//div[contains(@t-attf-class, 'div_country')]" position="replace">
-            <div class="col-md-3 pt-3">
+            <div class="col-md-3 pt-3 d-none" >
                 <div class="form-floating pais">
                     <select class="form-select" id="country" aria-label="Floating label select" required="" >
                         <option value="0" selected="" disabled="">Seleccionar</option>
@@ -129,8 +151,7 @@
             <t t-set="departamentos" t-value="request.env['res.country.state']"/>
             <t t-set="provincias" t-value="request.env['res.country.state']"/>
             <t t-set="distritos" t-value="request.env['res.country.state']"/>
-
-            <t t-if="mode == ('edit','billing') or checkout != {}">
+            <t t-if="(mode == ('edit','billing') or checkout != {}) and len(error) == 0">
                 <t t-if="country">
                     <t t-set="departamentos" t-value="request.env['res.country.state'].sudo().search([('country_id','=',country.id),('state_id','=',False),('province_id','=',False)])"/>
                 </t>
@@ -146,7 +167,23 @@
                 </t>
                 <t t-set="distrito" t-value="checkout.district_id"/>
             </t>
+            <t t-else="">
+                <t t-if="country">
+                    <t t-set="departamentos" t-value="request.env['res.country.state'].sudo().search([('country_id','=',country.id),('state_id','=',False),('province_id','=',False)])"/>
+                </t>
+                <t t-set="departamento" t-value="request.env['res.country.state'].sudo().browse(int(checkout.get('state_id',0)))"/>
 
+                <t t-if="departamento">
+                    <t t-set="provincias" t-value="request.env['res.country.state'].sudo().search([('country_id','=',country.id),('state_id','=',departamento.id),('province_id','=',False)])"/>
+                </t>
+                <t t-set="provincia" t-value="request.env['res.country.state'].sudo().browse(int(checkout.get('province_id',0)))"/>
+
+                <t t-if="provincia">
+                    <t t-set="distritos" t-value="request.env['res.country.state'].sudo().search([('country_id','=',country.id),('state_id','=',departamento.id),('province_id','=',provincia.id)])"/>
+                </t>
+                <t t-set="distrito" t-value="request.env['res.country.state'].sudo().browse(int(checkout.get('district_id',0)))"/>
+            </t>
+            
             <div class="col-md-3 pt-3 pb-3">
                 <div class="form-floating departamento">
                     <select class="form-select" name="state_id" id="departamento" aria-label="Floating label select" required="" >

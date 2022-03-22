@@ -48,9 +48,9 @@ class ResPartner(models.Model):
         return super(ResPartner, self).with_context(show_vat=True).onchange_partner_id()
 
 
-    @api.model
-    def _commercial_fields(self):
-        return []
+    # @api.model
+    # def _commercial_fields(self):
+    #     return []
     
     @api.model
     def _check_valid_ruc(self,ruc):

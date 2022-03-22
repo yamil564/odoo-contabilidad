@@ -44,15 +44,15 @@
         <field name="name">view.account.journal.serie.fe</field>
         <field name="model">account.journal</field>
         <field name="arch" type="xml">
-            <tree>
-                <field name="invoice_type_code_id" string="Tipo de comprobante"/>
+            <tree multi_edit="1">
+                <field name="invoice_type_code_id" string="Tipo de comprobante" readonly="1"/>
                 <!-- <field name="invoice_type"/> -->
-                <field name="name" string="Nombre"/>
-                <field name="code" string="Serie"/>
-                <field name="sequence_number_next" string="Siguiente número"/>
+                <field name="name" string="Nombre" readonly="1"/>
+                <field name="code" string="Serie" readonly="1"/>
+                <field name="sequence_number_next" string="Siguiente número" readonly="1"/>
                 <field name="tipo_envio" string="Tipo de envío"/>
                 <field name="send_async" string="Envío asíncrono"/>
-                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="company_id" groups="base.group_multi_company" readonly="1"/>
             </tree>
         </field>
     </record>

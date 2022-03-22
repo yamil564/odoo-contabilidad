@@ -98,7 +98,7 @@ odoo.define("select_invoice_from_website.website_sale",function(require){
                         {'type': type, 'vat': vat, 'country': country})
             .then(function (result) {
               if (result.validate){
-                $('#country').val(1);
+                $('#country').val(result["country"]);
                 $('#departamento').val(0)
                 $('#provincia').val(0)
                 $('#distrito').val(0)
@@ -113,6 +113,19 @@ odoo.define("select_invoice_from_website.website_sale",function(require){
 
                   if (result.razon){
                     $('#company_name').val(result['razon'])
+                  }
+
+                  if (result.country){
+                    $('#country').val(result['country'])
+                    ajax.jsonRpc('/get-departamento', 'call',
+                     {'pais': result['country']}).then(function (data) {
+                            for (let i = 0; i < data.length; i++) {
+                                $(self.$el).find("#departamento").append($('<option /}>').val(data[i].id).text(data[i].name));
+                                if (data[i].id == result['departamento']){
+                                    $('#departamento').val(data[i].id)
+                                }
+                            }
+                    })
                   }
 
                   if (result.department){
