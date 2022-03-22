@@ -325,7 +325,8 @@ odoo.define('gestionit_pe_fe_pos.screens', function(require){
                     }
                 }
             }
-            else {
+            //? AQUI
+            else if(this.pos.config.required_journal) {
                 self.gui.show_popup('confirm', {
                     'title': 'No ha seleccionado diario para de venta',
                     'body': 'Seleccione un diario o tipo de comprobante para la venta.',

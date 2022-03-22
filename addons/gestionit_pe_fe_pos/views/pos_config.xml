@@ -31,6 +31,18 @@
                         </div>
                     </div>
                 </div>
+                
+                <div class="col-12 col-lg-6 o_setting_box">
+                    <div class="o_setting_left_pane">
+                        <field name="required_journal"/>
+                    </div>
+                    <div class="o_setting_right_pane">
+                        <label for="required_journal" string="Diario obligatorio"/>
+                        <div class="text-muted">
+                            Evita generar ventas sin haber seleccionado un diario para facturación.
+                        </div>
+                    </div>
+                </div>
                 <div class="col-12 col-lg-6 o_setting_box" id="receipt_show_logo">
                     <div class="o_setting_left_pane">
                         <field name="receipt_show_logo"/>
