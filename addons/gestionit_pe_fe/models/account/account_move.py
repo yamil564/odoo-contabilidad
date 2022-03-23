@@ -136,13 +136,6 @@ class AccountMove(models.Model):
                 "invoice_type_code") and r.type == res.get("journal_type"))
             if len(journal_ids) > 0:
                 res.update({"journal_id": journal_ids[0].id})
-            # else:
-            #     res.update({"journal_id":False})
-        # else:
-        #     res.update({
-        #         "warehouse_id": False,
-        #         "journal_id": False
-        #     })
 
         if refund_id:
             refund_obj = self.env["account.move"].browse(refund_id)
