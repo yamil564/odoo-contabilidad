@@ -9,6 +9,14 @@ _logger = logging.getLogger(__name__)
 class ResPartner(models.Model):
     _inherit = "res.partner"
 
+    @api.constrains('vat','l10n_latam_identification_type_id')
+    def _check_limitation_partners(self):
+        for record in self:
+            company = self.env['res.company'].browse(self.env.company.id)
+            if company.limit_change_contacts:
+                if record.total_invoiced:
+                    raise UserError("No puede modificar datos de un contacto que ya ha completado alguna factura.")
+
     @api.model
     def default_get(self,field_list):
         res = super(ResPartner, self).default_get(field_list)
@@ -17,7 +25,7 @@ class ResPartner(models.Model):
         return res
 
     def create_address_contact(self):
-        
+
         self.create({
             'parent_id': self.id,
             'name': self.name+' - Entrega',
