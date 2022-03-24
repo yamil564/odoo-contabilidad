@@ -5,4 +5,7 @@
     <record id="res_groups_anulacion_buttons" model="res.groups">
         <field name="name">Permitir Anulaciones de Comprobantes</field>
     </record>
+    <record id="res_groups_change_partners" model="res.groups">
+        <field name="name">Prohibe la modificación de contactos facturados</field>
+    </record>
 </odoo>

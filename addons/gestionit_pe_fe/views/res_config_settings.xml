@@ -46,20 +46,6 @@
                             </div>
                         </div>
                     </div>
-                    <h2>Limitaciones de Contactos</h2>
-                    <div class="row mt16 o_settings_container">
-                        <div class="col-12 col-lg-6 o_setting_box">
-                            <div class="o_setting_left_pane">
-                                <field name="limit_change_contacts"/>
-                            </div>
-                            <div class="o_setting_right_pane" name="limit_change_contacts">
-                                <label for="limit_change_contacts"/>
-                                <div class="text-muted">
-                                    Prohibe la modificación de Contactos Facturados
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </xpath>
         </field>

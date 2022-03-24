@@ -21,7 +21,6 @@ class ResCompany(models.Model):
     default_product_global_discount_id = fields.Many2one(
         "product.product", domain=[('is_charge_or_discount', '=', True)])
     default_account_account_retention_id = fields.Many2one("account.account")
-    limit_change_contacts = fields.Boolean('Prohibe Cambio de Contactos')
 
     def get_username_sunat(self):
         return "{}{}".format(self.vat, self.sunat_user)
@@ -33,4 +32,3 @@ class ResConfigSettings(models.TransientModel):
     product_global_discount_id = fields.Many2one("product.product",
                             related="company_id.default_product_global_discount_id",readonly=False)
     account_account_retention_id = fields.Many2one("account.account",related="company_id.default_account_account_retention_id",readonly=False)
-    limit_change_contacts = fields.Boolean('Prohibe Cambio de Contactos', related='company_id.limit_change_contacts', readonly=False)
