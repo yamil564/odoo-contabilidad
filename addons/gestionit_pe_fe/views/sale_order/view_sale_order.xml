@@ -108,15 +108,19 @@
         </field>
     </record>
 
-    <!-- <record id="view_form_add_btn_guia_remision" model="ir.ui.view">
-            <field name="name">view.for.add.btn.guia.remision</field>
-            <field name="model">sale.order</field>
-            <field name="inherit_id" ref="sale_management.sale_order_view_form"/>
-            <field name="arch" type="xml">
-                <xpath expr="//button[@name='action_quotation_send']" position="before">
-                    <button string="Guía de Remisión" name="so_action_open_guia_remision" class="oe_highlight" type="object"/>
-                </xpath>
-            </field>
-        </record> -->
 
+    <record id="custom_view_order_form_inherit_sale_stock" model="ir.ui.view">
+        <field name="name">custom.view.order.form.inherit.sale.stock</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale_stock.view_order_form_inherit_sale_stock"/>
+        <field name="arch" type="xml">
+            <field name="warehouse_id" position="before">
+                <field name="warehouses_allowed_ids" widget="many2many_tags" invisible="True"/>
+            </field>
+            <field name="warehouse_id" position="attributes">
+                <attribute name="domain">[('id','in',warehouses_allowed_ids)]</attribute>
+                <attribute name="options">{'no_open':True,'no_create':True,'no_quick_create':True,'no_edit':True}</attribute>
+            </field>
+        </field>
+    </record>
 </odoo>

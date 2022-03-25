@@ -18,5 +18,5 @@ class ProductTemplate(models.Model):
     
     @api.constrains("sunat_code")
     def _checksum_sunat_code(self):
-        if not bool(self.sunat_code) or not bool(re.compile("\d{8}$").match(self.sunat_code)):
+        if bool(self.sunat_code) and bool(re.compile("\d{8}$").match(self.sunat_code or "")):
             raise UserError("El código de producto sunat es inválido. El código es un número entero de 8 dígitos.")

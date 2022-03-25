@@ -24,7 +24,7 @@ class ResPartner(models.Model):
                                                         string="Tipo de documento de identidad", index=True, auto_join=True,
                                                         default=lambda self: self.env.ref('gestionit_pe_consulta_ruc_dni.it_RUC', raise_if_not_found=False),
                                                         help="Tipo de documento de identidad")
-    
+
     street_invoice_ids = fields.One2many("res.partner","parent_id",string="Facturación",domain=[("type","=","invoice")])
     street_delivery_ids = fields.One2many("res.partner","parent_id",string="Direcciones",domain=[("type","in",["delivery","other","private"])])
 
@@ -51,7 +51,7 @@ class ResPartner(models.Model):
     # @api.model
     # def _commercial_fields(self):
     #     return []
-    
+
     @api.model
     def _check_valid_ruc(self,ruc):
         if patron_ruc.match(ruc):
@@ -64,7 +64,7 @@ class ResPartner(models.Model):
         else:
             return False
         return True
-            
+
     @api.constrains('vat','l10n_latam_identification_type_id')
     def _check_valid_numero_documento(self):
         vat_str = (self.vat or "").strip()
@@ -76,7 +76,7 @@ class ResPartner(models.Model):
             if self.l10n_latam_identification_type_id.l10n_pe_vat_code == "1":
                 if not patron_dni.match(vat_str):
                     raise UserError("El número de DNI ingresado es inválido")
-        
+
 
     @api.onchange("street","type")
     def get_name_street(self):
@@ -167,6 +167,7 @@ class ResPartner(models.Model):
     # @api.one
     def update_document(self):
         self.ensure_one()
+        self = self.with_context(check_flag=True)
         if not self.vat:
             return False
         if self.l10n_latam_identification_type_id.l10n_pe_vat_code == '1':
@@ -206,7 +207,7 @@ class ResPartner(models.Model):
                 self.msg_error = "El RUC no es Válido"
             else:
                 d = self.request_migo_ruc(self.vat)
-                _logger.info(d)           
+                _logger.info(d)
                 if not d:
                     self.name = " - "
                     return True
@@ -228,7 +229,7 @@ class ResPartner(models.Model):
                     self.state_id = dist_id.state_id.id
                     self.country_id = dist_id.country_id.id
 
-                
+
                 self.estado_contribuyente = d['estado_del_contribuyente']
 
                 self.name = d['nombre_o_razon_social']

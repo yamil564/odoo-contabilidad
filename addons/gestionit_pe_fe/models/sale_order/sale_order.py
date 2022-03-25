@@ -153,7 +153,28 @@ class SaleOrder(models.Model):
 
         return report_pages
 
-    # Create invoice
+    @api.model
+    def _get_default_warehouse_ids(self):
+        _logger.info(self._context)
+        user = self.env.user
+        wh_ids = user.sudo().warehouse_ids.filtered(lambda r: r.company_id.id in  self._context.get("allowed_company_ids",[]))
+        if len(wh_ids) > 0:
+            return wh_ids.ids
+        else:
+            raise UserError("Para crear una vemta su usuario debe estar asociado a un almacén de la compañia. Comuníquese con su administrador.")
+        
+    warehouses_allowed_ids = fields.Many2many("stock.warehouse", string="Almacenes Permitidos", default=_get_default_warehouse_ids)
+
+    @api.onchange('company_id')
+    def _onchange_company_id(self):
+        if self.company_id:
+            user = self.env.user
+            warehouse_ids = user.warehouse_ids.filtered(lambda r: r.company_id.id in self._context.get("allowed_company_ids",[]))
+            if warehouse_ids.exists():
+                self.warehouse_id = warehouse_ids[0].id
+            else:
+                self.warehouse_id = False
+
 
     def _prepare_invoice(self):
         res = super(SaleOrder, self)._prepare_invoice()
