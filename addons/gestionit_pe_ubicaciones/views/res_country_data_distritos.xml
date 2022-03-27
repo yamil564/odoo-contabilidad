@@ -8955,14 +8955,14 @@
             <field name="country_id" ref="base.pe"/>
         </record>
         <record model='res.country.state' id="ubigeos_150132">
-            <field name="name">SAN JUAN DE LURIGANC</field>
+            <field name="name">SAN JUAN DE LURIGANCHO</field>
             <field name="code">150132</field>
             <field name="state_id" ref="base.state_pe_15"/>
             <field name="province_id" ref="ubigeos_1501"/>
             <field name="country_id" ref="base.pe"/>
         </record>
         <record model='res.country.state' id="ubigeos_150133">
-            <field name="name">SAN JUAN DE MIRAFLOR</field>
+            <field name="name">SAN JUAN DE MIRAFLORES</field>
             <field name="code">150133</field>
             <field name="state_id" ref="base.state_pe_15"/>
             <field name="province_id" ref="ubigeos_1501"/>

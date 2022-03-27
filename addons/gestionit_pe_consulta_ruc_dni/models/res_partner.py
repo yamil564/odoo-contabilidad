@@ -67,16 +67,16 @@ class ResPartner(models.Model):
 
     @api.constrains('vat','l10n_latam_identification_type_id')
     def _check_valid_numero_documento(self):
-        vat_str = (self.vat or "").strip()
-        if self.l10n_latam_identification_type_id and self.type in ["contact"] and self.parent_id is False:
-            if self.l10n_latam_identification_type_id.l10n_pe_vat_code == "6":
-                if not self._check_valid_ruc(vat_str):
-                    raise UserError("El número de RUC ingresado es inválido.")
+        for record in self:
+            vat_str = (record.vat or "").strip()
+            if record.l10n_latam_identification_type_id and record.type in ["contact"] and record.parent_id is False:
+                if record.l10n_latam_identification_type_id.l10n_pe_vat_code == "6":
+                    if not record._check_valid_ruc(vat_str):
+                        raise UserError("El número de RUC ingresado es inválido.")
 
-            if self.l10n_latam_identification_type_id.l10n_pe_vat_code == "1":
-                if not patron_dni.match(vat_str):
-                    raise UserError("El número de DNI ingresado es inválido")
-
+                if record.l10n_latam_identification_type_id.l10n_pe_vat_code == "1":
+                    if not patron_dni.match(vat_str):
+                        raise UserError("El número de DNI ingresado es inválido")
 
     @api.onchange("street","type")
     def get_name_street(self):
@@ -115,21 +115,19 @@ class ResPartner(models.Model):
 
     @api.model
     def request_migo_ruc(self, ruc):
-        user_id = self.env.context.get('uid', False)
+        company = self.env.company
         errors = []
 
-        if user_id:
-            user = self.env["res.users"].sudo().browse(user_id)
-
-            if not user.company_id.api_migo_endpoint:
+        if company:
+            if not company.api_migo_endpoint:
                 errors.append("Debe configurar el end-point del API")
-            if not user.company_id.api_migo_token:
+            if not company.api_migo_token:
                 errors.append("Debe configurar el token del API")
             if len(errors) > 0:
                 raise UserError("\n".join(errors))
             else:
-                url = user.company_id.api_migo_endpoint + "ruc"
-                token = user.company_id.api_migo_token
+                url = company.api_migo_endpoint + "ruc"
+                token = company.api_migo_token
 
                 try:
                     headers = {
@@ -139,10 +137,11 @@ class ResPartner(models.Model):
                         "token": token,
                         "ruc": ruc
                     }
-                    res = requests.request(
-                        "POST", url, headers=headers, data=json.dumps(data))
+                    _logger.info(url)
+                    _logger.info(data)
+                    res = requests.request("POST", url, headers=headers, data=json.dumps(data))
                     res = res.json()
-
+                    _logger.info(res)
                     if res.get("success", False):
                         return res
                     return None
@@ -206,6 +205,7 @@ class ResPartner(models.Model):
             if not self._esrucvalido(self.vat):
                 self.msg_error = "El RUC no es Válido"
             else:
+                _logger.info(self.vat)
                 d = self.request_migo_ruc(self.vat)
                 _logger.info(d)
                 if not d:
@@ -216,13 +216,7 @@ class ResPartner(models.Model):
                     return True
 
                 ditrict_obj = self.env['res.country.state']
-                prov_ids = ditrict_obj.search([('name', '=', d['provincia']),
-                                               ('province_id', '=', False),
-                                               ('state_id', '!=', False)])
-                dist_id = ditrict_obj.search([('name', '=', d['distrito']),
-                                              ('province_id', '!=', False),
-                                              ('state_id', '!=', False),
-                                              ('province_id', 'in', [x.id for x in prov_ids])], limit=1)
+                dist_id = ditrict_obj.search([('code', '=', d['ubigeo'])], limit=1)
                 if dist_id:
                     self.district_id = dist_id.id
                     self.province_id = dist_id.province_id.id
