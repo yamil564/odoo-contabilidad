@@ -98,7 +98,7 @@ class AccountMove(models.Model):
 
     account_summary_id = fields.Many2one("account.summary",
                                          string="Resumen Diario",
-                                         ondelete="set null",
+                                         ondelete="set null",copy=False,
                                          default=False)
 
     @api.depends('credit_note_ids')
