@@ -30,7 +30,7 @@
                 <!--DATOS DEL CLIENTE-->
                 <div name="invoice_address" class="w-100">
                     <!-- FACTURA Y BOLETA -->
-                    <table class="w-100" t-if="'{}_{}'.format(o.type,o.journal_id.invoice_type_code_id) in ['out_invoice_01','out_invoice_03']">
+                    <table id="table_factura_boleta" class="w-100" t-if="'{}_{}'.format(o.type,o.journal_id.invoice_type_code_id) in ['out_invoice_01','out_invoice_03']">
                         <tr>
                             <!-- CLIENTE -->
                             <th width="50%">
@@ -145,7 +145,7 @@
                         </tr>
                     </table>
                     <!-- NOTA DE CRÉDITO ELECTRÓNICA -->
-                    <table class="w-100" t-if="'{}_{}'.format(o.type,o.journal_id.invoice_type_code_id) == 'out_refund_07' ">
+                    <table id="table_nota_Credito" class="w-100" t-if="'{}_{}'.format(o.type,o.journal_id.invoice_type_code_id) == 'out_refund_07' ">
                         <tr>
                             <!-- CLIENTE -->
                             <th>
@@ -214,7 +214,7 @@
                         </tr>
                     </table>
                     <!-- NOTA DE DÉBITO ELECTRÓNICA -->
-                    <table class="w-100" t-if="'{}_{}'.format(o.type,o.journal_id.invoice_type_code_id) == 'out_invoice_08' ">
+                    <table id="table_nota_debito" class="w-100" t-if="'{}_{}'.format(o.type,o.journal_id.invoice_type_code_id) == 'out_invoice_08' ">
                         <tr>
                             <!-- CLIENTE -->
                             <th>
@@ -333,12 +333,12 @@
                                     <!-- <t t-as="serie" t-foreach="o._get_invoiced_lot_values()">
                                         <t t-if="serie.get('product_id') == l.product_id.id">
                                             <span t-esc="serie.get('lot_name')"/>
-                                            
+
                                             <br/>
                                         </t>
                                     </t> -->
                                     <!-- <span t-field="l.lot_name"/> -->
-                                    
+
                                     <t t-if="l.lot_name != False and len(l.lot_name.split(',')) > 1">
                                         <t t-foreach="l.lot_name.split(',')" t-as="lote">
                                             <p t-esc="lote" style="margin:0 !important;padding:0 !important;"/>
