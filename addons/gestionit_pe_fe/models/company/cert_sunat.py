@@ -4,6 +4,7 @@ from odoo import api, models, fields
 
 class CertSunat(models.Model):
     _name = "cert.sunat"
+    _description = "Certificado de SUNAT"
 
     key_public = fields.Text("Cert. PUBLIC",required=True)
     key_private = fields.Text("Cert. PRIVATE",required=True)
