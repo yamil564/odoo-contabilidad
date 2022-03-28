@@ -68,6 +68,15 @@
                             <span t-esc="doc.currency_id.currency_unit_label" t-if="doc.currency_id.currency_unit_label"/>
                         </td>
                     </tr>
+                    <tr>
+                        <!-- DIRECCIÓN -->
+                        <th>
+                            <label t-esc="'DIRECCIÓN : '"/>
+                        </th>
+                        <td colspan="3">
+                            <span t-esc="'{} {}-{}-{}'.format(doc.partner_id.street or '',doc.partner_id.state_id.name or '',doc.partner_id.province_id.name or '',doc.partner_id.district_id.name or '').upper()"/>
+                        </td>
+                    </tr>
                 </table>
             </div>
         </xpath>

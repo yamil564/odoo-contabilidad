@@ -41,6 +41,7 @@ class SaleOrderLine(models.Model):
 class SalePaymenttermLine(models.Model):
     _name = "sale.paymentterm.line"
     _order = "date_due ASC"
+    _description = "Líneas de término de pago de ventas"
 
     currency_id = fields.Many2one(
         "res.currency", related="order_id.currency_id")
@@ -55,6 +56,17 @@ class SaleOrder(models.Model):
     # * INICIO: Cuotas de pago en orden de venta
     paymentterm_line = fields.One2many("sale.paymentterm.line", "order_id")
     payment_term_type = fields.Char(compute="_compute_payment_term_type")
+
+    residual_credit_paymentterm = fields.Monetary(
+        "Saldo restante de plazos de pago a crédito", compute="_compute_residual_credit_paymentterm")
+
+    @api.depends("paymentterm_line",
+                 "paymentterm_line.amount",
+                 "amount_total")
+    def _compute_residual_credit_paymentterm(self):
+        for order in self:
+            order.residual_credit_paymentterm = round(
+                self.amount_total - sum(order.paymentterm_line.mapped("amount")), 2)
 
     @api.depends("payment_term_id")
     def _compute_payment_term_type(self):

@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 class PaymenttermLine(models.Model):
     _name = "paymentterm.line"
     _order = "date_due ASC"
+    _description = "Lineas de término de pago de facturas"
     
     currency_id = fields.Many2one("res.currency",related="move_id.currency_id")
     move_id = fields.Many2one("account.move","Account Move")

@@ -23,6 +23,7 @@ _logger = logging.getLogger(__name__)
 
 class AccountSummaryLine(models.Model):
     _name = "account.summary.line"
+    _description = "Líneas de resumen diario"
 
     account_summary_id = fields.Many2one(
         "account.summary", string="Resumen Diario", ondelete="set null")
@@ -61,6 +62,7 @@ class AccountSummary(models.Model):
     _name = "account.summary"
     _rec_name = "identificador_resumen"
     _order = "create_date desc"
+    _description = "Resumen diario"
 
     company_id = fields.Many2one("res.company", required=True, string="Compañia",
                                  default=lambda self: self.env.user.company_id.id)
