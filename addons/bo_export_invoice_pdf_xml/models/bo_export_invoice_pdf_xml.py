@@ -25,4 +25,6 @@ class BoExportInvoicePdfXml(models.TransientModel):
     ######################
 
     def action_download_zip_massive(self):
+        ### Here code
         return True
+        
