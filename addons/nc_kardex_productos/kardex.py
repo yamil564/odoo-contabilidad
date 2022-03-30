@@ -43,7 +43,7 @@ class kardex_productos_inventario(models.TransientModel):
 
   @api.model
   def _get_from_date(self):
-        company = self.env.user.company_id
+        company = self.env.company.id
         current_date = datetime.date.today()
         from_date = company.compute_fiscalyear_dates(current_date)['date_from']
         return from_date  
@@ -51,7 +51,7 @@ class kardex_productos_inventario(models.TransientModel):
   excel_binary= fields.Binary('Field')
   file_name=fields.Char('Report_Name',readonly=True)
   product=fields.Many2one('product.product',string='Product',required=True)
-  company=fields.Many2one('res.company',required=True,default=lambda self: self.env.user.company_id,string= 'Current Company')
+  company=fields.Many2one('res.company',required=True,default=lambda self: self.env.company.id,string= 'Current Company')
   
   ubicacion=fields.Many2one('stock.location', domain=[('usage', '=', "internal")],string='Location')
   
@@ -69,7 +69,7 @@ class kardex_productos_inventario(models.TransientModel):
 
   aplica= fields.Selection([('todas', 'All '),('ubicacion', 'By location')], required=True,default='todas',string='Selection location')
 
-  currency_id = fields.Many2one('res.currency', string='Company currency', required=True, default=lambda self: self.env.user.company_id.currency_id,readonly=True)
+  currency_id = fields.Many2one('res.currency', string='Company currency', required=True, default=lambda self: self.env.company.currency_id,readonly=True)
   
   obj_kardex=fields.One2many(comodel_name='kardex.productos.mov.detalle',inverse_name='obj_kardex_mostrarmovi')
   

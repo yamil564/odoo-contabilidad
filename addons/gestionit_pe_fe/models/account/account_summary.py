@@ -65,7 +65,7 @@ class AccountSummary(models.Model):
     _description = "Resumen diario"
 
     company_id = fields.Many2one("res.company", required=True, string="Compañia",
-                                 default=lambda self: self.env.user.company_id.id)
+                                 default=lambda self: self.env.company.id)
     fecha_generacion = fields.Date("Fecha de Generación", default=lambda r:datetime.now(tz=timezone("America/Lima")), required="True")
     fecha_emision_documentos = fields.Date("Fecha de Emisión de Documentos", default=lambda r:datetime.now(tz=timezone("America/Lima")), required="True")
     identificador_resumen = fields.Char("Identificador de Resumen", default="Resumen Diario",related="current_log_status_id.name")
@@ -140,7 +140,7 @@ class AccountSummary(models.Model):
                                                                     ("partner_id.vat","!=",False),
                                                                     ("company_id","=",self.company_id.id),
                                                                     ("estado_comprobante_electronico", "in", ["-", False, "0_NO_EXISTE"])])
-
+            _logger.info(account_invoices)
             account_invoices = account_invoices.filtered(lambda r:r.account_summary_id.estado_emision in [False,"N","R"])
 
             # Listar las notas de Crédito

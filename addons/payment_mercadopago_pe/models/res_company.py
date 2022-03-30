@@ -8,7 +8,7 @@ class ResCompany(models.Model):
 
     def _get_mercadopago_pe_account(self, ids, name, arg, context=None):
         Acquirer = self.env['payment.acquirer']
-        company_id = company = self.env.user.company_id
+        company_id = company = self.env.company.id
         mercadopago_ids = Acquirer.search( [
             ('website_published', '=', True),
             ('name', 'ilike', 'mercadopago_pe'),
@@ -21,7 +21,7 @@ class ResCompany(models.Model):
 
     def _set_mercadopago_pe_account(self, id, name, value, arg, context=None):
         Acquirer = self.env['payment.acquirer']
-        company_id = company = self.env.user.company_id
+        company_id = company = self.env.company.id
         mercadopago_account = self.browse( id, context=context).mercadopago_account
         mercadopago_ids = Acquirer.search( [
             ('website_published', '=', True),

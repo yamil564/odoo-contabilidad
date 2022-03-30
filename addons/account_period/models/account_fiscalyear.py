@@ -17,7 +17,7 @@ class account_fiscalyear(models.Model):
     name = fields.Char('Fiscal Year', required=True)
     code = fields.Char('Code', size=6, required=True)
     company_id = fields.Many2one('res.company', 'Company', required=True,
-                                 default=lambda self: self.env.user.company_id)
+                                 default=lambda self: self.env.company.id)
     date_start = fields.Date('Start Date', required=True)
     date_stop = fields.Date('End Date', required=True)
     period_ids = fields.One2many('account.period', 'fiscalyear_id', 'Periods')
