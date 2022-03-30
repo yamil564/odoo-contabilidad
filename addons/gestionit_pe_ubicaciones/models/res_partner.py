@@ -31,35 +31,11 @@ class ResPartner(models.Model):
                           'state_id', 'country_id', 'province_id', 'district_id')
         return list(address_fields)
 
-    # Onchange para actualizar el codigo de distrito
-
-    @api.model
-    def default_get(self, fields):
-        res = super(ResPartner, self).default_get(fields)
-        res.update({
-            "country_id": 173
-        })
-        return res
-
-    """
-    @api.constrains('district_id','zip')
-    def _check_district(self):
-        for record in self:
-            print(record.zip)
-            if not(record.zip == "-" or record.zip==False):
-                zip = record.zip.strip()
-                ubigeo = self.env["res.country.state"].search([("code","=",zip)])
-                if not ubigeo.exists():
-                    raise UserError("El Ubigeo no existe")
-    """
 
     @api.onchange('district_id')
     def onchange_district(self):
         if self.district_id:
-            self.ubigeo = self.district_id.code
-            self.province_id = self.district_id.province_id.id
-            self.state_id = self.district_id.state_id.id
-            self.country_id = self.district_id.country_id.id
+            self.ubigeo = self.district_id.code if self.district_id.code else ""
 
     # @api.multi
     def _display_address(self, without_company=False):

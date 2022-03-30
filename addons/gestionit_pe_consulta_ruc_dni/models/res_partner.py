@@ -137,11 +137,8 @@ class ResPartner(models.Model):
                         "token": token,
                         "ruc": ruc
                     }
-                    _logger.info(url)
-                    _logger.info(data)
                     res = requests.request("POST", url, headers=headers, data=json.dumps(data))
                     res = res.json()
-                    _logger.info(res)
                     if res.get("success", False):
                         return res
                     return None
@@ -175,28 +172,14 @@ class ResPartner(models.Model):
                 self.vat = self.vat.strip()
             if self.vat and len(self.vat) != 8:
                 self.msg_error = 'El DNI debe tener 8 caracteres'
-            # if not self._esrucvalido(self.vat):
-            #     self.msg_error = "El DNI no es Válido"
             else:
                 nombre_entidad = self.request_migo_dni(self.vat)
                 if nombre_entidad:
                     self.name = nombre_entidad
                     self.registration_name = nombre_entidad
-                    # self.district_id = ""
-                    # self.province_id = ""
-                    # self.state_id = ""
-                    # self.country_id = ""
-                    # self.zip = ""
-                    # self.street = ""
                 else:
                     self.name = " - "
                     self.registration_name = " - "
-                    # self.district_id = ""
-                    # self.province_id = ""
-                    # self.state_id = ""
-                    # self.country_id = ""
-                    # self.zip = ""
-                    # self.street = ""
 
         elif self.l10n_latam_identification_type_id.l10n_pe_vat_code == '6':
             # Valida RUC
@@ -207,7 +190,7 @@ class ResPartner(models.Model):
             else:
                 _logger.info(self.vat)
                 d = self.request_migo_ruc(self.vat)
-                _logger.info(d)
+                
                 if not d:
                     self.name = " - "
                     return True
@@ -215,25 +198,25 @@ class ResPartner(models.Model):
                     self.name = " - "
                     return True
 
+                _logger.info(d)
                 ditrict_obj = self.env['res.country.state']
                 dist_id = ditrict_obj.search([('code', '=', d['ubigeo'])], limit=1)
-                if dist_id:
-                    self.district_id = dist_id.id
-                    self.province_id = dist_id.province_id.id
-                    self.state_id = dist_id.state_id.id
-                    self.country_id = dist_id.country_id.id
-
+                _logger.info(dist_id)
 
                 self.estado_contribuyente = d['estado_del_contribuyente']
-
                 self.name = d['nombre_o_razon_social']
                 self.registration_name = d['nombre_o_razon_social']
                 self.ubigeo = d["ubigeo"]
                 self.street = d['direccion']
                 self.is_company = True
                 self.company_type = "company"
-        else:
-            True
+
+                if dist_id:
+                    self.district_id = dist_id.id
+                    self.province_id = dist_id.province_id.id
+                    self.state_id = dist_id.state_id.id
+                    self.country_id = dist_id.country_id.id
+        return
 
     def _onchange_country(self):
         return
