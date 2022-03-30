@@ -22,6 +22,7 @@ _logger = logging.getLogger(__name__)
 
 patron_dni = re.compile("\d{8}$")
 patron_ruc = re.compile("[12]\d{10}$")
+patron_placa_vehicular = re.compile("[a-zA-Z]{3}[0-9]{3}|[a-zA-Z]{3}-[0-9]{3}|[a-zA-Z]{3}-[0-9]{2}[a-zA-Z]$")
 
 codigo_unidades_de_medida = [
     "DZN",
@@ -113,11 +114,12 @@ class ResPartner(models.Model):
     es_conductor = fields.Boolean(string="Es Conductor", default=False)
     es_empresa_transporte_publico = fields.Boolean(
         string="Es empresa de transporte publico", default=False)
-    vehiculo_ids = fields.One2many(
-        "gestionit.vehiculo", "propietario_id", string="Vehículos")
+    vehiculo_ids = fields.One2many("gestionit.vehiculo", "propietario_id", string="Vehículos")
     licencia = fields.Char("Licencia")
+    
 
     def action_view_conductores_privados(self):
+        dni = self.env["l10n_latam.identification.type"].search([("l10n_pe_vat_code","=",1)],limit=1)
         return {
             'name': 'Conductores Privados',
             'type': 'ir.actions.act_window',
@@ -125,11 +127,12 @@ class ResPartner(models.Model):
             'views': [[self.env.ref("gestionit_pe_fe.view_tree_partner_conductor").id, "tree"], [self.env.ref("gestionit_pe_fe.view_form_partner_conductor").id, "form"]],
             'res_model': 'res.partner',
             'target': 'self',
-            'domain': [('es_conductor', '=', True), ('parent_id', '!=', False), ('parent_id', '=', self.env.user.company_id.id)],
+            'domain': [('es_conductor', '=', True), ('parent_id', '!=', False), ('parent_id', '=', self.env.company.partner_id.id)],
             'context': {
                 "default_es_conductor": True,
-                "parent_id": self.env.user.company_id.id,
-                "default_country_id": 173
+                "parent_id": self.env.company.partner_id.id,
+                "default_country_id": 173,
+                "default_l10n_latam_identification_type_id":dni.id
             }
         }
 
@@ -138,7 +141,7 @@ class Vehiculo(models.Model):
     _name = 'gestionit.vehiculo'
     _rec_name = "numero_placa"
     _description = "Vehículo"
-    numero_placa = fields.Char("Número de placa")
+    numero_placa = fields.Char("Número de placa",size=8)
     tipo_transporte = fields.Selection(selection=[("carretera", "Carretera"),
                                                   ("maritimo", "Maritimo"),
                                                   ("ferroviaria", "Ferroviaria"),
@@ -156,7 +159,7 @@ class Vehiculo(models.Model):
     descripcion = fields.Text("Descripción")
     propietario_id = fields.Many2one("res.partner", "Propietario")
     company_id = fields.Many2one("res.company", string="Compañía",
-                                 default=lambda self: self.env.user.company_id.id)
+                                 default=lambda self: self.env.company.id)
 
     def action_view_vehiculos_privados(self):
         return {
@@ -166,11 +169,25 @@ class Vehiculo(models.Model):
             'views': [[self.env.ref("gestionit_pe_fe.view_tree_vehiculo").id, "tree"], [self.env.ref("gestionit_pe_fe.view_form_vehiculo").id, "form"]],
             'res_model': 'gestionit.vehiculo',
             'target': 'self',
-            'domain': [('propietario_id', '=', self.env.user.company_id.id)],
+            'domain': [('propietario_id', '=', self.env.company.partner_id.id)],
             'context': {
-                "default_propietario_id": self.env.user.company_id.id,
+                "default_propietario_id": self.env.company.partner_id.id,
             }
         }
+
+    def validacion_placa_vehicular(self):
+        if not bool(patron_placa_vehicular.match(self.numero_placa)):
+            return False
+        return True
+
+    @api.constrains('numero_placa')
+    def restriccion_placa_vehicular(self):
+        for record in self:
+            if not record.validacion_placa_vehicular():
+                raise UserError("El número de placa vehicular es inválido.")
+
+
+            
 
 
 class PopupFormSelectUbigeo(models.TransientModel):
@@ -214,7 +231,7 @@ class GuiaRemision(models.Model):
     _description = "Guía de Remisión Electrónica"
 
     company_id = fields.Many2one("res.company", string="Compañía",
-                                 default=lambda self: self.env.user.company_id.id,
+                                 default=lambda self: self.env.company.id,
                                  states={'validado': [('readonly', True)]})
 
     company_partner_id = fields.Many2one(
@@ -312,7 +329,7 @@ class GuiaRemision(models.Model):
     def default_get(self, flds):
         res = super(GuiaRemision, self).default_get(flds)
         journals = self.env["account.journal"].search(
-            [("invoice_type_code_id", "=", "09"), ("company_id", "=", res.get("company_id", False))])
+            [("invoice_type_code_id", "=", "09"), ("company_id", "=", self.env.company.id)])
         if len(journals) > 0:
             res.update({
                 "journal_id": journals[0].id

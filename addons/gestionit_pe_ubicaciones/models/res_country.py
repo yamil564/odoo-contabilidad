@@ -46,7 +46,6 @@ class CountryState(models.Model):
     @api.depends('name')
     def name_get(self):
         result = []
-        os.system("echo '{}'".format(json.dumps(self.env.context)))
         for record in self:
             if self.env.context.get('ubigeo_search', False):
                 if record.code != False and record.country_id != False and record.state_id !=  False and record.province_id != False:
