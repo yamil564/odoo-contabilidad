@@ -22,14 +22,7 @@ class SaleOrder(models.Model):
 
             self.tipo_documento = "100"
             invoice = self._create_invoices(final=True)
-            logger.info('Hola Luis')
-            logger.info('Hola Luis')
-            logger.info('Hola Luis')
-            logger.info('Hola Luis')
-            logger.info('Hola Luis')
-            logger.info(invoice.invoice_type_code)
             invoice._onchange_invoice_line_ids()
             invoice.journal_id = self.env.company.notes_journal
-            # invoice.action_post()
 
         return self.action_view_invoice()

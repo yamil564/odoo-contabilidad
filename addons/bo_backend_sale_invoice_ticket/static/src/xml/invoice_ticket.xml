@@ -113,6 +113,13 @@
                                 <t t-esc="receipt.name" />
                             </b>
                         </t>
+                        <t t-if="receipt.invoice_type_code == '100'">
+                            <b> RECIBO </b>
+                            <br/>
+                            <b>
+                                <t t-esc="receipt.name" />
+                            </b>
+                        </t>
                     </t>
                     <t t-if="widget.model_id == 'sale.order'">
                         <b> PEDIDO </b>
@@ -328,7 +335,7 @@
                         </b>
                     </span>
                     <br/>
-                    <span t-if="receipt.company.website" style="font-size:13px">
+                    <span t-if="receipt.company.website and receipt.invoice_type_code != '100'" style="font-size:13px">
                         <b>Comprobante emitido por el sistema de
                             <t t-esc="receipt.company.website"/>
                         </b>
