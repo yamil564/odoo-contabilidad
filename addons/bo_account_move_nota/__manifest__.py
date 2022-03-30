@@ -10,6 +10,7 @@
         "views/account_move.xml",
         "views/account_move_menu.xml",
         "reports/report_invoice_document.xml",
+        "reports/external_layout.xml",
     ],
     "installable": True,
 }

@@ -3,7 +3,7 @@
     <data>
         <!-- BOLETA DE VENTA BEGIN -->
         <record id="action_nota_venta" model="ir.actions.act_window">
-            <field name="name">Nota DE VENTA</field>
+            <field name="name">Nota de Venta</field>
             <field name="res_model">account.move</field>
             <field name="view_id" ref="gestionit_pe_fe.account_factura_tree_1" />
             <field name="view_mode">tree,kanban,form,pivot,graph</field>

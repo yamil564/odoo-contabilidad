@@ -5,7 +5,7 @@
             <t t-set="company" t-value="o.company_id"/>
             <t t-set="documents" t-value="{'out_invoice_01':'FACTURA ELECTRÓNICA',
                                            'out_invoice_03':'BOLETA ELECTRÓNICA',
-                                           'out_invoice_100':'NOTA DE VENTA',
+                                           'out_invoice_100':'RECIBO',
                                            'out_refund_07':'NOTA DE CRÉDITO ELECTRÓNICA',
                                            'out_invoice_08':'NOTA DE DÉBITO ELECTRÓNICA',
                                            'in_invoice_01':'FACTURA DE PROVEEDOR',
