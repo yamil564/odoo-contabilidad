@@ -34,5 +34,9 @@ class ResPartner(models.Model):
             'type': 'other',
             'street': self.street,
             'company_type': 'person',
-            'ubigeo': self.ubigeo
+            'ubigeo': self.ubigeo,
+            'district_id': self.district_id.id,
+            'province_id':self.province_id.id,
+            'state_id':self.state_id.id,
+            'country_id':self.country_id.id
         })

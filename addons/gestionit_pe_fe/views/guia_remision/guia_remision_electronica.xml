@@ -51,7 +51,6 @@
                         <group string="Destinatario">
                             <group attrs="{'invisible':[['motivo_traslado','not in',['01','08','09','13','19']]]}">
                                 <field name="destinatario_partner_id" domain="[('customer_rank','&gt;', 0),('type','=','contact')]" context="{
-                                                    'ubigeo_search': True,
                                                     'form_view_ref' : 'gestionit_pe_fe.view_form_destinatario_res_partner',
                                                     'default_country_id':173,
                                                     'default_customer':True
@@ -79,7 +78,6 @@
 
                             <group attrs="{'invisible':[['motivo_traslado','not in',['02','08']]]}">
                                 <field name="proveedor_partner_id" domain="[('supplier','=',True),('type','=','contact')]" context="{
-                                                        'ubigeo_search': True,
                                                         'form_view_ref' :'gestionit_pe_fe.view_form_destinatario_res_partner',
                                                         'default_country_id':173,
                                                         'default_supplier':True
@@ -177,7 +175,6 @@
                                     <span>Debe seleccionar una empresa de partida.</span>
                                 </t>
                                 <field name="direccion_partida_id" string="Dirección de Partida" context="{
-                                                    'ubigeo_search': True,
                                                     'form_view_ref' : 'gestionit_pe_fe.view_form_destinatario_res_partner',
                                                     'default_country_id':173,
                                                     'default_type':'other',
@@ -193,7 +190,6 @@
                                     <span style="color:red">Debe seleccionar una empresa destinataria.</span>
                                 </t>
                                 <field name="direccion_llegada_id" string="Dirección de Llegada" context="{
-                                                    'ubigeo_search': True,
                                                     'form_view_ref' : 'gestionit_pe_fe.view_form_destinatario_res_partner',
                                                     'default_country_id':173,
                                                     'default_type':'other',

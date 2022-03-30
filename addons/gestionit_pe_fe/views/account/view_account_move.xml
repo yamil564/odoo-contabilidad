@@ -283,7 +283,7 @@
                 <field name="total_venta_inafecto" string="Monto Inafecto"/>
                 <field name="total_venta_exonerada" string="Monto Exonerado"/>
                 <field name="total_venta_gratuito" string="Monto Gratuito"/>
-                
+
                 <field name="total_descuento_global" attrs="{'invisible':[('invoice_type_code','not in',['01','03'])]}" string="Descuento Global"/>
                 <field name="total_descuentos" string="Total de Descuentos"/>
             </xpath>
@@ -305,7 +305,7 @@
         <field name="inherit_id" ref="account.view_move_form"/>
         <field name="arch" type="xml">
             <xpath expr="//page[@name='other_info']" position="after">
-                <page string="Comprobante" groups="base.group_no_one">
+                <page string="Comprobante" groups="base.group_no_one" name="comprobante">
                     <group>
                         <group>
                             <field name="estado_emision" />

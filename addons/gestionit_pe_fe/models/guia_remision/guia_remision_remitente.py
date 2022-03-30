@@ -16,11 +16,13 @@ from odoo.addons.gestionit_pe_fe.models.account.oauth import send_doc_xml
 # from odoo.addons.gestionit_pe_fe.models.account.api_facturacion import api_models
 from odoo.addons.gestionit_pe_fe.models.account.api_facturacion.controllers import xml_validation, sunat_response_handle, main, firma
 import logging
+from datetime import datetime
 _logger = logging.getLogger(__name__)
 
 
 patron_dni = re.compile("\d{8}$")
 patron_ruc = re.compile("[12]\d{10}$")
+patron_placa_vehicular = re.compile("[a-zA-Z]{3}[0-9]{3}|[a-zA-Z]{3}-[0-9]{3}|[a-zA-Z]{3}-[0-9]{2}[a-zA-Z]$")
 
 codigo_unidades_de_medida = [
     "DZN",
@@ -48,12 +50,14 @@ codigo_unidades_de_medida = [
 
 class ModalidadTransporte(models.Model):
     _name = "gestionit.modalidad_transporte"
+    _description = "Modalidad de Transporte"
     code = fields.Char("Código")
     name = fields.Char("Descripción")
 
 
 class MotivoTraslado(models.Model):
     _name = "gestionit.motivo_traslado"
+    _description = "Motivo de traslado"
     code = fields.Char("Código")
     name = fields.Char("Descripción")
     active = fields.Boolean("Activo", default=True)
@@ -61,6 +65,8 @@ class MotivoTraslado(models.Model):
 
 class GuiaRemisionLine(models.Model):
     _name = "gestionit.guia_remision_line"
+    _description = "Líneas de guía de remisión"
+
     product_id = fields.Many2one("product.product", required=True)
     uom_id = fields.Many2one("uom.uom", string="UM", required=True)
     qty = fields.Float(string="Cantidad")
@@ -108,11 +114,12 @@ class ResPartner(models.Model):
     es_conductor = fields.Boolean(string="Es Conductor", default=False)
     es_empresa_transporte_publico = fields.Boolean(
         string="Es empresa de transporte publico", default=False)
-    vehiculo_ids = fields.One2many(
-        "gestionit.vehiculo", "propietario_id", string="Vehículos")
+    vehiculo_ids = fields.One2many("gestionit.vehiculo", "propietario_id", string="Vehículos")
     licencia = fields.Char("Licencia")
+    
 
     def action_view_conductores_privados(self):
+        dni = self.env["l10n_latam.identification.type"].search([("l10n_pe_vat_code","=",1)],limit=1)
         return {
             'name': 'Conductores Privados',
             'type': 'ir.actions.act_window',
@@ -120,11 +127,12 @@ class ResPartner(models.Model):
             'views': [[self.env.ref("gestionit_pe_fe.view_tree_partner_conductor").id, "tree"], [self.env.ref("gestionit_pe_fe.view_form_partner_conductor").id, "form"]],
             'res_model': 'res.partner',
             'target': 'self',
-            'domain': [('es_conductor', '=', True), ('parent_id', '!=', False), ('parent_id', '=', self.env.user.company_id.id)],
+            'domain': [('es_conductor', '=', True), ('parent_id', '!=', False), ('parent_id', '=', self.env.company.partner_id.id)],
             'context': {
                 "default_es_conductor": True,
-                "parent_id": self.env.user.company_id.id,
-                "default_country_id": 173
+                "parent_id": self.env.company.partner_id.id,
+                "default_country_id": 173,
+                "default_l10n_latam_identification_type_id":dni.id
             }
         }
 
@@ -132,7 +140,8 @@ class ResPartner(models.Model):
 class Vehiculo(models.Model):
     _name = 'gestionit.vehiculo'
     _rec_name = "numero_placa"
-    numero_placa = fields.Char("Número de placa")
+    _description = "Vehículo"
+    numero_placa = fields.Char("Número de placa",size=8)
     tipo_transporte = fields.Selection(selection=[("carretera", "Carretera"),
                                                   ("maritimo", "Maritimo"),
                                                   ("ferroviaria", "Ferroviaria"),
@@ -150,7 +159,7 @@ class Vehiculo(models.Model):
     descripcion = fields.Text("Descripción")
     propietario_id = fields.Many2one("res.partner", "Propietario")
     company_id = fields.Many2one("res.company", string="Compañía",
-                                 default=lambda self: self.env.user.company_id.id)
+                                 default=lambda self: self.env.company.id)
 
     def action_view_vehiculos_privados(self):
         return {
@@ -160,15 +169,30 @@ class Vehiculo(models.Model):
             'views': [[self.env.ref("gestionit_pe_fe.view_tree_vehiculo").id, "tree"], [self.env.ref("gestionit_pe_fe.view_form_vehiculo").id, "form"]],
             'res_model': 'gestionit.vehiculo',
             'target': 'self',
-            'domain': [('propietario_id', '=', self.env.user.company_id.id)],
+            'domain': [('propietario_id', '=', self.env.company.partner_id.id)],
             'context': {
-                "default_propietario_id": self.env.user.company_id.id,
+                "default_propietario_id": self.env.company.partner_id.id,
             }
         }
+
+    def validacion_placa_vehicular(self):
+        if not bool(patron_placa_vehicular.match(self.numero_placa)):
+            return False
+        return True
+
+    @api.constrains('numero_placa')
+    def restriccion_placa_vehicular(self):
+        for record in self:
+            if not record.validacion_placa_vehicular():
+                raise UserError("El número de placa vehicular es inválido.")
+
+
+            
 
 
 class PopupFormSelectUbigeo(models.TransientModel):
     _name = 'gestionit.popup_form_seleccion_ubigeo'
+    _description = 'Selección de Ubigeo'
 
     departamento_id = fields.Many2one(
         "res.country.state", string="Departamento")
@@ -204,9 +228,10 @@ class PopupFormSelectUbigeo(models.TransientModel):
 class GuiaRemision(models.Model):
     _name = "gestionit.guia_remision"
     _rec_name = "numero"
+    _description = "Guía de Remisión Electrónica"
 
     company_id = fields.Many2one("res.company", string="Compañía",
-                                 default=lambda self: self.env.user.company_id.id,
+                                 default=lambda self: self.env.company.id,
                                  states={'validado': [('readonly', True)]})
 
     company_partner_id = fields.Many2one(
@@ -214,7 +239,7 @@ class GuiaRemision(models.Model):
     account_log_status_ids = fields.One2many(
         "account.log.status", "guia_remision_id", string="Registro de Envíos", copy=False)
 
-    current_log_status_id = fields.Many2one("account.log.status")
+    current_log_status_id = fields.Many2one("account.log.status",copy=False)
     # SERIE Y CORRELATIVO
     journal_id = fields.Many2one("account.journal", string="Serie", states={
                                  'validado': [('readonly', True)]})
@@ -238,7 +263,7 @@ class GuiaRemision(models.Model):
         ir_model_data = self.env['ir.model.data']
         try:
             template_id = ir_model_data.get_object_reference(
-                'gestionit_pe_fe', 'email_template')[1]
+                'gestionit_pe_fe', 'mail_template_bo_guia_remision')[1]
         except ValueError:
             template_id = False
 
@@ -259,8 +284,8 @@ class GuiaRemision(models.Model):
         attach_ids.append(self.env["ir.attachment"].create(
             {"name": pdf_fname, "type": "binary", "datas": datas, "mimetype": "application/x-pdf", "res_model": "gestionit.guia_remision", "res_id": self.id, "res_name": self.numero}).id)
 
-        if len(self.account_log_status_ids) > 0:
-            log_status = self.account_log_status_ids[-1]
+        log_status = self.current_log_status_id
+        if log_status:
             # data_signed_xml = log_status.signed_xml_data_without_format
             data_signed_xml = log_status.signed_xml_data
 
@@ -270,7 +295,7 @@ class GuiaRemision(models.Model):
                     {"name": xml_fname, "type": "binary", "datas": datas, "mimetype": "text/xml", "res_model": "gestionit.guia_remision", "res_id": self.id, "res_name": self.numero}).id)
 
             # response_xml = log_status.response_xml_without_format
-            response_xml = log_status.response_xml
+            response_xml = log_status.response_xml_without_format
             if response_xml:
                 datas = base64.b64encode(response_xml.encode())
                 attach_ids.append(self.env["ir.attachment"].create(
@@ -304,7 +329,7 @@ class GuiaRemision(models.Model):
     def default_get(self, flds):
         res = super(GuiaRemision, self).default_get(flds)
         journals = self.env["account.journal"].search(
-            [("invoice_type_code_id", "=", "09"), ("company_id", "=", res.get("company_id", False))])
+            [("invoice_type_code_id", "=", "09"), ("company_id", "=", self.env.company.id)])
         if len(journals) > 0:
             res.update({
                 "journal_id": journals[0].id
@@ -482,24 +507,21 @@ class GuiaRemision(models.Model):
                                                 "product_id": mls.product_id.id,
                                                 "description": mls.product_id.name,
                                                 "qty": mls.quantity_done,
-                                                "uom_id": mls.uom_id.id,
+                                                "uom_id": mls.product_uom.id,
                                                 "stock_picking_id": movimiento_stock_id.id,
                                                 } for mls in move_lines]
-
+                index = 0
                 for line in guia_remision_lines:
-                    if line["product_id"] not in guia_remision_lines_temp:
-                        guia_remision_lines_temp[line["product_id"]] = line
+                    if (line["product_id"], line["uom_id"]) not in list(map(lambda x: (guia_remision_lines_temp[x]['product_id'], guia_remision_lines_temp[x]['uom_id']), guia_remision_lines_temp)):
+                        guia_remision_lines_temp[index] = line
                     else:
-                        guia_remision_lines_temp[line["product_id"]
-                                                 ]["qty"] += line["qty"]
+                        product_index = list(filter(lambda x: (guia_remision_lines_temp[x]['product_id'], guia_remision_lines_temp[x]['uom_id']) == (
+                            line["product_id"], line["uom_id"]), guia_remision_lines_temp))
+                        guia_remision_lines_temp[product_index[0]]["qty"] += line["qty"]
+                    index += 1
 
                 guia_remision_lines = list(guia_remision_lines_temp.values())
-                # _logger.info(guia_remision_lines)
-                for line in guia_remision_lines:
-                    ids.append(
-                        self.env["gestionit.guia_remision_line"].create(line).id)
-
-                record.guia_remision_line_ids = [(6, 0, ids)]
+                record.guia_remision_line_ids = [(0, 0, grl) for grl in guia_remision_lines]
 
     @api.onchange("comprobante_pago_ids")
     def _onchange_comprobante_pago(self):
@@ -510,21 +532,13 @@ class GuiaRemision(models.Model):
             if record.documento_asociado == "comprobante_pago":
                 record.guia_remision_line_ids = [(6, 0, [])]
                 for comprobante_pago in record.comprobante_pago_ids:
-                    for invoice_line in comprobante_pago.invoice_line_ids:
-                        guia_remision_lines += [{
-                                                "product_id": inv_line.product_id.id,
-                                                "description": inv_line.name,
-                                                "qty": inv_line.quantity,
-                                                "uom_id": inv_line.product_uom_id.id,
-                                                "stock_picking_id": False,
-                                                } for inv_line in invoice_line]
-
-                # for line in guia_remision_lines:
-                #     if line["product_id"] not in guia_remision_lines_temp:
-                #         guia_remision_lines_temp[line["product_id"]] = line
-                #     else:
-                #         guia_remision_lines_temp[line["product_id"]
-                #                                  ]["qty"] += line["qty"]
+                    guia_remision_lines += [{
+                                            "product_id": inv_line.product_id.id,
+                                            "description": inv_line.name,
+                                            "qty": inv_line.quantity,
+                                            "uom_id": inv_line.product_uom_id.id,
+                                            "stock_picking_id": False,
+                                            } for inv_line in comprobante_pago.invoice_line_ids]
 
                 index = 0
                 for line in guia_remision_lines:
@@ -533,16 +547,11 @@ class GuiaRemision(models.Model):
                     else:
                         product_index = list(filter(lambda x: (guia_remision_lines_temp[x]['product_id'], guia_remision_lines_temp[x]['uom_id']) == (
                             line["product_id"], line["uom_id"]), guia_remision_lines_temp))
-                        # _logger.info({'REPETIDO': list(filter(lambda x: (guia_remision_lines_temp[x]['product_id'], guia_remision_lines_temp[x]['uom_id']) == (
-                        #     line["product_id"], line["uom_id"]), guia_remision_lines_temp))})
-
-                        guia_remision_lines_temp[product_index[0]
-                                                 ]["qty"] += line["qty"]
+                        guia_remision_lines_temp[product_index[0]]["qty"] += line["qty"]
                     index += 1
 
                 guia_remision_lines = list(guia_remision_lines_temp.values())
-                record.guia_remision_line_ids = [
-                    (0, 0, grl) for grl in guia_remision_lines]
+                record.guia_remision_line_ids = [(0, 0, grl) for grl in guia_remision_lines]
 
     @api.onchange("sale_order_ids")
     def _onchange_sale_orders(self):
@@ -552,7 +561,6 @@ class GuiaRemision(models.Model):
             if record.documento_asociado == "orden_venta":
                 record.guia_remision_line_ids = [(6, 0, [])]
                 for sale_order in record.sale_order_ids:
-                    # for line in sale_order.order_line:
                     guia_remision_lines += [{
                         "product_id": line.product_id.id,
                         "description": line.name,
@@ -560,15 +568,18 @@ class GuiaRemision(models.Model):
                         "uom_id": line.product_uom.id,
                         "stock_picking_id": False
                     } for line in sale_order.order_line]
+                index = 0
                 for line in guia_remision_lines:
-                    if line.get("product_id", False) not in guia_remision_lines_temp:
-                        guia_remision_lines_temp[line["product_id"]] = line
+                    if (line["product_id"], line["uom_id"]) not in list(map(lambda x: (guia_remision_lines_temp[x]['product_id'], guia_remision_lines_temp[x]['uom_id']), guia_remision_lines_temp)):
+                        guia_remision_lines_temp[index] = line
                     else:
-                        guia_remision_lines_temp[line["product_id"]
-                                                 ]["qty"] += line["qty"]
-
+                        product_index = list(filter(lambda x: (guia_remision_lines_temp[x]['product_id'], guia_remision_lines_temp[x]['uom_id']) == (
+                            line["product_id"], line["uom_id"]), guia_remision_lines_temp))
+                        guia_remision_lines_temp[product_index[0]]["qty"] += line["qty"]
+                    index += 1
+                    
                 guia_remision_lines = list(guia_remision_lines_temp.values())
-                record.guia_remision_line_ids = guia_remision_lines
+                record.guia_remision_line_ids = [(0, 0, grl) for grl in guia_remision_lines]
 
     # @api.depends("guia_remision_line_ids")
     def compute_peso_bruto(self):
@@ -577,9 +588,9 @@ class GuiaRemision(models.Model):
 
         # ENVÍO
     fecha_emision = fields.Date(string="Fecha de Emisión", states={
-                                'validado': [('readonly', True)]})
+                                'validado': [('readonly', True)]},copy=False,default=lambda r:datetime.today())
     fecha_inicio_traslado = fields.Date(string="Fecha inicio de traslado", states={
-                                        'validado': [('readonly', True)]})
+                                        'validado': [('readonly', True)]},copy=False,default=lambda r:datetime.today())
 
     peso_bruto_total = fields.Float(string="Peso Bruto Total (KGM)", states={
                                     'validado': [('readonly', True)]}, default=0.0)
@@ -991,9 +1002,9 @@ class GuiaRemision(models.Model):
             "pesoTotal": round(self.peso_bruto_total, 3),
             "pesoUnidadMedida": "KGM",
             "entregaUbigeo": self.lugar_llegada_ubigeo_code.code,
-            "entregaDireccion": self.lugar_llegada_direccion.strip(),
+            "entregaDireccion": str(self.lugar_llegada_direccion or "").strip()[:100],
             "salidaUbigeo": self.lugar_partida_ubigeo_code.code,
-            "salidaDireccion": self.lugar_partida_direccion.strip(),
+            "salidaDireccion": str(self.lugar_partida_direccion or "").strip()[:100],
         }
         if self.numero_bultos > 0:
             documento.update({"numeroBulltosPallets": self.numero_bultos})

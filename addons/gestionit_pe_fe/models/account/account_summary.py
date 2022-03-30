@@ -23,6 +23,7 @@ _logger = logging.getLogger(__name__)
 
 class AccountSummaryLine(models.Model):
     _name = "account.summary.line"
+    _description = "Líneas de resumen diario"
 
     account_summary_id = fields.Many2one(
         "account.summary", string="Resumen Diario", ondelete="set null")
@@ -61,9 +62,10 @@ class AccountSummary(models.Model):
     _name = "account.summary"
     _rec_name = "identificador_resumen"
     _order = "create_date desc"
+    _description = "Resumen diario"
 
     company_id = fields.Many2one("res.company", required=True, string="Compañia",
-                                 default=lambda self: self.env.user.company_id.id)
+                                 default=lambda self: self.env.company.id)
     fecha_generacion = fields.Date("Fecha de Generación", default=lambda r:datetime.now(tz=timezone("America/Lima")), required="True")
     fecha_emision_documentos = fields.Date("Fecha de Emisión de Documentos", default=lambda r:datetime.now(tz=timezone("America/Lima")), required="True")
     identificador_resumen = fields.Char("Identificador de Resumen", default="Resumen Diario",related="current_log_status_id.name")
@@ -138,7 +140,7 @@ class AccountSummary(models.Model):
                                                                     ("partner_id.vat","!=",False),
                                                                     ("company_id","=",self.company_id.id),
                                                                     ("estado_comprobante_electronico", "in", ["-", False, "0_NO_EXISTE"])])
-
+            _logger.info(account_invoices)
             account_invoices = account_invoices.filtered(lambda r:r.account_summary_id.estado_emision in [False,"N","R"])
 
             # Listar las notas de Crédito

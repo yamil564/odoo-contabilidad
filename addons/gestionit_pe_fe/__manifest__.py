@@ -28,6 +28,7 @@
     "category": "invoicing",
     "data": [
         'security/res_groups.xml',
+        'security/ir_rules.xml',
         'views/partner/res_partner_bank.xml',
         'views/partner/res_partner.xml',
         'views/account/menu.xml',

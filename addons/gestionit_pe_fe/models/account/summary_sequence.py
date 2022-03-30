@@ -2,6 +2,7 @@ from odoo import models, api, fields, _
 
 class SummarySequence(models.Model):
     _name = "summary.sequence"
+    _description = "Secuencia de Resumen diario"
 
     type = fields.Selection(selection=[('RA','RA'),('RC','RC')])
     next_number = fields.Integer("Siguiente Número",default=1)

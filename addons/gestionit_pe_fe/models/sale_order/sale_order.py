@@ -41,6 +41,7 @@ class SaleOrderLine(models.Model):
 class SalePaymenttermLine(models.Model):
     _name = "sale.paymentterm.line"
     _order = "date_due ASC"
+    _description = "Líneas de término de pago de ventas"
 
     currency_id = fields.Many2one(
         "res.currency", related="order_id.currency_id")

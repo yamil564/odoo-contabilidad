@@ -34,13 +34,14 @@ class InstructionID(SimpleText):
 
 
 class BillingPayment(Xmleable):
-    def __init__(self, paid_amount, instruction_id):
+    def __init__(self, paid_amount, instruction_id,currencyID):
         self.paid_amount = paid_amount
         self.instruction_id = instruction_id
+        self.currencyID = currencyID
 
     def fix_values(self):
         if type(self.paid_amount) in [float, int]:
-            self.paid_amount = AmountTypes.PaidAmount(self.paid_amount)
+            self.paid_amount = AmountTypes.PaidAmount(self.paid_amount,self.currencyID)
         if type(self.instruction_id) == str:
             self.instruction_id = InstructionID(self.instruction_id)
 

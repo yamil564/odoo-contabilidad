@@ -50,21 +50,6 @@ class invoice_period(models.Model):
             raise UserError("La Fecha de la factura es obligatoria")
         return obj
 
-    # @api.onchange('invoice_date')
-    # def forzar_periodo(self):
-    #     fecha = str(self.invoice_date)
-    #     fecha = fecha[5:7] + "/" + fecha[0:4]
-    #     periodo = self.env["account.period"].search(
-    #         [("name", "=", fecha), ("company_id", "=", self.env.user.company_id.id)])
-    #     if periodo.exists():
-    #         self.period_id = periodo.id
-    #     else:
-    #         raise UserError("No existe el periodo")
-
-    # @api.onchange('period_id')
-    # def forzar_periodo_moveline(self):
-    #     for line in self.move_id.line_ids:
-    #         line.period_id = self.period_id
 
     def copiar_moneda(self):
         for line in self.move_id.line_ids:

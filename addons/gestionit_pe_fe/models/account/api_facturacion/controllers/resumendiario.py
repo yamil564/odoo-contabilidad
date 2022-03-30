@@ -27,6 +27,7 @@ def build_detalle(detalle):
     mntExe = detalle.get("mntExe")
     mntExo = detalle.get("mntExo")
     mntIgv = detalle.get("mntIgv")
+    moneda = detalle.get("tipoMoneda")
     codOperacion = detalle.get("codOperacion")
     tipoDocReferencia = detalle.get("tipoDocReferencia")
     numDocReferencia = detalle.get("numDocReferencia")
@@ -44,7 +45,7 @@ def build_detalle(detalle):
         doc_line.accounting_customer_party = acp
 
     doc_line.status = codOperacion
-    doc_line.total_amount = AmountTypes.TotalAmount(mntTotal)
+    doc_line.total_amount = AmountTypes.TotalAmount(mntTotal,currencyID=moneda)
 
     # Documento de Referencia (Notas asociadas a boletas)
     # print(type(numDocReferencia) == str and type(tipoDocReferencia) == str)
@@ -60,22 +61,22 @@ def build_detalle(detalle):
     doc_line.billing_payments = []
     if mntNeto:
         doc_line.billing_payments.append(
-            SummaryDocumentsLine.BillingPayment(mntNeto, "01"))
+            SummaryDocumentsLine.BillingPayment(mntNeto, "01",currencyID=moneda))
     # Exonerado
     if mntExo:
         doc_line.billing_payments.append(
-            SummaryDocumentsLine.BillingPayment(mntExo, "02"))
+            SummaryDocumentsLine.BillingPayment(mntExo, "02",currencyID=moneda))
     # Inafecto
     if mntExe:
         doc_line.billing_payments.append(
-            SummaryDocumentsLine.BillingPayment(mntExe, "03"))
+            SummaryDocumentsLine.BillingPayment(mntExe, "03",currencyID=moneda))
 
     tax_total = TaxTotal.TaxTotal()
-    tax_total.tax_amount = TaxTotal.TaxAmount(mntIgv)
+    tax_total.tax_amount = TaxTotal.TaxAmount(mntIgv,currencyID=moneda)
 
     # IGV
     tax_subtotal = TaxTotal.TaxSubtotal()
-    tax_subtotal.tax_amount = TaxTotal.TaxAmount(mntIgv)
+    tax_subtotal.tax_amount = TaxTotal.TaxAmount(mntIgv,currencyID=moneda)
     tax_scheme = TaxTotal.TaxScheme("1000", "IGV", "VAT")
     tax_subtotal.tax_category = TaxTotal.TaxCategory(tax_scheme=tax_scheme)
     tax_total.tax_subtotal = tax_subtotal

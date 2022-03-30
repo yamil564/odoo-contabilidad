@@ -51,6 +51,7 @@ addons_path = tools.config['addons_path'] + '/auto_backup/DBbackups'
 
 class Configuration(models.Model):
     _name = 's3.configure'
+    _description = 'Configuración de S3 Backups'
 
     auth_key = fields.Char(
         String='User Authentication Key', required=True, store=True)
