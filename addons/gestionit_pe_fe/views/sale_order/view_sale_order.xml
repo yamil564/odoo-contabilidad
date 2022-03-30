@@ -59,6 +59,10 @@
                     </group>
                 </page>
             </xpath>
+
+            <xpath expr="//page/field[@name='order_line']/form/group/group/field[@name='price_unit']" position="before">
+                <field name="qty_available_today" />
+            </xpath>
         </field>
     </record>
 
