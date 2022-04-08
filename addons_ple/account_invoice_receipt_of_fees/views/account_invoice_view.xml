@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+		<record id="invoice_supplier_form" model="ir.ui.view">
+            <field name="name">account.invoice.form</field>
+            <field name="model">account.invoice</field>
+            <field name="inherit_id" ref="account.invoice_supplier_form"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//form/sheet/div[1]" position="after">
+
+                    <group>
+                    <group>
+                        <field name="is_receipt_of_fees"/>
+                    </group>
+                    </group>
+
+                </xpath>
+            </field>
+        </record>
+
+        <record id="action_invoice_supplier_fees_tree" model="ir.actions.act_window">
+            <field name="name">Recibos por Honorarios</field>
+            <field name="res_model">account.invoice</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form,calendar,graph</field>
+            <field name="view_id" ref="account.invoice_supplier_tree"/>
+            <field name="context">{'type':'in_invoice'}</field>
+            <field name="domain">[('is_receipt_of_fees','=',True)]</field>
+        </record>
+
+        <menuitem action="action_invoice_supplier_fees_tree"
+                  id="menu_action_invoice_in_invoice_fees"
+                  parent="account.menu_finance_payables"
+                  sequence="2"/>
+
+
+    </data>
+</odoo>
