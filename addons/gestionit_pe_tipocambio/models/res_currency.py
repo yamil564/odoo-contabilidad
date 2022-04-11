@@ -25,6 +25,8 @@ class ResCurrency(models.Model):
 
     # display_name = fields.Char("Nombre",compute=_compute_name,store=True)
 
+    dayli_update_sbs_usd = fields.Boolean("Actualización diaria automática",default=True)
+
     def name_get(self):
         result = []
         for record in self:

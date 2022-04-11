@@ -9,13 +9,26 @@
                 <div class="row mt16 o_settings_container">
                     <div class="col-12 col-lg-6 o_setting_box">
                         <div class="o_setting_left_pane">
+                            
                         </div>
                         <div class="o_setting_right_pane">
-                            <div class="text-muted">
-                                Secuencia de Libro de reclamaciones
+                            <div>
+                                <span class="o_form_label">Secuencia de Libro de reclamaciones</span>
+                                <div class="text-muted">
+                                    Establece el prefijo para la secuencia de registro de reclamos y quejas.
+                                </div>
+                                <div class="content-group" >
+                                    <field name="claim_sequence_id"/>
+                                </div>
                             </div>
-                            <div class="content-group" >
-                                <field name="claim_sequence_id"/>
+                            <div>
+                                <span class="o_form_label">Responsable de reclamos y quejas</span>
+                                <div class="text-muted">
+                                    Usuario responsable de la gestión de reclamos y quejas. Este será establecido por defecto en los reclamos creados.
+                                </div>
+                                <div class="content-group" >
+                                    <field name="claim_user_id"/>
+                                </div>
                             </div>
                         </div>
                     </div>

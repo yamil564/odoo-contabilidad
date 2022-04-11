@@ -13,6 +13,7 @@ services:
       - odoo-web-data:/var/lib/odoo
       - ./config:/etc/odoo
       - ./addons:/mnt/extra-addons
+      - ./addons-contabilidad:/mnt/extra-addons-contabilidad
     entrypoint: "/usr/bin/odoo -c /etc/odoo/odoo.conf --dev all"
   db:
     container_name: ${DB_HOST}
