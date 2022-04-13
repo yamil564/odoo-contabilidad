@@ -275,12 +275,10 @@ class PleDiary(models.Model):
 	def _get_domain(self):
 
 		if self.fecha:
-			if self.incluir_anteriores_no_declarados:
-				self.fecha_inicio="%s-01-01" %(self.fiscal_year)
-				self.fecha_fin=self.date_to
-			else:
-				self.fecha_inicio=self.date_from
-				self.fecha_fin=self.date_to
+			
+			self.fecha_inicio=self.date_from
+			self.fecha_fin=self.date_to
+
 		elif self.periodo:
 			if self.incluir_anteriores_no_declarados:
 				self.fecha_inicio= "%s-01-01" %(self.fiscal_year)
@@ -290,38 +288,13 @@ class PleDiary(models.Model):
 				self.fecha_fin= self._get_end_date()
 
 		domain = [
-			('move_id.state','!=','draft'),
+			('move_id.state','=','posted'),
 			('declared_ple_5_1_5_2_6_1','!=',True),
 			('date','>=',self.fecha_inicio),
 			('date','<=',self.fecha_fin),
+			('display_type','not in',['line_section']),
 			]
 
-		'''partners=tuple(self.partner_ids.mapped('id'))
-		len_partners = len(partners or '')
-		if len_partners:
-			domain.append(('partner_id.id' ,'in' , partners))
-
-		journals = tuple(self.journal_ids.mapped('id'))
-		len_journals = len(journals or '')
-		if len(self.journal_ids):
-			domain.append(('journal_id.id' ,'in', journals))
-
-		moves = tuple(self.move_ids.mapped('id'))
-		len_moves = len(moves or '')
-		if len(moves):
-			domain.append(('move_id.id' ,'in', moves))
-
-
-		payments = tuple(self.payment_ids.mapped('id'))
-		len_payments = len(payments or '')
-		if len(payments):
-			domain.append(('payment_id.id' ,'in', payments))
-
-
-		accounts = tuple(self.account_ids.mapped('id'))
-		len_accounts = len(accounts or '')
-		if len(accounts):
-			domain.append(('account_id.id' ,'in', accounts))'''
 
 		##############
 		partners=tuple(self.partner_ids.mapped('id'))
