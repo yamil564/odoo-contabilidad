@@ -82,29 +82,47 @@
         </record>
 
 
-           <record id="action_ple_diary_line" model="ir.actions.act_window">
+        <record id="action_ple_diary_line" model="ir.actions.act_window">
             <field name="name">PLE Libro Mayor-Diario-Simplificado</field>
             <field name="res_model">ple.diary.line</field>
             <field name="view_mode">tree,form</field>
-            </record>
+        </record>
 
-  <!-- ## Criterios de agrupacion
-  # 1 : Socio
-  # 2 : Cuenta
-  # 3 : Grupo cuenta
-  # 4 : Tipo Comprobante
-  # 5 : Numero Serie
-  # 6 : Fecha emision/Contable
-  # 7 : Asiento -->
 
         <record id="view_ple_diary_line_filter" model="ir.ui.view">
         <field name="name">ple.diary.line.filter</field>
         <field name="model">ple.diary.line</field>
         <field name="arch" type="xml">
             <search string="PLE Libro Mayor-Diario-Simplificado">
-                <group expand="1" string="Group By">
+
+                <field name ="asiento_contable" string="Asiento contable" />
+                <field name ="codigo_cuenta_desagregado" string= "Cuenta Contable" />
+                <field name ="tipo_moneda_origen" string= "Tipo de moneda" />
+                <field name ="tipo_doc_iden_emisor" string="Tipo Documento Identidad Emisor"/>
+                <field name ="num_doc_iden_emisor" string="Número documento identidad Emisor"/>
+                <field name ="tipo_comprobante_pago" string="Tipo Comprobante Pago"/>
+                <field name ="num_serie_comprobante_pago" string="Número Serie de Comprobante de Pago"/>
+                <field name ="num_comprobante_pago" string="Número Comprobante de Pago"/>
+                <field name ="fecha_operacion" string="Fecha de Operación"/>
+                <field name ="glosa" string="Glosa o descripción"/>
+
+                <separator/>
+                <group expand="1" string="Agrupado por">
                     <filter string="Cuenta" name="filter_cuenta" context="{'group_by':'codigo_cuenta_desagregado_id'}"/>
                     <filter string="Asiento Contable" name="filter_asiento_contable" context="{'group_by':'move_id'}"/>
+                    <filter string="Tipo de Moneda" name="filter_tipo_moneda_origen" context="{'group_by':'tipo_moneda_origen'}"/>
+
+                    <filter string="Tipo de Documento Emisor" name="filter_tipo_documento_emisor" context="{'group_by':'tipo_doc_iden_emisor'}"/>
+
+                    <filter string="Número Documento Emisor" name="filter_num_doc_iden_emisor" context="{'group_by':'num_doc_iden_emisor'}"/>
+
+                    <filter string="Tipo de Comprobante Pago" name="filter_tipo_comprobante_pago" context="{'group_by':'tipo_comprobante_pago'}"/>
+
+                    <filter string="Número de Serie Comprobante" name="filter_num_serie_comprobante_pago" context="{'group_by':'num_serie_comprobante_pago'}"/>
+
+                    <filter string="Fecha Operación" name="filter_fecha_operacion" context="{'group_by':'fecha_operacion'}"/>
+
+
                 </group>
             </search>
         </field>
