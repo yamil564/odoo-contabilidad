@@ -70,12 +70,6 @@
                             </div>
 
 
-                             <label for="account_ids"/>
-                            <div>
-                                <field name="account_option" placeholder="" class="oe_inline"/>
-                                <field name="account_ids" placeholder="" class="oe_inline" widget="many2many_tags" options="{'no_create': True}"/>
-                            </div>                           
-
                             <label for="journal_ids"/>
                             <div>
                                 <field name="journal_option" placeholder="" class="oe_inline"/>

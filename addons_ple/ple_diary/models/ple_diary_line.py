@@ -25,7 +25,7 @@ class PleDiaryLine(models.Model):
 	periodo_apunte=fields.Char(string="Periodo del apunte contable", compute='_compute_campo_periodo_apunte' , store=True , readonly=True ) ### ESTO CORRESPONDE AL MES DE LA CREACIÓN DEL PLE !!!
 	asiento_contable=fields.Char(string="Nombre del asiento contable", compute='_compute_campo_asiento_contable' , store=True , readonly=True) #############################
 	m_correlativo_asiento_contable=fields.Char(string="M-correlativo asiento contable" ,compute='_compute_campo_m_correlativo_asiento_contable' ,store=True , readonly=True )# 
-	codigo_cuenta_desagregado_id=fields.Many2one("account.account" , string="Código cuenta contable desagregado" , compute='_compute_campo_codigo_cuenta_desagregado_id' ,  inverse='_inverse_compute_campo_codigo_cuenta_desagregado_id' , store=True)
+	codigo_cuenta_desagregado_id=fields.Many2one('account.account', string="Código cuenta contable desagregado" , compute='_compute_campo_codigo_cuenta_desagregado_id' , store=True)
 	journal_id=fields.Many2one('account.journal' , string="Diario" , compute='_compute_campo_journal_id')
 	codigo_cuenta_desagregado=fields.Char(string="Código cuenta contable desagregado" , compute='_compute_campo_codigo_cuenta_desagregado' , store=True )
 	codigo_unidad_operacion=fields.Char(string="Código unidad operación" , default="" )
@@ -69,19 +69,20 @@ class PleDiaryLine(models.Model):
 	##que los apuntes contables estan ordenados por codigo cuenta
 		for rec in self:
 			if rec.move_id.line_ids:
-				indice= sorted([(line.account_id.code,line.id) for line in rec.move_id.line_ids]).index((rec.move_line_id.account_id.code,rec.move_line_id.id))
+				indice= sorted([(line.account_id.code or '',line.id) for line in rec.move_id.line_ids]).index((rec.move_line_id.account_id.code or '',rec.move_line_id.id))
 				rec.m_correlativo_asiento_contable='M' + str(indice+1)
 
 	@api.depends('move_line_id')
 	def _compute_campo_codigo_cuenta_desagregado_id(self):
 		for rec in self:
-			rec.codigo_cuenta_desagregado_id = rec.move_line_id.account_id or ''
+			if rec.move_line_id:
+				rec.codigo_cuenta_desagregado_id = rec.move_line_id.account_id or False
 
 
 	@api.depends('codigo_cuenta_desagregado_id')
 	def _compute_campo_codigo_cuenta_desagregado(self):
 		for rec in self:
-			rec.codigo_cuenta_desagregado = rec.codigo_cuenta_desagregado_id.code or ''
+			rec.codigo_cuenta_desagregado = rec.codigo_cuenta_desagregado_id and rec.codigo_cuenta_desagregado_id.code or ''
 
 	@api.depends('move_line_id')
 	def _compute_campo_tipo_moneda_origen(self):
@@ -203,13 +204,13 @@ class PleDiaryLine(models.Model):
 	@api.depends('move_line_id')
 	def _compute_campo_movimientos_debe(self):
 		for rec in self:
-			rec.movimientos_debe = format(rec.move_line_id.debit , ".2f") 
+			rec.movimientos_debe = format(round(rec.move_line_id.debit,2) , ".2f") 
 
 
 	@api.depends('move_line_id')
 	def _compute_campo_movimientos_haber(self):
 		for rec in self:
-			rec.movimientos_haber = format(rec.move_line_id.credit, ".2f")
+			rec.movimientos_haber = format(round(rec.move_line_id.credit,2), ".2f")
 
 
 	@api.depends('fecha_contable','fecha_operacion','periodo')

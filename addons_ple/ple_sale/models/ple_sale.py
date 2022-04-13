@@ -23,14 +23,12 @@ class PleSale(models.Model):
 	
 
 	partner_ids = fields.Many2many('res.partner','ple_sale_partner_rel','partner_id','ple_sale_id_1' ,string="Socio" ,readonly=True , states={'draft': [('readonly', False)]})
-	account_ids = fields.Many2many('account.account','ple_sale_account_rel','account_id','ple_sale_id_2',string='Cuenta',domain="[('internal_type', '=', 'receivable'),('deprecated','=',False)]" ,readonly=True , states={'draft': [('readonly', False)]})
 	journal_ids = fields.Many2many('account.journal','ple_sale_journal_rel','journal_id','ple_sale_id_3',string="Diario" ,readonly=True , states={'draft': [('readonly', False)]})
 	move_ids = fields.Many2many('account.move','ple_sale_move_rel','move_id','ple_sale_id_4',string='Factura' ,readonly=True , states={'draft': [('readonly', False)]})
 	currency_ids = fields.Many2many('res.currency','ple_sale_currency_rel','currency_id','ple_sale_id_6', string="Moneda" ,readonly=True , states={'draft': [('readonly', False)]})
 
 	####### Select Option Filter
 	partner_option=fields.Selection(selection=options , string="",readonly=True , states={'draft': [('readonly', False)]})
-	account_option=fields.Selection(selection=options , string="",readonly=True , states={'draft': [('readonly', False)]})
 	journal_option=fields.Selection(selection=options , string="",readonly=True , states={'draft': [('readonly', False)]})
 	move_option=fields.Selection(selection=options , string="",readonly=True , states={'draft': [('readonly', False)]})
 	currency_option=fields.Selection(selection=options , string="",readonly=True , states={'draft': [('readonly', False)]})
@@ -155,12 +153,9 @@ class PleSale(models.Model):
 	def _get_domain(self):
 		#####################
 		if self.fecha:
-			if self.incluir_anteriores_no_declarados:
-				self.fecha_inicio="%s-01-01" %(self.fiscal_year)
-				self.fecha_fin=self.date_to
-			else:
-				self.fecha_inicio=self.date_from
-				self.fecha_fin=self.date_to
+			self.fecha_inicio=self.date_from
+			self.fecha_fin=self.date_to
+			
 		elif self.periodo:
 			if self.incluir_anteriores_no_declarados:
 				self.fecha_inicio= "%s-01-01" %(self.fiscal_year)
@@ -199,11 +194,6 @@ class PleSale(models.Model):
 			domain.append(('currency_id.id' ,self.currency_option or 'in', currencys))
 
 
-		accounts = tuple(self.account_ids.mapped('id'))
-		len_accounts = len(accounts or '')
-		if len(accounts):
-			domain.append(('account_id.id' ,self.account_option or 'in', accounts))
-			
 		return domain
 
 

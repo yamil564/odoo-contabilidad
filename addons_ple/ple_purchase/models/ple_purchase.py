@@ -29,13 +29,11 @@ class PlePurchase(models.Model):
 
 	######################### FILTROS DINAMICOS, NUEVOS CAMPOS AGREGADOS !!!
 	partner_ids = fields.Many2many('res.partner','ple_purchase_partner_rel','partner_id','ple_purchase_id_1' ,string="Socio" ,readonly=True , states={'draft': [('readonly', False)]})
-	account_ids = fields.Many2many('account.account','ple_purchase_account_rel','account_id','ple_purchase_id_2',string='Cuenta',domain="[('internal_type', '=', 'payable'),('deprecated','=',False)]" ,readonly=True , states={'draft': [('readonly', False)]})
 	journal_ids = fields.Many2many('account.journal','ple_purchase_journal_rel','journal_id','ple_purchase_id_3',string="Diario" ,readonly=True , states={'draft': [('readonly', False)]})
 	move_ids = fields.Many2many('account.move','ple_purchase_move_rel','move_id','ple_purchase_id_4',string='Asiento Contable' ,readonly=True , states={'draft': [('readonly', False)]})
 	currency_ids = fields.Many2many('res.currency','ple_purchase_currency_rel','currency_id','ple_purchase_id_6', string="Moneda" ,readonly=True , states={'draft': [('readonly', False)]})
 	##################################################################################
 	partner_option=fields.Selection(selection=options , string="",readonly=True , states={'draft': [('readonly', False)]})
-	account_option=fields.Selection(selection=options , string="",readonly=True , states={'draft': [('readonly', False)]})
 	journal_option=fields.Selection(selection=options , string="",readonly=True , states={'draft': [('readonly', False)]})
 	move_option=fields.Selection(selection=options , string="",readonly=True , states={'draft': [('readonly', False)]})
 	currency_option=fields.Selection(selection=options , string="",readonly=True , states={'draft': [('readonly', False)]})
@@ -160,12 +158,9 @@ class PlePurchase(models.Model):
 	def _get_domain(self):
 		#####################
 		if self.fecha:
-			if self.incluir_anteriores_no_declarados:
-				self.fecha_inicio="%s-01-01" %(self.fiscal_year)
-				self.fecha_fin=self.date_to
-			else:
-				self.fecha_inicio=self.date_from
-				self.fecha_fin=self.date_to
+			self.fecha_inicio=self.date_from
+			self.fecha_fin=self.date_to
+
 		elif self.periodo:
 			if self.incluir_anteriores_no_declarados:
 				self.fecha_inicio= "%s-01-01" %(self.fiscal_year)
@@ -210,11 +205,6 @@ class PlePurchase(models.Model):
 		if len(currencys):
 			domain.append(('currency_id.id' ,self.currency_option or 'in', currencys))
 
-
-		accounts = list(self.account_ids.mapped('id'))
-		len_accounts = len(accounts or '')
-		if len(accounts):
-			domain.append(('account_id.id' ,self.account_option or 'in', accounts))
 			
 		return domain
 

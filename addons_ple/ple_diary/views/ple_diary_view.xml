@@ -64,20 +64,6 @@
 
                         <group  name="grupo_filtros_dinamicos" string="Filtros Dinámicos">
                             <group>
-
-                                    <!--<field name="partner_ids" placeholder="" widget="many2many_tags" options="{'no_create': True}"/>
-
-                                    <field name="account_ids" widget="many2many_tags" options="{'no_create': True}"/>
-
-
-                                  
-                                    <field name="journal_ids" widget="many2many_tags" options="{'no_create': True}"/>
-                                
-                                 
-                                    <field name="move_ids" widget="many2many_tags" options="{'no_create': True}"/>
-                             
-                                    <field name="payment_ids" widget="many2many_tags" options="{'no_create': True}"/>-->
-                            
                            
                                 <label for ="partner_ids"/>
                                 <div>
@@ -109,7 +95,8 @@
                                     <field name="payment_ids" widget="many2many_tags" options="{'no_create': True}"/>
                                 </div>
                             </group>
-                    </group>
+                        </group>
+
                     </group>
 
 
@@ -264,7 +251,7 @@
         </record>
 
         <record id="action_ple_diary" model="ir.actions.act_window">
-            <field name="name">Libro diario</field>
+            <field name="name">PLE-Libro diario</field>
             <field name="res_model">ple.diary</field>
             <field name="view_mode">tree,form</field>
             <field eval="False" name="view_id"/>

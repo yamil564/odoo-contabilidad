@@ -157,7 +157,7 @@ class PlePurchaseLine(models.Model):
 
 
 	
-	@api.depends('move_id')
+	'''@api.depends('move_id')
 	def _compute_campo_serie_comprobante(self):
 		for rec in self:
 			if rec.move_id and rec.move_id.inv_supplier_ref:
@@ -168,8 +168,19 @@ class PlePurchaseLine(models.Model):
 					rec.serie_comprobante= ''
 			else:
 				rec.serie_comprobante = ''
+	'''
 
 	@api.depends('move_id')
+	def _compute_campo_serie_comprobante(self):
+		for rec in self:
+			if rec.move_id and rec.move_id.prefix_code:
+				rec.serie_comprobante= rec.move_id.prefix_code
+			else:
+				rec.serie_comprobante = '-'
+
+
+
+	'''@api.depends('move_id')
 	def _compute_campo_numero_comprobante(self):
 		for rec in self:
 			if rec.move_id and rec.move_id.inv_supplier_ref:
@@ -180,6 +191,17 @@ class PlePurchaseLine(models.Model):
 					rec.numero_comprobante= ''
 			else:
 				rec.numero_comprobante = ''
+	'''
+
+
+	@api.depends('move_id')
+	def _compute_campo_numero_comprobante(self):
+		for rec in self:
+			if rec.move_id and rec.move_id.inv_supplier_ref:
+				rec.numero_comprobante=rec.move_id.invoice_number
+			else:
+				rec.numero_comprobante = '-'
+
 
 
 
@@ -322,27 +344,18 @@ class PlePurchaseLine(models.Model):
 	def _compute_campo_serie_comprobante_original(self):
 		for rec in self:
 			if rec.move_id_2:
-				prefix_code=rec.move_id_2.inv_supplier_ref.split('-')
-				if len(prefix_code)>1:
-					rec.serie_comprobante_original = prefix_code[0] or ''
-				else:
-					rec.serie_comprobante_original= ''
+				rec.serie_comprobante_original=rec.move_id_2.prefix_code
+			else:
+				rec.serie_comprobante_original= ''
 			
-			#rec.serie_comprobante_original= ''
-		
 
 	@api.depends('move_id_2')
 	def _compute_campo_numero_comprobante_original(self):
 		for rec in self:
 			if rec.move_id_2:
-				invoice_number = rec.move_id_2.inv_supplier_ref.split('-')
-				if len(invoice_number)>1:
-					rec.numero_comprobante_original= invoice_number[1]
-				else:
-					rec.numero_comprobante_original= invoice_number
+				rec.numero_comprobante_original = rec.move_id_2.invoice_number
 			else:			
 				rec.numero_comprobante_original= ''
-			#rec.numero_comprobante_original= ''
 
 
 

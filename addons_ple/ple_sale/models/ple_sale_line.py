@@ -105,20 +105,21 @@ class PleSaleLine(models.Model):
 	@api.depends('invoice_id')
 	def _compute_campo_serie_comprobante(self):
 		for rec in self:
-			if rec.invoice_id and rec.invoice_id.inv_supplier_ref:
-				prefix_code=rec.invoice_id.inv_supplier_ref.split('-')
+			if rec.invoice_id and rec.invoice_id.name:
+				prefix_code=rec.invoice_id.name.split('-')
 				if len(prefix_code)>1:
 					rec.serie_comprobante= prefix_code[0] or ''
 				else:
-					rec.serie_comprobante= ''
+					rec.serie_comprobante= '-'
 			else:
-				rec.serie_comprobante = ''
+				rec.serie_comprobante = '-'
 
+	
 	@api.depends('invoice_id')
 	def _compute_campo_numero_comprobante(self):
 		for rec in self:
-			if rec.invoice_id and rec.invoice_id.inv_supplier_ref:
-				invoice_number=rec.invoice_id.inv_supplier_ref.split('-')
+			if rec.invoice_id and rec.invoice_id.name:
+				invoice_number=rec.invoice_id.name.split('-')
 				if len(invoice_number)>1:
 					rec.numero_comprobante= invoice_number[1] or ''
 				else:
@@ -126,6 +127,7 @@ class PleSaleLine(models.Model):
 			else:
 				rec.numero_comprobante = ''
 
+	
 	@api.depends('invoice_id')
 	def compute_partner_id(self):
 		for rec in self:
@@ -252,10 +254,12 @@ class PleSaleLine(models.Model):
 	@api.depends('invoice_id_2')
 	def _compute_campo_serie_comprobante_original(self):
 		for rec in self:
-			if rec.invoice_id_2 and rec.invoice_id_2.inv_supplier_ref:
-				prefix_code=rec.invoice_id_2.inv_supplier_ref.split('-')
+			if rec.invoice_id_2 and rec.invoice_id_2.name:
+				prefix_code=rec.invoice_id_2.name.split('-')
+
 				if len(prefix_code)>1:
 					rec.serie_comprobante_original = prefix_code[0] or ''
+
 				else:
 					rec.serie_comprobante_original= ''
 			
@@ -263,8 +267,8 @@ class PleSaleLine(models.Model):
 	@api.depends('invoice_id_2')
 	def _compute_campo_numero_comprobante_original(self):
 		for rec in self:
-			if rec.invoice_id_2 and rec.invoice_id_2.inv_supplier_ref:
-				invoice_number = rec.invoice_id_2.inv_supplier_ref.split('-')
+			if rec.invoice_id_2 and rec.invoice_id_2.name:
+				invoice_number = rec.invoice_id_2.name.split('-')
 				if len(invoice_number)>1:
 					rec.numero_comprobante_original= invoice_number[1]
 				else:
