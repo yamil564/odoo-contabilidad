@@ -13,6 +13,7 @@ odoo.define("pos_order_mgmt.widgets", function(require) {
     var gui = require("point_of_sale.gui");
     var chrome = require("point_of_sale.chrome");
     var models = require("point_of_sale.models");
+    var rpc = require('web.rpc');
 
     var QWeb = core.qweb;
     var ScreenWidget = screens.ScreenWidget;
@@ -24,17 +25,55 @@ odoo.define("pos_order_mgmt.widgets", function(require) {
                 return this._super();
             }
             var order = this.pos.reloaded_order;
-            this.$(".pos-receipt-container").html(
-                QWeb.render("OrderReceipt", {
-                    widget: this,
-                    pos: this.pos,
-                    order: order,
-                    receipt: order.export_for_printing(),
-                    orderlines: order.get_orderlines(),
-                    paymentlines: order.get_paymentlines(),
-                })
-            );
-            this.pos.from_loaded_order = true;
+            var self = this
+            rpc.query({
+                model: 'pos.order',
+                method: 'search_read',
+                domain: [['pos_reference', '=', order.name]],
+                fields: ['invoice_journal_id', 'id'],
+                limit: 1
+            }).then(function(res) {
+                res.forEach(function (item) {
+                    if (res[0].invoice_journal_id) {
+                      rpc.query({
+                        model: 'account.journal',
+                        method: 'search_read',
+                        domain: [['id', '=', res[0].invoice_journal_id[0]]],
+                        fields: ['invoice_type_code_id', 'id'],
+                        limit: 1
+                      }).then(function(res2) {
+                        res2.forEach(function (item) {
+                          order['invoice_type_code_id'] = res2[0].invoice_type_code_id;
+                          self.$(".pos-receipt-container").html(
+                              QWeb.render("OrderReceipt", {
+                                  widget: self,
+                                  pos: self.pos,
+                                  order: order,
+                                  receipt: order.export_for_printing(),
+                                  orderlines: order.get_orderlines(),
+                                  paymentlines: order.get_paymentlines(),
+                              })
+                          );
+                          self.pos.from_loaded_order = true;
+                        });
+                      });
+                    } else {
+                      self.$(".pos-receipt-container").html(
+                          QWeb.render("OrderReceipt", {
+                              widget: self,
+                              pos: self.pos,
+                              order: order,
+                              receipt: order.export_for_printing(),
+                              orderlines: order.get_orderlines(),
+                              paymentlines: order.get_paymentlines(),
+                          })
+                      );
+                      self.pos.from_loaded_order = true;
+                    }
+
+                });
+            });
+
         },
         click_next: function() {
             if (!this.pos.from_loaded_order) {
@@ -172,6 +211,29 @@ odoo.define("pos_order_mgmt.widgets", function(require) {
         action_print: function(order_data, order) {
             // We store temporarily the current order so we can safely compute
             // taxes based on fiscal position
+            // rpc.query({
+            //     model: 'pos.order',
+            //     method: 'search_read',
+            //     domain: [['id', '=', order_data.id]],
+            //     fields: ['invoice_journal_id', 'id'],
+            //     limit: 1
+            // }).then(function(res) {
+            //     res.forEach(function (item) {
+            //         if (res[0].invoice_journal_id) {
+            //           rpc.query({
+            //             model: 'account.journal',
+            //             method: 'search_read',
+            //             domain: [['id', '=', res[0].invoice_journal_id[0]]],
+            //             fields: ['invoice_type_code_id', 'id'],
+            //             limit: 1
+            //           }).then(function(res2) {
+            //             res2.forEach(function (item) {
+            //               order['invoice_type_code_id'] = res2[0].invoice_type_code_id;
+            //             });
+            //           });
+            //         };
+            //     });
+            // });
             this.pos.current_order = this.pos.get_order();
 
             this.pos.set_order(order);
