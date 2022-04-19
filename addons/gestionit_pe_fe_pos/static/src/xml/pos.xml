@@ -72,9 +72,16 @@
         </t>
     </t>
 
-    <t t-name="LineReturnPopup">
+    <!-- <t t-name="LineReturnPopup">
         <div class="modal-dialog">
             <div class="popup popup_return_line">
+                <p class="title">Detalles de Orden</p>
+                <div>
+                    <t t-esc="widget.name"/>
+                    <t t-esc="widget.options"/>
+                    <t t-esc="widget.options.order_lines"/>
+                    Hola mi pana luis
+                </div>
                 <p class="title">Retornar productos</p>
                 <div class="return_orderline">
                     <table class="popup-orderline-list">
@@ -106,5 +113,5 @@
                 </div>
             </div>
         </div>
-    </t>
+    </t> -->
 </templates>
