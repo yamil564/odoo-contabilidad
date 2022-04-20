@@ -169,12 +169,12 @@
                                     <group>
                                         <group string="Datos de Traslado">
                                             <field name="modalidad_transporte"/>
-                                            <field name="transporte_partner_id" options="{'no_create_edit': True,'no_quick_create':True,'no_open':True}" domain="[('es_empresa_transporte_publico','=',True)]"/>
+                                            <field name="transporte_partner_id" attrs="{'invisible':[('modalidad_transporte','!=','01')], 'required':[('modalidad_transporte','=','01')]}" options="{'no_create_edit': True,'no_quick_create':True,'no_open':True}" domain="[('es_empresa_transporte_publico','=',True), ('parent_id', '=', False)]"/>
                                             <field name="ruc_trasporte_partner"/>
                                             <field name="date"/>
                                         </group>
                                         <group string="Datos de Partida">
-                                            <field name="partner_direccion_partida_id"/>
+                                            <field name="partner_direccion_partida_id" readonly="0" force_save="1" domain="[('parent_id', '=', False)]"/>
                                             <t attrs="{'invisible':[('partner_direccion_partida_id','!=',False)]}">
                                                 <span>Debe seleccionar una empresa de partida.</span>
                                             </t>
@@ -183,13 +183,12 @@
                                                     'default_country_id':173,
                                                     'default_type':'other',
                                                     'parent_id':partner_direccion_partida_id
-                                                }" domain="[('parent_id','=',partner_direccion_partida_id), ('parent_id','!=',False),
-                                                    ('type','in',['other'])]" options="{'no_create':True,'no_create_edit':True,'no_quick_create':True,'no_open':True}"/>
+                                                }" domain="[('parent_id','!=',False),('type','in',['other']), '|', ('parent_id','=',partner_direccion_partida_id), ('parent_id','=',transporte_partner_id)]" options="{'no_create':True,'no_create_edit':True,'no_quick_create':True,'no_open':True}"/>
                                             <field name="lugar_partida_direccion" widget="text"  force_save="1"/>
                                             <field name="lugar_partida_ubigeo_code" context="{'ubigeo_search':True}" options="{'no_create':True,'no_create_edit':True,'no_quick_create':True,'no_open':True}" force_save="1"/>
                                         </group>
                                         <group string="Datos de Llegada">
-                                            <field name="partner_direccion_llegada_id"/>
+                                            <field name="partner_direccion_llegada_id" domain="[('parent_id', '=', False)]"/>
                                             <t attrs="{'invisible':[('partner_direccion_llegada_id','!=',False)]}">
                                                 <span style="color:red">Debe seleccionar una empresa destinataria.</span>
                                             </t>
@@ -208,6 +207,7 @@
                                             <field name="vehiculo_privado_id" options="{'no_create':True,'no_create_edit':True,'no_quick_create':True,'no_open':True}" attrs="{'invisible':[('modalidad_transporte','!=','02')]}"/>
                                             <field name="conductor_publico_id" options="{'no_create':True,'no_create_edit':True,'no_quick_create':True,'no_open':True}" attrs="{'invisible':[('modalidad_transporte','!=','01')]}" domain="[('parent_id','=',transporte_partner_id),('parent_id','!=',False)]"/>
                                             <field name="vehiculo_publico_id" options="{'no_create':True,'no_create_edit':True,'no_quick_create':True,'no_open':True}" attrs="{'invisible':[('modalidad_transporte','!=','01')]}" domain="[('propietario_id','=',transporte_partner_id),('propietario_id','!=',False)]"/>
+                                            <field name="licencia"/>
                                         </group>
                                     </group>
                                 </sheet>

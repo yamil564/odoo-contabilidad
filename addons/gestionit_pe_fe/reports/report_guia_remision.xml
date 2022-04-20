@@ -181,6 +181,7 @@
                                             <th scope="col">RUC<br/>Transportista</th>
                                             <th scope="col">Empresa<br/>Transportista</th>
                                             <th scope="col">Fecha</th>
+                                            <th scope="col">Partida</th>
                                             <th scope="col">Llegada</th>
                                             <th scope="col">Conductor</th>
                                             <th scope="col">Vehiculo<br/>(Marca y Placa)</th>
@@ -206,7 +207,10 @@
                                                     <span t-field="line.date"/>
                                                 </td>
                                                 <td>
-                                                    <span t-field="line.direccion_llegada_id.contact_address"/>
+                                                    <span t-field="line.lugar_partida_direccion"/>
+                                                </td>
+                                                <td>
+                                                    <span t-field="line.lugar_llegada_direccion"/>
                                                 </td>
                                                 <td>
                                                     <t t-if="line.modalidad_transporte == '01'">

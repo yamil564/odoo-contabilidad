@@ -844,10 +844,10 @@ class GuiaRemision(models.Model):
             "transbordoProgramado": False,
             "pesoTotal": round(self.peso_bruto_total, 3),
             "pesoUnidadMedida": "KGM",
-            "entregaUbigeo": self.lugar_llegada_ubigeo_code.code,
-            "entregaDireccion": str(self.lugar_llegada_direccion or "").strip()[:100],
-            "salidaUbigeo": self.lugar_partida_ubigeo_code.code,
-            "salidaDireccion": str(self.lugar_partida_direccion or "").strip()[:100],
+            "entregaUbigeo": self.transporte_lines[-1].lugar_llegada_ubigeo_code.code,
+            "entregaDireccion": str(self.transporte_lines[-1].lugar_llegada_direccion or "").strip()[:100],
+            "salidaUbigeo": self.transporte_lines[0].lugar_partida_ubigeo_code.code,
+            "salidaDireccion": str(self.transporte_lines[0].lugar_partida_direccion or "").strip()[:100],
         }
         if self.numero_bultos > 0:
             documento.update({"numeroBulltosPallets": self.numero_bultos})
@@ -1199,7 +1199,7 @@ class LineasTransporte(models.Model):
 
     guia_id = fields.Many2one('gestionit.guia_remision', 'Guia Base')
     secuencia = fields.Integer('Secuencia')
-    transporte_partner_id = fields.Many2one("res.partner", string="Empresa Transportista", required=True)
+    transporte_partner_id = fields.Many2one("res.partner", string="Empresa Transportista", required=False)
     ruc_trasporte_partner = fields.Char('RUC Transportista', related='transporte_partner_id.vat')
     date = fields.Date('Fecha', required=True)
     modalidad_transporte = fields.Selection(selection="_list_modalidad_transporte", string="Modalidad de Transporte", required=True)
@@ -1215,6 +1215,41 @@ class LineasTransporte(models.Model):
     vehiculo_privado_id = fields. Many2one("gestionit.vehiculo", string="Vehículo")
     conductor_publico_id = fields.Many2one("res.partner", string="Conductor")
     vehiculo_publico_id = fields.Many2one("gestionit.vehiculo", string="Vehículo")
+    licencia = fields.Char('Licencia', readonly=True)
+
+    # @api.onchange("conductor_publico_id", "conductor_privado_partner_id")
+    # def _get_licencia(self):
+    #     if self.modalidad_transporte == '01':
+    #         self.licencia = self.conductor_publico_id.licencia
+    #     elif self.modalidad_transporte == '02':
+    #         self.licencia = self.conductor_privado_partner_id.licencia
+    #     else:
+    #         self.licencia = ''
+
+    @api.onchange("partner_direccion_partida_id")
+    def _onchange_partner_direccion_partida_id(self):
+        self.direccion_partida_id = False
+        self.lugar_partida_direccion = ''
+        self.lugar_partida_ubigeo_code = False
+
+    @api.onchange("partner_direccion_llegada_id")
+    def _onchange_partner_direccion_llegada_id(self):
+        self.direccion_llegada_id = False
+        self.lugar_llegada_direccion = ''
+        self.lugar_llegada_ubigeo_code = False
+
+    @api.onchange("modalidad_transporte")
+    def _onchange_modalidad_transporte(self):
+        if self.modalidad_transporte == '01':
+            if self.transporte_partner_id:
+                self.partner_direccion_partida_id = self.transporte_partner_id.id
+            else:
+                self.partner_direccion_partida_id = False
+        elif self.modalidad_transporte == '02':
+            self.partner_direccion_partida_id = self.env.company.id
+        else:
+            self.partner_direccion_partida_id = False
+
 
     @api.onchange("direccion_partida_id")
     def _onchange_direccion_partida(self):
@@ -1267,7 +1302,7 @@ class LineasTransporte(models.Model):
                     errors.append(
                         "* El tipo de documento de la empresa de transporte seleccionada debe ser de tipo 'RUC'")
 
-                if not self.fecha_inicio_traslado:
+                if not self.date:
                     errors.append(
                         "* La fecha de inicio de traslado es obligatorio.")
                 """
@@ -1296,7 +1331,7 @@ class LineasTransporte(models.Model):
                     errors.append(
                         "* La conductor privado seleccionado no tiene tipo de documento.")
 
-                if not self.fecha_inicio_traslado:
+                if not self.date:
                     errors.append(
                         "* La fecha de inicio de traslado es obligatorio")
 
@@ -1347,5 +1382,3 @@ class LineasTransporte(models.Model):
             return True
         else:
             return False
-
-
