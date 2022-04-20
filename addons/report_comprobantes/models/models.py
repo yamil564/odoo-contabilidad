@@ -121,6 +121,9 @@ class ComprobantesXlsx(models.AbstractModel):
             else:
                 numero_rec, serie_rec, correlativo_rec, tipo_comp_rec, fecha_emision_rec = "", "", "", "", ""
 
+            signo = -1 if tipo_comp == '07' else 1
+            anular = 0 if comp.estado_comprobante_electronico == '2_ANULADO' else 1
+
             row = {
                 "Estado": comp.state,
                 "Fecha de emisión": comp.invoice_date,
@@ -143,13 +146,13 @@ class ComprobantesXlsx(models.AbstractModel):
                 'Descuento Global': round(comp.descuento_global, 2),
                 "Moneda":comp.currency_id.name,
                 "T/C":round(1/comp.company_id.currency_id._convert(1,comp.currency_id,comp.company_id,comp.invoice_date,False),6),
-                'Monto Gravado': round(comp.total_venta_gravado, 2),
-                'IGV 18% Venta': round(comp.amount_igv, 2),
-                'Monto Inafecto': round(comp.total_venta_inafecto, 2),
-                'Monto Exonerado': round(comp.total_venta_exonerada, 2),
-                'Monto Gratuito': round(comp.total_venta_gratuito, 2),
-                'Total Descuentos': round(comp.total_descuentos, 2),
-                'Monto total': round(comp.amount_total, 2),
+                'Monto Gravado': round(comp.total_venta_gravado, 2)*signo*anular,
+                'IGV 18% Venta': round(comp.amount_igv, 2)*signo*anular,
+                'Monto Inafecto': round(comp.total_venta_inafecto, 2)*signo*anular,
+                'Monto Exonerado': round(comp.total_venta_exonerada, 2)*signo*anular,
+                'Monto Gratuito': round(comp.total_venta_gratuito, 2)*signo*anular,
+                'Total Descuentos': round(comp.total_descuentos, 2)*signo*anular,
+                'Monto total': round(comp.amount_total, 2)*signo*anular,
                 'Estado comprobante electrónico': comp.estado_comprobante_electronico,
                 'Anulación de comprobante': comp.anulacion_comprobante,
                 'Vendedor': comp.sudo().user_id.name if comp.sudo().user_id else "",
