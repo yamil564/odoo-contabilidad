@@ -111,11 +111,6 @@
                                 </span>
                                 <span t-field="o.fecha_inicio_traslado"/>
                                 <br/>
-                                <span>
-                                    <b>Dirección de partida: </b>
-                                </span>
-                                <span t-field="o.lugar_partida_direccion"/>
-                                <br/>
                             </div>
                             <div class="col-6">
                                 <span>
@@ -124,74 +119,12 @@
                                 <span t-field="o.motivo_traslado"/>
                                 <br/>
                                 <span>
-                                    <b>Modalidad de Transporte: </b>
-                                </span>
-                                <span t-field="o.modalidad_transporte"/>
-                                <br/>
-                                <span>
                                     <b>Peso bruto total(KGM): </b>
                                 </span>
                                 <span t-field="o.peso_bruto_total"/>
                                 <br/>
-                                <span>
-                                    <b>Dirección de llegada: </b>
-                                </span>
-                                <span t-field="o.lugar_llegada_direccion"/>
-                                <br/>
                             </div>
                         </div>
-                        <br />
-                        <t t-if="o.modalidad_transporte=='02'">
-                            <div style="width:100%;">
-                                <h5>
-                                    <b>Transporte Privado</b>
-                                </h5>
-                            </div>
-                            <div class="row" style="border:solid gray 1px;padding:15px;border-radius:10px">
-                                <div class="col-6">
-                                    <span>
-                                        <b>Conductor: </b>
-                                    </span>
-                                    <span t-field="o.conductor_privado_partner_id"/>
-                                    <br/>
-                                </div>
-                                <div class="col-6">
-                                    <span>
-                                        <b>Vehículo: </b>
-                                    </span>
-                                    <span t-field="o.vehiculo_privado_id"/>
-                                    <br/>
-                                </div>
-                            </div>
-                        </t>
-                        <t t-if="o.modalidad_transporte=='01'">
-                            <div style="width:100%;">
-                                <h5>
-                                    <b>Transporte Público</b>
-                                </h5>
-                            </div>
-                            <div class="row" style="border:solid gray 1px;padding:15px;border-radius:10px">
-                                <div class="col-6">
-                                    <span>
-                                        <b>Empresa de Transporte: </b>
-                                    </span>
-                                    <span t-field="o.transporte_partner_id"/>
-                                    <br/>
-                                </div>
-                                <div class="col-6">
-                                    <span>
-                                        <b>Conductor: </b>
-                                    </span>
-                                    <span t-field="o.conductor_publico_id"/>
-                                    <br/>
-                                    <span>
-                                        <b>Vehículo público: </b>
-                                    </span>
-                                    <span t-field="o.vehiculo_publico_id"/>
-                                    <br/>
-                                </div>
-                            </div>
-                        </t>
                         <br />
                         <div style="width:100%;">
                             <h5>
@@ -224,6 +157,76 @@
                                                 </td>
                                                 <td>
                                                     <span t-field="line.qty"/>
+                                                </td>
+                                            </tr>
+                                            <t t-set="index" t-value="index+1"></t>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <br />
+                        <div style="width:100%;">
+                            <h5>
+                                <b>Tramos de Envío</b>
+                            </h5>
+                        </div>
+                        <div class="row" style="border:solid gray 1px;padding:15px;border-radius:10px">
+                            <div class="col-12">
+                                <table class="table table-bordered gr_table_lines">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">No</th>
+                                            <th scope="col">Mod.<br/>Transp.</th>
+                                            <th scope="col">RUC<br/>Transportista</th>
+                                            <th scope="col">Empresa<br/>Transportista</th>
+                                            <th scope="col">Fecha</th>
+                                            <th scope="col">Llegada</th>
+                                            <th scope="col">Conductor</th>
+                                            <th scope="col">Vehiculo<br/>(Marca y Placa)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-set="index" t-value="1"></t>
+                                        <t t-foreach="o.transporte_lines" t-as="line">
+                                            <tr>
+                                                <th scope="row">
+                                                    <t t-esc="index"></t>
+                                                </th>
+                                                <td>
+                                                    <span t-field="line.modalidad_transporte"/>
+                                                </td>
+                                                <td>
+                                                    <span t-field="line.ruc_trasporte_partner"/>
+                                                </td>
+                                                <td>
+                                                    <span t-field="line.transporte_partner_id"/>
+                                                </td>
+                                                <td>
+                                                    <span t-field="line.date"/>
+                                                </td>
+                                                <td>
+                                                    <span t-field="line.direccion_llegada_id.contact_address"/>
+                                                </td>
+                                                <td>
+                                                    <t t-if="line.modalidad_transporte == '01'">
+                                                        <span t-field="line.conductor_publico_id.name"/>
+                                                    </t>
+                                                    <t t-else="">
+                                                        <span t-field="line.conductor_privado_partner_id.name"/>
+                                                    </t>
+                                                </td>
+                                                <td>
+                                                    <t t-if="line.modalidad_transporte == '01'">
+                                                        <t t-if="line.vehiculo_publico_id">
+                                                            <span t-field="line.vehiculo_publico_id.marca"/>-<span t-field="line.vehiculo_publico_id.numero_placa"/>
+                                                        </t>
+                                                    </t>
+                                                    <t t-else="">
+                                                        <t t-if="line.vehiculo_privado_id">
+                                                            <span t-field="line.vehiculo_privado_id.marca"/>-<span t-field="line.vehiculo_privado_id.numero_placa"/>
+                                                        </t>
+                                                    </t>
                                                 </td>
                                             </tr>
                                             <t t-set="index" t-value="index+1"></t>
