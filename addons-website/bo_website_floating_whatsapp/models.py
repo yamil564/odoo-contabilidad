@@ -40,7 +40,7 @@ class ResConfigSettings(models.TransientModel):
                                             readonly=False,
                                             default="Hola, estoy interesado en este producto {producto}.")
     website_floating_whatsapp_message_order = fields.Text(related="website_id.website_floating_whatsapp_message_order",
-                                            readonly=False
+                                            readonly=False,
                                             default="Hola, mi número de compra es {orden}, me puedes ayudar con mi compra porfavor.")
 
 
