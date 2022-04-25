@@ -56,12 +56,12 @@
                     <t t-set="document_display_name" t-value="documents.get(o.state,'-')"/>
                     <div class="page" style="font-size:12px;">
                         <br />
-                        <div style="width:100%;">
+                        <div id="destin_title" style="width:100%;">
                             <h5>
                                 <b>Destinatario</b>
                             </h5>
                         </div>
-                        <div class="row" style="border:solid gray 1px;padding:15px;border-radius:10px;">
+                        <div id="destin_page" class="row" style="border:solid gray 1px;padding:15px;border-radius:10px;">
                             <div class="col-6">
                                 <span>
                                     <b>Destinatario: </b>
@@ -94,12 +94,12 @@
                             </div>
                         </div>
                         <br />
-                        <div style="width:100%;">
+                        <div id="send_title" style="width:100%;">
                             <h5>
                                 <b>Envío</b>
                             </h5>
                         </div>
-                        <div class="row" style="border:solid gray 1px;padding:15px;border-radius:10px">
+                        <div id="send_page" class="row" style="border:solid gray 1px;padding:15px;border-radius:10px">
                             <div class="col-6">
                                 <span>
                                     <b>Fecha de emisión: </b>
@@ -181,10 +181,8 @@
                                             <th scope="col">RUC<br/>Transportista</th>
                                             <th scope="col">Empresa<br/>Transportista</th>
                                             <th scope="col">Fecha</th>
-                                            <th scope="col">Partida</th>
-                                            <th scope="col">Llegada</th>
-                                            <th scope="col">Conductor</th>
-                                            <th scope="col">Vehiculo<br/>(Marca y Placa)</th>
+                                            <th scope="col">Trayecto</th>
+                                            <th scope="col">Conductor y<br/>Vehículo</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -207,28 +205,26 @@
                                                     <span t-field="line.date"/>
                                                 </td>
                                                 <td>
-                                                    <span t-field="line.lugar_partida_direccion"/>
-                                                </td>
-                                                <td>
+                                                    <span t-field="line.lugar_partida_direccion"/> <strong>hacia</strong>
                                                     <span t-field="line.lugar_llegada_direccion"/>
                                                 </td>
                                                 <td>
+                                                    <strong>Conductor: </strong>
                                                     <t t-if="line.modalidad_transporte == '01'">
                                                         <span t-field="line.conductor_publico_id.name"/>
                                                     </t>
                                                     <t t-else="">
                                                         <span t-field="line.conductor_privado_partner_id.name"/>
                                                     </t>
-                                                </td>
-                                                <td>
+                                                    <strong>Vehículo: </strong>
                                                     <t t-if="line.modalidad_transporte == '01'">
                                                         <t t-if="line.vehiculo_publico_id">
-                                                            <span t-field="line.vehiculo_publico_id.marca"/>-<span t-field="line.vehiculo_publico_id.numero_placa"/>
+                                                            <span t-field="line.vehiculo_publico_id.marca"/>/<span t-field="line.vehiculo_publico_id.numero_placa"/>
                                                         </t>
                                                     </t>
                                                     <t t-else="">
                                                         <t t-if="line.vehiculo_privado_id">
-                                                            <span t-field="line.vehiculo_privado_id.marca"/>-<span t-field="line.vehiculo_privado_id.numero_placa"/>
+                                                            <span t-field="line.vehiculo_privado_id.marca"/>/<span t-field="line.vehiculo_privado_id.numero_placa"/>
                                                         </t>
                                                     </t>
                                                 </td>
