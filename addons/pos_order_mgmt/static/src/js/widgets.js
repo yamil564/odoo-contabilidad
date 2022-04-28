@@ -14,11 +14,11 @@ odoo.define("pos_order_mgmt.widgets", function(require) {
     var chrome = require("point_of_sale.chrome");
     var models = require("point_of_sale.models");
     var rpc = require('web.rpc');
+    var exports = {};
 
     var QWeb = core.qweb;
     var ScreenWidget = screens.ScreenWidget;
     var DomCache = screens.DomCache;
-
     screens.ReceiptScreenWidget.include({
         render_receipt: function() {
             if (!this.pos.reloaded_order) {
@@ -188,9 +188,12 @@ odoo.define("pos_order_mgmt.widgets", function(require) {
         order_list_actions: function(event, action) {
             var self = this;
             var dataset = event.target.parentNode.dataset;
+            console.log(dataset);
+            console.log(action);
             self.load_order_data(parseInt(dataset.orderId, 10)).then(function(
                 order_data
             ) {
+                console.log(order_data);
                 self.order_action(order_data, action);
             });
         },
@@ -441,6 +444,8 @@ odoo.define("pos_order_mgmt.widgets", function(require) {
             var self = this;
             this.unknown_products = [];
             var order = self._prepare_order_from_order_data(order_data, action);
+            console.log(order)
+            console.log(this.unknown_products)
             // Forbid POS Order loading if some products are unknown
             if (self.unknown_products.length > 0) {
                 self.gui.show_popup("error-traceback", {
@@ -550,8 +555,11 @@ odoo.define("pos_order_mgmt.widgets", function(require) {
         },
     });
 
-    return {
-        ListOrderButtonWidget: ListOrderButtonWidget,
-        OrderListScreenWidget: OrderListScreenWidget,
-    };
+    exports.OrderListScreenWidget = OrderListScreenWidget;
+    exports.ListOrderButtonWidget = ListOrderButtonWidget;
+    return exports
+    // return {
+    //     ListOrderButtonWidget: ListOrderButtonWidget,
+    //     OrderListScreenWidget: OrderListScreenWidget,
+    // };
 });

@@ -37,7 +37,7 @@
                         <field name="required_journal"/>
                     </div>
                     <div class="o_setting_right_pane">
-                        <label for="required_journal" string="Diario obligatorio"/>
+                        <label for="required_journal" string="Elegir Factura o Boleta obligatoriamente"/>
                         <div class="text-muted">
                             Evita generar ventas sin haber seleccionado un diario para facturación.
                         </div>

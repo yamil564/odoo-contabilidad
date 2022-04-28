@@ -1,0 +1,16 @@
+<odoo>
+    <template id="frontend_layout_botpress" inherit_id="website.layout">
+        <xpath expr="//div[@id='wrapwrap']" position="before">
+            <t  t-if="website.get_botpress_host() and website.get_botpress_bot_id()">
+                <script t-attf-src="#{website.get_botpress_host()}/assets/modules/channel-web/inject.js"></script>
+                <script>
+                    window.botpressWebChat.init({
+                        host: "<t t-esc='website.get_botpress_host()'/>",
+                        botId: "<t t-esc='website.get_botpress_bot_id()'/>",
+                    })
+                </script>
+                
+            </t>
+        </xpath>
+    </template>
+</odoo>

@@ -119,12 +119,12 @@
 				<br />
 
 				<table class='receipt-orderlines' style="border-top: 1px black dotted">
-					<colgroup>
+					<!-- <colgroup>
 						<col width='15%' />
 						<col width='55%' />
 						<col width='15%' />
 						<col width='15%' />
-					</colgroup>
+					</colgroup> -->
 					<tr>
 						<th>
 							<b>Cant.</b>
@@ -139,38 +139,51 @@
 							<b>Importe</b>
 						</th>
 					</tr>
-					<tr t-foreach="orderlines" t-as="orderline" style="border-bottom: 1px black dotted">
-						<td class="pos-left-align">
-							<t t-esc="widget.format_currency_no_symbol(Math.abs(orderline.get_quantity()),3)" />
-						</td>
+					<t t-foreach="orderlines" t-as="orderline">
+						<tr style="border-top: 1px black dotted">
+							<td class="pos-left-align" style="padding-top:8px">
+								<t t-esc="widget.format_currency_no_symbol(Math.abs(orderline.get_quantity()),'Quantity POS')" />
+							</td>
 
-						<td>
-							<t t-if="orderline.get_product().default_code">
-								[
-								<t t-esc="orderline.get_product().default_code" />
-								]-
-							</t>
-							<t t-esc="orderline.get_product().display_name" />
-							<t t-if="orderline.has_product_lot">
-								<t t-foreach="orderline.pack_lot_lines.models" t-as="line">
-									<!-- <t t-esc="line.get('lot_name')+' '" /> -->
-									<p t-esc="line.get('lot_name')" />
+							<td>
+								<t t-if="orderline.get_product().default_code">
+									<t t-esc="orderline.get_product().default_code" />
 								</t>
-							</t>
-							<t t-if="orderline.get_discount() > 0">
-								<div class="pos-disc-font">
-									Dsct.
-									<t t-esc="orderline.get_discount()" />
-									%
-								</div>
-							</t>
-						</td>
-						<td class="pos-center-align">
-							<t t-esc="widget.format_currency(orderline.get_unit_price(),0.01,'total')" />
-						</td>
-						<td class="pos-right-align">
-							<t t-esc="widget.format_currency(orderline.get_price_with_tax(),0.01,'total',0)" />
-						</td>
+								<t t-if="orderline.get_discount() > 0">
+									<div class="pos-disc-font">
+										Dsct.
+										<t t-esc="orderline.get_discount()" />
+										%
+									</div>
+								</t>
+							</td>
+							<td class="pos-center-align">
+								<span>
+									<t t-esc="widget.format_currency(orderline.get_unit_price(),'Price POS')" />
+								</span>
+							</td>
+							<td class="pos-right-align">
+								<span>	
+									<t t-esc="widget.format_currency(orderline.get_price_with_tax(),'Price POS')" />
+								</span>								
+							</td>
+						</tr>
+						<tr>
+							<td></td>
+							<td colspan="2" style="padding:8px 0px;font-size: 14px;">
+								<span class="pt-2">
+									<t t-esc="orderline.get_product().display_name" />
+									<t t-if="orderline.has_product_lot">
+										<t t-foreach="orderline.pack_lot_lines.models" t-as="line">
+											<p t-esc="line.get('lot_name')" />
+										</t>
+									</t>
+								</span>
+							</td>
+						</tr>
+					</t>
+					<tr style="border-top: 1px black dotted">
+						<td colspan="2">Total Items: <t t-esc="order.total_items()"/></td>
 					</tr>
 				</table>
 
@@ -181,7 +194,7 @@
 							<b>SUBTOTAL</b>
 						</td>
 						<td class="pos-right-align">
-							<t t-esc="widget.format_currency(order.get_total_without_tax(),0.01,'total',1)" />
+							<t t-esc="widget.format_currency(order.get_total_without_tax(),'Price POS')" />
 						</td>
 					</tr>
 					<tr t-if="order.get_total_discount() > 0">
@@ -189,7 +202,7 @@
 							<b>Descuento:</b>
 						</td>
 						<td class="pos-right-align">
-							<t t-esc="widget.format_currency(order.get_total_discount(),0.01,'total',1)" />
+							<t t-esc="widget.format_currency_no_symbol(order.get_total_discount(),'Discount')" />
 						</td>
 					</tr>
 					<tr>
@@ -197,7 +210,7 @@
 							<b>IGV 18%</b>
 						</td>
 						<td class="pos-right-align">
-							<t t-esc="widget.format_currency(order.get_total_tax(),0.01,'total',1)" />
+							<t t-esc="widget.format_currency(order.get_total_tax(),'Price POS')" />
 						</td>
 					</tr>
 
@@ -206,7 +219,7 @@
 							<b>IMPORTE TOTAL:</b>
 						</td>
 						<td class="pos-right-align">
-							<t t-esc="widget.format_currency(Math.abs(order.get_total_with_tax()),0.0001,'total',1)" />
+							<t t-esc="widget.format_currency(Math.abs(order.get_total_with_tax()),'Price POS')" />
 						</td>
 					</tr>
 				</table>
@@ -222,7 +235,7 @@
 								</b>
 							</td>
 							<td class="pos-right-align">
-								<t t-esc="widget.format_currency(line.amount,0.0001,'total',1)" />
+								<t t-esc="widget.format_currency(line.amount,'Price POS')" />
 							</td>
 						</tr>
 					</table>
@@ -232,7 +245,7 @@
 								<b>Vuelto:</b>
 							</td>
 							<td class="pos-right-align">
-								<t t-esc="widget.format_currency(receipt.change,0.00001,'total',1)" />
+								<t t-esc="widget.format_currency(receipt.change,'Price POS')" />
 							</td>
 						</tr>
 					</table>
