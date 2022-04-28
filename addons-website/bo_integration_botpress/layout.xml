@@ -7,7 +7,19 @@
                     window.botpressWebChat.init({
                         host: "<t t-esc='website.get_botpress_host()'/>",
                         botId: "<t t-esc='website.get_botpress_bot_id()'/>",
-                    })
+		    });
+
+		    window.addEventListener('load',function(){
+		        window.botpressWebChat.sendEvent({type:'show'});
+		    });
+
+		    window.addEventListener("message", function(event){
+		        if(event.data.name==="webchatReady"){
+			window.botpressWebChat.sendEvent({type:'proactive-trigger',channel:'web',payload:{ text:'Hola'},});
+			}
+		    });
+		    
+		   
                 </script>
             </t>
         </xpath>
