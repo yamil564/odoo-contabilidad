@@ -112,7 +112,7 @@ class ResPartner(models.Model):
         string="Es empresa de transporte publico", default=False)
     vehiculo_ids = fields.One2many("gestionit.vehiculo", "propietario_id", string="Vehículos")
     licencia = fields.Char("Licencia")
-    
+
 
     def action_view_conductores_privados(self):
         dni = self.env["l10n_latam.identification.type"].search([("l10n_pe_vat_code","=",1)],limit=1)
@@ -569,7 +569,7 @@ class GuiaRemision(models.Model):
                             line["product_id"], line["uom_id"]), guia_remision_lines_temp))
                         guia_remision_lines_temp[product_index[0]]["qty"] += line["qty"]
                     index += 1
-                    
+
                 guia_remision_lines = list(guia_remision_lines_temp.values())
                 record.guia_remision_line_ids = [(0, 0, grl) for grl in guia_remision_lines]
 
@@ -589,24 +589,29 @@ class GuiaRemision(models.Model):
     calc_peso = fields.Boolean(
         string="Calc peso", related="company_id.calc_peso")
 
-    # modalidad_transporte = fields.Selection(
-    #     selection="_list_modalidad_transporte", string="Modalidad de Transporte")
+    # Campos de Antigua Forma de transporte borrar en el futuro
+    modalidad_transporte = fields.Selection(
+        selection="_list_modalidad_transporte", string="Modalidad de Transporte")
 
-    # def _list_modalidad_transporte(self):
-    #     modalidad_transporte_objs = self.env["gestionit.modalidad_transporte"].search([
-    #     ])
-    #     return [(mt.code, mt.name) for mt in modalidad_transporte_objs]
+    def _list_modalidad_transporte(self):
+        modalidad_transporte_objs = self.env["gestionit.modalidad_transporte"].search([
+        ])
+        return [(mt.code, mt.name) for mt in modalidad_transporte_objs]
+    # *************************************************************
+
 
     numero_bultos = fields.Integer(string="Número de Bultos", states={
                                    'validado': [('readonly', True)]})
 
-    # partner_direccion_partida_id = fields.Many2one("res.partner")
-    # direccion_partida_id = fields.Many2one(
-    #     "res.partner", states={'validado': [('readonly', True)]})
-    # lugar_partida_direccion = fields.Char(
-    #     string="Lugar de Partida - Dirección")
-    # lugar_partida_ubigeo_code = fields.Many2one(
-    #     "res.country.state", string="Partida Ubigeo Code")
+    # Campos de Antigua Forma de transporte borrar en el futuro
+    partner_direccion_partida_id = fields.Many2one("res.partner")
+    direccion_partida_id = fields.Many2one(
+        "res.partner", states={'validado': [('readonly', True)]})
+    lugar_partida_direccion = fields.Char(
+        string="Lugar de Partida - Dirección")
+    lugar_partida_ubigeo_code = fields.Many2one(
+        "res.country.state", string="Partida Ubigeo Code")
+    # *************************************************************
 
     @api.onchange("direccion_partida_id")
     def _onchange_direccion_partida(self):
@@ -614,13 +619,15 @@ class GuiaRemision(models.Model):
             record.lugar_partida_direccion = record.direccion_partida_id.street
             record.lugar_partida_ubigeo_code = record.direccion_partida_id.district_id.id
 
-    # partner_direccion_llegada_id = fields.Many2one("res.partner")
-    # direccion_llegada_id = fields.Many2one(
-    #     "res.partner", states={'validado': [('readonly', True)]})
-    # lugar_llegada_direccion = fields.Char(
-    #     string="Lugar de llegada - Dirección")
-    # lugar_llegada_ubigeo_code = fields.Many2one(
-    #     "res.country.state", string="Llegada Ubigeo Code")
+    # Campos de Antigua Forma de transporte borrar en el futuro
+    partner_direccion_llegada_id = fields.Many2one("res.partner")
+    direccion_llegada_id = fields.Many2one(
+        "res.partner", states={'validado': [('readonly', True)]})
+    lugar_llegada_direccion = fields.Char(
+        string="Lugar de llegada - Dirección")
+    lugar_llegada_ubigeo_code = fields.Many2one(
+        "res.country.state", string="Llegada Ubigeo Code")
+    # *************************************************************
 
     @api.onchange("direccion_llegada_id")
     def _onchange_direccion_llegada(self):
@@ -633,19 +640,21 @@ class GuiaRemision(models.Model):
                                              string="Detalle de líneas",
                                              ondelete='cascade', states={'validado': [('readonly', True)]})
 
-    # # TRANSPORTE PRIVADO
-    # conductor_privado_partner_id = fields.Many2one(
-    #     "res.partner", string="Conductor", states={'validado': [('readonly', True)]})
-    # vehiculo_privado_id = fields. Many2one(
-    #     "gestionit.vehiculo", string="Vehículo", states={'validado': [('readonly', True)]})
+    # Campos de Antigua Forma de transporte borrar en el futuro
+    # TRANSPORTE PRIVADO
+    conductor_privado_partner_id = fields.Many2one(
+        "res.partner", string="Conductor", states={'validado': [('readonly', True)]})
+    vehiculo_privado_id = fields. Many2one(
+        "gestionit.vehiculo", string="Vehículo", states={'validado': [('readonly', True)]})
 
-    # # TRANSPORTE PÚBLICO
-    # transporte_partner_id = fields.Many2one(
-    #     "res.partner", string="Empresa Transportista", states={'validado': [('readonly', True)]})
-    # conductor_publico_id = fields.Many2one("res.partner", string="Conductor", states={
-    #                                        'validado': [('readonly', True)]})
-    # vehiculo_publico_id = fields.Many2one(
-    #     "gestionit.vehiculo", string="Vehículo", states={'validado': [('readonly', True)]})
+    # TRANSPORTE PÚBLICO
+    transporte_partner_id = fields.Many2one(
+        "res.partner", string="Empresa Transportista", states={'validado': [('readonly', True)]})
+    conductor_publico_id = fields.Many2one("res.partner", string="Conductor", states={
+                                           'validado': [('readonly', True)]})
+    vehiculo_publico_id = fields.Many2one(
+        "gestionit.vehiculo", string="Vehículo", states={'validado': [('readonly', True)]})
+    # *************************************************************
 
     state = fields.Selection(
         selection=[('borrador', 'Borrador'), ('validado', 'Validado')], default="borrador")
@@ -1201,7 +1210,7 @@ class LineasTransporte(models.Model):
     secuencia = fields.Integer('Secuencia')
     transporte_partner_id = fields.Many2one("res.partner", string="Empresa Transportista", required=False)
     ruc_trasporte_partner = fields.Char('RUC Transportista', related='transporte_partner_id.vat')
-    date = fields.Date('Fecha', required=True)
+    date = fields.Date('Fecha', required=True, default=fields.Date.context_today)
     modalidad_transporte = fields.Selection(selection="_list_modalidad_transporte", string="Modalidad de Transporte", required=True)
     partner_direccion_partida_id = fields.Many2one("res.partner")
     direccion_partida_id = fields.Many2one("res.partner")
@@ -1215,16 +1224,16 @@ class LineasTransporte(models.Model):
     vehiculo_privado_id = fields. Many2one("gestionit.vehiculo", string="Vehículo")
     conductor_publico_id = fields.Many2one("res.partner", string="Conductor")
     vehiculo_publico_id = fields.Many2one("gestionit.vehiculo", string="Vehículo")
-    licencia = fields.Char('Licencia', readonly=True)
+    licencia = fields.Char('Licencia', compute='_get_licencia', readonly=True)
 
-    # @api.onchange("conductor_publico_id", "conductor_privado_partner_id")
-    # def _get_licencia(self):
-    #     if self.modalidad_transporte == '01':
-    #         self.licencia = self.conductor_publico_id.licencia
-    #     elif self.modalidad_transporte == '02':
-    #         self.licencia = self.conductor_privado_partner_id.licencia
-    #     else:
-    #         self.licencia = ''
+    @api.onchange("conductor_publico_id", "conductor_privado_partner_id")
+    def _get_licencia(self):
+        if self.modalidad_transporte == '01':
+            self.licencia = self.conductor_publico_id.licencia
+        elif self.modalidad_transporte == '02':
+            self.licencia = self.conductor_privado_partner_id.licencia
+        else:
+            self.licencia = ''
 
     @api.onchange("partner_direccion_partida_id")
     def _onchange_partner_direccion_partida_id(self):
@@ -1262,7 +1271,7 @@ class LineasTransporte(models.Model):
         for record in self:
             record.lugar_llegada_direccion = record.direccion_llegada_id.street
             record.lugar_llegada_ubigeo_code = record.direccion_llegada_id.district_id.id
-    
+
     def _list_modalidad_transporte(self):
         modalidad_transporte_objs = self.env["gestionit.modalidad_transporte"].search([])
         return [(mt.code, mt.name) for mt in modalidad_transporte_objs]
