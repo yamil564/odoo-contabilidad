@@ -75,6 +75,12 @@ class SaleOrder(models.Model):
             if record.payment_term_id:
                 record.payment_term_type = record.payment_term_id.type
 
+
+    @api.onchange("pricelist_id")
+    def onchange_pricelist(self):
+        for line in self.order_line:
+            line.product_id_change()
+            
     def check_paymenttermn_lines(self):
         for record in self:
             if record.payment_term_id:

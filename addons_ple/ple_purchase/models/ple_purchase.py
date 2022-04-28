@@ -75,6 +75,26 @@ class PlePurchase(models.Model):
 			}
 			return diccionario
 	###########################################
+	def button_view_tree_no_domiciliados(self):
+		self.ensure_one()
+		view = self.env.ref('ple_purchase.view_ple_purchase_no_domiciliados_line_tree')
+		if self.ple_purchase_line_ids:
+			diccionario = {
+				'name': 'Libro PLE Compras No Domiciliadas',
+				'view_type': 'form',
+				'view_mode': 'tree,form',
+				'res_model': 'ple.purchase.line',
+				'view_id': view.id,
+				'views': [(view.id,'tree')],
+				'type': 'ir.actions.act_window',
+				'domain': [('id', 'in', [i.id for i in self.ple_purchase_line_no_domiciliados_ids] or [])],
+				'context':{
+					'search_default_filter_proveedor':1,
+					'search_default_filter_tipo_comprobante':1,
+					}
+			}
+			return diccionario
+	#############################################
 	def button_view_tree_recibo_honorarios(self):
 		self.ensure_one()
 		view = self.env.ref('ple_purchase.view_ple_purchase_domiciliados_line_tree')
@@ -111,9 +131,9 @@ class PlePurchase(models.Model):
 	#######################################
 	def unlink (self):
 		for line in self:
-			for line2 in line.ple_purchase_line_ids:
-				line2.move_id.write({'declared_ple':False})
-			return super(PlePurchase, line).unlink()
+			for line2 in line.ple_purchase_line_ids + line.ple_purchase_line_no_domiciliados_ids + line.ple_purchase_line_recibo_honorarios_ids:
+				line2.move_id.write({'declared_ple_8_1_8_2':False})
+			return super(PlePurchase, line2).unlink()
 
 	
 	def available_formats_purchase_sunat(self):
@@ -131,10 +151,10 @@ class PlePurchase(models.Model):
 
 	def _action_confirm_ple(self):
 		array_id=[]
-		for line in self.ple_purchase_line_ids + self.ple_purchase_line_no_domiciliados_ids:
+		for line in self.ple_purchase_line_ids + self.ple_purchase_line_no_domiciliados_ids + self.ple_purchase_line_recibo_honorarios_ids:
 			array_id.append(line.move_id.id)
 		# self.env['account.move'].browse(array_id).write({'declared_ple':True})
-		super(PlePurchase , self)._action_confirm_ple('account.move' , array_id ,{'declared_ple':True})
+		super(PlePurchase , self)._action_confirm_ple('account.move' , array_id ,{'declared_ple_8_1_8_2':True})
 
 	
 	def _get_datas(self, domain):
@@ -249,10 +269,13 @@ class PlePurchase(models.Model):
 			if (str(line.journal_id.invoice_type_code_id or '').strip() in ['02']) or (self.type_document_parent(line) in ['02']):
 				registro_recibo_honorarios.append((0,0,{'move_id':line.id}))
 			else:
-				if str(line.partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code or '').strip() not in  ['0']:
+				#str(line.partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code or '').strip() not in  ['0']
+				if str(line.partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code or '').strip() not in  ['0'] and\
+					(str(line.journal_id.invoice_type_code_id or '').strip() not in ['91','97','98']):
 					registro.append((0,0,{'move_id':line.id}))
 
-				else:
+				elif str(line.partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code or '').strip() in ['0'] and\
+					(str(line.journal_id.invoice_type_code_id or '').strip() not in ['00','91','97','98']):
 					registro_no_domiciliados.append((0,0,{'move_id':line.id}))
 		#####################################################
 
@@ -271,8 +294,10 @@ class PlePurchase(models.Model):
 			elif self.identificador_libro == '080200':
 				self._generate_txt_no_domiciliados(output)
 
-
 		return output
+
+
+
 
 	def _convert_object_date(self, date):
 		# parametro date que retorna un valor vacio o el formato 01/01/2100 dia/mes/año
@@ -282,6 +307,49 @@ class PlePurchase(models.Model):
 			return ''
 
 	##########################################################################
+	def _generate_txt_no_domiciliados(self, output):
+		for line in self._get_order_print(self.ple_purchase_line_no_domiciliados_ids) :
+			escritura="%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|\n" % (
+				self._periodo_fiscal() ,
+				line.asiento_contable,
+				line.no_domiciliado_m_correlativo_asiento_contable,
+				self._convert_object_date(line.fecha_emision_comprobante),
+				line.tipo_comprobante or '',
+				line.serie_comprobante or '',
+				line.numero_comprobante or '',
+				format(line.no_domiciliado_valor_adquisiciones,".2f"),
+				format(line.no_domiciliado_otros_conceptos_adicionales,".2f"),
+				format(line.importe_adquisiciones_registradas,".2f"),
+				line.no_domiciliado_tipo_comprobante_credito_fiscal or '',
+				line.no_domiciliado_serie_comprobante_credito_fiscal or '',
+				line.anio_emision_DUA or '',
+				line.no_domiciliado_numero_comprobante_pago_impuesto or '',
+				format(line.monto_igv_1,".2f"),
+				line.codigo_moneda,
+				format(line.tipo_cambio,".3f"),
+				line.no_domiciliado_pais_residencia or '',
+				line.razon_social or '',
+				line.no_domiciliado_domicilio or '',
+				line.no_domiciliado_numero_identificacion or '',
+				line.no_domiciliado_identificacion_beneficiario or '',
+				line.no_domiciliado_razon_social_beneficiario or '',
+				line.no_domiciliado_pais_beneficiario or '',
+				line.no_domiciliado_vinculo_entre_contribuyente_residente or '',
+				format(line.no_domiciliado_renta_bruta,".2f"),
+				format(line.no_domiciliado_deduccion_bienes,".2f"),
+				format(line.no_domiciliado_renta_neta,".2f"),
+				format(line.no_domiciliado_tasa_retencion,".2f"),
+				format(line.no_domiciliado_impuesto_retenido,".2f"),
+				line.no_domiciliado_convenios or '',
+				line.no_domiciliado_exoneracion or '',
+				line.no_domiciliado_tipo_renta or '',
+				line.no_domiciliado_modalidad_servicio_prestado or '',
+				line.no_domiciliado_aplicacion_ley_impuesto_renta or '',
+				line.no_domiciliado_oportunidad_anotacion or '') 
+
+			output.write(escritura.encode())
+
+	#######################################################################
 	def _generate_txt(self, output):
 		for line in self._get_order_print(self.ple_purchase_line_ids) :
 			###########################################################

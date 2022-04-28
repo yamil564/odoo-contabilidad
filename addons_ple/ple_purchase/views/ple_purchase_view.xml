@@ -18,6 +18,13 @@
                             icon="fa-square"
                     />
 
+                    <button name="button_view_tree_no_domiciliados"
+                            string="Compras No Domiciliadas"
+                            states='open,send'
+                            type="object"
+                            icon="fa-square"
+                    />
+
                     <button name="button_view_tree_recibo_honorarios"
                             string="Recibos por Honorario"
                             states='open,send'
@@ -159,23 +166,105 @@
 
                               </field>
                         
-                          </page>
+                        </page>
 
                           
-                             <page name="No Domiciliados" string="PLE-No Domiciliados">
+                        <page name="No Domiciliados" string="PLE-No Domiciliados">
                         
-
-                              <field name='ple_purchase_line_no_domiciliados_ids'>
+                            <field name='ple_purchase_line_no_domiciliados_ids'>
 
                                 <tree>
                                     <field name ="move_id" />
                                     <field name ="asiento_contable" />
+                                    <field name ="no_domiciliado_m_correlativo_asiento_contable" />
+                                    <field name ="fecha_emision_comprobante" />
+                                    <field name ="tipo_comprobante" />
+                                    <field name ="serie_comprobante" />
+                                    <field name ="numero_comprobante" />
+                                    <field name ="no_domiciliado_valor_adquisiciones" />
+                                    <field name ="no_domiciliado_otros_conceptos_adicionales" />
+                                    <field name ="importe_adquisiciones_registradas" />
+                                    <field name ="no_domiciliado_tipo_comprobante_credito_fiscal" />
+                                    <field name ="no_domiciliado_serie_comprobante_credito_fiscal" />
+                                    <field name ="anio_emision_DUA" />
+                                    <field name ="no_domiciliado_numero_comprobante_pago_impuesto" />
+                                    <field name ="monto_igv_1" />
+                                    <field name ="codigo_moneda" />
+                                    <field name ="tipo_cambio" />
+                                    <field name ="no_domiciliado_pais_residencia" />
+                                    <field name ="razon_social" />
+                                    <field name ="no_domiciliado_domicilio" />
+                                    <field name ="no_domiciliado_numero_identificacion" />
+                                    <field name ="no_domiciliado_identificacion_beneficiario" />
+                                    <field name ="no_domiciliado_razon_social_beneficiario" />
+                                    <field name ="no_domiciliado_pais_beneficiario" />
+                                    <field name ="no_domiciliado_vinculo_entre_contribuyente_residente" />
+                                    <field name ="no_domiciliado_renta_bruta" />
+                                    <field name ="no_domiciliado_deduccion_bienes" />
+                                    <field name ="no_domiciliado_renta_neta" />
+                                    <field name ="no_domiciliado_tasa_retencion" />
+                                    <field name ="no_domiciliado_impuesto_retenido" />
+                                    <field name ="no_domiciliado_convenios" />
+                                    <field name ="no_domiciliado_exoneracion" />
+                                    <field name ="no_domiciliado_tipo_renta" />
+                                    <field name ="no_domiciliado_modalidad_servicio_prestado" />
+                                    <field name ="no_domiciliado_aplicacion_ley_impuesto_renta" />
+                                    <field name ="no_domiciliado_oportunidad_anotacion" />
+
 
                                 </tree>      
 
-                                </field>
+                                    <!-- ##################################### -->
+                                <form>
+                                    <sheet>
+                                        <group>
+                                            <group>
+
+                                                <field name ="move_id" />
+                                                <field name ="asiento_contable" string="2. Nombre del asiento contable" />
+                                                <field name ="no_domiciliado_m_correlativo_asiento_contable" string="3. M-correlativo asiento contable"  />
+                                                <field name ="fecha_emision_comprobante"  string="4. Fecha emisión Comprobante"/>
+                                                <field name ="tipo_comprobante"  string="5. Tipo de Comprobante" />
+                                                <field name ="serie_comprobante"  string="6. Serie del Comprobante"/>
+                                                <field name ="numero_comprobante" string="7. Número Comprobante"/>
+                                                <field name ="no_domiciliado_valor_adquisiciones" string="8. Valor Adquisiciones"/>
+                                                <field name ="no_domiciliado_otros_conceptos_adicionales" string="9. Conceptos Adicionales"/>
+                                                <field name ="importe_adquisiciones_registradas" string="10. Importe Adquisiciones Registradas"/>
+                                                <field name ="no_domiciliado_tipo_comprobante_credito_fiscal" string="11. Tipo Comprobante Crédito fiscal" />
+                                                <field name ="no_domiciliado_serie_comprobante_credito_fiscal" string="12. Serie Comprobante Crédito fiscal" />
+                                                <field name ="anio_emision_DUA"  string="13. Año Emisión DUA"/>
+                                                <field name ="no_domiciliado_numero_comprobante_pago_impuesto" string="14. Número Comprobante Pago Impuesto"/>
+                                                <field name ="monto_igv_1"   string="15. Monto IGV"/>
+                                                <field name ="codigo_moneda" string="16. Código Moneda"/>
+                                                <field name ="tipo_cambio"  string="17. Tipo de Cambio"/>
+                                                <field name ="no_domiciliado_pais_residencia" string="18. Código pais residencia del no domiciliado" />
+                                                <field name ="razon_social"  string="19. Razón Social"/>
+                                                <field name ="no_domiciliado_domicilio" string="20. Domicilio en el extranjero" />
+                                                <field name ="no_domiciliado_numero_identificacion"  string="21. Número Identificación del no domiciliado" />
+                                                <field name ="no_domiciliado_identificacion_beneficiario" string="22. Número Identificación beneficiario"/>
+                                                <field name ="no_domiciliado_razon_social_beneficiario"  string="23. Razón social beneficiario" />
+                                                <field name ="no_domiciliado_pais_beneficiario"  string="24. Pais residencia beneficiario"/>
+                                                <field name ="no_domiciliado_vinculo_entre_contribuyente_residente"  string="25. Vinculo contribuyente-residente extranjero"/>
+                                                <field name ="no_domiciliado_renta_bruta"  string="26. Renta Bruta"/>
+                                                <field name ="no_domiciliado_deduccion_bienes"  string="27. Deducción/Costo bienes capital"/>
+                                                <field name ="no_domiciliado_renta_neta" string="28. Renta Neta" />
+                                                <field name ="no_domiciliado_tasa_retencion"  string="29. Tasa de retención"/>
+                                                <field name ="no_domiciliado_impuesto_retenido" string="30. Impuesto retenido"/>
+                                                <field name ="no_domiciliado_convenios"  string="31. Convenios para evitar doble imposición"/>
+                                                <field name ="no_domiciliado_exoneracion"  string="32. Exoneración aplicada"/>
+                                                <field name ="no_domiciliado_tipo_renta"  string="33. Tipo de Renta"/>
+                                                <field name ="no_domiciliado_modalidad_servicio_prestado" string="34. Modalidad servicio prestado"/>
+                                                <field name ="no_domiciliado_aplicacion_ley_impuesto_renta" string="35. Aplicación Art. 76°" />
+                                                <field name ="no_domiciliado_oportunidad_anotacion" string="36. Oportunidad Anotación" />
+
+                                            </group>
+                                        </group>
+                     
+                                     </sheet>
+                                </form>        
+                            </field>
                         
-                                </page>
+                        </page>
 
                         <page name="Recibo por Honorarios" string="PLE-Recibo por Honorarios">
                         

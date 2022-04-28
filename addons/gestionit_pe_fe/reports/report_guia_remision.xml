@@ -90,6 +90,11 @@
                                         <b>Orden de compra: </b>
                                     </span>
                                     <span t-esc="','.join(o.comprobante_pago_ids.mapped(lambda r: r.order_reference or ''))"/>
+                                    <br/>
+                                    <span>
+                                        <b>Observaciones: </b>
+                                    </span>
+                                    <span t-field="o.note"/>
                                 </t>
                             </div>
                         </div>
