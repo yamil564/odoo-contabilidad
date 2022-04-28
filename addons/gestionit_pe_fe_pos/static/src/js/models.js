@@ -208,6 +208,8 @@ odoo.define("gestionit_pe_fe_pos.models",[
                 }
             } 
             var journal = self.get_invoice_journal_id()?self.pos.db.journal_by_id[self.get_invoice_journal_id()]:undefined;
+            console.log(client)
+            console.log(journal)
             if(client && journal){
                 res["qr_string"] = [res.company.vat, //RUC de emisor
                                     journal.invoice_type_code_id, //Tipo de comprobante electrónico
@@ -341,6 +343,9 @@ odoo.define("gestionit_pe_fe_pos.models",[
         },
         get_invoice_type_code_id:function(){
             return this.invoice_type_code_id
+        },
+        total_items: function(){
+            return _.reduce(_.map(this.get_orderlines(),function(el){return el.get_quantity()}),function(a,b){return a+b})
         }
     });
 

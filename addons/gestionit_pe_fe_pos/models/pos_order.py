@@ -113,6 +113,18 @@ class PosOrder(models.Model):
         return ""
 
 
+    def _prepare_done_order_for_pos(self):
+        res = super(PosOrder, self)._prepare_done_order_for_pos()
+        if self.account_move.state == "posted":
+            res.update({
+                "invoice_journal_id":self.invoice_journal_id.id,
+                "invoice_type_code_id":self.account_move.invoice_type_code,
+                "number":self.account_move.name,
+                "sequence_number":self.account_move.name.split("-")[1],
+                "digest_value":self.account_move.digest_value
+            })
+        return res
+
 class l10nLatamIdentificationType(models.Model):
     _inherit = "l10n_latam.identification.type"
 

@@ -9,6 +9,7 @@
                         botId: "<t t-esc='website.get_botpress_bot_id()'/>",
                     })
                 </script>
+                
             </t>
         </xpath>
     </template>

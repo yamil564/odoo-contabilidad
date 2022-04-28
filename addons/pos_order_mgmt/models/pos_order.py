@@ -129,6 +129,7 @@ class PosOrder(models.Model):
         self.ensure_one()
         return {
             "product_id": order_line.product_id.id,
+            "product_name": order_line.product_id.name,
             "qty": order_line.qty,
             "price_unit": order_line.price_unit,
             "discount": order_line.discount,

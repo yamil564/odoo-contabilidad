@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates id="template" xml:space="preserve">
 
-    <t t-name="ShowOrderList">
+    <!-- <t t-name="ShowOrderList">
         <div class="control-button show_order_list">
-            <i class="fa fa-star" aria-hidden="true"></i>
-            Ordenes de venta
+            <i class="fa fa-th-list" aria-hidden="true"></i>
+            Órdenes de venta
         </div>
-    </t>
+    </t> -->
 
-    <t t-name="OrderListScreenWidget">
+    <!-- <t t-name="OrderListScreenWidget">
         <div class="orderlist-screen screen">
             <div class="screen-content">
                 <section class="top-content">
                     <span class='button back'>
                         <i class='fa fa-angle-double-left'/>
-                        Cancel
+                        Cancelar
                     </span>
                     <div class="searchbox">
                         <input id="searchbox" placeholder="Buscar por Referencia, Cliente, Serie"/>
@@ -40,7 +40,9 @@
                                             <tr>
                                                 <th>Referencia</th>
                                                 <th>Cliente</th>
-                                                <th>Fecha de la orden</th>
+                                                <th>Fecha de la órden</th>
+                                                <th>Fecha de la órden</th>
+                                                
                                             </tr>
                                         </thead>
                                         <tbody class='order-list-contents'>
@@ -62,6 +64,9 @@
                     <td t-esc="order.name"/>
                     <td t-esc="order.partner_id[1]"/>
                     <td t-esc="order.date_order"/>
+                    <td>
+                        <button class="btn_create_credit_note"><i class="fa  fa-sticky-note-o"/>Emitir NC</button>
+                    </td>
                 </tr>
             </t>
         </t>
@@ -70,48 +75,6 @@
                 <td colspan="3" style="text-align:center">No se encontraron coincidencias</td>
             </tr>
         </t>
-    </t>
-
-    <!-- <t t-name="LineReturnPopup">
-        <div class="modal-dialog">
-            <div class="popup popup_return_line">
-                <p class="title">Detalles de Orden</p>
-                <div>
-                    <t t-esc="widget.name"/>
-                    <t t-esc="widget.options"/>
-                    <t t-esc="widget.options.order_lines"/>
-                    Hola mi pana luis
-                </div>
-                <p class="title">Retornar productos</p>
-                <div class="return_orderline">
-                    <table class="popup-orderline-list">
-                        <thead>
-                            <tr>
-                                <th>Producto</th>
-                                <th>Serie</th>
-                            </tr>
-                        </thead>
-                        <tbody class="popup-orderline-list-contents">
-                            <t t-if="widget.options.order_lines">
-                                <t t-foreach="widget.options.order_lines" t-as="orderline">
-                                    <tr t-att-data-line-id="orderline.id">
-                                        <td><t t-esc="orderline.product_id ? orderline.product_id[1] : ''" /></td>
-                                        <t t-if="widget.options.pack_lots[orderline.pack_lot_ids[0]]">
-                                          <td><t t-esc="widget.options.pack_lots[orderline.pack_lot_ids[0]].display_name" /></td>
-                                          <td><button class="btn-return">Retornar</button></td>
-                                        </t>
-                                    </tr>
-                                </t>
-                            </t>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="footer">
-                    <div class="button cancel">
-                        Cancelar
-                    </div>
-                </div>
-            </div>
-        </div>
     </t> -->
+
 </templates>
