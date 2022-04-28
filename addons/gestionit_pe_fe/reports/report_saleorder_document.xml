@@ -6,10 +6,10 @@
                 <table class="w-100">
                     <tr>
                         <!-- CLIENTE -->
-                        <th class="l_partner" width="10%">
+                        <th class="l_partner" width="20%">
                             <label t-esc="'CLIENTE : '"/>
                         </th>
-                        <td class="v_partner" width="50%">
+                        <td class="v_partner" width="40%">
                             <span t-esc="((doc.partner_id.registration_name if doc.partner_id.registration_name not in ('-',False,'') else doc.partner_id.name)  or '').upper()"/>
                         </td>
                         <!-- TELÉFONO -->
