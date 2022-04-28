@@ -78,6 +78,53 @@ class PlePurchaseLine(models.Model):
 	error_4=fields.Char(string="Error Tipo 4" ) 
 	indicador_comprobantes=fields.Char(string="Indicador Comprobantes" ) 
 	oportunidad_anotacion=fields.Char(string="Oportunidad Anotación",compute='_compute_campo_oportunidad_anotacion', store=True) 
+	############################################################################################################
+	partner_country_id=fields.Many2one('res.country',string="Pais residencia sujeto no domiciliado" , compute="compute_partner_country_id" , inverse='inverse_compute_partner_country_id' , store=True) #,
+	
+
+	############################################################################################################
+	############## CAMPOS EXCLUSIVOS DE NO DOMICILIADOS !!!!!
+	no_domiciliado_m_correlativo_asiento_contable=fields.Char(string="M-correlativo asiento contable",
+		compute='_compute_campo_m_correlativo_asiento_contable' ,store=True) #,
+		# readonly=False , states={'send': [('readonly', True)]})
+	no_domiciliado_valor_adquisiciones=fields.Float(string="Valor Adquisiciones" ,default=0.00 , store=True)#,
+		# readonly=False , states={'send': [('readonly', True)]})
+	no_domiciliado_otros_conceptos_adicionales=fields.Float(string="Conceptos Adicionales" ,default=0.00, store=True) #,
+		# readonly=False , states={'send': [('readonly', True)]})
+	no_domiciliado_tipo_comprobante_credito_fiscal=fields.Char(string="Tipo Comprobante Crédito fiscal", store=True)#,
+		# readonly=False , states={'send': [('readonly', True)]})
+	no_domiciliado_serie_comprobante_credito_fiscal=fields.Char(string="Serie Comprobante Crédito fiscal", store=True)#,
+		# readonly=False , states={'send': [('readonly', True)]})
+	no_domiciliado_numero_comprobante_pago_impuesto=fields.Char(string="Número Comprobante Pago Impuesto", store=True)#,
+		# readonly=False , states={'send': [('readonly', True)]})
+	no_domiciliado_pais_residencia=fields.Char(string="Código pais residencia del no domiciliado",
+		compute='_compute_campo_no_domiciliado_pais_residencia',store=True)
+		# , readonly=False , states={'send': [('readonly', True)]})
+	no_domiciliado_domicilio=fields.Char(string="Domicilio en el extranjero" ,
+		compute='_compute_campo_no_domiciliado_domicilio',store=True)
+		# readonly=False , states={'send': [('readonly', True)]})
+	no_domiciliado_numero_identificacion=fields.Char(string="Número Identificación del no domiciliado",
+		compute='_compute_campo_no_domiciliado_numero_identificacion',store=True )
+		#, Readonly=False , states={'send': [('readonly', True)]})
+	no_domiciliado_identificacion_beneficiario=fields.Char(string="Número Identificación beneficiario", store=True) # , readonly=False , states={'send': [('readonly', True)]})
+	no_domiciliado_razon_social_beneficiario=fields.Char(string="Razón social beneficiario", store=True) # , readonly=False , states={'send': [('readonly', True)]})
+	no_domiciliado_pais_beneficiario=fields.Char(string="Pais residencia beneficiario", store=True) # , readonly=False , states={'send': [('readonly', True)]})
+	no_domiciliado_vinculo_entre_contribuyente_residente=fields.Char(string="Vinculo contribuyente-residente extranjero",store=True) 
+	no_domiciliado_renta_bruta = fields.Float(string="Renta Bruta", store=True ,default=0.00) 
+	no_domiciliado_deduccion_bienes = fields.Float(string="Deducción/Costo bienes capital", store=True , default = 0.00 ) 
+	no_domiciliado_renta_neta = fields.Float(string="Renta Neta", store=True , default=0.00 ) 
+	no_domiciliado_tasa_retencion = fields.Float(string="Tasa de retención", store=True , default=0.00 ) 
+	no_domiciliado_impuesto_retenido = fields.Float(string="Impuesto retenido", store=True , default=0.00 )
+	no_domiciliado_convenios =  fields.Char(string="Convenios para evitar doble imposición" , default='00', store=True ) 
+	no_domiciliado_exoneracion = fields.Char(string="Exoneración aplicada", store=True ) 
+	no_domiciliado_tipo_renta = fields.Char(string="Tipo de Renta" , default='00', store=True) 
+	no_domiciliado_modalidad_servicio_prestado= fields.Char(string="Modalidad servicio prestado", store=True ) 
+	no_domiciliado_aplicacion_ley_impuesto_renta = fields.Char(string="Aplicación Art. 76°" , store=True ) 
+	no_domiciliado_oportunidad_anotacion= fields.Char(string="Oportunidad Anotación",
+		compute='_compute_campo_oportunidad_anotacion',store=True)
+
+	###################################################################3
+	### Campos domiciliados y algunos no domiciliados
 
 	@api.depends('move_id')
 	def compute_journal_id(self):
@@ -128,6 +175,8 @@ class PlePurchaseLine(models.Model):
 		for rec in self:
 			if rec.move_id:
 				rec.m_correlativo_asiento_contable='M1'
+				rec.no_domiciliado_m_correlativo_asiento_contable='M1'
+
 
 
 	@api.depends('move_id')
@@ -136,6 +185,7 @@ class PlePurchaseLine(models.Model):
 			if rec.move_id:
 				rec.fecha_emision_comprobante = rec.move_id.invoice_date or ''
 	
+
 
 	@api.depends('move_id','tipo_comprobante')
 	def _compute_campo_anio_emision_DUA(self):
@@ -156,19 +206,6 @@ class PlePurchaseLine(models.Model):
 				rec.fecha_vencimiento=''
 
 
-	
-	'''@api.depends('move_id')
-	def _compute_campo_serie_comprobante(self):
-		for rec in self:
-			if rec.move_id and rec.move_id.inv_supplier_ref:
-				prefix_code=rec.move_id.inv_supplier_ref.split('-')
-				if len(prefix_code)>1:
-					rec.serie_comprobante= prefix_code[0] or ''
-				else:
-					rec.serie_comprobante= ''
-			else:
-				rec.serie_comprobante = ''
-	'''
 
 	@api.depends('move_id')
 	def _compute_campo_serie_comprobante(self):
@@ -178,20 +215,6 @@ class PlePurchaseLine(models.Model):
 			else:
 				rec.serie_comprobante = '-'
 
-
-
-	'''@api.depends('move_id')
-	def _compute_campo_numero_comprobante(self):
-		for rec in self:
-			if rec.move_id and rec.move_id.inv_supplier_ref:
-				invoice_number=rec.move_id.inv_supplier_ref.split('-')
-				if len(invoice_number)>1:
-					rec.numero_comprobante= invoice_number[1] or ''
-				else:
-					rec.numero_comprobante= ''
-			else:
-				rec.numero_comprobante = ''
-	'''
 
 
 	@api.depends('move_id')
@@ -253,25 +276,38 @@ class PlePurchaseLine(models.Model):
 				rec.tipo_cambio=format(rec.move_id.exchange_rate_day,".3f")
 
 
+	###########################
+	def pertenece_periodo(self,date_1,date_2):
+		if date_1 and date_2:
+			if date_1.year == date_2.year and date_1.month == date_2.month:
+				return 1
+			else:
+				return 0
+	###########################
+	## LA CONSULTA DEBERIA EVITAR QUE SE FILTREN DOCUMENTOS CON MAS DE 12 MESES DE ANTIGUEDAD
+
 	@api.depends('move_id')
 	def _compute_campo_oportunidad_anotacion(self):
 		for rec in self:
-			valor_campo_3=''
+			valor_campo_3='-'
 			if rec.move_id:
-				if(rec.move_id.amount_igv==0):
+				date_periodo = datetime.strptime("%s-%s-01"%(self.ple_purchase_id.fiscal_year,self.ple_purchase_id.fiscal_month),"%Y-%m-%d").date()
+				if self.pertenece_periodo(date_periodo,rec.move_id.invoice_date)==1 and (rec.move_id.amount_igv==0):
 					valor_campo_3='0'
-				elif(rec.move_id.date.year==rec.move_id.invoice_date.year and rec.move_id.date.month==rec.move_id.invoice_date.month):
+				elif self.pertenece_periodo(date_periodo,rec.move_id.invoice_date)==1 and (rec.move_id.amount_igv>0):
 					valor_campo_3='1'
 
-				elif((rec.move_id.date-rec.move_id.invoice_date).days<=365):
+				elif self.pertenece_periodo(date_periodo,rec.move_id.invoice_date)==0 and (rec.move_id.amount_igv>0):
 					valor_campo_3='6'
 
-				elif((rec.move_id.date-rec.move_id.invoice_date).days>365):
+				elif self.pertenece_periodo(date_periodo,rec.move_id.invoice_date)==0 and (rec.move_id.amount_igv==0):
 					valor_campo_3='7'
 			else:
-				valor_campo_3='1'
+				valor_campo_3='-'
 			
-			rec.oportunidad_anotacion=rec.m_correlativo_asiento_contable[1]
+			rec.oportunidad_anotacion = valor_campo_3
+
+			rec.no_domiciliado_oportunidad_anotacion=valor_campo_3
 
 
 	@api.depends('move_id')
@@ -371,3 +407,38 @@ class PlePurchaseLine(models.Model):
 		for rec in self:
 			if rec.move_id:
 				rec.numero_detraccion = ''
+
+	############################################################################
+
+	################### NO DOMICILIADOS CAMPOS COMPUTE !!!
+	
+
+	@api.depends('partner_id')
+	def compute_partner_country_id(self):
+		for rec in self:
+			if rec.partner_id:
+				rec.partner_country_id=rec.partner_id.country_id
+
+
+
+	@api.depends('partner_id')
+	def _compute_campo_no_domiciliado_domicilio(self):
+		for rec in self:
+			if rec.partner_id:
+				rec.no_domiciliado_domicilio = rec.partner_id.street or ''
+
+
+	
+	@api.depends('partner_country_id')
+	def _compute_campo_no_domiciliado_pais_residencia(self):
+		for rec in self:
+			if rec.partner_country_id:
+				rec.no_domiciliado_pais_residencia=rec.partner_country_id.codigo_sunat
+
+
+	
+	@api.depends('partner_id')
+	def _compute_campo_no_domiciliado_numero_identificacion(self):
+		for rec in self:
+			if rec.partner_id:
+				rec.no_domiciliado_numero_identificacion=rec.partner_id.vat

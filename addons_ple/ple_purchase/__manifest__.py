@@ -1,5 +1,5 @@
 {
-	'name': 'SUNAT_PLE_Compras',
+	'name': 'SUNAT PLE-Compras',
 	'version': "1.1.0",
 	'author': 'Franco Najarro',
 	'website':'',
