@@ -190,7 +190,7 @@
                                                 <th scope="col">Empresa<br/>Transportista</th>
                                                 <th scope="col">Tramo</th>
                                                 <th scope="col">Licencia</th>
-                                                <th scope="col">Conductor y<br/>Vehículo</th>
+                                                <th scope="col">Vehículo</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -217,13 +217,13 @@
                                                         <span t-field="line.licencia"/>
                                                     </td>
                                                     <td>
-                                                        <t t-if="line.modalidad_transporte == '01'">
+                                                        <!-- <t t-if="line.modalidad_transporte == '01'">
                                                             <span t-field="line.conductor_publico_id.name"/>
                                                         </t>
                                                         <t t-else="">
                                                             <span t-field="line.conductor_privado_partner_id.name"/>
-                                                        </t>
-                                                        <strong>Vehículo: </strong>
+                                                        </t> -->
+                                                        <!-- <strong>Vehículo: </strong> -->
                                                         <t t-if="line.modalidad_transporte == '01'">
                                                             <t t-if="line.vehiculo_publico_id">
                                                                 <span t-field="line.vehiculo_publico_id.marca"/>  <span t-field="line.vehiculo_publico_id.numero_placa"/>
