@@ -246,6 +246,7 @@ class GuiaRemision(models.Model):
                                 'validado': [('readonly', True)]}, copy=False)
 
     transporte_lines = fields.One2many('gestionit.lineas_transporte', 'guia_id', 'Lineas de Transporte')
+    note = fields.Text('Observaciones')
 
     # def print_report_guia(self):
     #     return self.env.ref('gestionit_pe_fe.print_report_pdf').report_action(self)
