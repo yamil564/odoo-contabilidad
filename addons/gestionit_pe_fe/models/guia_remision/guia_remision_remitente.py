@@ -116,7 +116,7 @@ class ResPartner(models.Model):
         string="Es empresa de transporte publico", default=False)
     vehiculo_ids = fields.One2many("gestionit.vehiculo", "propietario_id", string="Vehículos")
     licencia = fields.Char("Licencia")
-    
+
 
     def action_view_conductores_privados(self):
         dni = self.env["l10n_latam.identification.type"].search([("l10n_pe_vat_code","=",1)],limit=1)
@@ -187,7 +187,7 @@ class Vehiculo(models.Model):
                 raise UserError("El número de placa vehicular es inválido.")
 
 
-            
+
 
 
 class PopupFormSelectUbigeo(models.TransientModel):
@@ -254,6 +254,8 @@ class GuiaRemision(models.Model):
                                'validado': [('readonly', True)]}, copy=False)
     response_json = fields.Text("Respuesta JSON", states={
                                 'validado': [('readonly', True)]}, copy=False)
+
+    note = fields.Text('Observaciones')
 
     # def print_report_guia(self):
     #     return self.env.ref('gestionit_pe_fe.print_report_pdf').report_action(self)
@@ -577,7 +579,7 @@ class GuiaRemision(models.Model):
                             line["product_id"], line["uom_id"]), guia_remision_lines_temp))
                         guia_remision_lines_temp[product_index[0]]["qty"] += line["qty"]
                     index += 1
-                    
+
                 guia_remision_lines = list(guia_remision_lines_temp.values())
                 record.guia_remision_line_ids = [(0, 0, grl) for grl in guia_remision_lines]
 
