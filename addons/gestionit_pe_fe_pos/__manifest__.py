@@ -22,5 +22,6 @@
         "static/src/xml/order_receipt.xml",
         "static/src/xml/products.xml",
         "static/src/xml/pos.xml",
+        "static/src/xml/credit_note.xml"
     ]
 }

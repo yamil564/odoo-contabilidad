@@ -15,6 +15,7 @@ odoo.define("gestionit_pe_fe_pos.models",[
     _.find(PosModelSuper.prototype.models,function(el){return el.model == 'res.partner'}).fields.push('l10n_latam_identification_type_id','mobile');
     _.find(PosModelSuper.prototype.models,function(el){return el.model == 'res.company'}).fields.push('logo','street','phone','website_invoice_search');
     _.find(PosModelSuper.prototype.models,function(el){return el.model == 'account.tax'}).fields.push('tax_group_id')
+
     _.find(PosModelSuper.prototype.models,function(el){return el.label == 'pictures'}).loaded = function (self) {
         self.company_logo = new Image();
         return new Promise(function (resolve, reject) {
@@ -194,6 +195,21 @@ odoo.define("gestionit_pe_fe_pos.models",[
                 });
             }
         },
+        set_invoice_type: function(invoice_type){
+            var self = this;
+            this.assert_editable();
+            if(['out_invoice','out_refund'].indexOf(invoice_type)){
+                self.invoice_type = invoice_type
+            }else{
+                self.gui.show_popup('error', {
+                    'title': "Error",
+                    'body': "El tipo de operación de comprobante no esta permitido. Tipos de operaciones permitidas 'out_invoice', 'out_refund'",
+                });
+            }
+        },
+        get_invoice_type: function(){
+            return this.invoice_type
+        },
         export_for_printing:function(){
             var res = OrderSuper.prototype.export_for_printing.apply(this, arguments);
             var self = this;
@@ -328,9 +344,33 @@ odoo.define("gestionit_pe_fe_pos.models",[
                 throw new TypeError("El tipo de comprobante a rectificar no existe");
             }
         },
+        set_refund_order_id:function(order_id){
+            this.refund_order_id = order_id
+        },
+        get_refund_order_id:function(){
+            return this.refund_order_id
+        },
+        set_refund_order_name:function(order_name){
+            this.refund_order_name = order_name
+        },
+        get_refund_order_name:function(){
+            return this.refund_order_name
+        },
+        set_refund_order_date:function(order_date){
+            this.refund_order_date = order_date
+        },
+        get_refund_order_date:function(){
+            return this.refund_order_date
+        },
         set_refund_invoice:function(invoice){
             this.assert_editable();
             this.refund_invoice = invoice
+        },
+        set_credit_note_types:function(credit_note_types){
+            this.credit_note_types = credit_note_types
+        },
+        get_credit_note_types:function(){
+            return this.credit_note_types
         },
         get_refund_invoice_type_code:function(){
             return this.refund_invoice_type_code

@@ -1002,9 +1002,9 @@ class GuiaRemision(models.Model):
             "pesoTotal": round(self.peso_bruto_total, 3),
             "pesoUnidadMedida": "KGM",
             "entregaUbigeo": self.lugar_llegada_ubigeo_code.code,
-            "entregaDireccion": str(self.lugar_llegada_direccion or "").strip()[:100],
+            "entregaDireccion": str(self.lugar_llegada_direccion or "").strip()[:98],
             "salidaUbigeo": self.lugar_partida_ubigeo_code.code,
-            "salidaDireccion": str(self.lugar_partida_direccion or "").strip()[:100],
+            "salidaDireccion": str(self.lugar_partida_direccion or "").strip()[:98],
         }
         if self.numero_bultos > 0:
             documento.update({"numeroBulltosPallets": self.numero_bultos})

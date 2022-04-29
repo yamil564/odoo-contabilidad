@@ -115,16 +115,36 @@ class PosOrder(models.Model):
 
     def _prepare_done_order_for_pos(self):
         res = super(PosOrder, self)._prepare_done_order_for_pos()
+        if self.partner_id:
+            res.update({
+                "partner_id":[self.partner_id.id,self.partner_id.name],
+            })
         if self.account_move.state == "posted":
             res.update({
                 "invoice_journal_id":self.invoice_journal_id.id,
                 "invoice_type_code_id":self.account_move.invoice_type_code,
                 "number":self.account_move.name,
                 "sequence_number":self.account_move.name.split("-")[1],
-                "digest_value":self.account_move.digest_value
+                "digest_value":self.account_move.digest_value,
+                "account_move":[self.account_move.id,self.account_move.name],
             })
         return res
 
+
+    def get_order(self):
+        result = {"has_invoice":False}
+        self.ensure_one()
+        result["date"] = self.date_order
+        result["order_name"] = self.name
+        if self.account_move:
+            result["has_invoice"] = True
+            result["invoice_id"]  = [self.account_move.id,self.account_move.move_name]
+            # Tipos de comprobantes 01- Factura ; 03- Boleta ; 07- Nota de crédito ; 08- Nota de débito
+            result["invoice_type_code"] = self.account_move.invoice_type_code
+            result["date"] = self.account_move.invoice_date
+        result["lines"] = self.lines.mapped(lambda r:{"product_id":r.product_id.id,"price_unit":r.price_unit,"qty":r.qty})
+
+        return result
 class l10nLatamIdentificationType(models.Model):
     _inherit = "l10n_latam.identification.type"
 

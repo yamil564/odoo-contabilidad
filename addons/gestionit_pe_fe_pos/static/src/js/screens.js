@@ -7,7 +7,6 @@ odoo.define('gestionit_pe_fe_pos.screens', function(require){
     var rpc = require("web.rpc");
     var QWeb = core.qweb;
     var pos_order_mgmt = require('pos_order_mgmt.widgets')
-    // var OrderListScreenWidgetSuper = pos_order_mgmt.OrderListScreenWidget
     var exports = {}
 
     
@@ -22,6 +21,13 @@ odoo.define('gestionit_pe_fe_pos.screens', function(require){
                 order.set_digest_value(order_data.digest_value);
             }
             return order
+        },
+        action_return:function(order_data,order){
+            console.log(order)
+            console.log(order_data)
+            this.gui.show_popup("create_credit_note_modal",{order_id:order_data.id,
+                                     invoice_id:order_data.account_move,
+                                     partner_id:order_data.partner_id},true)
         }
     })
 

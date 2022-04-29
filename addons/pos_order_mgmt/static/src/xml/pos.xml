@@ -31,7 +31,7 @@
                                     <table class="client-list">
                                         <thead>
                                             <th name="th_ol_ref">Ref.</th>
-                                            <th name="th_ol_customer">Customer 12</th>
+                                            <th name="th_ol_customer">Customer</th>
                                             <th name="th_ol_date">Date</th>
                                             <th name="th_ol_amount_total">Amount</th>
                                             <th name="th_ol_reprint" />
