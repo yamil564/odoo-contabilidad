@@ -799,9 +799,9 @@ class AccountMove(models.Model):
                             msg = "\n\n".join(msg_error)
                             raise UserError(msg)
 
-                    if move.partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code != "6" and move.journal_id.invoice_type_code_id == "01":
-                        raise UserError(
-                            "Tipo de documento del receptor no valido")
+                    # if move.partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code != "6" and move.journal_id.invoice_type_code_id == "01":
+                    #     raise UserError(
+                    #         "Tipo de documento del receptor no valido")
 
                     super(AccountMove, move).post()
 
@@ -967,30 +967,30 @@ class AccountMove(models.Model):
 
     def validacion_factura(self):
         errors = []
-
-        if self.partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code != "6":
-            errors.append(
-                "* El cliente seleccionado debe tener como tipo de documento el RUC, esto es necesario para facturas.")
-                
-        if not self.partner_id.vat:
-            errors.append(
-                "* El cliente selecionado no tiene RUC, esto es necesario para facturas")
-        elif len(self.partner_id.vat) != 11:
-            errors.append(
-                "* El RUC del cliente selecionado debe tener 11 dígitos")
-
-        for line in self.invoice_line_ids:
-            if len(line.tax_ids) == 0:
+        if self.invoice_type_code_catalog_51.code not in ["0200","0201","0202","0203","0204","0205","0206","0207","0208"]:
+            if self.partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code != "6":
                 errors.append(
-                    "* El Producto debe tener al menos un tipo de impuesto Asociado")
-            for tax in line.tax_ids:
-                if not tax.tax_group_id.tipo_afectacion:
+                    "* El cliente seleccionado debe tener como tipo de documento el RUC, esto es necesario para facturas.")
+                    
+            if not self.partner_id.vat:
+                errors.append(
+                    "* El cliente selecionado no tiene RUC, esto es necesario para facturas")
+            elif len(self.partner_id.vat) != 11:
+                errors.append(
+                    "* El RUC del cliente selecionado debe tener 11 dígitos")
+
+            for line in self.invoice_line_ids:
+                if len(line.tax_ids) == 0:
                     errors.append(
-                        "* El Tipo de Afectacion al IGV no esta configurado para el Impuesto %s del item %s" % (tax.name, line.name))
-            # Falta Validar los tipos de Afectación al IGV
-            if not line.product_uom_id.code:
-                errors.append(
-                    "* La Unidad de Medida seleccionada para el item %s no tiene código" % (line.name))
+                        "* El Producto debe tener al menos un tipo de impuesto Asociado")
+                for tax in line.tax_ids:
+                    if not tax.tax_group_id.tipo_afectacion:
+                        errors.append(
+                            "* El Tipo de Afectacion al IGV no esta configurado para el Impuesto %s del item %s" % (tax.name, line.name))
+                # Falta Validar los tipos de Afectación al IGV
+                if not line.product_uom_id.code:
+                    errors.append(
+                        "* La Unidad de Medida seleccionada para el item %s no tiene código" % (line.name))
 
         return errors
 
