@@ -210,11 +210,16 @@
                                                         <span t-field="line.transporte_partner_id"/>
                                                     </td>
                                                     <td>
-                                                        <span t-field="line.lugar_partida_direccion"/> <strong>hacia</strong>
-                                                        <span t-field="line.lugar_llegada_direccion"/>
+                                                        <span t-field="line.lugar_partida_direccion"/>
+                                                        <t t-if="line.lugar_llegada_direccion">
+                                                            <strong>hacia</strong>
+                                                            <span t-field="line.lugar_llegada_direccion"/>
+                                                        </t>
                                                     </td>
                                                     <td>
-                                                        <span t-field="line.licencia"/>
+                                                        <t t-if="line.licencia">
+                                                            <span t-field="line.licencia"/>
+                                                        </t>
                                                     </td>
                                                     <td>
                                                         <!-- <t t-if="line.modalidad_transporte == '01'">

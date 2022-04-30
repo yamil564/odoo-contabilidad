@@ -1229,12 +1229,13 @@ class LineasTransporte(models.Model):
 
     @api.onchange("conductor_publico_id", "conductor_privado_partner_id")
     def _get_licencia(self):
-        if self.modalidad_transporte == '01':
-            self.licencia = self.conductor_publico_id.licencia
-        elif self.modalidad_transporte == '02':
-            self.licencia = self.conductor_privado_partner_id.licencia
-        else:
-            self.licencia = ''
+        for record in self:
+            if record.modalidad_transporte == '01':
+                record.licencia = record.conductor_publico_id.licencia
+            elif record.modalidad_transporte == '02':
+                record.licencia = record.conductor_privado_partner_id.licencia
+            else:
+                record.licencia = ''
 
     @api.onchange("partner_direccion_partida_id")
     def _onchange_partner_direccion_partida_id(self):
