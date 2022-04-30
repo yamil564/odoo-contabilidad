@@ -971,6 +971,7 @@ class AccountMove(models.Model):
         if self.partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code != "6":
             errors.append(
                 "* El cliente seleccionado debe tener como tipo de documento el RUC, esto es necesario para facturas.")
+                
         if not self.partner_id.vat:
             errors.append(
                 "* El cliente selecionado no tiene RUC, esto es necesario para facturas")

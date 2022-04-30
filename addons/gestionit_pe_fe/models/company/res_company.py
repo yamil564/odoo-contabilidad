@@ -22,6 +22,8 @@ class ResCompany(models.Model):
         "product.product", domain=[('is_charge_or_discount', '=', True)])
     default_account_account_retention_id = fields.Many2one("account.account")
 
+    calc_peso = fields.Boolean(string="Calcular peso")
+
     def get_username_sunat(self):
         return "{}{}".format(self.vat, self.sunat_user)
 
@@ -32,3 +34,5 @@ class ResConfigSettings(models.TransientModel):
     product_global_discount_id = fields.Many2one("product.product",
                             related="company_id.default_product_global_discount_id",readonly=False)
     account_account_retention_id = fields.Many2one("account.account",related="company_id.default_account_account_retention_id",readonly=False)
+
+    calc_peso = fields.Boolean(string="Calcular peso automáticamente", related="company_id.calc_peso", readonly=False)

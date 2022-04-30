@@ -186,10 +186,6 @@ class Vehiculo(models.Model):
             if not record.validacion_placa_vehicular():
                 raise UserError("El número de placa vehicular es inválido.")
 
-
-
-
-
 class PopupFormSelectUbigeo(models.TransientModel):
     _name = 'gestionit.popup_form_seleccion_ubigeo'
     _description = 'Selección de Ubigeo'
@@ -1304,7 +1300,6 @@ class GuiaRemision(models.Model):
                 }
             }
         except Exception as e:
-            raise
             self.estado_emision = "P"
             return {
                 'name': 'Error',
@@ -1332,21 +1327,20 @@ class GuiaRemision(models.Model):
         }
 
 
-class AccountInvoiceGuiaRemision(models.Model):
-    _inherit = "account.move"
+# class AccountInvoiceGuiaRemision(models.Model):
+#     _inherit = "account.move"
 
-    def btn_crear_guia_remision(self):
-        pass
-
-
-class ResCompany(models.Model):
-    _inherit = 'res.company'
-
-    calc_peso = fields.Boolean(string="Calcular peso")
+#     def btn_crear_guia_remision(self):
+#         pass
 
 
-class ResConfigSettings(models.TransientModel):
-    _inherit = "res.config.settings"
+# class ResCompany(models.Model):
+#     _inherit = 'res.company'
 
-    calc_peso = fields.Boolean(
-        string="Calcular peso automáticamente", related="company_id.calc_peso", readonly=False)
+#     calc_peso = fields.Boolean(string="Calcular peso")
+
+
+# class ResConfigSettings(models.TransientModel):
+#     _inherit = "res.config.settings"
+
+    
