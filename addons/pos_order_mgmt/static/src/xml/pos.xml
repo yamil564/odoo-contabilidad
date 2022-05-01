@@ -89,6 +89,7 @@
                     class="button order-list-return"
                     t-att-data-order-id="order.id"
                     t-att-data-Uid='order.uid'
+
                     title="Create a refund order of this order"
                 >
                     <i class='fa fa-fw fa-undo' />

@@ -1,32 +1,54 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates id="template" xml:space="preserve">
-    <t t-extend="OrdersLine">
-        <t t-jquery="tr" t-operation="append">
-            <td>
-                <button class="btn_create_credit_note"><i class="fa  fa-sticky-note-o"/>Emitir NC</button>
-            </td>
-        </t>
-    </t>
 
     <t t-name="RefundInvoiceLine">
         <tr >
-            <td><t t-esc="widget.name"/></td>
-            <td><t t-esc="widget.quantity"/></td>
+            <td>
+                <t t-esc="widget.name"/>
+            </td>
+            <td>
+                <t t-esc="widget.format_currency_no_symbol(Math.abs(widget.quantity),'Quantity POS')"/>
+            </td>
+
             <!-- <td><t t-esc="widget.uom_id[1]"/></td> -->
-            <td><t t-esc="widget.price_unit"/></td>
-            <td><t t-esc="widget.price_total"/></td>
-            <td><button class="add_line">Total</button></td>
-            <td style="padding-bottom:8px"><button class="edit_add_line">parcial</button></td>
+
+            <td>
+                <t t-esc="widget.format_currency(widget.price_unit,'Price POS')"/>
+            </td>
+            <td>
+                <t t-esc="widget.format_currency(widget.price_total,'Price POS')"/>
+            </td>
+            <td>
+                <button class="add_line">Total</button>
+            </td>
+            <td style="padding-bottom:8px">
+                <button class="edit_add_line">parcial</button>
+            </td>
         </tr>
     </t>
     <t t-name="CreditNoteLine">
         <tr >
-            <td><t t-esc="widget.name"/></td>
-            <td><t t-esc="widget.quantity"/></td>
+            <td>
+                <t t-if="widget.default_code">
+                    <b>
+                        <t t-esc="'['+widget.default_code+']' "/>
+                    </b>
+                </t>
+                <t t-esc="widget.name"/>
+            </td>
+            <td>
+                <t t-esc="widget.format_currency_no_symbol(Math.abs(widget.quantity),'Quantity POS')"/>
+            </td>
             <!-- <td><t t-esc="widget.uom_id[1]"/></td> -->
-            <td><t t-esc="widget.price_unit"/></td>
-            <td><t t-esc="widget.price_total"/></td>
-            <td style="padding-bottom:8px"><button class="remove">Eliminar</button></td>
+            <td>
+                <t t-esc="widget.format_currency(widget.price_unit,'Price POS')"/>
+            </td>
+            <td>
+                <t t-esc="widget.format_currency(widget.price_total,'Price POS')"/>
+            </td>
+            <td style="padding-bottom:8px">
+                <button class="remove">Eliminar</button>
+            </td>
         </tr>
     </t>
 
@@ -52,53 +74,53 @@
                     <div class='window touch-scrollable'>
                         <section class='subwindow'>
                             <div class='subwindow-container'>
-                                <div class='subwindow-container-fix touch-scrollable' style="padding-left: 150px;padding-right: 150px;padding-top: 25px;">
+                                <div class='subwindow-container-fix touch-scrollable scrollable-y' style="padding-left: 60px;padding-right: 60px;padding-top: 10px;">
                                     <div style="display:flex;flex-direction:row;flex:1">
                                         <div style="display:flex;flex-direction:column;flex:1;align-items:flex-start">
-                                            <span><b>Cliente</b></span>
+                                            <span>
+                                                <b>Cliente</b>
+                                            </span>
                                             <span id="partner_name"/>
                                         </div>
                                         <div style="display:flex;flex-direction:column;flex:1;align-items:flex-start">
-                                            <span><b>Comprobante</b></span>
+                                            <span>
+                                                <b>Comprobante</b>
+                                            </span>
                                             <span id="invoice_name"/>
                                         </div>
-                                    </div>
-                                    <br/>
-                                    <div style="display:flex;flex-direction:row;flex:1">
                                         <div style="display:flex;flex-direction:column;flex:1;align-items:flex-start">
-                                            <span style="padding-bottom:8px"><b>Tipo de nota de crédito </b></span>
+                                            <span style="padding-bottom:8px">
+                                                <b>Tipo de nota de crédito </b>
+                                            </span>
                                             <div style="display:flex;flex-direction:column;width:100%">
-                                                <!-- <t t-esc="widget.pos.get_order().credit_note_type"/>
-                                                <t t-foreach="widget.pos.db.credit_note_types" t-as="cnt" >
+                                                <!-- <t t-esc="widget.pos.get_order().credit_note_type"/> -->
+                                                <t t-foreach="widget.pos.db.credit_note_types" t-as="cnt">
                                                     <div style="display:flex;flex-direction:row;align-items:center">
-                                                        <input type="radio" 
-                                                                t-attf-id="credit_note_type_#{cnt.id}" 
-                                                                name="credit_note_type" 
-                                                                t-att-value="cnt.id" style="flex:.2" />
-                                                        <label t-attf-for="credit_note_type_#{cnt.id}" 
-                                                                style="flex:1;text-align:justify">
-                                                                <t t-esc="cnt.display_name"/>
+                                                        <input type="radio" t-attf-id="credit_note_type_#{cnt.id}" name="credit_note_type" t-att-value="cnt.id" style="flex:.2" />
+                                                        <label t-attf-for="credit_note_type_#{cnt.id}" style="flex:1;text-align:justify">
+                                                            <t t-esc="cnt.display_name"/>
                                                         </label>
                                                     </div>
-                                                </t> -->
+                                                </t>
                                             </div>
                                         </div>
-                                        <div style="display:flex;flex-direction:column;flex:1;align-items:flex-start">
-                                            <span style="padding-bottom:8px"><b>Sustento de nota</b></span>
-                                            <textarea type="textarea" rows="2" id="comment" name="credit_note_comment"/>
+                                        <div style="display:flex;flex-direction:column;flex:2;align-items:flex-start">
+                                            <span style="padding-bottom:8px">
+                                                <b>Sustento de nota</b>
+                                            </span>
+                                            <textarea type="textarea" rows="2" id="comment" name="credit_note_comment" style="width:100%"/>
                                         </div>
                                     </div>
-                                    <br/>
-                                    <h3>Líneas de comprobante de venta </h3>
-                                    <table class="table_refund_invoice_lines">
+                                    <h3>Detalle de venta </h3>
+                                    <table class="table_refund_invoice_lines" style="width:100%">
                                         <thead>
                                             <tr>
-                                                <th width="35%">Producto</th>
+                                                <th width="60%">Producto</th>
                                                 <th width="10%">Cnt</th>
                                                 <!-- <th width="10%">UM</th> -->
-                                                <th width="15%">Precio</th>
-                                                <th width="15%">Total</th>
-                                                <th width="15%">Devolución</th>
+                                                <th width="10%">Precio</th>
+                                                <th width="10%">Total</th>
+                                                <th width="10%">Devolución</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -106,23 +128,26 @@
                                     </table>
                                     <div style="display: flex;justify-content: space-between;">
                                         <h3>Líneas de nota de crédito</h3>
-                                        <h3><b>Total: </b> <span id="credit_note_amount_total"/></h3>
+                                        <h3>
+                                            <b>Total: </b>
+                                            <span id="credit_note_amount_total"/>
+                                        </h3>
                                     </div>
-                                    <table class="table_credit_note_lines">
+                                    <table class="table_credit_note_lines" style="width:100%">
                                         <thead>
                                             <tr>
-                                                <th width="25%">Producto</th>
-                                                <th width="15%">Cnt</th>
+                                                <th width="60%">Producto</th>
+                                                <th width="10%">Cnt</th>
                                                 <!-- <th width="15%">UM</th> -->
-                                                <th width="15%">Precio</th>
-                                                <th width="15%">Total</th>
-                                                <th width="15%">Opción</th>
+                                                <th width="10%">Precio</th>
+                                                <th width="10%">Total</th>
+                                                <th width="10%">Opción</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                         </tbody>
                                     </table>
-                                    
+
                                 </div>
                             </div>
                         </section>
@@ -135,39 +160,42 @@
 
     <t t-name="CreateCreditNoteModal">
         <div class="modal-dialog">
-            <div class="popup popup-textinput pos_popup_background"  style="width:40%;height:500px">
+            <div class="popup popup-textinput pos_popup_background" style="width:40%;height:500px">
                 <div class="header">
-                    <p class="title pos_popup_title_background">Emitir nota de crédito <t t-esc="widget.options.invoice_name"/></p>
+                    <p class="title pos_popup_title_background">Emitir nota de crédito <t t-esc="widget.options.invoice_name"/>
+                    </p>
                 </div>
                 <div class="body">
                     <div style="display:flex;flex-direction:row;flex:1">
                         <div style="display:flex;flex-direction:column;flex:1;align-items:flex-start">
-                            <span><b>Cliente</b></span>
+                            <span>
+                                <b>Cliente</b>
+                            </span>
                             <span id="partner_name"/>
                         </div>
                         <div style="display:flex;flex-direction:column;flex:1;align-items:flex-start">
-                            <span><b>Comprobante</b></span>
+                            <span>
+                                <b>Comprobante</b>
+                            </span>
                             <span id="invoice_name"/>
                         </div>
                     </div>
                     <br/>
-                    
+
                     <div style="display:flex;flex-direction:row;flex:1">
                         <div style="display:flex;flex-direction:column;flex:1;align-items:flex-start">
-                            <span style="padding-bottom:8px"><b>Tipo de nota de crédito </b></span>
+                            <span style="padding-bottom:8px">
+                                <b>Tipo de nota de crédito </b>
+                            </span>
                             <div style="display:flex;flex-direction:column;width:100%">
-                                <!-- <t t-foreach="widget.pos.db.credit_note_types" t-as="cnt" >
+                                <t t-foreach="widget.pos.db.credit_note_types" t-as="cnt">
                                     <div style="display:flex;flex-direction:row;align-items:center">
-                                        <input type="radio" 
-                                                t-attf-id="cn_type_#{cnt.id}" 
-                                                name="credit_note_type" 
-                                                t-attf-value="#{cnt.id}" style="flex:.2"/>
-                                        <label t-attf-for="cn_type_#{cnt.id}" 
-                                                style="flex:1;text-align:justify">
-                                                <t t-esc="cnt.display_name"/>
+                                        <input type="radio" t-attf-id="cn_type_#{cnt.id}" name="credit_note_type" t-attf-value="#{cnt.id}" style="flex:.2"/>
+                                        <label t-attf-for="cn_type_#{cnt.id}" style="flex:1;text-align:justify">
+                                            <t t-esc="cnt.display_name"/>
                                         </label>
                                     </div>
-                                </t> -->
+                                </t>
                                 <!-- <div style="display:flex;flex-direction:row;align-items:center">
                                     <input type="radio" id="credit_note_type_06" name="credit_note_type" value="06" style="flex:.2"/>
                                     <label for="credit_note_type_06" style="flex:1;text-align:justify">Devolución total</label>
@@ -183,7 +211,9 @@
                             </div>
                         </div>
                         <div style="display:flex;flex-direction:column;flex:1;align-items:flex-start">
-                            <span style="padding-bottom:8px"><b>Sustento de nota</b></span>
+                            <span style="padding-bottom:8px">
+                                <b>Sustento de nota</b>
+                            </span>
                             <textarea type="textarea" rows="2" id="comment" name="credit_note_comment"/>
                         </div>
                     </div>
@@ -202,7 +232,7 @@
 
     <!-- <t t-name="AddCreditNoteLineModal">
         <div class="modal-dialog">
-            <div class="popup popup-textinput pos_popup_background"  style="width:30%;height:280px">
+            <div class="popup popup-textinput pos_popup_background" style="width:30%;height:280px">
                 <div class="header">
                     <p class="title pos_popup_title_background">Agregar producto <t t-esc="widget.options.product_name"/></p>
                 </div>
@@ -227,21 +257,5 @@
             </div>
         </div>
     </t> -->
-<!-- 
-    <t t-extend="SaleInvoiceJournal">
-        <t t-jquery='div[class="sale_invoice_journal"]' t-operation="append">
-            <t t-if='widget.pos.config.iface_journals'>
-                <t t-foreach="widget.pos.journal_ids" t-as="journal_id">
-                    <t t-if="widget.pos.get_order().invoice_type == 'out_refund'">
-                        <t t-if="journal_id.tipo_comprobante_a_rectificar == widget.pos.get_order().refund_invoice_type_code">
-                            <div  class='button js_sale_journal' t-att-data-id="journal_id.id">
-                                <i class='fa fa-file-text-o' /> <t t-esc="journal_id.name" />
-                            </div>
-                        </t>
-                    </t>
-                </t>
-            </t>
-        </t>
-    </t>
-     -->
+
 </templates>

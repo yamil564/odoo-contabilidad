@@ -7,10 +7,9 @@
             <script type="text/javascript" src="/gestionit_pe_fe_pos/static/src/js/models.js" />
             <script type="text/javascript" src="/gestionit_pe_fe_pos/static/src/js/credit_note.js" />
             <script type="text/javascript" src="/gestionit_pe_fe_pos/static/src/js/screens.js" />
-            
-            <link rel="stylesheet" href="/gestionit_pe_fe_pos/static/src/css/pos.css" id="pos-stylesheet"/>
         </xpath>
         <xpath expr="//link[last()]" position="after">
+            <link rel="stylesheet" href="/gestionit_pe_fe_pos/static/src/scss/pos_order_list.scss"/>
             <link rel="stylesheet" href="/gestionit_pe_fe_pos/static/src/scss/show_journals.scss" />
         </xpath>
     </template>

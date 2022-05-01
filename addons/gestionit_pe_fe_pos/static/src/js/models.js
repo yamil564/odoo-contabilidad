@@ -51,7 +51,7 @@ odoo.define("gestionit_pe_fe_pos.models",[
 
     PosModelSuper.prototype.models.push({
         model: 'account.journal',
-        fields: ['id','name','code','invoice_type_code_id','sequence_id'],
+        fields: ['id','name','code','invoice_type_code_id','sequence_id','tipo_comprobante_a_rectificar'],
         domain: function(self) {
             return [
                 ['id', 'in', self.config.invoice_journal_ids]
@@ -176,6 +176,7 @@ odoo.define("gestionit_pe_fe_pos.models",[
     models.Order = models.Order.extend({
         initialize: function(attributes, options) {
             this.sale_type = "sale"
+            this.refund_order_id = undefined;
             var res = OrderSuper.prototype.initialize.apply(this, arguments);
             this.number = false;
             this.invoice_journal_id = undefined;
@@ -210,7 +211,7 @@ odoo.define("gestionit_pe_fe_pos.models",[
         get_invoice_type: function(){
             return this.invoice_type
         },
-        export_for_printing:function(){
+        export_for_printing:async function(){
             var res = OrderSuper.prototype.export_for_printing.apply(this, arguments);
             var self = this;
             var client = self.pos.get_client()
@@ -285,6 +286,7 @@ odoo.define("gestionit_pe_fe_pos.models",[
             res['sale_type'] = this.sale_type || "sale"
             res['refund_invoice'] = this.refund_invoice
             res['refund_invoice_type_code'] = this.refund_invoice_type_code
+            res['refund_order_id'] = this.refund_order_id
             return res;
         },
         init_from_JSON: function(json) {
@@ -296,6 +298,8 @@ odoo.define("gestionit_pe_fe_pos.models",[
             this.refund_invoice_type_code = json.refund_invoice_type_code
             this.credit_note_comment = json.credit_note_comment
             this.invoice_type_code_id = json.invoice_type_code_id
+            this.invoice_type = json.invoice_type
+            this.refund_order_id = json.refund_order_id
         },
         set_number: function(number) {
             // this.assert_editable();
@@ -305,7 +309,6 @@ odoo.define("gestionit_pe_fe_pos.models",[
             return this.number;
         },
         set_sequence_number: function(number) {
-            // this.assert_editable();
             this.sequence_number = number;
         },
         get_sequence_number: function() {
@@ -314,7 +317,8 @@ odoo.define("gestionit_pe_fe_pos.models",[
         set_credit_note_type:function(credit_note_type){
             this.assert_editable();
             if(credit_note_type){
-                this.credit_note_type = parseInt(credit_note_type)
+                // this.credit_note_type = parseInt(credit_note_type)
+                this.credit_note_type = credit_note_type;
                 this.set("credit_note_type",credit_note_type)
             }
         },

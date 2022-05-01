@@ -8,7 +8,36 @@ odoo.define('gestionit_pe_fe_pos.screens', function(require){
     var QWeb = core.qweb;
     var pos_order_mgmt = require('pos_order_mgmt.widgets')
     var exports = {}
-
+    
+    screens.PaymentScreenWidget.include({
+        click_back: function(){
+            var order = this.pos.get_order()
+            if(order.refund_order_id){
+                this.gui.show_screen("screen_credit_note")
+            }else{
+                this.gui.show_screen('products');
+            }
+        },
+        click_set_customer: function(){
+            var order = this.pos.get_order()
+            if(order.refund_order_id){
+                this.pos.gui.show_popup('error', {
+                    'title': "Error",
+                    'body': "No puedes cambiar el cliente para la emisión de una nota de crédito.",
+                });
+            }else{
+                this.gui.show_screen('clientlist');
+            }
+        },
+        renderElement:function(){
+            this._super();
+            var self = this
+            var order = this.pos.get_order()
+            if(order.refund_order_id){
+                $(self.$el).find(".payment-numpad").css("display","none")
+            }
+        }
+    })
     
     pos_order_mgmt.OrderListScreenWidget = pos_order_mgmt.OrderListScreenWidget.include({
         _prepare_order_from_order_data: function(order_data, action) {
@@ -22,16 +51,32 @@ odoo.define('gestionit_pe_fe_pos.screens', function(require){
             }
             return order
         },
-        action_return:function(order_data,order){
-            console.log(order)
-            console.log(order_data)
-            this.gui.show_popup("create_credit_note_modal",{order_id:order_data.id,
-                                     invoice_id:order_data.account_move,
-                                     partner_id:order_data.partner_id},true)
+        render_list: function() {
+            var self = this;
+            this._super();
+            this.$(".order-list-credit-note").click(function(event) {
+                self.action_credit_note(event);
+            });
+        },
+        action_credit_note:function(event){
+            var dataset = event.currentTarget.dataset;
+            console.log(dataset)
+            var orderId = parseInt(dataset.orderId, 10)
+            var partnerId = dataset.partnerId != ''?dataset.partnerId.split(","):undefined
+            var moveId = dataset.moveId != ''?dataset.moveId.split(","):undefined
+            if(moveId != undefined && partnerId != undefined){
+                this.gui.show_popup("create_credit_note_modal",{order_id:orderId,
+                                                                invoice_id:moveId,
+                                                                partner_id:partnerId},true)
+            }else{
+                alert("Solo se puede emitir Notas de crédito a facturas o boletas")
+            }
         }
     })
 
 
+
+    
     // pos_order_mgmt.OrderListScreenWidget.prueba_funcion()
 
     // pos_order_mgmt.OrderListScreenWidget._prepare_order_from_order_data = function(order_data, action) {

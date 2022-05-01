@@ -1,6 +1,7 @@
 from odoo import fields, models, api, _
 from odoo.exceptions import ValidationError, UserError
 import logging
+from odoo.addons.gestionit_pe_fe.models.parameters.catalogs import tnc, tnd, tdc, tdr
 _logger = logging.getLogger(__name__)
 
 
@@ -10,9 +11,20 @@ class PosOrder(models.Model):
     invoice_journal_id = fields.Many2one("account.journal")
     desc_global = fields.Float(string="Descuento global", default=0)
 
+    invoice_type = fields.Selection(selection=[('out_refund','Devolución'),('out_invoice','Venta')],string="Tipo de movimiento",default="")
+    invoice_type_code_id = fields.Char(string="Tipo de comprobante electrónico")
+    refund_invoice = fields.Many2one("account.move",string="Comprobante a rectificar")
+    credit_note_comment = fields.Char(string="Sustento de nota")
+    credit_note_type = fields.Selection(string='Tipo de Nota de Crédito', readonly=True,
+                                         selection="_selection_tipo_nota_credito", states={'draft': [('readonly', False)]})
+
+    def _selection_credit_note_type(self):
+        return tnc
+
     def _prepare_invoice_line(self, order_line):
         if (order_line.price_unit < 0 and order_line.qty > 0) or (order_line.price_unit > 0 and order_line.qty < 0):
             self.desc_global += order_line.qty*order_line.price_unit
+
         return {
             'product_id': order_line.product_id.id,
             'quantity': order_line.qty if self.amount_total >= 0 else -order_line.qty,
@@ -33,8 +45,7 @@ class PosOrder(models.Model):
             raise ValidationError(
                 "La creación del comprobante requiere de la selección de una Serie de facturación.")
 
-        desc_percent = (abs(self.desc_global)*100) / \
-            (abs(self.desc_global)+self.amount_total)
+        desc_percent = (abs(self.desc_global)*100) / (abs(self.desc_global)+self.amount_total)
 
         vals.update({
             "journal_id": self.invoice_journal_id.id,
@@ -84,9 +95,31 @@ class PosOrder(models.Model):
     def _order_fields(self, ui_order):
         vals = super(PosOrder, self)._order_fields(ui_order)
         if ui_order.get("invoice_journal_id", False):
-            vals.update(
-                {'invoice_journal_id': ui_order.get("invoice_journal_id")})
+            vals.update({'invoice_journal_id': ui_order.get("invoice_journal_id"),
+                        'invoice_type_code_id':ui_order.get("invoice_type_code_id"),
+                        'invoice_type':ui_order.get("invoice_type"),
+                        'credit_note_comment':ui_order.get("credit_note_comment"),
+                        'credit_note_type':ui_order.get("credit_note_type")})
         return vals
+
+    # @profile
+    # @api.model
+    # def _order_fields(self, ui_order):
+    #     _logger.info(ui_order)
+    #     res = super(PosOrder, self)._order_fields(ui_order)
+    #     res['number'] = ui_order.get('number', False)
+    #     res['invoice_journal'] = ui_order.get('invoice_journal', False)
+    #     res['sequence_number'] = ui_order.get('sequence_number', '')
+    #     res['invoice_type_code_id'] = ui_order.get('invoice_type_code_id', '')
+    #     res['invoice_type'] = ui_order.get('invoice_type', '')
+
+    #     if res.get("invoice_type",False) == "out_refund":
+    #         res['credit_note_comment'] = ui_order.get("credit_note_comment")
+    #         res['credit_note_type'] = ui_order.get("credit_note_type")
+    #         if "refund_invoice" in ui_order:
+    #             if len(ui_order["refund_invoice"]) == 2:
+    #                 res['refund_invoice'] = ui_order.get('refund_invoice', [])[0]
+    #     return res
 
     def get_current_invoice(self):
         res = {"digest_value": "*"}
@@ -130,6 +163,10 @@ class PosOrder(models.Model):
             })
         return res
 
+    def _prepare_fields_for_pos_list(self):
+        res = super(PosOrder, self)._prepare_fields_for_pos_list()
+        res.append("account_move")
+        return res
 
     def get_order(self):
         result = {"has_invoice":False}
@@ -138,13 +175,15 @@ class PosOrder(models.Model):
         result["order_name"] = self.name
         if self.account_move:
             result["has_invoice"] = True
-            result["invoice_id"]  = [self.account_move.id,self.account_move.move_name]
+            result["invoice_id"]  = [self.account_move.id,self.account_move.name]
             # Tipos de comprobantes 01- Factura ; 03- Boleta ; 07- Nota de crédito ; 08- Nota de débito
             result["invoice_type_code"] = self.account_move.invoice_type_code
             result["date"] = self.account_move.invoice_date
         result["lines"] = self.lines.mapped(lambda r:{"product_id":r.product_id.id,"price_unit":r.price_unit,"qty":r.qty})
 
         return result
+
+
 class l10nLatamIdentificationType(models.Model):
     _inherit = "l10n_latam.identification.type"
 
