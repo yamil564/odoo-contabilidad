@@ -7,13 +7,42 @@ odoo.define('gestionit_pe_fe_pos.screens', function(require){
     var rpc = require("web.rpc");
     var QWeb = core.qweb;
     var pos_order_mgmt = require('pos_order_mgmt.widgets')
-    // var OrderListScreenWidgetSuper = pos_order_mgmt.OrderListScreenWidget
     var exports = {}
-
     
-    pos_order_mgmt.OrderListScreenWidget = pos_order_mgmt.OrderListScreenWidget.include({
-        _prepare_order_from_order_data: function(order_data, action) {
+    screens.PaymentScreenWidget.include({
+        click_back: function(){
+            var order = this.pos.get_order()
+            if(order.refund_order_id){
+                this.gui.show_screen("screen_credit_note")
+            }else{
+                this.gui.show_screen('products');
+            }
+        },
+        click_set_customer: function(){
+            var order = this.pos.get_order()
+            if(order.refund_order_id){
+                this.pos.gui.show_popup('error', {
+                    'title': "Error",
+                    'body': "No puedes cambiar el cliente para la emisión de una nota de crédito.",
+                });
+            }else{
+                this.gui.show_screen('clientlist');
+            }
+        },
+        renderElement:function(){
+            this._super();
+            var self = this
+            var order = this.pos.get_order()
+            if(order.refund_order_id){
+                $(self.$el).find(".payment-numpad").css("display","none")
+            }
+        }
+    })
+    
+    pos_order_mgmt.OrderListScreenWidget.include({
+        _prepare_order_from_order_data:function(order_data, action) {
             var order = this._super(order_data, action);
+            console.log(order)
             if(order_data.to_invoice == true){
                 order.set_invoice_journal_id(order_data.invoice_journal_id);
                 order.set_invoice_type_code_id(order_data.invoice_type_code_id);
@@ -22,104 +51,56 @@ odoo.define('gestionit_pe_fe_pos.screens', function(require){
                 order.set_digest_value(order_data.digest_value);
             }
             return order
-        }
+        },
+        render_list: function() {
+            var self = this;
+            this._super();
+            this.$(".order-list-credit-note").click(function(event) {
+                self.action_credit_note(event);
+            });
+        },
+        action_credit_note:function(event){
+            var dataset = event.currentTarget.dataset;
+            console.log(dataset)
+            var orderId = parseInt(dataset.orderId, 10)
+            var partnerId = dataset.partnerId != ''?dataset.partnerId.split(","):undefined
+            var moveId = dataset.moveId != ''?dataset.moveId.split(","):undefined
+            if(moveId != undefined && partnerId != undefined){
+                this.gui.show_popup("create_credit_note_modal",{order_id:orderId,
+                                                                invoice_id:moveId,
+                                                                partner_id:partnerId},true)
+            }else{
+                alert("Solo se puede emitir Notas de crédito a facturas o boletas")
+            }
+        },
+        action_print: function(order_data, order) {
+            // We store temporarily the current order so we can safely compute
+            // taxes based on fiscal position
+            this.pos.current_order = this.pos.get_order();
+
+            this.pos.set_order(order);
+
+            this.pos.reloaded_order = order;
+            var skip_screen_state = this.pos.config.iface_print_skip_screen;
+            // Disable temporarily skip screen if set
+            this.pos.config.iface_print_skip_screen = false;
+            this.gui.show_screen("receipt");
+            this.pos.reloaded_order = false;
+            // Set skip screen to whatever previous state
+            this.pos.config.iface_print_skip_screen = skip_screen_state;
+
+            // If it's invoiced, we also print the invoice
+            // if (order_data.to_invoice) {
+            //     this.pos.chrome.do_action("point_of_sale.pos_invoice_report", {
+            //         additional_context: {active_ids: [order_data.id]},
+            //     });
+            // }
+
+            // Destroy the order so it's removed from localStorage
+            // Otherwise it will stay there and reappear on browser refresh
+            order.destroy();
+        },
     })
-
-
-    // pos_order_mgmt.OrderListScreenWidget.prueba_funcion()
-
-    // pos_order_mgmt.OrderListScreenWidget._prepare_order_from_order_data = function(order_data, action) {
-    //     console.log("====================order======================")    
-    //     var order = OrderListScreenWidgetSuper.prototype._prepare_order_from_order_data.apply(this, arguments);   
-        
-    //     console.log(order)
-    //     return order
-    // }
-
-
-    // var OrderListScreenWidget = screens.ScreenWidget.extend({
-    //     template: 'OrderListScreenWidget',
-    //     events: {
-    //         'click .back': function () {
-    //             this.gui.back();
-    //         },
-    //         'keydown input#searchbox': "search_orders",
-    //         "click .order-list-contents>tr": "select_order"
-    //     },
-    //     show: function () {
-    //         this._super();
-    //         this.$('.order-list-contents').empty();
-    //         this.$('input#searchbox').focus();
-    //     },
-    //     search_orders: function (e) {
-    //         var self = this;
-    //         var textSearch = "";
-    //         var code = (e.keyCode ? e.keyCode : e.which);
-    //         if (code === 13) {
-    //             textSearch = e.currentTarget.value;
-    //         } else {
-    //             return true;
-    //         }
-    //         rpc.query({
-    //             model: 'pos.order',
-    //             method: 'search_read',
-    //             domain: ['|', ['partner_id.name', 'ilike', textSearch], '|', ['name', 'ilike', textSearch], ['lines.pack_lot_ids.lot_name', 'ilike', textSearch]],
-    //             fields: ['name', 'partner_id', 'date_order'],
-    //             order: 'date_order desc',
-    //             limit: 30
-    //         }).then(function (res) {
-    //             // alert('Hola Luis');
-    //             // alert(res);
-    //             self.$el.find('.order-list-contents').html(Qweb.render('OrderListLines', {orders: res}));
-    //         });
-    //     },
-    //     select_order: function (e) {
-    //         var self = this;
-    //         var order_id = e.currentTarget.dataset.id;
-    //         rpc.query({
-    //             model: 'pos.order.line',
-    //             method: 'search_read',
-    //             domain: [['order_id.id', '=', order_id]],
-    //             fields: ['product_id', 'pack_lot_ids', 'qty', 'price_subtotal_incl'],
-    //         }).then(function (res) {
-    //             var order_lines = res;
-    //             var pack_lot_ids = [];
-    //             res.forEach(function (item) {
-    //                 item.pack_lot_ids.forEach(function (i) {
-    //                     pack_lot_ids.push(i);
-    //                 });
-    //             });
-    //             rpc.query({
-    //                 model: 'pos.pack.operation.lot',
-    //                 method: 'read',
-    //                 args: [pack_lot_ids, ['display_name']]
-    //             }).then(function (res) {
-    //                 var pack_lots = {};
-    //                 res.forEach(function (item) {
-    //                     pack_lots[item.id] = item;
-    //                 });
-    //                 self.pos.gui.show_popup('line_return_popup', {
-    //                     order_lines: order_lines,
-    //                     pack_lots: pack_lots,
-    //                 });
-    //             })
-    //         });
-    //     }
-    // });
-
-    // gui.define_screen({name: 'orderlist', widget: OrderListScreenWidget});
-
-    // var ShowOrderList = screens.ActionButtonWidget.extend({
-    //     template: 'ShowOrderList',
-    //     button_click: function () {
-    //         this.gui.show_screen('orderlist');
-    //     },
-    // });
-
-    // screens.define_action_button({
-    //     'name': 'showorderlist',
-    //     'widget': ShowOrderList,
-    // });
 
     screens.PaymentScreenWidget.include({
         validate_order: function(force_validation) {
@@ -445,7 +426,8 @@ odoo.define('gestionit_pe_fe_pos.screens', function(require){
     screens.ReceiptScreenWidget.include({
         get_receipt_render_env:function(){
             var res = this._super()
-            // console.log(res)
+            console.log("=============get_receipt_render_env===============")
+            console.log(res)
             return res
         }
     })

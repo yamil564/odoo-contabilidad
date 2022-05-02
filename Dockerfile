@@ -34,8 +34,8 @@ RUN pip3 install numpy
 RUN pip3 install simplejson
 RUN apt-get install -y libmagic-dev
 RUN pip3 install --user libmagic
-RUN pip3 install culqipy
-RUN pip3 install mercadopago
+RUN pip install culqi
+RUN pip install mercadopago
 RUN pip3 install facebook-sdk
 RUN pip3 install pillow
 RUN apt-get clean && apt-get autoclean

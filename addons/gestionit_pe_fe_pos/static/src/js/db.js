@@ -14,6 +14,11 @@ odoo.define("gestionit_pe_fe_pos.DB",[
             this.identification_type_by_id = {};
             this.journal_sequence_by_id = {};
             this.invoice_numbers=[];
+            this.credit_note_types = [
+                {id:"06",name:"Devolución Total",code:"06",display_name:"Devolución Total"},
+                {id:"07",name:"Devolución por Item",code:"07",display_name:"Devolución por Item"},
+                {id:"02",name:"Anluación de la operación",code:"02",display_name:"Anluación de la operación"}
+            ];
             return PosDBSuper.init.apply(this, arguments);
         },
         add_invoice_numbers: function(number) {

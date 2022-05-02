@@ -15,6 +15,7 @@ odoo.define("gestionit_pe_fe_pos.models",[
     _.find(PosModelSuper.prototype.models,function(el){return el.model == 'res.partner'}).fields.push('l10n_latam_identification_type_id','mobile');
     _.find(PosModelSuper.prototype.models,function(el){return el.model == 'res.company'}).fields.push('logo','street','phone','website_invoice_search');
     _.find(PosModelSuper.prototype.models,function(el){return el.model == 'account.tax'}).fields.push('tax_group_id')
+
     _.find(PosModelSuper.prototype.models,function(el){return el.label == 'pictures'}).loaded = function (self) {
         self.company_logo = new Image();
         return new Promise(function (resolve, reject) {
@@ -50,7 +51,7 @@ odoo.define("gestionit_pe_fe_pos.models",[
 
     PosModelSuper.prototype.models.push({
         model: 'account.journal',
-        fields: ['id','name','code','invoice_type_code_id','sequence_id'],
+        fields: ['id','name','code','invoice_type_code_id','sequence_id','tipo_comprobante_a_rectificar'],
         domain: function(self) {
             return [
                 ['id', 'in', self.config.invoice_journal_ids]
@@ -175,6 +176,7 @@ odoo.define("gestionit_pe_fe_pos.models",[
     models.Order = models.Order.extend({
         initialize: function(attributes, options) {
             this.sale_type = "sale"
+            this.refund_order_id = undefined;
             var res = OrderSuper.prototype.initialize.apply(this, arguments);
             this.number = false;
             this.invoice_journal_id = undefined;
@@ -194,13 +196,27 @@ odoo.define("gestionit_pe_fe_pos.models",[
                 });
             }
         },
+        set_invoice_type: function(invoice_type){
+            var self = this;
+            this.assert_editable();
+            if(['out_invoice','out_refund'].indexOf(invoice_type)){
+                self.invoice_type = invoice_type
+            }else{
+                self.gui.show_popup('error', {
+                    'title': "Error",
+                    'body': "El tipo de operación de comprobante no esta permitido. Tipos de operaciones permitidas 'out_invoice', 'out_refund'",
+                });
+            }
+        },
+        get_invoice_type: function(){
+            return this.invoice_type
+        },
         export_for_printing:function(){
             var res = OrderSuper.prototype.export_for_printing.apply(this, arguments);
             var self = this;
             var client = self.pos.get_client()
             var client_identification_type_code = undefined;
             var identification_type = undefined;
-            // var company = this.pos.company;
             if(client){
                 if(client.l10n_latam_identification_type_id){
                     identification_type = self.pos.db.identification_type_by_id[client.l10n_latam_identification_type_id[0]]
@@ -208,8 +224,12 @@ odoo.define("gestionit_pe_fe_pos.models",[
                 }
             } 
             var journal = self.get_invoice_journal_id()?self.pos.db.journal_by_id[self.get_invoice_journal_id()]:undefined;
-            console.log(client)
-            console.log(journal)
+            // console.log(client)
+            // console.log(journal)
+            console.log(res)
+            console.log(res.date)
+            res["date"] = moment.utc(res.date).local().format("YYYY-MM-DD HH:mm:ss");
+            console.log(res.date)
             if(client && journal){
                 res["qr_string"] = [res.company.vat, //RUC de emisor
                                     journal.invoice_type_code_id, //Tipo de comprobante electrónico
@@ -217,13 +237,16 @@ odoo.define("gestionit_pe_fe_pos.models",[
                                     self.sequence_number,//Número correlativo
                                     res.total_tax,//Total IGV
                                     res.total_with_tax,//Monto Totales
-                                    res.date.localestring.substr(0,10),//Fecha de Emisión
+                                    res.date.substr(0,10),//Fecha de Emisión
                                     client_identification_type_code,//Tipo de documento de identidad de Receptor
                                     client.vat, //Número de documento de identidad de Receptor
                                     this.get_digest_value()
                                     ].join("|")
             }
-            console.log(res["qr_string"])
+            
+            // console.log(res["qr_string"])
+            // console.log("==============export_for_printing==================")
+            // console.log(res)
             return res
         },
         set_pos_order_id:function(pos_order_id){
@@ -255,7 +278,12 @@ odoo.define("gestionit_pe_fe_pos.models",[
         get_invoice_journal_id: function() {
             return this.invoice_journal_id;
         },
-        
+        get_invoice_date:function(){
+            return this.invoice_date
+        },
+        set_invoice_date:function(invoice_date){
+            this.invoice_date = invoice_date
+        },
         export_as_JSON: function() {
             var res = OrderSuper.prototype.export_as_JSON.apply(this, arguments);
             var journal = this.pos.db.get_journal_by_id(this.invoice_journal_id);
@@ -269,6 +297,8 @@ odoo.define("gestionit_pe_fe_pos.models",[
             res['sale_type'] = this.sale_type || "sale"
             res['refund_invoice'] = this.refund_invoice
             res['refund_invoice_type_code'] = this.refund_invoice_type_code
+            res['refund_order_id'] = this.refund_order_id
+            res['invoice_date'] = this.invoice_date
             return res;
         },
         init_from_JSON: function(json) {
@@ -280,6 +310,9 @@ odoo.define("gestionit_pe_fe_pos.models",[
             this.refund_invoice_type_code = json.refund_invoice_type_code
             this.credit_note_comment = json.credit_note_comment
             this.invoice_type_code_id = json.invoice_type_code_id
+            this.invoice_type = json.invoice_type
+            this.refund_order_id = json.refund_order_id
+            this.invoice_date = json.invoice_date
         },
         set_number: function(number) {
             // this.assert_editable();
@@ -289,7 +322,6 @@ odoo.define("gestionit_pe_fe_pos.models",[
             return this.number;
         },
         set_sequence_number: function(number) {
-            // this.assert_editable();
             this.sequence_number = number;
         },
         get_sequence_number: function() {
@@ -298,7 +330,8 @@ odoo.define("gestionit_pe_fe_pos.models",[
         set_credit_note_type:function(credit_note_type){
             this.assert_editable();
             if(credit_note_type){
-                this.credit_note_type = parseInt(credit_note_type)
+                // this.credit_note_type = parseInt(credit_note_type)
+                this.credit_note_type = credit_note_type;
                 this.set("credit_note_type",credit_note_type)
             }
         },
@@ -328,9 +361,33 @@ odoo.define("gestionit_pe_fe_pos.models",[
                 throw new TypeError("El tipo de comprobante a rectificar no existe");
             }
         },
+        set_refund_order_id:function(order_id){
+            this.refund_order_id = order_id
+        },
+        get_refund_order_id:function(){
+            return this.refund_order_id
+        },
+        set_refund_order_name:function(order_name){
+            this.refund_order_name = order_name
+        },
+        get_refund_order_name:function(){
+            return this.refund_order_name
+        },
+        set_refund_order_date:function(order_date){
+            this.refund_order_date = order_date
+        },
+        get_refund_order_date:function(){
+            return this.refund_order_date
+        },
         set_refund_invoice:function(invoice){
             this.assert_editable();
             this.refund_invoice = invoice
+        },
+        set_credit_note_types:function(credit_note_types){
+            this.credit_note_types = credit_note_types
+        },
+        get_credit_note_types:function(){
+            return this.credit_note_types
         },
         get_refund_invoice_type_code:function(){
             return this.refund_invoice_type_code
@@ -346,7 +403,16 @@ odoo.define("gestionit_pe_fe_pos.models",[
         },
         total_items: function(){
             return _.reduce(_.map(this.get_orderlines(),function(el){return el.get_quantity()}),function(a,b){return a+b})
-        }
+        },
+        get_client: function() {
+            var return_val = OrderSuper.prototype.get_client.apply(this, arguments);
+            if (return_val == undefined) {
+                return_val = this.pos.db.get_partner_by_id(
+                    this.pos.config.anonymous_id[0]
+                );
+            }
+            return return_val;
+        },
     });
 
     exports.models =models

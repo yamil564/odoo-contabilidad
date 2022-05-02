@@ -17,3 +17,5 @@ class PosConfig(models.Model):
         "Mostrar Ref.Interna en Lista de Productos", default=False)
     required_journal = fields.Boolean(
         "Solicitar diario obligatorio", default=False)
+
+    iface_credit_note = fields.Boolean("Permitir Emitir Nota de crédito")

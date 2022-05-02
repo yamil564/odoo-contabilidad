@@ -25,7 +25,7 @@ class PosConfig(models.Model):
 
     iface_return_done_order = fields.Boolean(
         string="Return Orders",
-        default=False,
+        default=True,
         help="Allows to return already done orders in the frontend",
     )
 
