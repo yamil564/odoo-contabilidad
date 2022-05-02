@@ -211,13 +211,12 @@ odoo.define("gestionit_pe_fe_pos.models",[
         get_invoice_type: function(){
             return this.invoice_type
         },
-        export_for_printing:async function(){
+        export_for_printing:function(){
             var res = OrderSuper.prototype.export_for_printing.apply(this, arguments);
             var self = this;
             var client = self.pos.get_client()
             var client_identification_type_code = undefined;
             var identification_type = undefined;
-            // var company = this.pos.company;
             if(client){
                 if(client.l10n_latam_identification_type_id){
                     identification_type = self.pos.db.identification_type_by_id[client.l10n_latam_identification_type_id[0]]
@@ -225,8 +224,12 @@ odoo.define("gestionit_pe_fe_pos.models",[
                 }
             } 
             var journal = self.get_invoice_journal_id()?self.pos.db.journal_by_id[self.get_invoice_journal_id()]:undefined;
-            console.log(client)
-            console.log(journal)
+            // console.log(client)
+            // console.log(journal)
+            console.log(res)
+            console.log(res.date)
+            res["date"] = moment.utc(res.date).local().format("YYYY-MM-DD HH:mm:ss");
+            console.log(res.date)
             if(client && journal){
                 res["qr_string"] = [res.company.vat, //RUC de emisor
                                     journal.invoice_type_code_id, //Tipo de comprobante electrónico
@@ -234,13 +237,16 @@ odoo.define("gestionit_pe_fe_pos.models",[
                                     self.sequence_number,//Número correlativo
                                     res.total_tax,//Total IGV
                                     res.total_with_tax,//Monto Totales
-                                    res.date.localestring.substr(0,10),//Fecha de Emisión
+                                    res.date.substr(0,10),//Fecha de Emisión
                                     client_identification_type_code,//Tipo de documento de identidad de Receptor
                                     client.vat, //Número de documento de identidad de Receptor
                                     this.get_digest_value()
                                     ].join("|")
             }
-            console.log(res["qr_string"])
+            
+            // console.log(res["qr_string"])
+            // console.log("==============export_for_printing==================")
+            // console.log(res)
             return res
         },
         set_pos_order_id:function(pos_order_id){
@@ -272,7 +278,12 @@ odoo.define("gestionit_pe_fe_pos.models",[
         get_invoice_journal_id: function() {
             return this.invoice_journal_id;
         },
-        
+        get_invoice_date:function(){
+            return this.invoice_date
+        },
+        set_invoice_date:function(invoice_date){
+            this.invoice_date = invoice_date
+        },
         export_as_JSON: function() {
             var res = OrderSuper.prototype.export_as_JSON.apply(this, arguments);
             var journal = this.pos.db.get_journal_by_id(this.invoice_journal_id);
@@ -287,6 +298,7 @@ odoo.define("gestionit_pe_fe_pos.models",[
             res['refund_invoice'] = this.refund_invoice
             res['refund_invoice_type_code'] = this.refund_invoice_type_code
             res['refund_order_id'] = this.refund_order_id
+            res['invoice_date'] = this.invoice_date
             return res;
         },
         init_from_JSON: function(json) {
@@ -300,6 +312,7 @@ odoo.define("gestionit_pe_fe_pos.models",[
             this.invoice_type_code_id = json.invoice_type_code_id
             this.invoice_type = json.invoice_type
             this.refund_order_id = json.refund_order_id
+            this.invoice_date = json.invoice_date
         },
         set_number: function(number) {
             // this.assert_editable();
@@ -390,7 +403,16 @@ odoo.define("gestionit_pe_fe_pos.models",[
         },
         total_items: function(){
             return _.reduce(_.map(this.get_orderlines(),function(el){return el.get_quantity()}),function(a,b){return a+b})
-        }
+        },
+        get_client: function() {
+            var return_val = OrderSuper.prototype.get_client.apply(this, arguments);
+            if (return_val == undefined) {
+                return_val = this.pos.db.get_partner_by_id(
+                    this.pos.config.anonymous_id[0]
+                );
+            }
+            return return_val;
+        },
     });
 
     exports.models =models

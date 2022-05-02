@@ -31,7 +31,6 @@
                         </div>
                     </div>
                 </div>
-                
                 <div class="col-12 col-lg-6 o_setting_box">
                     <div class="o_setting_left_pane">
                         <field name="required_journal"/>
@@ -76,6 +75,16 @@
                         </div>
                     </div>
                 </div>
+                <div class="col-12 col-lg-6 o_setting_box" id="partner_anonymous_id">
+                    <div class="o_setting_right_pane">
+                        <label for="anonymous_id" string="Cliente anónimos"/>
+                        <div class="text-muted">
+                            Se establece un cliente anómimo o cliente varios por defecto para emisión de boletas y tickets
+                        </div>
+                        <field name="anonymous_id" Toptions="{'no_create':True,'no_edit':True,'no_quick_create':True}" required="1"/>
+                    </div>
+                </div>
+                
             </xpath>
         </field>
     </record>

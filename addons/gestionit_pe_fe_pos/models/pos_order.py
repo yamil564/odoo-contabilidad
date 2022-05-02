@@ -16,7 +16,7 @@ class PosOrder(models.Model):
     refund_invoice = fields.Many2one("account.move",string="Comprobante a rectificar")
     credit_note_comment = fields.Char(string="Sustento de nota")
     credit_note_type = fields.Selection(string='Tipo de Nota de Crédito', readonly=True,
-                                         selection="_selection_tipo_nota_credito", states={'draft': [('readonly', False)]})
+                                         selection="_selection_credit_note_type", states={'draft': [('readonly', False)]})
 
     def _selection_credit_note_type(self):
         return tnc

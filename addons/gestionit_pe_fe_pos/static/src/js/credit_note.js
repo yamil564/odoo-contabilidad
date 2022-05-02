@@ -230,7 +230,7 @@ odoo.define("gestionit_pe_fe_pos.credit_note",function(require){
                 self.refresh_credit_note_lines()
             }
         },
-        show: async function(options){
+        show: function(options){
             var self = this
             this._super(options);
             var order = this.pos.get_order()

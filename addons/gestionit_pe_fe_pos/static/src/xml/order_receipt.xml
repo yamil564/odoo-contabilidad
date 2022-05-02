@@ -24,8 +24,8 @@
 					<t t-esc="widget.pos.company.phone || ''" />
 				</div>
 				<t t-if="widget.pos.config.is_header_or_footer">
-					<div style='text-align:center'>
-						<t t-esc="widget.pos.config.receipt_header" />
+					<div style='text-align:justify;font-size:11px'>
+						<span t-esc="widget.pos.config.receipt_header" style="white-space: pre-wrap;"/>
 					</div>
 					<br />
 				</t>
@@ -67,7 +67,7 @@
 				<div class="pos-center-align">
 					<b>
 						Fecha y hora:
-						<t t-esc="receipt.date.localestring" />
+						<t t-esc="order.formatted_validation_date" />
 					</b>
 				</div>
 				<br />
@@ -118,13 +118,8 @@
 				</div>
 				<br />
 
-				<table class='receipt-orderlines' style="border-top: 1px black dotted">
-					<!-- <colgroup>
-						<col width='15%' />
-						<col width='55%' />
-						<col width='15%' />
-						<col width='15%' />
-					</colgroup> -->
+				<table class='receipt-orderlines' style="border-top: 1px black dotted;font-size:12px">
+
 					<tr>
 						<th>
 							<b>Cant.</b>
@@ -132,10 +127,10 @@
 						<th>
 							<b>Descripción</b>
 						</th>
-						<th>
+						<th style="min-width:60px">
 							<b>P.U.</b>
 						</th>
-						<th>
+						<th style="min-width:60px">
 							<b>Importe</b>
 						</th>
 					</tr>
@@ -146,8 +141,13 @@
 							</td>
 
 							<td>
-								<t t-if="orderline.get_product().default_code">
-									<t t-esc="orderline.get_product().default_code" />
+								<t t-if="widget.pos.receipt_show_default_code">
+									<t t-if="orderline.get_product().default_code">
+										<t t-esc="orderline.get_product().default_code" />
+									</t>
+								</t>
+								<t t-else="">
+									<t t-esc="orderline.get_product().display_name"/>
 								</t>
 								<t t-if="orderline.get_discount() > 0">
 									<div class="pos-disc-font">
@@ -168,7 +168,7 @@
 								</span>								
 							</td>
 						</tr>
-						<tr>
+						<tr t-if="widget.pos.receipt_show_default_code">
 							<td></td>
 							<td colspan="2" style="padding:8px 0px;font-size: 14px;">
 								<span class="pt-2">
@@ -265,30 +265,29 @@
 					<script type="text/javascript">
 						var qrcode = new QRCode('qrcode' , {
 							text: "http://jindo.dev.naver.com/collie",
-							width: 200,
-							height: 200,
+							width: 120,
+							height: 120,
 							colorDark : "#000000",
 							colorLight : "#ffffff",
 							correctLevel : QRCode.CorrectLevel.H
 						});
 						qrcode.makeCode("<t t-esc='receipt.qr_string' />");
-						<!-- qrcode.makeCode("20608389009|03|B001|B001-00000010|0.76|5|03/03/2022|1|10645919|UxmYnr2a4Lb+VmKVHZ2p7JLDsgE="); -->
 					</script>
-					<br />
-					<t t-esc="order.get_digest_value()" />
+					<br/>
+					<div  style="text-align:center">
+						<span t-esc="order.get_digest_value()"/>
+					</div>
 				</t>
 
 				<t t-if="widget.pos.config.is_header_or_footer">
-					<div style='text-align:center'>
-						<t t-esc="widget.pos.config.receipt_footer" />
+					<div style='text-align:justify;font-size:11px;padding-top: 8px;'>
+						<span t-raw="widget.pos.config.receipt_footer" style="white-space: pre-wrap;"/>
 					</div>
 				</t>
-				<br />
-				<br />
 				<span t-if="order.invoice_type_code_id == '01'" style="font-size:14px">
 					Representación impresa de la FACTURA ELECTRÓNICA
-					<t t-if="widget.pos.company.website_invoice_search">
-						, comprobante emitido desde sistemas del contribuyente, puede consultar este comprobante ingresando a
+					<t t-if="widget.pos.company.website_invoice_search">, 
+						comprobante emitido desde sistemas del contribuyente, puede consultar este comprobante ingresando a
 						<t t-esc="widget.pos.company.website_invoice_search" />
 					</t>
 				</span>

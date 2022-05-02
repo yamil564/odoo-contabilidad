@@ -25,55 +25,17 @@ odoo.define("pos_order_mgmt.widgets", function(require) {
                 return this._super();
             }
             var order = this.pos.reloaded_order;
-            var self = this
-            rpc.query({
-                model: 'pos.order',
-                method: 'search_read',
-                domain: [['pos_reference', '=', order.name]],
-                fields: ['invoice_journal_id', 'id'],
-                limit: 1
-            }).then(function(res) {
-                res.forEach(function (item) {
-                    if (res[0].invoice_journal_id) {
-                      rpc.query({
-                        model: 'account.journal',
-                        method: 'search_read',
-                        domain: [['id', '=', res[0].invoice_journal_id[0]]],
-                        fields: ['invoice_type_code_id', 'id'],
-                        limit: 1
-                      }).then(function(res2) {
-                        res2.forEach(function (item) {
-                          order['invoice_type_code_id'] = res2[0].invoice_type_code_id;
-                          self.$(".pos-receipt-container").html(
-                              QWeb.render("OrderReceipt", {
-                                  widget: self,
-                                  pos: self.pos,
-                                  order: order,
-                                  receipt: order.export_for_printing(),
-                                  orderlines: order.get_orderlines(),
-                                  paymentlines: order.get_paymentlines(),
-                              })
-                          );
-                          self.pos.from_loaded_order = true;
-                        });
-                      });
-                    } else {
-                      self.$(".pos-receipt-container").html(
-                          QWeb.render("OrderReceipt", {
-                              widget: self,
-                              pos: self.pos,
-                              order: order,
-                              receipt: order.export_for_printing(),
-                              orderlines: order.get_orderlines(),
-                              paymentlines: order.get_paymentlines(),
-                          })
-                      );
-                      self.pos.from_loaded_order = true;
-                    }
-
-                });
-            });
-
+            this.$(".pos-receipt-container").html(
+                QWeb.render("OrderReceipt", {
+                    widget: this,
+                    pos: this.pos,
+                    order: order,
+                    receipt: order.export_for_printing(),
+                    orderlines: order.get_orderlines(),
+                    paymentlines: order.get_paymentlines(),
+                })
+            );
+            this.pos.from_loaded_order = true;
         },
         click_next: function() {
             if (!this.pos.from_loaded_order) {
@@ -188,12 +150,9 @@ odoo.define("pos_order_mgmt.widgets", function(require) {
         order_list_actions: function(event, action) {
             var self = this;
             var dataset = event.target.parentNode.dataset;
-            console.log(dataset);
-            console.log(action);
             self.load_order_data(parseInt(dataset.orderId, 10)).then(function(
                 order_data
             ) {
-                console.log(order_data);
                 self.order_action(order_data, action);
             });
         },
@@ -214,29 +173,6 @@ odoo.define("pos_order_mgmt.widgets", function(require) {
         action_print: function(order_data, order) {
             // We store temporarily the current order so we can safely compute
             // taxes based on fiscal position
-            // rpc.query({
-            //     model: 'pos.order',
-            //     method: 'search_read',
-            //     domain: [['id', '=', order_data.id]],
-            //     fields: ['invoice_journal_id', 'id'],
-            //     limit: 1
-            // }).then(function(res) {
-            //     res.forEach(function (item) {
-            //         if (res[0].invoice_journal_id) {
-            //           rpc.query({
-            //             model: 'account.journal',
-            //             method: 'search_read',
-            //             domain: [['id', '=', res[0].invoice_journal_id[0]]],
-            //             fields: ['invoice_type_code_id', 'id'],
-            //             limit: 1
-            //           }).then(function(res2) {
-            //             res2.forEach(function (item) {
-            //               order['invoice_type_code_id'] = res2[0].invoice_type_code_id;
-            //             });
-            //           });
-            //         };
-            //     });
-            // });
             this.pos.current_order = this.pos.get_order();
 
             this.pos.set_order(order);
@@ -262,6 +198,7 @@ odoo.define("pos_order_mgmt.widgets", function(require) {
             order.destroy();
         },
 
+
         action_copy: function(order_data, order) {
             order.trigger("change");
             this.pos.get("orders").add(order);
@@ -284,10 +221,9 @@ odoo.define("pos_order_mgmt.widgets", function(require) {
                     pos: this.pos,
                 }
             );
-
             // Get Customer
             if (order_data.partner_id) {
-                order.set_client(this.pos.db.get_partner_by_id(order_data.partner_id));
+                order.set_client(this.pos.db.get_partner_by_id(order_data.partner_id[0]));
             }
 
             // Get fiscal position
@@ -327,7 +263,7 @@ odoo.define("pos_order_mgmt.widgets", function(require) {
 
             // Get Date
             if (["print"].indexOf(action) !== -1) {
-                order.formatted_validation_date = moment(order_data.date_order).format(
+                order.formatted_validation_date = moment.utc(order_data.date_order).local().format(
                     "YYYY-MM-DD HH:mm:ss"
                 );
             }
@@ -444,8 +380,7 @@ odoo.define("pos_order_mgmt.widgets", function(require) {
             var self = this;
             this.unknown_products = [];
             var order = self._prepare_order_from_order_data(order_data, action);
-            console.log(order)
-            console.log(this.unknown_products)
+
             // Forbid POS Order loading if some products are unknown
             if (self.unknown_products.length > 0) {
                 self.gui.show_popup("error-traceback", {
