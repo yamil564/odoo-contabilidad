@@ -247,10 +247,8 @@ class GuiaRemision(models.Model):
 
     transporte_lines = fields.One2many('gestionit.lineas_transporte', 'guia_id', 'Lineas de Transporte')
     note = fields.Text('Observaciones')
+    multiple_tramos = fields.Boolean('Multiples Tramos', default=False)
 
-    # def print_report_guia(self):
-    #     return self.env.ref('gestionit_pe_fe.print_report_pdf').report_action(self)
-    # python3 ./odoo-bin --config=/etc/odoov12.conf --db-filter=^odooperuv12$
     def action_send_email(self):
         self.ensure_one()
         ir_model_data = self.env['ir.model.data']
@@ -400,29 +398,26 @@ class GuiaRemision(models.Model):
         "res.partner", string="Destinatario", states={'validado': [('readonly', True)]})
     destinatario_tipo_documento_identidad = fields.Char(
         string="Tipo de Documento", related="destinatario_partner_id.l10n_latam_identification_type_id.name")
-    # destinatario_tipo_documento_identidad_id = fields.Many2one("einvoice.catalog.06",string="Tipo de Documento",related="destinatario_partner_id.catalog_06_id")
     destinatario_numero_documento_identidad = fields.Char(
         string="Número de Documento", related="destinatario_partner_id.vat")
     destinatario_direccion = fields.Char(
         string="Dirección", related="destinatario_partner_id.street")
     destinatario_ubigeo = fields.Char(
         string="Ubigeo", related="destinatario_partner_id.ubigeo")
-    # destinatario_ubigeo_code = fields.Many2one("res.country.state",string="Ubigeo Destinatario Code")
 
     proveedor_partner_id = fields.Many2one("res.partner", string="Proveedor")
     proveedor_tipo_documento_identidad = fields.Char(
         string="Tipo de Documento", related="proveedor_partner_id.l10n_latam_identification_type_id.name")
-    # proveedor_tipo_documento_identidad_id = fields.Many2one("einvoice.catalog.06",string="Tipo de Documento",related="proveedor_partner_id.catalog_06_id")
     proveedor_numero_documento_identidad = fields.Char(
         string="Número de Documento", related="proveedor_partner_id.vat")
     proveedor_direccion = fields.Char(
         string="Dirección", related="proveedor_partner_id.street")
     proveedor_ubigeo = fields.Char(
         string="Ubigeo", related="proveedor_partner_id.ubigeo")
-    # proveedor_ubigeo_code = fields.Many2one("res.country.state",string="Ubigeo Proveedor Code")
 
     @api.onchange("destinatario_partner_id")
     def _onchange_destinatario_partner(self):
+
         for record in self:
             record.proveedor_partner_id = False
             # 01 - VENTA
@@ -479,11 +474,6 @@ class GuiaRemision(models.Model):
     sale_order_ids = fields.Many2many("sale.order", string="Ventas", states={
                                       'validado': [('readonly', True)]})
 
-    # @api.onchange("documento_asociado")
-    # def _onchange_documento_asociado(self):
-    #     for record in self:
-    #         if record.documento_asociado:
-    #             record.guia_remision_line_ids = [(6,0,[])]
 
     @api.onchange("movimiento_stock_ids")
     def _onchange_movimiento_stock(self):
@@ -837,8 +827,18 @@ class GuiaRemision(models.Model):
         correlativo = int(correlativo)
         company = self.company_id.partner_id
         destinatario = self.destinatario_partner_id
-        motivo_traslado_id = self.env["gestionit.motivo_traslado"].sudo().search(
-            [('code', '=', self.motivo_traslado)])
+        motivo_traslado_id = self.env["gestionit.motivo_traslado"].sudo().search([('code', '=', self.motivo_traslado)])
+
+        if not self.multiple_tramos:
+            entregaUbigeo = self.transporte_lines[-1].lugar_llegada_ubigeo_code.code
+            entregaDireccion = str(self.transporte_lines[-1].lugar_llegada_direccion or "").strip()[:100]
+            salidaUbigeo = self.transporte_lines[0].lugar_partida_ubigeo_code.code
+            salidaDireccion = str(self.transporte_lines[0].lugar_partida_direccion or "").strip()[:100]
+        else:
+            entregaUbigeo = self.lugar_llegada_ubigeo_code.code
+            entregaDireccion = str(self.lugar_llegada_direccion or "").strip()[:98]
+            salidaUbigeo = self.lugar_partida_ubigeo_code.code
+            salidaDireccion = str(self.lugar_partida_direccion or "").strip()[:98]
 
         documento = {
             "serie": serie,
@@ -854,10 +854,10 @@ class GuiaRemision(models.Model):
             "transbordoProgramado": False,
             "pesoTotal": round(self.peso_bruto_total, 3),
             "pesoUnidadMedida": "KGM",
-            "entregaUbigeo": self.transporte_lines[-1].lugar_llegada_ubigeo_code.code,
-            "entregaDireccion": str(self.transporte_lines[-1].lugar_llegada_direccion or "").strip()[:100],
-            "salidaUbigeo": self.transporte_lines[0].lugar_partida_ubigeo_code.code,
-            "salidaDireccion": str(self.transporte_lines[0].lugar_partida_direccion or "").strip()[:100],
+            "entregaUbigeo": entregaUbigeo,
+            "entregaDireccion": entregaDireccion,
+            "salidaUbigeo": salidaUbigeo,
+            "salidaDireccion": salidaDireccion,
         }
         if self.numero_bultos > 0:
             documento.update({"numeroBulltosPallets": self.numero_bultos})
@@ -875,38 +875,70 @@ class GuiaRemision(models.Model):
             )
 
         transportes = []
-        for line in self.transporte_lines:
-            # Transporte Público
-            if line.modalidad_transporte == '01':
+        if not self.multiple_tramos:
+            if self.modalidad_transporte == '01':
                 transporte = {
-                    "numDocTransportista": line.transporte_partner_id.vat,
-                    "tipoDocTransportista": line.transporte_partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code,
-                    "fechaInicioTraslado": str(line.date),
-                    "nombreTransportista": line.transporte_partner_id.name.strip(),
-                    "modoTraslado": line.modalidad_transporte
+                    "numDocTransportista": self.transporte_partner_id.vat,
+                    "tipoDocTransportista": self.transporte_partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code,
+                    "fechaInicioTraslado": str(self.fecha_inicio_traslado),
+                    "nombreTransportista": self.transporte_partner_id.name.strip(),
+                    "modoTraslado": self.modalidad_transporte
                 }
-                if line.vehiculo_publico_id:
-                    if line.vehiculo_publico_id.numero_placa:
+                if self.vehiculo_publico_id:
+                    if self.vehiculo_publico_id.numero_placa:
                         transporte.update(
-                            {"placaVehiculo": line.vehiculo_publico_id.numero_placa})
-                if line.conductor_publico_id:
-                    if line.conductor_publico_id.vat:
+                            {"placaVehiculo": self.vehiculo_publico_id.numero_placa})
+                if self.conductor_publico_id:
+                    if self.conductor_publico_id.vat:
                         transporte.update(
-                            {"numDocConductor": line.conductor_publico_id.vat})
-                    if line.conductor_publico_id.l10n_latam_identification_type_id.l10n_pe_vat_code:
+                            {"numDocConductor": self.conductor_publico_id.vat})
+                    if self.conductor_publico_id.l10n_latam_identification_type_id.l10n_pe_vat_code:
                         transporte.update(
-                            {"tipoDocConductor": line.conductor_publico_id.l10n_latam_identification_type_id.l10n_pe_vat_code})
+                            {"tipoDocConductor": self.conductor_publico_id.l10n_latam_identification_type_id.l10n_pe_vat_code})
 
                 transportes.append(transporte)
             # Transporte Privado
-            elif line.modalidad_transporte == "02":
+            elif self.modalidad_transporte == "02":
                 transportes.append({
-                    "numDocConductor": line.conductor_privado_partner_id.vat,
-                    "tipoDocConductor": line.conductor_privado_partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code,
-                    "fechaInicioTraslado": str(line.date),
-                    "placaVehiculo": line.vehiculo_privado_id.numero_placa,
-                    "modoTraslado": line.modalidad_transporte
+                    "numDocConductor": self.conductor_privado_partner_id.vat,
+                    "tipoDocConductor": self.conductor_privado_partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code,
+                    "fechaInicioTraslado": str(self.fecha_inicio_traslado),
+                    "placaVehiculo": self.vehiculo_privado_id.numero_placa,
+                    "modoTraslado": self.modalidad_transporte
                 })
+        else:
+            for line in self.transporte_lines:
+                # Transporte Público
+                if line.modalidad_transporte == '01':
+                    transporte = {
+                        "numDocTransportista": line.transporte_partner_id.vat,
+                        "tipoDocTransportista": line.transporte_partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code,
+                        "fechaInicioTraslado": str(line.date),
+                        "nombreTransportista": line.transporte_partner_id.name.strip(),
+                        "modoTraslado": line.modalidad_transporte
+                    }
+                    if line.vehiculo_publico_id:
+                        if line.vehiculo_publico_id.numero_placa:
+                            transporte.update(
+                                {"placaVehiculo": line.vehiculo_publico_id.numero_placa})
+                    if line.conductor_publico_id:
+                        if line.conductor_publico_id.vat:
+                            transporte.update(
+                                {"numDocConductor": line.conductor_publico_id.vat})
+                        if line.conductor_publico_id.l10n_latam_identification_type_id.l10n_pe_vat_code:
+                            transporte.update(
+                                {"tipoDocConductor": line.conductor_publico_id.l10n_latam_identification_type_id.l10n_pe_vat_code})
+
+                    transportes.append(transporte)
+                # Transporte Privado
+                elif line.modalidad_transporte == "02":
+                    transportes.append({
+                        "numDocConductor": line.conductor_privado_partner_id.vat,
+                        "tipoDocConductor": line.conductor_privado_partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code,
+                        "fechaInicioTraslado": str(line.date),
+                        "placaVehiculo": line.vehiculo_privado_id.numero_placa,
+                        "modoTraslado": line.modalidad_transporte
+                    })
 
         nombreEmisor = self.company_id.partner_id.registration_name.strip()
         numDocEmisor = self.company_id.partner_id.vat.strip(

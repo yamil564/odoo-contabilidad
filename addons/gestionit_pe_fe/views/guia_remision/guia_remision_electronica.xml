@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
     <data>
+
         <record id="gestionit_pe_fe.view_tree_guia_remision" model="ir.ui.view">
             <field name="name">gestionit.view.tree.guia.remision</field>
             <field name="model">gestionit.guia_remision</field>
@@ -67,8 +68,8 @@
                                     <span>
                                         <b>Dirección: </b>
                                     </span>
-                                    <field name="destinatario_direccion" readonly="1"/>
--                                    <field name="destinatario_ubigeo" readonly="1"/>
+                                    <field name="destinatario_direccion" readonly="1"/>-
+                                    <field name="destinatario_ubigeo" readonly="1"/>
                                 </div>
                             </group>
 
@@ -95,8 +96,8 @@
                                     <span>
                                         <b>Dirección: </b>
                                     </span>
-                                    <field name="proveedor_direccion" readonly="1"/>
--                                    <field name="proveedor_ubigeo" readonly="1"/>
+                                    <field name="proveedor_direccion" readonly="1"/>-
+                                    <field name="proveedor_ubigeo" readonly="1"/>
                                 </div>
                             </group>
                         </group>
@@ -147,15 +148,50 @@
                                 <label for="peso_bruto_total" string="Peso Bruto Total (KGM)"/>
                                 <div class="o_row">
                                     <field name="calc_peso" invisible="1" />
-                                    <field name="peso_bruto_total" attrs="{'readonly':[('calc_peso','=',True)]}" />
+                                    <field name="peso_bruto_total" attrs="{'readonly':[('calc_peso','=',True)]}"/>
                                     <button name="compute_peso_bruto" string="Calcular peso bruto" type="object" class="oe_highlight" attrs="{'invisible':[('calc_peso','!=',True)]}" />
                                 </div>
+                                <field name="multiple_tramos" attrs="{'readonly':[('estado_emision','not in',[False,'B'])]}"/>
+                                <field name="modalidad_transporte" widget="radio" attrs="{'invisible':[('multiple_tramos','=',True)]}"/>
                                 <field name="numero_bultos" attrs="{'invisible':[('motivo_traslado','!=','08')]}"/>
                             </group>
                         </group>
 
-                        <label for="transporte_lines" string="Tramos de Envio"/>
-                        <field name="transporte_lines"  mode="tree">
+                        <group attrs="{'invisible':[('multiple_tramos','=',True)]}">
+                            <group>
+                                <field name="partner_direccion_partida_id" invisible="1"/>
+                                <t attrs="{'invisible':[('partner_direccion_partida_id','!=',False)]}">
+                                    <span>Debe seleccionar una empresa de partida.</span>
+                                </t>
+                                <field name="direccion_partida_id" string="Dirección de Partida" context="{
+                                                    'form_view_ref' : 'gestionit_pe_fe.view_form_destinatario_res_partner',
+                                                    'default_country_id':173,
+                                                    'default_type':'other',
+                                                    'parent_id':partner_direccion_partida_id
+                                                }" domain="[('parent_id','=',partner_direccion_partida_id), ('parent_id','!=',False),
+                                                    ('type','in',['other'])]" options="{'no_create':True,'no_create_edit':True,'no_quick_create':True,'no_open':True}"/>
+                                <field name="lugar_partida_direccion" widget="text" attrs="{'readonly':[('estado_emision','not in',[False,'B'])]}" force_save="1"/>
+                                <field name="lugar_partida_ubigeo_code" context="{'ubigeo_search':True}" attrs="{'readonly':[('estado_emision','not in',[False,'B'])]}" options="{'no_create':True,'no_create_edit':True,'no_quick_create':True,'no_open':True}" force_save="1"/>
+                            </group>
+                            <group>
+                                <field name="partner_direccion_llegada_id" invisible="1"/>
+                                <t attrs="{'invisible':[('partner_direccion_llegada_id','!=',False)]}">
+                                    <span style="color:red">Debe seleccionar una empresa destinataria.</span>
+                                </t>
+                                <field name="direccion_llegada_id" string="Dirección de Llegada" context="{
+                                                    'form_view_ref' : 'gestionit_pe_fe.view_form_destinatario_res_partner',
+                                                    'default_country_id':173,
+                                                    'default_type':'other',
+                                                    'parent_id':partner_direccion_llegada_id
+                                                }" domain="[('parent_id','=',partner_direccion_llegada_id), ('parent_id','!=',False),
+                                                    ('type','in',['other'])]"/>
+                                <field name="lugar_llegada_direccion" widget="text" attrs="{'readonly':[('estado_emision','not in',[False,'B'])]}" force_save="1"/>
+                                <field name="lugar_llegada_ubigeo_code" context="{'ubigeo_search':True}" attrs="{'readonly':[('estado_emision','not in',[False,'B'])]}" options="{'no_create':True,'no_create_edit':True,'no_quick_create':True,'no_open':True}" force_save="1"/>
+                            </group>
+                        </group>
+
+                        <label for="transporte_lines" string="Tramos de Envio" attrs="{'invisible':[('multiple_tramos','=',False)]}"/>
+                        <field name="transporte_lines"  mode="tree" attrs="{'invisible':[('multiple_tramos','=',False)]}">
                             <tree>
                                 <field name="secuencia" widget="handle"/>
                                 <field name="modalidad_transporte" string="Modalidad"/>
@@ -262,7 +298,6 @@
             <field name="sequence" eval="1" />
             <field name="multi" eval="False" />
         </record>
-
 
     </data>
 </odoo>
