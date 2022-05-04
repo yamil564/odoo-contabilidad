@@ -1,5 +1,5 @@
 from odoo import models, fields, api, _
-from odoo.exceptions import UserError, ValidationError, Warning
+from odoo.exceptions import UserError, ValidationError, Warning, RedirectWarning
 import re
 import logging
 _logger = logging.getLogger(__name__)
@@ -21,7 +21,6 @@ class AccountMove(models.Model):
             if not self.currency_id:
                 return
             if self.is_invoice(include_receipts=True):
-                _logger.info('\n\nENTRE ONCHANGE AHORA 1111 !!!!!!!!\n\n')
 
                 company_currency = self.company_id.currency_id
                 has_foreign_currency = self.currency_id and self.currency_id != company_currency
@@ -31,7 +30,6 @@ class AccountMove(models.Model):
                     line.currency_id = new_currency
                     line._onchange_currency()
             else:
-                _logger.info('\n\nENTRE ONCHANGE AHORA 2222 !!!!!!!!\n\n')
                 self.line_ids._onchange_currency()
 
             self._recompute_dynamic_lines(recompute_tax_base_amount=True)
