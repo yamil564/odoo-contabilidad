@@ -1,6 +1,8 @@
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError, ValidationError, Warning
 import re
+import logging
+_logger = logging.getLogger(__name__)
 
 class AccountMove(models.Model):
     _inherit = "account.move"
@@ -9,6 +11,32 @@ class AccountMove(models.Model):
     prefix_code=fields.Char(string="Número Serie")
     invoice_number=fields.Char(string="Correlativo")
 
+    ###################################################################
+    @api.onchange('date','invoice_date','currency_id')
+    def _onchange_currency(self):
+        super(AccountMove,self)._onchange_currency()
+        if self.type in ['in_invoice','in_refund']:
+            _logger.info('\n\nENTRE ONCHANGE AHORA !!!!!!!!\n\n')
+
+            if not self.currency_id:
+                return
+            if self.is_invoice(include_receipts=True):
+                _logger.info('\n\nENTRE ONCHANGE AHORA 1111 !!!!!!!!\n\n')
+
+                company_currency = self.company_id.currency_id
+                has_foreign_currency = self.currency_id and self.currency_id != company_currency
+
+                for line in self._get_lines_onchange_currency():
+                    new_currency = has_foreign_currency and self.currency_id
+                    line.currency_id = new_currency
+                    line._onchange_currency()
+            else:
+                _logger.info('\n\nENTRE ONCHANGE AHORA 2222 !!!!!!!!\n\n')
+                self.line_ids._onchange_currency()
+
+            self._recompute_dynamic_lines(recompute_tax_base_amount=True)
+    ######################################################################
+    
 
     def _validate_inv_supplier_ref(self):
         if not self.inv_supplier_ref:
@@ -123,3 +151,44 @@ class AccountMove(models.Model):
     @api.onchange('journal_id','currency_id')
     def _onchange_journal_id_currency_id(self):
         self._onchange_partner_id()
+
+#####################################################################3
+class AccountMoveLine(models.Model):
+    _inherit = "account.move.line"
+
+
+
+#################################
+    ### SE TOMA EL TC A FECHA EMISION COMPROBANTE
+    def _recompute_debit_credit_from_amount_currency(self):
+        super(AccountMoveLine,self)._recompute_debit_credit_from_amount_currency()
+        _logger.info('\n\nENTRE RECOMPUTE AHORA\n\n')
+        for line in self:
+            if line.move_id.type in ['in_invoice','in_refund']:
+            # Recompute the debit/credit based on amount_currency/currency_id and date.
+                company_currency = line.account_id.company_id.currency_id
+                balance = line.amount_currency
+                if line.currency_id and company_currency and line.currency_id != company_currency:
+                    _logger.info('\n\nENTRE IF RECOMPUTE\n\n')
+                    balance = line.currency_id._convert(balance, company_currency, line.account_id.company_id,
+                        line.move_id.invoice_date or line.move_id.date or fields.Date.today())
+                    line.debit = balance > 0 and balance or 0.0
+                    line.credit = balance < 0 and -balance or 0.0
+    ##########################################################
+
+    def _get_fields_onchange_subtotal(self, price_subtotal=None, move_type=None, currency=None, company=None, date=None):
+        
+        ret=super(AccountMoveLine,self)._get_fields_onchange_subtotal()
+        
+        if self.move_id.type in ['in_invoice','in_refund']:
+            return self._get_fields_onchange_subtotal_model(
+                price_subtotal=price_subtotal or self.price_subtotal,
+                move_type=move_type or self.move_id.type,
+                currency=currency or self.currency_id,
+                company=company or self.move_id.company_id,
+                date=date or self.move_id.invoice_date or self.move_id.date,
+            )
+        
+        else:
+            return ret
+    ##########################################################
