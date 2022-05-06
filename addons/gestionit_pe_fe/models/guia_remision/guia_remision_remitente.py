@@ -247,7 +247,7 @@ class GuiaRemision(models.Model):
 
     transporte_lines = fields.One2many('gestionit.lineas_transporte', 'guia_id', 'Lineas de Transporte')
     note = fields.Text('Observaciones')
-    multiple_tramos = fields.Boolean('Multiples Tramos', default=False)
+    multiple_tramos = fields.Boolean('Multiples Tramos', default=True)
 
     def action_send_email(self):
         self.ensure_one()
