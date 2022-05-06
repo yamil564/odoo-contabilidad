@@ -829,7 +829,7 @@ class GuiaRemision(models.Model):
         destinatario = self.destinatario_partner_id
         motivo_traslado_id = self.env["gestionit.motivo_traslado"].sudo().search([('code', '=', self.motivo_traslado)])
 
-        if not self.multiple_tramos:
+        if self.multiple_tramos:
             entregaUbigeo = self.transporte_lines[-1].lugar_llegada_ubigeo_code.code
             entregaDireccion = str(self.transporte_lines[-1].lugar_llegada_direccion or "").strip()[:100]
             salidaUbigeo = self.transporte_lines[0].lugar_partida_ubigeo_code.code
