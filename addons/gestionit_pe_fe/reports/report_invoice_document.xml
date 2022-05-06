@@ -320,7 +320,7 @@
                                     <span t-esc="item"/>
                                 </td>
                                 <td class="v_quantity">
-                                    <span t-esc="l.quantity"/>
+                                    <span t-field="l.quantity"/>
                                 </td>
                                 <td class="v_product_uom_id">
                                     <span t-field="l.product_uom_id.name"/>
