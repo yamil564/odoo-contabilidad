@@ -77,6 +77,23 @@ class ResPartner(models.Model):
                 if record.l10n_latam_identification_type_id.l10n_pe_vat_code == "1":
                     if not patron_dni.match(vat_str):
                         raise UserError("El número de DNI ingresado es inválido")
+    
+    @api.constrains('vat')
+    def _check_partner_bo(self):
+        ruc = self.env.ref('gestionit_pe_consulta_ruc_dni.it_RUC')
+        ruc2 = self.env.ref('l10n_pe.it_RUC')
+        dni = self.env.ref('l10n_pe.it_DNI')
+        cie = self.env.ref('l10n_latam_base.it_fid')
+        passport = self.env.ref('l10n_latam_base.it_pass')
+        check_flag = self.env.context.get('check_flag', False)
+        if check_flag is False:
+            if self.l10n_latam_identification_type_id.id in (ruc.id, dni.id, ruc2.id, cie.id, passport.id):
+                if self.vat not in ('', False, '0'):
+                    if not self.parent_id:
+                        customers = self.env['res.partner'].search([('vat', '!=', False),('vat', '!=', ''), ('vat', '=', self.vat), ('id', '!=', self.id)])
+                        for customer in customers:
+                            if customer.l10n_latam_identification_type_id.id in (ruc.id, dni.id, ruc2):
+                                raise ValidationError('Ya existe un cliente con el mismo Número de Documento.')
 
     @api.onchange("street","type")
     def get_name_street(self):

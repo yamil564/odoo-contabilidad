@@ -69,7 +69,7 @@ class GuiaRemisionLine(models.Model):
 
     product_id = fields.Many2one("product.product", required=True)
     uom_id = fields.Many2one("uom.uom", string="UM", required=True)
-    qty = fields.Float(string="Cantidad")
+    qty = fields.Float(string="Cantidad", digits='Product Unit of Measure')
     guia_remision_id = fields.Many2one(
         "gestionit.guia_remision", ondelete='cascade')
     description = fields.Char(string="Descripción", required=True)
