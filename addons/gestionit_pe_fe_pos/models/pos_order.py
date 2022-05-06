@@ -13,46 +13,48 @@ class PosOrder(models.Model):
 
     invoice_type = fields.Selection(selection=[('out_refund','Devolución'),('out_invoice','Venta')],string="Tipo de movimiento",default="")
     invoice_type_code_id = fields.Char(string="Tipo de comprobante electrónico")
-    refund_invoice = fields.Many2one("account.move",string="Comprobante a rectificar")
+    refund_invoice_id = fields.Many2one("account.move",string="Comprobante a rectificar")
     credit_note_comment = fields.Char(string="Sustento de nota")
     credit_note_type = fields.Selection(string='Tipo de Nota de Crédito', readonly=True,
                                          selection="_selection_credit_note_type", states={'draft': [('readonly', False)]})
-
+    
     def _selection_credit_note_type(self):
         return tnc
 
-    def _prepare_invoice_line(self, order_line):
-        if (order_line.price_unit < 0 and order_line.qty > 0) or (order_line.price_unit > 0 and order_line.qty < 0):
-            self.desc_global += order_line.qty*order_line.price_unit
-
-        return {
-            'product_id': order_line.product_id.id,
-            'quantity': order_line.qty if self.amount_total >= 0 else -order_line.qty,
-            'discount': order_line.discount,
-            'price_unit': order_line.price_unit,
-            'name': order_line.product_id.display_name,
-            'tax_ids': [(6, 0, order_line.tax_ids_after_fiscal_position.ids)],
-            'product_uom_id': order_line.product_uom_id.id,
-            'lot_name': ",".join(order_line.pack_lot_ids.mapped('lot_name'))
-        }
-        # else:
-        #     self.desc_global += order_line.qty*order_line.price_unit
+    # def _prepare_invoice_line(self, order_line):
+    #     if order_line.price_unit*order_line.qty > 0:
+    #         return {
+    #             'product_id': order_line.product_id.id,
+    #             'quantity': order_line.qty if self.amount_total >= 0 else -order_line.qty,
+    #             'discount': order_line.discount,
+    #             'price_unit': order_line.price_unit,
+    #             'name': order_line.product_id.display_name,
+    #             'tax_ids': [(6, 0, order_line.tax_ids_after_fiscal_position.ids)],
+    #             'product_uom_id': order_line.product_uom_id.id,
+    #             'lot_name': ",".join(order_line.pack_lot_ids.mapped('lot_name'))
+    #         }
+    #     else:
+    #         self.desc_global += abs(order_line.qty*order_line.price_unit)
 
     def _prepare_invoice_vals(self):
         vals = super(PosOrder, self)._prepare_invoice_vals()
 
-        if not self.invoice_journal_id:
-            raise ValidationError(
-                "La creación del comprobante requiere de la selección de una Serie de facturación.")
+        # if not self.invoice_journal_id:
+        #     raise ValidationError(
+        #         "La creación del comprobante requiere de la selección de una Serie de facturación.")
 
-        desc_percent = (abs(self.desc_global)*100) / (abs(self.desc_global)+self.amount_total)
+        # desc_percent = (abs(self.desc_global)*100) / (abs(self.desc_global)+self.amount_total)
 
         vals.update({
             "journal_id": self.invoice_journal_id.id,
+            "reversed_entry_id":self.refund_invoice_id.id,
             "invoice_type_code": self.invoice_journal_id.invoice_type_code_id,
-            'invoice_line_ids': [(0, None, self._prepare_invoice_line(line)) for line in self.lines if line.price_unit >= 0 and line.qty >= 0],
-            "apply_global_discount": True if abs(desc_percent) > 0 else False,
-            "descuento_global": abs(desc_percent)
+            "tipo_nota_credito":self.credit_note_type,
+            "sustento_nota":self.credit_note_comment,
+            "type":self.invoice_type
+            # 'invoice_line_ids': [(0, None, self._prepare_invoice_line(line)) for line in self.lines if line.price_unit >= 0 and line.qty >= 0],
+            # "apply_global_discount": True if abs(desc_percent) > 0 else False,
+            # "descuento_global": abs(desc_percent)
         })
 
         return vals
@@ -100,6 +102,9 @@ class PosOrder(models.Model):
                         'invoice_type':ui_order.get("invoice_type"),
                         'credit_note_comment':ui_order.get("credit_note_comment"),
                         'credit_note_type':ui_order.get("credit_note_type")})
+        if len(ui_order.get("refund_invoice",[])) == 2:
+            vals.update({"refund_invoice_id":ui_order.get("refund_invoice",[])[0]})
+
         return vals
 
     # @profile
@@ -160,6 +165,8 @@ class PosOrder(models.Model):
                 "sequence_number":self.account_move.name.split("-")[1],
                 "digest_value":self.account_move.digest_value,
                 "account_move":[self.account_move.id,self.account_move.name],
+                "refund_invoice":[self.account_move.reversed_entry_id.id,self.account_move.reversed_entry_id.name],
+                "credit_note_type_name":self.account_move.tipo_nota_credito
             })
         return res
 
