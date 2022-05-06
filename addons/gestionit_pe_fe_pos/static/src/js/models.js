@@ -182,6 +182,7 @@ odoo.define("gestionit_pe_fe_pos.models",[
             this.invoice_journal_id = undefined;
             this.sequence_number = 0;
             this.set("credit_note_type",undefined)
+            // console.log(this.pos)
             this.save_to_db(); 
         },
         set_sale_type: function(sale_type){
@@ -226,17 +227,17 @@ odoo.define("gestionit_pe_fe_pos.models",[
             var journal = self.get_invoice_journal_id()?self.pos.db.journal_by_id[self.get_invoice_journal_id()]:undefined;
             // console.log(client)
             // console.log(journal)
-            console.log(res)
-            console.log(res.date)
+            // console.log(res)
+            // console.log(res.date)
             res["date"] = moment.utc(res.date).local().format("YYYY-MM-DD HH:mm:ss");
-            console.log(res.date)
+            // console.log(res.date)
             if(client && journal){
                 res["qr_string"] = [res.company.vat, //RUC de emisor
                                     journal.invoice_type_code_id, //Tipo de comprobante electrónico
                                     journal.code, //Serie de comprobante
                                     self.sequence_number,//Número correlativo
-                                    res.total_tax,//Total IGV
-                                    res.total_with_tax,//Monto Totales
+                                    Math.abs(res.total_tax),//Total IGV
+                                    Math.abs(res.total_with_tax),//Monto Totales
                                     res.date.substr(0,10),//Fecha de Emisión
                                     client_identification_type_code,//Tipo de documento de identidad de Receptor
                                     client.vat, //Número de documento de identidad de Receptor
@@ -339,7 +340,7 @@ odoo.define("gestionit_pe_fe_pos.models",[
             return this.credit_note_type
         },
         get_credit_note_type_name:function(){
-            return this.pos.db.get_credit_note_type_by_id(this.credit_note_type).name
+            return this.pos.db.get_credit_note_type_by_id(this.credit_note_type)?this.pos.db.get_credit_note_type_by_id(this.credit_note_type).name:""
         },
         set_credit_note_comment:function(comment){
             this.assert_editable();
@@ -402,7 +403,7 @@ odoo.define("gestionit_pe_fe_pos.models",[
             return this.invoice_type_code_id
         },
         total_items: function(){
-            return _.reduce(_.map(this.get_orderlines(),function(el){return el.get_quantity()}),function(a,b){return a+b})
+            return Math.abs(_.reduce(_.map(this.get_orderlines(),function(el){return el.get_quantity()}),function(a,b){return a+b}))
         },
         get_client: function() {
             var return_val = OrderSuper.prototype.get_client.apply(this, arguments);

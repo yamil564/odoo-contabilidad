@@ -36,8 +36,10 @@ self.addEventListener('install', function (evt) {
   console.log('[ServiceWorker] Install');
   evt.waitUntil(
    caches.open(CACHE_NAME).then(function (cache) {
-       console.log('[ServiceWorker] Pre-caching offline page');
-       return cache.addAll(FILES_TO_CACHE);
+        if(CACHE_NAME.indexOf('google') == -1){
+          console.log('[ServiceWorker] Pre-caching offline page');
+          return cache.addAll(FILES_TO_CACHE);
+        }
    })
   );
   self.skipWaiting();
@@ -57,10 +59,12 @@ self.addEventListener('activate', function(evt) {
   self.clients.claim();
 });
 self.addEventListener('fetch', function(evt) {
-  if (evt.request.cache === 'only-if-cached' &amp;&amp; evt.request.mode !== 'same-origin') {
-    return;
-  }
-  console.log('[ServiceWorker] Fetch', evt.request.url);
+  console.log(evt.request.url.indexOf('google') )
+  if(evt.request.url.indexOf('google') == -1 || ){
+    console.log('[ServiceWorker] Fetch', evt.request.url);
+    if (evt.request.cache === 'only-if-cached' &amp;&amp; evt.request.mode !== 'same-origin') {
+      return;
+    }
    evt.respondWith(
        caches.open(CACHE_NAME).then(function(cache) {
            return cache.match(evt.request)
@@ -69,6 +73,7 @@ self.addEventListener('fetch', function(evt) {
                 });
        })
    );
+  }
 });
     </template>
     <template id="manifest" name="PWA manifest">

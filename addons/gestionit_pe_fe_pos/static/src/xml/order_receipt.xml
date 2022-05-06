@@ -3,7 +3,7 @@
 
 	<t t-extend="OrderReceipt">
 		<t t-jquery=".pos-receipt" t-operation="replace">
-			<div class="pos-receipt">
+			<div class="pos-receipt" id ="pos-receipt">
 				<div class="logo" t-if="widget.pos.config.receipt_show_logo">
 					<div class="pos-center-align">
 						<!-- <img t-att-src='widget.pos.company_logo_base64' style="width: 85%;padding-bottom: 15px;"/> -->
@@ -15,15 +15,15 @@
 						<t t-esc="widget.pos.company.name" />
 					</b>
 				</div>
-				<div class="pos-center-align">
+				<div class="pos-center-align" t-if="widget.pos.company.street">
 					Dirección:
 					<t t-esc="widget.pos.company.street || ''" />
 				</div>
-				<div class="pos-center-align">
+				<div class="pos-center-align" t-if="widget.pos.company.phone">
 					Telefono:
 					<t t-esc="widget.pos.company.phone || ''" />
 				</div>
-				<t t-if="widget.pos.config.is_header_or_footer">
+				<t t-if="widget.pos.config.is_header_or_footer != false">
 					<div style='text-align:justify;font-size:11px'>
 						<span t-esc="widget.pos.config.receipt_header" style="white-space: pre-wrap;"/>
 					</div>
@@ -101,7 +101,7 @@
 				</div>
 				<div t-if="order.invoice_type_code_id == '07'">
 					<span>
-						<b>Comprobante a rectificar: </b>
+						<b>Referencia: </b>
 						<t t-esc="order.get_refund_invoice().name" />
 					</span>
 					<br />
@@ -194,7 +194,7 @@
 							<b>SUBTOTAL</b>
 						</td>
 						<td class="pos-right-align">
-							<t t-esc="widget.format_currency(order.get_total_without_tax(),'Price POS')" />
+							<t t-esc="widget.format_currency(Math.abs(order.get_total_without_tax()),'Price POS')" />
 						</td>
 					</tr>
 					<tr t-if="order.get_total_discount() > 0">
@@ -202,7 +202,7 @@
 							<b>Descuento:</b>
 						</td>
 						<td class="pos-right-align">
-							<t t-esc="widget.format_currency_no_symbol(order.get_total_discount(),'Discount')" />
+							<t t-esc="widget.format_currency_no_symbol(Math.abs(order.get_total_discount()),'Discount')" />
 						</td>
 					</tr>
 					<tr>
@@ -210,7 +210,7 @@
 							<b>IGV 18%</b>
 						</td>
 						<td class="pos-right-align">
-							<t t-esc="widget.format_currency(order.get_total_tax(),'Price POS')" />
+							<t t-esc="widget.format_currency(Math.abs(order.get_total_tax()),'Price POS')" />
 						</td>
 					</tr>
 
@@ -239,7 +239,7 @@
 							</td>
 						</tr>
 					</table>
-					<table class='receipt-change' style="width:100%">
+					<table class='receipt-change' style="width:100%" t-if="receipt.change &gt; 0">
 						<tr>
 							<td>
 								<b>Vuelto:</b>
@@ -293,6 +293,13 @@
 				</span>
 				<span t-if="order.invoice_type_code_id == '03'" style="font-size:14px">
 					Representación impresa de la BOLETA ELECTRÓNICA
+					<t t-if="widget.pos.company.website_invoice_search">
+						, comprobante emitido desde sistemas del contribuyente, puede consultar este comprobante ingresando a
+						<t t-esc="widget.pos.company.website_invoice_search" />
+					</t>
+				</span>
+				<span t-if="order.invoice_type_code_id == '07'" style="font-size:14px">
+					Representación impresa de la NOTA DE CRÉDITO ELECTRÓNICA
 					<t t-if="widget.pos.company.website_invoice_search">
 						, comprobante emitido desde sistemas del contribuyente, puede consultar este comprobante ingresando a
 						<t t-esc="widget.pos.company.website_invoice_search" />
