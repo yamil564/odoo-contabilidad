@@ -2,7 +2,6 @@ from odoo import models, fields, _
 import logging
 _logger = logging.getLogger(__name__)
 
-
 class AccountMove(models.Model):
     _inherit = "account.move"
 
@@ -24,10 +23,10 @@ class AccountMove(models.Model):
                 where am.id = {} and ppol.lot_name is not null
                 group by aml.product_id,aml.name,pol.qty,uu.name ,ppol.lot_name
         """
-        _logger.info(sql.format(self.id))
+        # _logger.info(sql.format(self.id))
         self.env.cr.execute(sql.format(self.id))
         result = self.env.cr.dictfetchall()
         res += result
 
-        _logger.info(res)
+        # _logger.info(res)
         return res

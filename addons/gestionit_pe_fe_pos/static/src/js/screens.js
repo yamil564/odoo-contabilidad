@@ -8,7 +8,7 @@ odoo.define('gestionit_pe_fe_pos.screens', function(require){
     var QWeb = core.qweb;
     var pos_order_mgmt = require('pos_order_mgmt.widgets')
     var exports = {}
-    
+
     screens.PaymentScreenWidget.include({
         click_back: function(){
             var order = this.pos.get_order()
@@ -35,6 +35,8 @@ odoo.define('gestionit_pe_fe_pos.screens', function(require){
             var order = this.pos.get_order()
             if(order.refund_order_id){
                 $(self.$el).find(".payment-numpad").css("display","none")
+                $(self.$el).find(".paymentmethods-container").css("display","none")
+                
             }
         }
     })
@@ -49,6 +51,8 @@ odoo.define('gestionit_pe_fe_pos.screens', function(require){
                 order.set_sequence_number(order_data.sequence_number);
                 order.set_number(order_data.number);
                 order.set_digest_value(order_data.digest_value);
+                order.set_refund_invoice(order_data.refund_invoice);
+                order.set_credit_note_type(order_data.credit_note_type_name)
             }
             return order
         },
@@ -423,14 +427,27 @@ odoo.define('gestionit_pe_fe_pos.screens', function(require){
         }
     })
 
-    screens.ReceiptScreenWidget.include({
-        get_receipt_render_env:function(){
-            var res = this._super()
-            console.log("=============get_receipt_render_env===============")
-            console.log(res)
-            return res
-        }
-    })
+    // screens.ReceiptScreenWidget.include({
+    //     print_web: function() {
+    //         if ($.browser.safari) {
+    //             document.execCommand('print', false, null);
+    //         } else {
+    //             try {
+    //                 window.print();
+    //             } catch(err) {
+    //                 if (navigator.userAgent.toLowerCase().indexOf("android") > -1) {
+    //                     this.gui.show_popup('error',{
+    //                         'title':_t('Printing is not supported on some android browsers'),
+    //                         'body': _t('Printing is not supported on some android browsers due to no default printing protocol is available. It is possible to print your tickets by making use of an IoT Box.'),
+    //                     });
+    //                 } else {
+    //                     throw err;
+    //                 }
+    //             }
+    //         }
+    //         this.pos.get_order()._printed = true;
+    //     },
+    // })
 
     exports.screens = screens;
     exports.pos_order_mgmt = pos_order_mgmt;
