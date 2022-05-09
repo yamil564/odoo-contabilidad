@@ -176,8 +176,9 @@ odoo.define("gestionit_pe_fe_pos.models",[
     models.Order = models.Order.extend({
         initialize: function(attributes, options) {
             this.sale_type = "sale"
+            this.invoice_type = "out_invoice"
             this.refund_order_id = undefined;
-            var res = OrderSuper.prototype.initialize.apply(this, arguments);
+            OrderSuper.prototype.initialize.apply(this, arguments);
             this.number = false;
             this.invoice_journal_id = undefined;
             this.sequence_number = 0;
