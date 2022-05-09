@@ -5,7 +5,7 @@
     "depends": ["base", "product"],
     "data": [
         'data/groups.xml',
-        'data/sequences.xml'
+        'data/sequences.xml',
         'views/product_template.xml',
     ],
     "installable": True,
