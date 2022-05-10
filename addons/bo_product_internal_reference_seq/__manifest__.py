@@ -4,9 +4,9 @@
     "author": "BigOdoo",
     "depends": ["base", "product"],
     "data": [
-        'views/product_template.xml',
         'data/groups.xml',
-        'data/sequences.xml'
+        'data/sequences.xml',
+        'views/product_template.xml',
     ],
     "installable": True,
 }
