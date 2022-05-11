@@ -4,7 +4,7 @@
 	'author': 'Franco Najarro',
 	'website':'',
 	'category':'',
-	'depends':['account','report_formats'],
+	'depends':['account','report_formats','bo_pe_contabilidad_documents','base'],
 	'description':'''
 		Modulo de reportes.
 			> Base
@@ -13,7 +13,7 @@
 		'security/group_users.xml',
 		'security/ir.model.access.csv',
 		'views/ple_base_view.xml',
-		#'views/res_country_view.xml',
+		'views/res_country_view.xml',
 
 	],
 	'installable': True,
