@@ -5,10 +5,6 @@ import re
 class ResPartner(models.Model):
     _inherit = "res.partner"
 
-    @api.model
-    def get_property_account_receivable_fees_id(self):
-        default=self.env['res.company']._company_default_get().property_account_receivable_fees_id.id
-        return default
 
     @api.model
     def get_property_account_payable_fees_id(self):
@@ -28,11 +24,6 @@ class ResPartner(models.Model):
 
 
     @api.model
-    def get_property_account_receivable_me_fees_id(self):
-        default=self.env['res.company']._company_default_get().property_account_receivable_me_fees_id.id
-        return default
-
-    @api.model
     def get_property_account_payable_me_fees_id(self):
         default=self.env['res.company']._company_default_get().property_account_payable_me_fees_id.id
         return default
@@ -40,11 +31,6 @@ class ResPartner(models.Model):
 
     massive_update_account_fees = fields.Boolean(string="Sujeto a actualización Masiva de cuentas de Recibo Honorario", default=True)
 
-    property_account_receivable_fees_id=fields.Many2one('account.account',
-        string="Cuenta Recibo Honorarios a Cobrar",
-        domain="[('internal_type', '=', 'receivable'), ('deprecated', '=', False)]",
-        default=get_property_account_receivable_fees_id
-        )
 
     property_account_payable_fees_id=fields.Many2one('account.account',
         string="Cuenta Recibo Honorarios a Pagar",
@@ -71,12 +57,6 @@ class ResPartner(models.Model):
 
     massive_update_account_fees_me = fields.Boolean(string="Sujeto a actualización Masiva de cuentas de Recibo Honorario en ME", default=True)
 
-    property_account_receivable_me_fees_id=fields.Many2one('account.account',
-        string="Cuenta Recibo Honorarios a Cobrar ME",
-        implied_group='base.group_multi_currency',readonly=False,
-        domain="[('internal_type', '=', 'receivable'), ('deprecated', '=', False)]",
-        default=get_property_account_receivable_me_fees_id)
-
     property_account_payable_me_fees_id=fields.Many2one('account.account',
         string="Cuenta Recibo Honorarios a Pagar ME",
         implied_group='base.group_multi_currency',readonly=False,
@@ -88,5 +68,4 @@ class ResPartner(models.Model):
     def _commercial_fields(self):
         return super(ResPartner, self)._commercial_fields() + \
             ['property_account_receivable_me_id', 'property_account_payable_me_id',
-                'property_account_receivable_fees_id', 'property_account_payable_fees_id',
-                'property_account_receivable_me_fees_id', 'property_account_payable_me_fees_id']
+                'property_account_payable_fees_id','property_account_payable_me_fees_id']
