@@ -4,7 +4,7 @@
 	'author': 'Franco Najarro',
 	'website':'',
 	'category':'',
-	'depends':['account','ple_base'],
+	'depends':['account','ple_base','bo_pe_contabilidad_documents'],
 	'description':'''
 		Modulo de reportes PLE de Najarro.
 			> Compras

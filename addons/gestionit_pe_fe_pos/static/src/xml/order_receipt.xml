@@ -141,7 +141,7 @@
 							</td>
 
 							<td>
-								<t t-if="widget.pos.receipt_show_default_code">
+								<t t-if="widget.pos.config.receipt_show_default_code">
 									<t t-if="orderline.get_product().default_code">
 										<t t-esc="orderline.get_product().default_code" />
 									</t>
@@ -168,7 +168,7 @@
 								</span>								
 							</td>
 						</tr>
-						<tr t-if="widget.pos.receipt_show_default_code">
+						<tr t-if="widget.pos.config.receipt_show_default_code">
 							<td></td>
 							<td colspan="2" style="padding:8px 0px;font-size: 14px;">
 								<span class="pt-2">

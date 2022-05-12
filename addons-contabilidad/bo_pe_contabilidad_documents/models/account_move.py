@@ -16,7 +16,6 @@ class AccountMove(models.Model):
     def _onchange_currency(self):
         super(AccountMove,self)._onchange_currency()
         if self.type in ['in_invoice','in_refund']:
-            _logger.info('\n\nENTRE ONCHANGE AHORA !!!!!!!!\n\n')
 
             if not self.currency_id:
                 return
@@ -61,14 +60,12 @@ class AccountMove(models.Model):
         if self.partner_id:
             if self.currency_id and self.currency_id != self.company_id.currency_id:
                 if self.journal_id.invoice_type_code_id=='02':
-                    rec_account = self.partner_id.property_account_receivable_me_fees_id
                     pay_account = self.partner_id.property_account_payable_me_fees_id    
                 else:
                     rec_account = self.partner_id.property_account_receivable_me_id
                     pay_account = self.partner_id.property_account_payable_me_id
             else:
                 if self.journal_id.invoice_type_code_id=='02':
-                    rec_account = self.partner_id.property_account_receivable_fees_id
                     pay_account = self.partner_id.property_account_payable_fees_id
                 else:
                     rec_account = self.partner_id.property_account_receivable_id
@@ -97,15 +94,9 @@ class AccountMove(models.Model):
             self.invoice_payment_term_id = self.partner_id.property_payment_term_id or self.invoice_payment_term_id
             ###################################
             if self.currency_id and self.currency_id != self.company_id.currency_id:
-                if self.journal_id.invoice_type_code_id=='02':
-                    new_term_account = self.partner_id.commercial_partner_id.property_account_receivable_me_fees_id
-                else:
-                    new_term_account = self.partner_id.commercial_partner_id.property_account_receivable_me_id
+                new_term_account = self.partner_id.commercial_partner_id.property_account_receivable_me_id
             else:
-                if self.journal_id.invoice_type_code_id=='02':
-                    new_term_account = self.partner_id.commercial_partner_id.property_account_receivable_fees_id
-                else:
-                    new_term_account = self.partner_id.commercial_partner_id.property_account_receivable_id
+                new_term_account = self.partner_id.commercial_partner_id.property_account_receivable_id
             #######################################
             #new_term_account = self.partner_id.commercial_partner_id.property_account_receivable_id
             self.narration = self.company_id.with_context(lang=self.partner_id.lang).invoice_terms
