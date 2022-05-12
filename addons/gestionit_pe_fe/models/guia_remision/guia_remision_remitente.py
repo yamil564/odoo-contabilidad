@@ -750,9 +750,13 @@ class GuiaRemision(models.Model):
                 elif not patron_dni.match(partner.vat):
                     errors.append(
                         "* El Número de documento del destinatario tiene un DNI inválido.")
+            elif partner.l10n_latam_identification_type_id.l10n_pe_vat_code in ("0","4","7"):
+                if not partner.vat:
+                    errors.append(
+                        "* El Número de documento del destinatario esta vacío.")
             else:
                 errors.append(
-                    "* El tipo de Documento del Destinatario no es válido, seleccion un RUC o DNI ")
+                    "* El tipo de Documento del Destinatario no es válido, seleccion un RUC, DNI ")
 
         if not partner.name:
             errors.append(
