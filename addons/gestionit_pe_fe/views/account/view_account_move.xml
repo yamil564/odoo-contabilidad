@@ -193,6 +193,17 @@
                         <field name="documento_baja_id" readonly="1"/>
                     </b>.
                 </div>
+                <!-- <div class="alert alert-danger" role="alert" 
+                        style="margin-bottom:0px;" 
+                        attrs="{'invisible': ['|',('account_summary_id.cod_operacion','!=','2'),('account_summary_id.estado_emision','!=','P')]}">
+                        2. Este documento
+                    <bold>
+                        <a class="alert-link" href="#outstanding" role="button">HA SIDO DADO DE BAJA </a>
+                    </bold> - Comunicación de Baja con estado
+                    <b>Baja Pendiente de envío a SUNAT -
+                        <field name="documento_baja_id" readonly="1"/>
+                    </b>.
+                </div> -->
             </xpath>
             <xpath expr="//page[@id='aml_tab']" position="after">
                 <field name="invoice_payment_term_type" invisible="1"/>
