@@ -10,6 +10,7 @@ odoo.define("gestionit_pe_fe_pos.models",[
     var session = require('web.session');
     var PosModelSuper = models.PosModel;
     var OrderSuper = models.Order
+    var PaymentlineSuper = models.Paymentline
     var exports = {}
 
     _.find(PosModelSuper.prototype.models,function(el){return el.model == 'res.partner'}).fields.push('l10n_latam_identification_type_id','mobile');
@@ -178,6 +179,7 @@ odoo.define("gestionit_pe_fe_pos.models",[
             this.sale_type = "sale"
             this.invoice_type = "out_invoice"
             this.refund_order_id = undefined;
+            this.refund_order_payments = []
             OrderSuper.prototype.initialize.apply(this, arguments);
             this.number = false;
             this.invoice_journal_id = undefined;
@@ -301,6 +303,7 @@ odoo.define("gestionit_pe_fe_pos.models",[
             res['refund_invoice_type_code'] = this.refund_invoice_type_code
             res['refund_order_id'] = this.refund_order_id
             res['invoice_date'] = this.invoice_date
+            res['refund_order_payments'] = this.refund_order_payments
             return res;
         },
         init_from_JSON: function(json) {
@@ -315,6 +318,7 @@ odoo.define("gestionit_pe_fe_pos.models",[
             this.invoice_type = json.invoice_type
             this.refund_order_id = json.refund_order_id
             this.invoice_date = json.invoice_date
+            this.refund_order_payments = json.refund_order_payments
         },
         set_number: function(number) {
             // this.assert_editable();
@@ -391,6 +395,12 @@ odoo.define("gestionit_pe_fe_pos.models",[
         get_credit_note_types:function(){
             return this.credit_note_types
         },
+        set_refund_order_payments:function(payments){
+            this.refund_order_payments = payments
+        },
+        get_refund_order_payments:function(){
+            return this.refund_order_payments
+        },
         get_refund_invoice_type_code:function(){
             return this.refund_invoice_type_code
         },
@@ -414,6 +424,16 @@ odoo.define("gestionit_pe_fe_pos.models",[
                 );
             }
             return return_val;
+        },
+        add_paymentline_v2: function(payment_method,amount) {
+            this.assert_editable();
+            var newPaymentline = new PaymentlineSuper({},{order: this, payment_method:payment_method, pos: this.pos});
+            if(!payment_method.is_cash_count || this.pos.config.iface_precompute_cash){
+                newPaymentline.set_amount(amount);
+            };
+            this.paymentlines.add(newPaymentline);
+            this.select_paymentline(newPaymentline);
+    
         },
     });
 

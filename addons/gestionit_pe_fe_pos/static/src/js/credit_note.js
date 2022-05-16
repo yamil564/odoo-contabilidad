@@ -58,7 +58,7 @@ odoo.define("gestionit_pe_fe_pos.credit_note",function(require){
                 method:"get_order",
                 args:[[self.order_id]],
                 kwargs:{}
-            }).then(function(res){
+            }).then(async function(res){
                 var new_order = new models.Order({},{pos:self.pos});
                 self.pos.get('orders').add(new_order);
 
@@ -71,6 +71,14 @@ odoo.define("gestionit_pe_fe_pos.credit_note",function(require){
                 new_order.set_refund_order_name(res.order_name);
                 new_order.set_refund_order_date(res.date)
                 new_order.set_credit_note_type(credit_note_type);
+                new_order.set_refund_order_payments(res.payments)
+                console.log(self.pos)
+                console.log(res.payments)
+                await _.forEach(res.payments,function(el){
+                    let payment_method = self.pos.payment_methods_by_id[el.id];
+                    new_order.add_paymentline_v2(payment_method,-1*el.amount)
+                })
+
                 if(res.has_invoice){
                     new_order.set_refund_invoice(res.invoice_id);
                     new_order.set_refund_invoice_type_code(res.invoice_type_code);
