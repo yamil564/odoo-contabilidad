@@ -247,7 +247,7 @@ class GuiaRemision(models.Model):
 
     transporte_lines = fields.One2many('gestionit.lineas_transporte', 'guia_id', 'Lineas de Transporte')
     note = fields.Text('Observaciones')
-    multiple_tramos = fields.Boolean('Multiples Tramos', default=True)
+    multiple_tramos = fields.Boolean('Multiples Tramos', default=False)
 
     def action_send_email(self):
         self.ensure_one()
@@ -664,6 +664,38 @@ class GuiaRemision(models.Model):
         string="Estado Emisión a SUNAT"
     )
 
+    def set_view_lugar_partida_ubigeo(self):
+
+        return {
+            'name': 'Lugar de Partida de Ubigeo',
+            'type': 'ir.actions.act_window',
+            'view_type': 'form',
+            'view_mode': 'form',
+            "views": [[self.env.ref("gestionit_pe_fe.view_popup_form_seleccion_ubigeo").id, "form"]],
+            'res_model': 'gestionit.popup_form_seleccion_ubigeo',
+            'target': 'new',
+            'context': {
+                    "default_guia_remision_id": self.id,
+                    "default_tipo_lugar": "partida",
+            }
+        }
+
+    def set_view_lugar_llegada_ubigeo(self):
+        return {
+            'name': 'Lugar de llegada de Ubigeo',
+            'type': 'ir.actions.act_window',
+            'view_type': 'form',
+            'view_mode': 'form',
+            "views": [[self.env.ref("gestionit_pe_fe.view_popup_form_seleccion_ubigeo").id, "form"]],
+            'res_model': 'gestionit.popup_form_seleccion_ubigeo',
+            'target': 'new',
+            'context': {
+                    "default_guia_remision_id": self.id,
+                    "default_tipo_lugar": "llegada",
+            }
+        }
+
+
     def validar_datos_compania(self):
         errors = []
         if not self.company_id.partner_id.vat:
@@ -964,6 +996,122 @@ class GuiaRemision(models.Model):
             "fechaEmision": str(self.fecha_emision)
         }
         return data
+    
+    def validar_lugar_partida(self):
+        errors = []
+        if not self.lugar_partida_direccion:
+            errors.append(
+                "* La dirección del lugar de partida es obligatorio.")
+        elif len(self.lugar_partida_direccion) < 6 and len(self.lugar_partida_direccion) >= 100:
+            errors.append(
+                "* La dirección del lugar de partida tiene como mínimo 6 carácteres.")
+
+        if not self.lugar_partida_ubigeo_code:
+            errors.append("* El ubigeo del lugar de partida es obligatorio.")
+        elif not self.validar_ubigeo(self.lugar_partida_ubigeo_code.code):
+            errors.append("* El ubigeo de la dirección de partida no existe.")
+
+        return errors
+
+    def validar_ubigeo(self, ubigeo):
+        ubigeo_objs = self.env["res.country.state"].sudo().search(
+            [("code", "=", ubigeo)])
+        if ubigeo_objs.exists():
+            return True
+        else:
+            return False
+
+    def validar_lugar_llegada(self):
+        errors = []
+        if not self.lugar_llegada_direccion:
+            errors.append(
+                "* La dirección del lugar de llegada es obligatorio.")
+        elif len(self.lugar_llegada_direccion) < 6 and len(self.lugar_llegada_direccion) >= 100:
+            errors.append(
+                "* La dirección del lugar de llegada tiene como mínimo 6 carácteres.")
+
+        if not self.lugar_llegada_ubigeo_code:
+            errors.append("* El ubigeo del lugar de llegada es obligatorio.")
+        elif not self.validar_ubigeo(self.lugar_llegada_ubigeo_code.code):
+            errors.append("* El ubigeo de la dirección de llegada no existe.")
+
+        return errors
+
+    def validar_transporte(self):
+        errors = []
+        if not self.modalidad_transporte:
+            errors.append(
+                "* La modalidad de transporte no ha sido seleccionado.")
+        elif self.modalidad_transporte not in ["01", "02"]:
+            errors.append(
+                "* La modalidad de transporte seleccionado es incorrecto. Las modalidades de transporte permitidos son 01 - Transporte Público y 02 - Transporte Privado")
+
+        if self.modalidad_transporte == "01":
+            if not self.transporte_partner_id:
+                errors.append(
+                    "* Debe seleccionar una Empresa de Transporte público.")
+            else:
+                if not self.transporte_partner_id.name:
+                    errors.append(
+                        "* La empresa de transporte seleccionado no tiene Nombre o Razón Social.")
+                elif len(self.transporte_partner_id.name) < 4:
+                    errors.append(
+                        "* El nombre de la empresa de transporte seleccionada debe tener como mínimo 4 carácteres.")
+
+                if not self.transporte_partner_id.vat:
+                    errors.append(
+                        "* La empresa de transporte seleccionado no tiene documento.")
+                elif not patron_ruc.match(self.transporte_partner_id.vat):
+                    errors.append(
+                        "* El RUC de la empresa de transporte seleccionada tiene un formato incorrecto.")
+
+                if not self.transporte_partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code:
+                    errors.append(
+                        "* La empresa de transporte seleccionado no tiene tipo de documento.")
+                elif not self.transporte_partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code == "6":
+                    errors.append(
+                        "* El tipo de documento de la empresa de transporte seleccionada debe ser de tipo 'RUC'")
+
+                if not self.fecha_inicio_traslado:
+                    errors.append(
+                        "* La fecha de inicio de traslado es obligatorio.")
+                """
+                if not self.conductor_publico_id:
+                    errors.append("* El Conductor público de la empresa es obligatorio.")
+                elif not self.conductor_publico_id.tipo_documento:
+                    errors.append("* El Conductor público seleccionado no tiene tipo de documento de identidad.")
+                elif not self.conductor_publico_id.vat:
+                    errors.append("* El Conductor público seleccionado no tiene número de documento de identidad.")
+                """
+        elif self.modalidad_transporte == "02":
+            if not self.conductor_privado_partner_id:
+                errors.append("* Debe seleccionar un conductor privado.")
+            else:
+                if not self.conductor_privado_partner_id.name:
+                    errors.append(
+                        "* El conductor privado seleccionado no tiene Nombre.")
+                elif len(self.conductor_privado_partner_id.name) < 4:
+                    errors.append(
+                        "* El nombre del conductor privado seleccionado debe tener más de 4 carácteres")
+
+                if not self.conductor_privado_partner_id.vat:
+                    errors.append(
+                        "* El conductor privado seleccionado no tiene documento.")
+                if not self.conductor_privado_partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code:
+                    errors.append(
+                        "* La conductor privado seleccionado no tiene tipo de documento.")
+
+                if not self.fecha_inicio_traslado:
+                    errors.append(
+                        "* La fecha de inicio de traslado es obligatorio")
+
+            if not self.vehiculo_privado_id:
+                errors.append("* El Vehículo privado es Obligatorio.")
+            elif not self.vehiculo_privado_id.numero_placa:
+                errors.append(
+                    "* El Vehículo pivado seleccionado no tiene Número de Placa")
+
+        return errors
 
     def validar_restricciones(self):
         errors = []
@@ -972,11 +1120,19 @@ class GuiaRemision(models.Model):
         errors += self.validar_motivo_traslado()
         errors += self.validar_datos_envio()
         errors += self.validar_guia_remision_lineas()
-        for line in self.transporte_lines:
-            errors += line.validar_lugar_partida()
-            errors += line.validar_lugar_llegada()
-            errors += line.validar_transporte()
 
+        if self.multiple_tramos:
+            if not self.transporte_lines:
+                errors.append("* Es Necesario declarar al menos un tramo de transporte.")
+            else:
+                for line in self.transporte_lines:
+                    errors += line.validar_lugar_partida()
+                    errors += line.validar_lugar_llegada()
+                    errors += line.validar_transporte()
+        else:
+            errors += self.validar_lugar_partida()
+            errors += self.validar_lugar_llegada()
+            errors += self.validar_transporte()
 
         if len(errors) > 0:
             return {

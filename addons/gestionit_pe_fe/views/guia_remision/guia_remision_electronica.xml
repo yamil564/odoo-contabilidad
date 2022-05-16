@@ -188,6 +188,15 @@
                                 <field name="lugar_llegada_direccion" widget="text" attrs="{'readonly':[('estado_emision','not in',[False,'B'])]}" force_save="1"/>
                                 <field name="lugar_llegada_ubigeo_code" context="{'ubigeo_search':True}" attrs="{'readonly':[('estado_emision','not in',[False,'B'])]}" options="{'no_create':True,'no_create_edit':True,'no_quick_create':True,'no_open':True}" force_save="1"/>
                             </group>
+                            <group string="Transporte Público" attrs="{'invisible':[('modalidad_transporte','!=','01')]}">
+                                <field name="transporte_partner_id" options="{'no_create_edit': True,'no_quick_create':True,'no_open':True}" domain="[('es_empresa_transporte_publico','=',True)]"/>
+                                <field name="conductor_publico_id" widget="radio" domain="[('parent_id','=',transporte_partner_id),('parent_id','!=',False)]"/>
+                                <field name="vehiculo_publico_id" widget="radio" domain="[('propietario_id','=',transporte_partner_id),('propietario_id','!=',False)]"/>
+                            </group>
+                            <group string="Transporte Privado" attrs="{'invisible':[('modalidad_transporte','!=','02')]}">
+                                <field name="conductor_privado_partner_id" widget="radio" domain="[('es_conductor','=',True),('parent_id','=',company_partner_id)]"/>
+                                <field name="vehiculo_privado_id" widget="radio" domain="[('propietario_id','=',company_partner_id),('propietario_id','!=',False)]"/>
+                            </group>
                         </group>
 
                         <label for="transporte_lines" string="Tramos de Envio" attrs="{'invisible':[('multiple_tramos','=',False)]}"/>
