@@ -56,12 +56,12 @@
                     <t t-set="document_display_name" t-value="documents.get(o.state,'-')"/>
                     <div class="page" style="font-size:12px;">
                         <br />
-                        <div style="width:100%;">
+                        <div id="destin_title" style="width:100%;">
                             <h5>
                                 <b>Destinatario</b>
                             </h5>
                         </div>
-                        <div class="row" style="border:solid gray 1px;padding:15px;border-radius:10px;">
+                        <div id="destin_page" class="row" style="border:solid gray 1px;padding:15px;border-radius:10px;">
                             <div class="col-6">
                                 <span>
                                     <b>Destinatario: </b>
@@ -99,12 +99,12 @@
                             </div>
                         </div>
                         <br />
-                        <div style="width:100%;">
+                        <div id="send_title" style="width:100%;">
                             <h5>
                                 <b>Envío</b>
                             </h5>
                         </div>
-                        <div class="row" style="border:solid gray 1px;padding:15px;border-radius:10px">
+                        <div id="send_page" class="row" style="border:solid gray 1px;padding:15px;border-radius:10px">
                             <div class="col-6">
                                 <span>
                                     <b>Fecha de emisión: </b>
@@ -116,11 +116,13 @@
                                 </span>
                                 <span t-field="o.fecha_inicio_traslado"/>
                                 <br/>
-                                <span>
-                                    <b>Dirección de partida: </b>
-                                </span>
-                                <span t-field="o.lugar_partida_direccion"/>
-                                <br/>
+                                <t t-if="not o.multiple_tramos">
+                                    <span>
+                                        <b>Dirección de partida: </b>
+                                    </span>
+                                    <span t-field="o.lugar_partida_direccion"/>
+                                    <br/>
+                                </t>
                             </div>
                             <div class="col-6">
                                 <span>
@@ -128,82 +130,88 @@
                                 </span>
                                 <span t-field="o.motivo_traslado"/>
                                 <br/>
-                                <span>
-                                    <b>Modalidad de Transporte: </b>
-                                </span>
-                                <span t-field="o.modalidad_transporte"/>
-                                <br/>
+                                <t t-if="not o.multiple_tramos">
+                                    <span>
+                                        <b>Modalidad de Transporte: </b>
+                                    </span>
+                                    <span t-field="o.modalidad_transporte"/>
+                                    <br/>
+                                </t>
                                 <span>
                                     <b>Peso bruto total(KGM): </b>
                                 </span>
                                 <span t-field="o.peso_bruto_total"/>
                                 <br/>
-                                <span>
-                                    <b>Dirección de llegada: </b>
-                                </span>
-                                <span t-field="o.lugar_llegada_direccion"/>
-                                <br/>
+                                <t t-if="not o.multiple_tramos">
+                                    <span>
+                                        <b>Dirección de llegada: </b>
+                                    </span>
+                                    <span t-field="o.lugar_llegada_direccion"/>
+                                    <br/>
+                                </t>
                             </div>
                         </div>
                         <br />
-                        <t t-if="o.modalidad_transporte=='02'">
-                            <div style="width:100%;">
-                                <h5>
-                                    <b>Transporte Privado</b>
-                                </h5>
-                            </div>
-                            <div class="row" style="border:solid gray 1px;padding:15px;border-radius:10px">
-                                <div class="col-6">
-                                    <span>
-                                        <b>Conductor: </b>
-                                    </span>
-                                    <span t-field="o.conductor_privado_partner_id"/>
-                                    <br/>
+                        <t t-if="not o.multiple_tramos">
+                            <t t-if="o.modalidad_transporte=='02'">
+                                <div style="width:100%;">
+                                    <h5>
+                                        <b>Transporte Privado</b>
+                                    </h5>
                                 </div>
-                                <div class="col-6">
-                                    <span>
-                                        <b>Vehículo: </b>
-                                    </span>
-                                    <span t-field="o.vehiculo_privado_id"/>
-                                    <br/>
+                                <div class="row" style="border:solid gray 1px;padding:15px;border-radius:10px">
+                                    <div class="col-6">
+                                        <span>
+                                            <b>Conductor: </b>
+                                        </span>
+                                        <span t-field="o.conductor_privado_partner_id"/>
+                                        <br/>
+                                    </div>
+                                    <div class="col-6">
+                                        <span>
+                                            <b>Vehículo: </b>
+                                        </span>
+                                        <span t-field="o.vehiculo_privado_id"/>
+                                        <br/>
+                                    </div>
                                 </div>
-                            </div>
+                            </t>
+                            <t t-if="o.modalidad_transporte=='01'">
+                                <div style="width:100%;">
+                                    <h5>
+                                        <b>Transporte Público</b>
+                                    </h5>
+                                </div>
+                                <div class="row" style="border:solid gray 1px;padding:15px;border-radius:10px">
+                                    <div class="col-6">
+                                        <span>
+                                            <b>Empresa de Transporte: </b>
+                                        </span>
+                                        <span t-field="o.transporte_partner_id"/>
+                                        <br/>
+                                    </div>
+                                    <div class="col-6">
+                                        <span>
+                                            <b>Conductor: </b>
+                                        </span>
+                                        <span t-field="o.conductor_publico_id"/>
+                                        <br/>
+                                        <span>
+                                            <b>Vehículo público: </b>
+                                        </span>
+                                        <span t-field="o.vehiculo_publico_id"/>
+                                        <br/>
+                                    </div>
+                                </div>
+                            </t>
+                            <br />
                         </t>
-                        <t t-if="o.modalidad_transporte=='01'">
-                            <div style="width:100%;">
-                                <h5>
-                                    <b>Transporte Público</b>
-                                </h5>
-                            </div>
-                            <div class="row" style="border:solid gray 1px;padding:15px;border-radius:10px">
-                                <div class="col-6">
-                                    <span>
-                                        <b>Empresa de Transporte: </b>
-                                    </span>
-                                    <span t-field="o.transporte_partner_id"/>
-                                    <br/>
-                                </div>
-                                <div class="col-6">
-                                    <span>
-                                        <b>Conductor: </b>
-                                    </span>
-                                    <span t-field="o.conductor_publico_id"/>
-                                    <br/>
-                                    <span>
-                                        <b>Vehículo público: </b>
-                                    </span>
-                                    <span t-field="o.vehiculo_publico_id"/>
-                                    <br/>
-                                </div>
-                            </div>
-                        </t>
-                        <br />
                         <div style="width:100%;">
                             <h5>
                                 <b>Detalle de Envío</b>
                             </h5>
                         </div>
-                        <div class="row" style="border:solid gray 1px;padding:15px;border-radius:10px">
+                        <div id="lineas" class="row" style="border:solid gray 1px;padding:15px;border-radius:10px">
                             <div class="col-12">
                                 <table class="table table-bordered gr_table_lines">
                                     <thead>
@@ -237,6 +245,86 @@
                                 </table>
                             </div>
                         </div>
+                        <br />
+                        <t t-if="o.multiple_tramos">
+                            <div style="width:100%;">
+                                <t t-if="o.transporte_lines">
+                                    <h5>
+                                        <b>Tramos de Envío</b>
+                                    </h5>
+                                </t>
+                            </div>
+                            <div id="tramos" class="row" style="border:solid gray 1px;padding:15px;border-radius:10px">
+                                <div class="col-12">
+                                    <t t-if="o.transporte_lines">
+                                        <table class="table table-bordered gr_table_lines">
+                                            <thead>
+                                                <tr>
+                                                    <th scope="col">No</th>
+                                                    <th scope="col">Mod.<br/>Transp.</th>
+                                                    <th scope="col">RUC<br/>Transportista</th>
+                                                    <th scope="col">Empresa<br/>Transportista</th>
+                                                    <th scope="col">Tramo</th>
+                                                    <th scope="col">Licencia</th>
+                                                    <th scope="col">Vehículo</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <t t-set="index" t-value="1"></t>
+                                                <t t-foreach="o.transporte_lines" t-as="line">
+                                                    <tr>
+                                                        <td scope="row">
+                                                            <t t-esc="index"></t>
+                                                        </td>
+                                                        <td>
+                                                            <span t-field="line.modalidad_transporte"/>
+                                                        </td>
+                                                        <td>
+                                                            <span t-field="line.ruc_trasporte_partner"/>
+                                                        </td>
+                                                        <td>
+                                                            <span t-field="line.transporte_partner_id"/>
+                                                        </td>
+                                                        <td>
+                                                            <span t-field="line.lugar_partida_direccion"/>
+                                                            <t t-if="line.lugar_llegada_direccion">
+                                                                <strong>hacia</strong>
+                                                                <span t-field="line.lugar_llegada_direccion"/>
+                                                            </t>
+                                                        </td>
+                                                        <td>
+                                                            <t t-if="line.licencia">
+                                                                <span t-field="line.licencia"/>
+                                                            </t>
+                                                        </td>
+                                                        <td>
+                                                            <!-- <t t-if="line.modalidad_transporte == '01'">
+                                                                <span t-field="line.conductor_publico_id.name"/>
+                                                            </t>
+                                                            <t t-else="">
+                                                                <span t-field="line.conductor_privado_partner_id.name"/>
+                                                            </t> -->
+                                                            <!-- <strong>Vehículo: </strong> -->
+                                                            <t t-if="line.modalidad_transporte == '01'">
+                                                                <t t-if="line.vehiculo_publico_id">
+                                                                    <span t-field="line.vehiculo_publico_id.marca"/>  <span t-field="line.vehiculo_publico_id.numero_placa"/>
+                                                                </t>
+                                                            </t>
+                                                            <t t-else="">
+                                                                <t t-if="line.vehiculo_privado_id">
+                                                                    <span t-field="line.vehiculo_privado_id.marca"/>  <span t-field="line.vehiculo_privado_id.numero_placa"/>
+                                                                </t>
+                                                            </t>
+                                                        </td>
+                                                    </tr>
+                                                    <t t-set="index" t-value="index+1"></t>
+                                                </t>
+                                            </tbody>
+                                        </table>
+                                    </t>
+                                </div>
+                            </div>
+                        </t>
                     </div>
                 </t>
             </t>
