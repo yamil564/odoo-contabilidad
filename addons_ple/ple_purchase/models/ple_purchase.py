@@ -275,7 +275,7 @@ class PlePurchase(models.Model):
 					registro.append((0,0,{'move_id':line.id}))
 
 				elif str(line.partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code or '').strip() in ['0'] and\
-					(str(line.journal_id.invoice_type_code_id or '').strip() not in ['00','91','97','98']):
+					(str(line.journal_id.invoice_type_code_id or '').strip() in ['00','91','97','98']):
 					registro_no_domiciliados.append((0,0,{'move_id':line.id}))
 		#####################################################
 
