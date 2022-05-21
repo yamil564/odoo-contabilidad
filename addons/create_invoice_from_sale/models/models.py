@@ -19,6 +19,7 @@ class SaleOrder(models.Model):
 
         if len(self.invoice_ids) == 0:
             self.tipo_documento = "01"
+
             # self.action_invoice_create(final=True)
             move = self._create_invoices(final=True)
             # # move.descuento_global = 0
