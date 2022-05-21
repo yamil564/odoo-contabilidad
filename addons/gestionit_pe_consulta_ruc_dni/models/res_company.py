@@ -87,13 +87,14 @@ class ResCompany(models.Model):
                 "dni": dni
             }
             res = requests.request(
-                "POST", url, headers=headers, data=json.dumps(data))
+                "POST", url, headers=headers, data=json.dumps(data),timeout=3)
             res = res.json()
             if res.get("success", False):
                 return {"name":res.get("nombre", False)}
             return {}
         except Exception as e:
             return {}
+        
 
     @api.model
     def request_migo_ruc(self, ruc):
@@ -118,7 +119,7 @@ class ResCompany(models.Model):
                     "ruc": ruc
                 }
                 res = requests.request(
-                    "POST", url, headers=headers, data=json.dumps(data))
+                    "POST", url, headers=headers, data=json.dumps(data),timeout=3)
                 res = res.json()
 
                 if res.get("success", False):
