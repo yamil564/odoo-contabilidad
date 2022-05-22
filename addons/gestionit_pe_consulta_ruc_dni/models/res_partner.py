@@ -121,7 +121,7 @@ class ResPartner(models.Model):
                 "dni": dni
             }
             res = requests.request(
-                "POST", url, headers=headers, data=json.dumps(data))
+                "POST", url, headers=headers, data=json.dumps(data),timeout=3)
             res = res.json()
 
             if res.get("success", False):
@@ -154,7 +154,7 @@ class ResPartner(models.Model):
                         "token": token,
                         "ruc": ruc
                     }
-                    res = requests.request("POST", url, headers=headers, data=json.dumps(data))
+                    res = requests.request("POST", url, headers=headers, data=json.dumps(data),timeout=3)
                     res = res.json()
                     if res.get("success", False):
                         return res
