@@ -151,9 +151,9 @@ class WebsiteSaleExtend(WebsiteSale):
             return False
 
     def _checkout_form_save(self, mode, checkout, all_values):
-        _logger.info(mode)
-        _logger.info(all_values)
-        _logger.info(checkout)
+        # _logger.info(mode)
+        # _logger.info(all_values)
+        # _logger.info(checkout)
         Partner = request.env['res.partner']
         if mode[0] == 'new':
             vat = checkout.get("vat")
@@ -164,6 +164,7 @@ class WebsiteSaleExtend(WebsiteSale):
                 del checkout["vat"]
 
             partner = Partner.sudo().with_context(tracking_disable=True).create(checkout)
+            partner.country_id = int(request.env.ref("base.pe").id)
             partner.state_id = int(all_values['state_id'])
             partner.province_id = int(all_values['province_id'])
             partner.district_id = int(all_values['district_id'])
@@ -180,10 +181,11 @@ class WebsiteSaleExtend(WebsiteSale):
                     return Forbidden()
                 partner = Partner.browse(partner_id).sudo()
                 partner.write(checkout)
+                partner.country_id = int(request.env.ref("base.pe").id)
                 partner.state_id = int(all_values['state_id'])
                 partner.province_id = int(all_values['province_id'])
                 partner.district_id = int(all_values['district_id'])
-                _logger.info(partner.district_id.code)
+                # _logger.info(partner.district_id.code)
                 if partner.district_id:
                     partner.ubigeo = partner.district_id.code or ""
         return partner_id

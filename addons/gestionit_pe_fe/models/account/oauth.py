@@ -351,32 +351,67 @@ def send_doc_xml(doc):
 
 def crear_json_fac_bol(self):
 
-    if self.invoice_type_code == '01':
-        if not re.match("^F\w{3}-\d{1,8}$", self.name):
-            raise UserError("El Formato de la Factura es incorrecto.")
-    elif self.invoice_type_code == '03':
-        if not re.match("^B\w{3}-\d{1,8}$", self.name):
-            raise UserError("El Formato de la Boleta es Incorrecto.")
-    elif self.invoice_type_code == '07':
-        if self.reversal_move_id.invoice_type_code == '01':
+    if not self.is_contingencia:
+
+        if self.invoice_type_code == '01':
             if not re.match("^F\w{3}-\d{1,8}$", self.name):
-                raise UserError(
-                    "El Formato de la Nota de Crédito para la factura es incorrecto. ")
-        if self.reversal_move_id.invoice_type_code == '03':
+                raise UserError("El Formato de la Factura es incorrecto.")
+        elif self.invoice_type_code == '03':
             if not re.match("^B\w{3}-\d{1,8}$", self.name):
-                raise UserError(
-                    "El Formato de la Nota de Crédito para la Boleta es Incorrecto. ")
-    elif self.invoice_type_code == '08':
-        if self.reversal_move_id.invoice_type_code == '01':
-            if not re.match("^F\w{3}-\d{1,8}$", self.name):
-                raise UserError(
-                    "El Formato de la Nota de Débito para la factura es incorrecto. ")
-        if self.reversal_move_id.invoice_type_code == '03':
-            if not re.match("^B\w{3}-\d{1,8}$", self.name):
-                raise UserError(
-                    "El Formato de la Nota de Débito para la Boleta es Incorrecto. ")
-    else:
-        raise UserError("El Tipo de Documento del Comprobante es Obligatorio")
+                raise UserError("El Formato de la Boleta es Incorrecto.")
+        elif self.invoice_type_code == '07':
+            if self.reversal_move_id.invoice_type_code == '01':
+                if not re.match("^F\w{3}-\d{1,8}$", self.name):
+                    raise UserError(
+                        "El Formato de la Nota de Crédito para la factura es incorrecto. ")
+            if self.reversal_move_id.invoice_type_code == '03':
+                if not re.match("^B\w{3}-\d{1,8}$", self.name):
+                    raise UserError(
+                        "El Formato de la Nota de Crédito para la Boleta es Incorrecto. ")
+        elif self.invoice_type_code == '08':
+            if self.reversal_move_id.invoice_type_code == '01':
+                if not re.match("^F\w{3}-\d{1,8}$", self.name):
+                    raise UserError(
+                        "El Formato de la Nota de Débito para la factura es incorrecto. ")
+            if self.reversal_move_id.invoice_type_code == '03':
+                if not re.match("^B\w{3}-\d{1,8}$", self.name):
+                    raise UserError(
+                        "El Formato de la Nota de Débito para la Boleta es Incorrecto. ")
+        else:
+            raise UserError("El Tipo de Documento del Comprobante es Obligatorio")
+    
+    elif self.is_contingencia:
+
+        if self.invoice_type_code == '01':
+            if not re.match("^\d{4}-\d{1,8}$", self.name):
+                raise UserError("El Formato de la Factura es incorrecto.")
+        
+        elif self.invoice_type_code == '03':
+            if not re.match("^\d{4}-\d{1,8}$", self.name):
+                raise UserError("El Formato de la Boleta es Incorrecto.")
+        
+        elif self.invoice_type_code == '07':
+            if self.reversal_move_id.invoice_type_code == '01':
+                if not re.match("^\d{4}-\d{1,8}$", self.name):
+                    raise UserError(
+                        "El Formato de la Nota de Crédito para la factura es incorrecto. ")
+            if self.reversal_move_id.invoice_type_code == '03':
+                if not re.match("^\d{4}-\d{1,8}$", self.name):
+                    raise UserError(
+                        "El Formato de la Nota de Crédito para la Boleta es Incorrecto. ")
+
+        elif self.invoice_type_code == '08':
+            if self.reversal_move_id.invoice_type_code == '01':
+                if not re.match("^\d{4}-\d{1,8}$", self.name):
+                    raise UserError(
+                        "El Formato de la Nota de Débito para la factura es incorrecto. ")
+            if self.reversal_move_id.invoice_type_code == '03':
+                if not re.match("^\d{4}-\d{1,8}$", self.name):
+                    raise UserError(
+                        "El Formato de la Nota de Débito para la Boleta es Incorrecto. ")
+        else:
+            raise UserError("El Tipo de Documento del Comprobante es Obligatorio")
+
 
     nombreEmisor = self.company_id.partner_id.registration_name.strip()
     numDocEmisor = self.company_id.partner_id.vat.strip(

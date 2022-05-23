@@ -47,13 +47,11 @@ codigo_unidades_de_medida = [
     "BX"
 ]
 
-
 class ModalidadTransporte(models.Model):
     _name = "gestionit.modalidad_transporte"
     _description = "Modalidad de Transporte"
     code = fields.Char("Código")
     name = fields.Char("Descripción")
-
 
 class MotivoTraslado(models.Model):
     _name = "gestionit.motivo_traslado"
@@ -61,7 +59,6 @@ class MotivoTraslado(models.Model):
     code = fields.Char("Código")
     name = fields.Char("Descripción")
     active = fields.Boolean("Activo", default=True)
-
 
 class GuiaRemisionLine(models.Model):
     _name = "gestionit.guia_remision_line"
@@ -108,7 +105,6 @@ class GuiaRemisionLine(models.Model):
                 raise UserError(
                     "La cantidad de las líneas de producto no pueden ser negativas.")
 
-
 class ResPartner(models.Model):
     _inherit = "res.partner"
     es_conductor = fields.Boolean(string="Es Conductor", default=False)
@@ -135,7 +131,6 @@ class ResPartner(models.Model):
                 "default_l10n_latam_identification_type_id":dni.id
             }
         }
-
 
 class Vehiculo(models.Model):
     _name = 'gestionit.vehiculo'
@@ -220,7 +215,6 @@ class PopupFormSelectUbigeo(models.TransientModel):
             record.guia_remision_id.write(
                 {"lugar_llegada_ubigeo": record.ubigeo})
 
-
 class GuiaRemision(models.Model):
     _name = "gestionit.guia_remision"
     _rec_name = "numero"
@@ -251,11 +245,10 @@ class GuiaRemision(models.Model):
     response_json = fields.Text("Respuesta JSON", states={
                                 'validado': [('readonly', True)]}, copy=False)
 
+    transporte_lines = fields.One2many('gestionit.lineas_transporte', 'guia_id', 'Lineas de Transporte')
     note = fields.Text('Observaciones')
+    multiple_tramos = fields.Boolean('Multiples Tramos', default=False)
 
-    # def print_report_guia(self):
-    #     return self.env.ref('gestionit_pe_fe.print_report_pdf').report_action(self)
-# python3 ./odoo-bin --config=/etc/odoov12.conf --db-filter=^odooperuv12$
     def action_send_email(self):
         self.ensure_one()
         ir_model_data = self.env['ir.model.data']
@@ -405,29 +398,26 @@ class GuiaRemision(models.Model):
         "res.partner", string="Destinatario", states={'validado': [('readonly', True)]})
     destinatario_tipo_documento_identidad = fields.Char(
         string="Tipo de Documento", related="destinatario_partner_id.l10n_latam_identification_type_id.name")
-    # destinatario_tipo_documento_identidad_id = fields.Many2one("einvoice.catalog.06",string="Tipo de Documento",related="destinatario_partner_id.catalog_06_id")
     destinatario_numero_documento_identidad = fields.Char(
         string="Número de Documento", related="destinatario_partner_id.vat")
     destinatario_direccion = fields.Char(
         string="Dirección", related="destinatario_partner_id.street")
     destinatario_ubigeo = fields.Char(
         string="Ubigeo", related="destinatario_partner_id.ubigeo")
-    # destinatario_ubigeo_code = fields.Many2one("res.country.state",string="Ubigeo Destinatario Code")
 
     proveedor_partner_id = fields.Many2one("res.partner", string="Proveedor")
     proveedor_tipo_documento_identidad = fields.Char(
         string="Tipo de Documento", related="proveedor_partner_id.l10n_latam_identification_type_id.name")
-    # proveedor_tipo_documento_identidad_id = fields.Many2one("einvoice.catalog.06",string="Tipo de Documento",related="proveedor_partner_id.catalog_06_id")
     proveedor_numero_documento_identidad = fields.Char(
         string="Número de Documento", related="proveedor_partner_id.vat")
     proveedor_direccion = fields.Char(
         string="Dirección", related="proveedor_partner_id.street")
     proveedor_ubigeo = fields.Char(
         string="Ubigeo", related="proveedor_partner_id.ubigeo")
-    # proveedor_ubigeo_code = fields.Many2one("res.country.state",string="Ubigeo Proveedor Code")
 
     @api.onchange("destinatario_partner_id")
     def _onchange_destinatario_partner(self):
+
         for record in self:
             record.proveedor_partner_id = False
             # 01 - VENTA
@@ -484,11 +474,6 @@ class GuiaRemision(models.Model):
     sale_order_ids = fields.Many2many("sale.order", string="Ventas", states={
                                       'validado': [('readonly', True)]})
 
-    # @api.onchange("documento_asociado")
-    # def _onchange_documento_asociado(self):
-    #     for record in self:
-    #         if record.documento_asociado:
-    #             record.guia_remision_line_ids = [(6,0,[])]
 
     @api.onchange("movimiento_stock_ids")
     def _onchange_movimiento_stock(self):
@@ -584,7 +569,7 @@ class GuiaRemision(models.Model):
         self.peso_bruto_total = sum([line.product_id.weight*line.qty*(line.uom_id.factor_inv /
                                                                       line.product_id.uom_id.factor_inv) for line in self.guia_remision_line_ids])
 
-        # ENVÍO
+    # ENVÍO
     fecha_emision = fields.Date(string="Fecha de Emisión", states={
                                 'validado': [('readonly', True)]},copy=False,default=lambda r:datetime.today())
     fecha_inicio_traslado = fields.Date(string="Fecha inicio de traslado", states={
@@ -594,9 +579,8 @@ class GuiaRemision(models.Model):
                                     'validado': [('readonly', True)]}, default=0.0)
     calc_peso = fields.Boolean(
         string="Calc peso", related="company_id.calc_peso")
-    # peso_bruto_total = fields.Float(string="Peso Bruto Total (KGM)", states={
-    #                                 'validado': [('readonly', True)]}, compute="_compute_peso_bruto")
 
+    # Campos de Antigua Forma de transporte borrar en el futuro
     modalidad_transporte = fields.Selection(
         selection="_list_modalidad_transporte", string="Modalidad de Transporte")
 
@@ -604,10 +588,13 @@ class GuiaRemision(models.Model):
         modalidad_transporte_objs = self.env["gestionit.modalidad_transporte"].search([
         ])
         return [(mt.code, mt.name) for mt in modalidad_transporte_objs]
+    # *************************************************************
+
 
     numero_bultos = fields.Integer(string="Número de Bultos", states={
                                    'validado': [('readonly', True)]})
 
+    # Campos de Antigua Forma de transporte borrar en el futuro
     partner_direccion_partida_id = fields.Many2one("res.partner")
     direccion_partida_id = fields.Many2one(
         "res.partner", states={'validado': [('readonly', True)]})
@@ -615,6 +602,7 @@ class GuiaRemision(models.Model):
         string="Lugar de Partida - Dirección")
     lugar_partida_ubigeo_code = fields.Many2one(
         "res.country.state", string="Partida Ubigeo Code")
+    # *************************************************************
 
     @api.onchange("direccion_partida_id")
     def _onchange_direccion_partida(self):
@@ -622,6 +610,7 @@ class GuiaRemision(models.Model):
             record.lugar_partida_direccion = record.direccion_partida_id.street
             record.lugar_partida_ubigeo_code = record.direccion_partida_id.district_id.id
 
+    # Campos de Antigua Forma de transporte borrar en el futuro
     partner_direccion_llegada_id = fields.Many2one("res.partner")
     direccion_llegada_id = fields.Many2one(
         "res.partner", states={'validado': [('readonly', True)]})
@@ -629,6 +618,7 @@ class GuiaRemision(models.Model):
         string="Lugar de llegada - Dirección")
     lugar_llegada_ubigeo_code = fields.Many2one(
         "res.country.state", string="Llegada Ubigeo Code")
+    # *************************************************************
 
     @api.onchange("direccion_llegada_id")
     def _onchange_direccion_llegada(self):
@@ -641,6 +631,7 @@ class GuiaRemision(models.Model):
                                              string="Detalle de líneas",
                                              ondelete='cascade', states={'validado': [('readonly', True)]})
 
+    # Campos de Antigua Forma de transporte borrar en el futuro
     # TRANSPORTE PRIVADO
     conductor_privado_partner_id = fields.Many2one(
         "res.partner", string="Conductor", states={'validado': [('readonly', True)]})
@@ -654,6 +645,7 @@ class GuiaRemision(models.Model):
                                            'validado': [('readonly', True)]})
     vehiculo_publico_id = fields.Many2one(
         "gestionit.vehiculo", string="Vehículo", states={'validado': [('readonly', True)]})
+    # *************************************************************
 
     state = fields.Selection(
         selection=[('borrador', 'Borrador'), ('validado', 'Validado')], default="borrador")
@@ -703,6 +695,7 @@ class GuiaRemision(models.Model):
             }
         }
 
+
     def validar_datos_compania(self):
         errors = []
         if not self.company_id.partner_id.vat:
@@ -750,9 +743,13 @@ class GuiaRemision(models.Model):
                 elif not patron_dni.match(partner.vat):
                     errors.append(
                         "* El Número de documento del destinatario tiene un DNI inválido.")
+            elif partner.l10n_latam_identification_type_id.l10n_pe_vat_code in ("0","4","7"):
+                if not partner.vat:
+                    errors.append(
+                        "* El Número de documento del destinatario esta vacío.")
             else:
                 errors.append(
-                    "* El tipo de Documento del Destinatario no es válido, seleccion un RUC o DNI ")
+                    "* El tipo de Documento del Destinatario no es válido, seleccion un RUC, DNI ")
 
         if not partner.name:
             errors.append(
@@ -790,46 +787,6 @@ class GuiaRemision(models.Model):
                 "* El tipo de dato del Peso Total es {} y debería ser Flotante".format(type(self.peso_bruto_total)))
         elif self.peso_bruto_total == 0:
             errors.append("* El Peso Total debe ser mayor a 0.")
-
-        return errors
-
-    def validar_ubigeo(self, ubigeo):
-        ubigeo_objs = self.env["res.country.state"].sudo().search(
-            [("code", "=", ubigeo)])
-        if ubigeo_objs.exists():
-            return True
-        else:
-            return False
-
-    def validar_lugar_partida(self):
-        errors = []
-        if not self.lugar_partida_direccion:
-            errors.append(
-                "* La dirección del lugar de partida es obligatorio.")
-        elif len(self.lugar_partida_direccion) < 6 and len(self.lugar_partida_direccion) >= 100:
-            errors.append(
-                "* La dirección del lugar de partida tiene como mínimo 6 carácteres.")
-
-        if not self.lugar_partida_ubigeo_code:
-            errors.append("* El ubigeo del lugar de partida es obligatorio.")
-        elif not self.validar_ubigeo(self.lugar_partida_ubigeo_code.code):
-            errors.append("* El ubigeo de la dirección de partida no existe.")
-
-        return errors
-
-    def validar_lugar_llegada(self):
-        errors = []
-        if not self.lugar_llegada_direccion:
-            errors.append(
-                "* La dirección del lugar de llegada es obligatorio.")
-        elif len(self.lugar_llegada_direccion) < 6 and len(self.lugar_llegada_direccion) >= 100:
-            errors.append(
-                "* La dirección del lugar de llegada tiene como mínimo 6 carácteres.")
-
-        if not self.lugar_llegada_ubigeo_code:
-            errors.append("* El ubigeo del lugar de llegada es obligatorio.")
-        elif not self.validar_ubigeo(self.lugar_llegada_ubigeo_code.code):
-            errors.append("* El ubigeo de la dirección de llegada no existe.")
 
         return errors
 
@@ -878,6 +835,207 @@ class GuiaRemision(models.Model):
             # record.estado_emision = "B"
             record.state = "borrador"
             record.numero = "Guía de Remisión Electrónica"
+
+    def generar_comprobante_json(self):
+        if not self.name:
+            serie = self.journal_id.code
+            next_number = self.journal_id.sequence_number_next
+            numero = serie + "-" + str(next_number).zfill(8)
+            if self.estado_emision in ["A", "O"]:
+                raise UserError(
+                    "La Guía de Remisión ya ha sido emitida y tiene estado de Aceptada.")
+            if self.estado_emision in ["R"]:
+                raise UserError(
+                    "La Guía de Remisión ya ha sido emitida y tiene estado de Rechazada.")
+            if not next_number or not re.match('[T]\d{3}[-]\d{1,8}$', str(numero)):
+                raise UserError(
+                    "El codigo no tiene el formato correcto: " + str(numero))
+        else:
+            numero = self.name
+            if not re.match('[T]\d{3}[-]\d{1,8}$', str(self.name)):
+                raise UserError(
+                    "El codigo no tiene el formato correcto: " + str(self.name))
+            else:
+                serie = self.name.split("-")[0]
+                correlativo = self.name.split("-")[1]
+
+        serie, correlativo = numero.split('-')
+        correlativo = int(correlativo)
+        company = self.company_id.partner_id
+        destinatario = self.destinatario_partner_id
+        motivo_traslado_id = self.env["gestionit.motivo_traslado"].sudo().search([('code', '=', self.motivo_traslado)])
+
+        if self.multiple_tramos:
+            entregaUbigeo = self.transporte_lines[-1].lugar_llegada_ubigeo_code.code
+            entregaDireccion = str(self.transporte_lines[-1].lugar_llegada_direccion or "").strip()[:100]
+            salidaUbigeo = self.transporte_lines[0].lugar_partida_ubigeo_code.code
+            salidaDireccion = str(self.transporte_lines[0].lugar_partida_direccion or "").strip()[:100]
+        else:
+            entregaUbigeo = self.lugar_llegada_ubigeo_code.code
+            entregaDireccion = str(self.lugar_llegada_direccion or "").strip()[:98]
+            salidaUbigeo = self.lugar_partida_ubigeo_code.code
+            salidaDireccion = str(self.lugar_partida_direccion or "").strip()[:98]
+
+        documento = {
+            "serie": serie,
+            "correlativo": correlativo,
+            "nombreEmisor": company.name.strip(),
+            "tipoDocEmisor": company.l10n_latam_identification_type_id.l10n_pe_vat_code,
+            "numDocEmisor": company.vat,
+            "tipoDocReceptor": destinatario.l10n_latam_identification_type_id.l10n_pe_vat_code,
+            "numDocReceptor": destinatario.vat,
+            "nombreReceptor": destinatario.name.strip(),
+            "motivoTraslado": self.motivo_traslado,
+            "descripcionMotivoTraslado": motivo_traslado_id.name.strip(),
+            "transbordoProgramado": False,
+            "pesoTotal": round(self.peso_bruto_total, 3),
+            "pesoUnidadMedida": "KGM",
+            "entregaUbigeo": entregaUbigeo,
+            "entregaDireccion": entregaDireccion,
+            "salidaUbigeo": salidaUbigeo,
+            "salidaDireccion": salidaDireccion,
+        }
+        if self.numero_bultos > 0:
+            documento.update({"numeroBulltosPallets": self.numero_bultos})
+
+        detalle = []
+
+        for guia_remision_line in self.guia_remision_line_ids:
+            detalle.append(
+                {
+                    "cantidadItem": guia_remision_line.qty,
+                    "nombreItem": guia_remision_line.description.strip(),
+                    "unidadMedidaItem": guia_remision_line.uom_id.code,
+                    "codItem": str(guia_remision_line.product_id.id)
+                }
+            )
+
+        transportes = []
+        if not self.multiple_tramos:
+            if self.modalidad_transporte == '01':
+                transporte = {
+                    "numDocTransportista": self.transporte_partner_id.vat,
+                    "tipoDocTransportista": self.transporte_partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code,
+                    "fechaInicioTraslado": str(self.fecha_inicio_traslado),
+                    "nombreTransportista": self.transporte_partner_id.name.strip(),
+                    "modoTraslado": self.modalidad_transporte
+                }
+                if self.vehiculo_publico_id:
+                    if self.vehiculo_publico_id.numero_placa:
+                        transporte.update(
+                            {"placaVehiculo": self.vehiculo_publico_id.numero_placa})
+                if self.conductor_publico_id:
+                    if self.conductor_publico_id.vat:
+                        transporte.update(
+                            {"numDocConductor": self.conductor_publico_id.vat})
+                    if self.conductor_publico_id.l10n_latam_identification_type_id.l10n_pe_vat_code:
+                        transporte.update(
+                            {"tipoDocConductor": self.conductor_publico_id.l10n_latam_identification_type_id.l10n_pe_vat_code})
+
+                transportes.append(transporte)
+            # Transporte Privado
+            elif self.modalidad_transporte == "02":
+                transportes.append({
+                    "numDocConductor": self.conductor_privado_partner_id.vat,
+                    "tipoDocConductor": self.conductor_privado_partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code,
+                    "fechaInicioTraslado": str(self.fecha_inicio_traslado),
+                    "placaVehiculo": self.vehiculo_privado_id.numero_placa,
+                    "modoTraslado": self.modalidad_transporte
+                })
+        else:
+            for line in self.transporte_lines:
+                # Transporte Público
+                if line.modalidad_transporte == '01':
+                    transporte = {
+                        "numDocTransportista": line.transporte_partner_id.vat,
+                        "tipoDocTransportista": line.transporte_partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code,
+                        "fechaInicioTraslado": str(line.date),
+                        "nombreTransportista": line.transporte_partner_id.name.strip(),
+                        "modoTraslado": line.modalidad_transporte
+                    }
+                    if line.vehiculo_publico_id:
+                        if line.vehiculo_publico_id.numero_placa:
+                            transporte.update(
+                                {"placaVehiculo": line.vehiculo_publico_id.numero_placa})
+                    if line.conductor_publico_id:
+                        if line.conductor_publico_id.vat:
+                            transporte.update(
+                                {"numDocConductor": line.conductor_publico_id.vat})
+                        if line.conductor_publico_id.l10n_latam_identification_type_id.l10n_pe_vat_code:
+                            transporte.update(
+                                {"tipoDocConductor": line.conductor_publico_id.l10n_latam_identification_type_id.l10n_pe_vat_code})
+
+                    transportes.append(transporte)
+                # Transporte Privado
+                elif line.modalidad_transporte == "02":
+                    transportes.append({
+                        "numDocConductor": line.conductor_privado_partner_id.vat,
+                        "tipoDocConductor": line.conductor_privado_partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code,
+                        "fechaInicioTraslado": str(line.date),
+                        "placaVehiculo": line.vehiculo_privado_id.numero_placa,
+                        "modoTraslado": line.modalidad_transporte
+                    })
+
+        nombreEmisor = self.company_id.partner_id.registration_name.strip()
+        numDocEmisor = self.company_id.partner_id.vat.strip(
+        ) if self.company_id.partner_id.vat else ""
+        data = {
+            "company": {
+                "numDocEmisor": numDocEmisor,
+                "nombreEmisor": nombreEmisor,
+                "SUNAT_user": self.company_id.sunat_user,
+                "SUNAT_pass": self.company_id.sunat_pass,
+                "key_private": self.company_id.cert_id.key_private,
+                "key_public": self.company_id.cert_id.key_public,
+            },
+            "tipoEnvio": int(self.company_id.tipo_envio),
+            "tipoDocumento": "09",
+            "transportes": transportes,
+            "detalle": detalle,
+            "documento": documento,
+            "fechaEmision": str(self.fecha_emision)
+        }
+        return data
+    
+    def validar_lugar_partida(self):
+        errors = []
+        if not self.lugar_partida_direccion:
+            errors.append(
+                "* La dirección del lugar de partida es obligatorio.")
+        elif len(self.lugar_partida_direccion) < 6 and len(self.lugar_partida_direccion) >= 100:
+            errors.append(
+                "* La dirección del lugar de partida tiene como mínimo 6 carácteres.")
+
+        if not self.lugar_partida_ubigeo_code:
+            errors.append("* El ubigeo del lugar de partida es obligatorio.")
+        elif not self.validar_ubigeo(self.lugar_partida_ubigeo_code.code):
+            errors.append("* El ubigeo de la dirección de partida no existe.")
+
+        return errors
+
+    def validar_ubigeo(self, ubigeo):
+        ubigeo_objs = self.env["res.country.state"].sudo().search(
+            [("code", "=", ubigeo)])
+        if ubigeo_objs.exists():
+            return True
+        else:
+            return False
+
+    def validar_lugar_llegada(self):
+        errors = []
+        if not self.lugar_llegada_direccion:
+            errors.append(
+                "* La dirección del lugar de llegada es obligatorio.")
+        elif len(self.lugar_llegada_direccion) < 6 and len(self.lugar_llegada_direccion) >= 100:
+            errors.append(
+                "* La dirección del lugar de llegada tiene como mínimo 6 carácteres.")
+
+        if not self.lugar_llegada_ubigeo_code:
+            errors.append("* El ubigeo del lugar de llegada es obligatorio.")
+        elif not self.validar_ubigeo(self.lugar_llegada_ubigeo_code.code):
+            errors.append("* El ubigeo de la dirección de llegada no existe.")
+
+        return errors
 
     def validar_transporte(self):
         errors = []
@@ -955,134 +1113,26 @@ class GuiaRemision(models.Model):
 
         return errors
 
-    def generar_comprobante_json(self):
-        if not self.name:
-            serie = self.journal_id.code
-            next_number = self.journal_id.sequence_number_next
-            numero = serie + "-" + str(next_number).zfill(8)
-            if self.estado_emision in ["A", "O"]:
-                raise UserError(
-                    "La Guía de Remisión ya ha sido emitida y tiene estado de Aceptada.")
-            if self.estado_emision in ["R"]:
-                raise UserError(
-                    "La Guía de Remisión ya ha sido emitida y tiene estado de Rechazada.")
-            if not next_number or not re.match('[T]\d{3}[-]\d{1,8}$', str(numero)):
-                raise UserError(
-                    "El codigo no tiene el formato correcto: " + str(numero))
-        else:
-            numero = self.name
-            if not re.match('[T]\d{3}[-]\d{1,8}$', str(self.name)):
-                raise UserError(
-                    "El codigo no tiene el formato correcto: " + str(self.name))
-            else:
-                serie = self.name.split("-")[0]
-                correlativo = self.name.split("-")[1]
-
-        serie, correlativo = numero.split('-')
-        correlativo = int(correlativo)
-        company = self.company_id.partner_id
-        destinatario = self.destinatario_partner_id
-        motivo_traslado_id = self.env["gestionit.motivo_traslado"].sudo().search(
-            [('code', '=', self.motivo_traslado)])
-
-        documento = {
-            "serie": serie,
-            "correlativo": correlativo,
-            "nombreEmisor": company.name.strip(),
-            "tipoDocEmisor": company.l10n_latam_identification_type_id.l10n_pe_vat_code,
-            "numDocEmisor": company.vat,
-            "tipoDocReceptor": destinatario.l10n_latam_identification_type_id.l10n_pe_vat_code,
-            "numDocReceptor": destinatario.vat,
-            "nombreReceptor": destinatario.name.strip(),
-            "motivoTraslado": self.motivo_traslado,
-            "descripcionMotivoTraslado": motivo_traslado_id.name.strip(),
-            "transbordoProgramado": False,
-            "pesoTotal": round(self.peso_bruto_total, 3),
-            "pesoUnidadMedida": "KGM",
-            "entregaUbigeo": self.lugar_llegada_ubigeo_code.code,
-            "entregaDireccion": str(self.lugar_llegada_direccion or "").strip()[:98],
-            "salidaUbigeo": self.lugar_partida_ubigeo_code.code,
-            "salidaDireccion": str(self.lugar_partida_direccion or "").strip()[:98],
-        }
-        if self.numero_bultos > 0:
-            documento.update({"numeroBulltosPallets": self.numero_bultos})
-
-        detalle = []
-
-        for guia_remision_line in self.guia_remision_line_ids:
-            detalle.append(
-                {
-                    "cantidadItem": guia_remision_line.qty,
-                    "nombreItem": guia_remision_line.description.strip(),
-                    "unidadMedidaItem": guia_remision_line.uom_id.code,
-                    "codItem": str(guia_remision_line.product_id.id)
-                }
-            )
-
-        # Transporte Público
-        transportes = []
-        if self.modalidad_transporte == '01':
-            transporte = {
-                "numDocTransportista": self.transporte_partner_id.vat,
-                "tipoDocTransportista": self.transporte_partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code,
-                "fechaInicioTraslado": str(self.fecha_inicio_traslado),
-                "nombreTransportista": self.transporte_partner_id.name.strip(),
-                "modoTraslado": self.modalidad_transporte
-            }
-            if self.vehiculo_publico_id:
-                if self.vehiculo_publico_id.numero_placa:
-                    transporte.update(
-                        {"placaVehiculo": self.vehiculo_publico_id.numero_placa})
-            if self.conductor_publico_id:
-                if self.conductor_publico_id.vat:
-                    transporte.update(
-                        {"numDocConductor": self.conductor_publico_id.vat})
-                if self.conductor_publico_id.l10n_latam_identification_type_id.l10n_pe_vat_code:
-                    transporte.update(
-                        {"tipoDocConductor": self.conductor_publico_id.l10n_latam_identification_type_id.l10n_pe_vat_code})
-
-            transportes.append(transporte)
-        # Transporte Privado
-        elif self.modalidad_transporte == "02":
-            transportes.append({
-                "numDocConductor": self.conductor_privado_partner_id.vat,
-                "tipoDocConductor": self.conductor_privado_partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code,
-                "fechaInicioTraslado": str(self.fecha_inicio_traslado),
-                "placaVehiculo": self.vehiculo_privado_id.numero_placa,
-                "modoTraslado": self.modalidad_transporte
-            })
-
-        nombreEmisor = self.company_id.partner_id.registration_name.strip()
-        numDocEmisor = self.company_id.partner_id.vat.strip(
-        ) if self.company_id.partner_id.vat else ""
-        data = {
-            "company": {
-                "numDocEmisor": numDocEmisor,
-                "nombreEmisor": nombreEmisor,
-                "SUNAT_user": self.company_id.sunat_user,
-                "SUNAT_pass": self.company_id.sunat_pass,
-                "key_private": self.company_id.cert_id.key_private,
-                "key_public": self.company_id.cert_id.key_public,
-            },
-            "tipoEnvio": int(self.company_id.tipo_envio),
-            "tipoDocumento": "09",
-            "transportes": transportes,
-            "detalle": detalle,
-            "documento": documento,
-            "fechaEmision": str(self.fecha_emision)
-        }
-        return data
-
     def validar_restricciones(self):
         errors = []
         errors += self.validar_datos_compania()
         errors += self.validar_datos_destinatario()
         errors += self.validar_motivo_traslado()
         errors += self.validar_datos_envio()
-        errors += self.validar_lugar_partida()
-        errors += self.validar_lugar_llegada()
         errors += self.validar_guia_remision_lineas()
-        errors += self.validar_transporte()
+
+        if self.multiple_tramos:
+            if not self.transporte_lines:
+                errors.append("* Es Necesario declarar al menos un tramo de transporte.")
+            else:
+                for line in self.transporte_lines:
+                    errors += line.validar_lugar_partida()
+                    errors += line.validar_lugar_llegada()
+                    errors += line.validar_transporte()
+        else:
+            errors += self.validar_lugar_partida()
+            errors += self.validar_lugar_llegada()
+            errors += self.validar_transporte()
 
         if len(errors) > 0:
             return {
@@ -1300,6 +1350,7 @@ class GuiaRemision(models.Model):
                 }
             }
         except Exception as e:
+            raise
             self.estado_emision = "P"
             return {
                 'name': 'Error',
@@ -1326,21 +1377,211 @@ class GuiaRemision(models.Model):
             'target': 'self'
         }
 
+class AccountInvoiceGuiaRemision(models.Model):
+    _inherit = "account.move"
 
-# class AccountInvoiceGuiaRemision(models.Model):
-#     _inherit = "account.move"
+    def btn_crear_guia_remision(self):
+        pass
 
-#     def btn_crear_guia_remision(self):
-#         pass
+class ResCompany(models.Model):
+    _inherit = 'res.company'
+
+    calc_peso = fields.Boolean(string="Calcular peso")
+
+class ResConfigSettings(models.TransientModel):
+    _inherit = "res.config.settings"
+
+    calc_peso = fields.Boolean(
+        string="Calcular peso automáticamente", related="company_id.calc_peso", readonly=False)
+
+class LineasTransporte(models.Model):
+    _name = 'gestionit.lineas_transporte'
+    _description = 'Lineas para descripcion de Tramos de envio'
 
 
-# class ResCompany(models.Model):
-#     _inherit = 'res.company'
+    guia_id = fields.Many2one('gestionit.guia_remision', 'Guia Base')
+    secuencia = fields.Integer('Secuencia')
+    transporte_partner_id = fields.Many2one("res.partner", string="Empresa Transportista", required=False)
+    ruc_trasporte_partner = fields.Char('RUC Transportista', related='transporte_partner_id.vat')
+    date = fields.Date('Fecha', required=True, default=fields.Date.context_today)
+    modalidad_transporte = fields.Selection(selection="_list_modalidad_transporte", string="Modalidad de Transporte", required=True)
+    partner_direccion_partida_id = fields.Many2one("res.partner")
+    direccion_partida_id = fields.Many2one("res.partner")
+    lugar_partida_direccion = fields.Char(string="Lugar de Partida - Dirección")
+    lugar_partida_ubigeo_code = fields.Many2one("res.country.state", string="Partida Ubigeo Code")
+    partner_direccion_llegada_id = fields.Many2one("res.partner")
+    direccion_llegada_id = fields.Many2one("res.partner")
+    lugar_llegada_direccion = fields.Char(string="Lugar de llegada - Dirección")
+    lugar_llegada_ubigeo_code = fields.Many2one("res.country.state", string="Llegada Ubigeo Code")
+    conductor_privado_partner_id = fields.Many2one("res.partner", string="Conductor")
+    vehiculo_privado_id = fields. Many2one("gestionit.vehiculo", string="Vehículo")
+    conductor_publico_id = fields.Many2one("res.partner", string="Conductor")
+    vehiculo_publico_id = fields.Many2one("gestionit.vehiculo", string="Vehículo")
+    licencia = fields.Char('Licencia', compute='_get_licencia', readonly=True)
 
-#     calc_peso = fields.Boolean(string="Calcular peso")
+    @api.onchange("conductor_publico_id", "conductor_privado_partner_id")
+    def _get_licencia(self):
+        for record in self:
+            if record.modalidad_transporte == '01':
+                record.licencia = record.conductor_publico_id.licencia
+            elif record.modalidad_transporte == '02':
+                record.licencia = record.conductor_privado_partner_id.licencia
+            else:
+                record.licencia = ''
+
+    @api.onchange("partner_direccion_partida_id")
+    def _onchange_partner_direccion_partida_id(self):
+        self.direccion_partida_id = False
+        self.lugar_partida_direccion = ''
+        self.lugar_partida_ubigeo_code = False
+
+    @api.onchange("partner_direccion_llegada_id")
+    def _onchange_partner_direccion_llegada_id(self):
+        self.direccion_llegada_id = False
+        self.lugar_llegada_direccion = ''
+        self.lugar_llegada_ubigeo_code = False
+
+    @api.onchange("modalidad_transporte")
+    def _onchange_modalidad_transporte(self):
+        if self.modalidad_transporte == '01':
+            if self.transporte_partner_id:
+                self.partner_direccion_partida_id = self.transporte_partner_id.id
+            else:
+                self.partner_direccion_partida_id = False
+        elif self.modalidad_transporte == '02':
+            self.partner_direccion_partida_id = self.env.company.id
+        else:
+            self.partner_direccion_partida_id = False
 
 
-# class ResConfigSettings(models.TransientModel):
-#     _inherit = "res.config.settings"
+    @api.onchange("direccion_partida_id")
+    def _onchange_direccion_partida(self):
+        for record in self:
+            record.lugar_partida_direccion = record.direccion_partida_id.street
+            record.lugar_partida_ubigeo_code = record.direccion_partida_id.district_id.id
 
-    
+    @api.onchange("direccion_llegada_id")
+    def _onchange_direccion_llegada(self):
+        for record in self:
+            record.lugar_llegada_direccion = record.direccion_llegada_id.street
+            record.lugar_llegada_ubigeo_code = record.direccion_llegada_id.district_id.id
+
+    def _list_modalidad_transporte(self):
+        modalidad_transporte_objs = self.env["gestionit.modalidad_transporte"].search([])
+        return [(mt.code, mt.name) for mt in modalidad_transporte_objs]
+
+    def validar_transporte(self):
+        errors = []
+        if not self.modalidad_transporte:
+            errors.append(
+                "* La modalidad de transporte no ha sido seleccionado.")
+        elif self.modalidad_transporte not in ["01", "02"]:
+            errors.append(
+                "* La modalidad de transporte seleccionado es incorrecto. Las modalidades de transporte permitidos son 01 - Transporte Público y 02 - Transporte Privado")
+
+        if self.modalidad_transporte == "01":
+            if not self.transporte_partner_id:
+                errors.append(
+                    "* Debe seleccionar una Empresa de Transporte público.")
+            else:
+                if not self.transporte_partner_id.name:
+                    errors.append(
+                        "* La empresa de transporte seleccionado no tiene Nombre o Razón Social.")
+                elif len(self.transporte_partner_id.name) < 4:
+                    errors.append(
+                        "* El nombre de la empresa de transporte seleccionada debe tener como mínimo 4 carácteres.")
+
+                if not self.transporte_partner_id.vat:
+                    errors.append(
+                        "* La empresa de transporte seleccionado no tiene documento.")
+                elif not patron_ruc.match(self.transporte_partner_id.vat):
+                    errors.append(
+                        "* El RUC de la empresa de transporte seleccionada tiene un formato incorrecto.")
+
+                if not self.transporte_partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code:
+                    errors.append(
+                        "* La empresa de transporte seleccionado no tiene tipo de documento.")
+                elif not self.transporte_partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code == "6":
+                    errors.append(
+                        "* El tipo de documento de la empresa de transporte seleccionada debe ser de tipo 'RUC'")
+
+                if not self.date:
+                    errors.append(
+                        "* La fecha de inicio de traslado es obligatorio.")
+                """
+                if not self.conductor_publico_id:
+                    errors.append("* El Conductor público de la empresa es obligatorio.")
+                elif not self.conductor_publico_id.tipo_documento:
+                    errors.append("* El Conductor público seleccionado no tiene tipo de documento de identidad.")
+                elif not self.conductor_publico_id.vat:
+                    errors.append("* El Conductor público seleccionado no tiene número de documento de identidad.")
+                """
+        elif self.modalidad_transporte == "02":
+            if not self.conductor_privado_partner_id:
+                errors.append("* Debe seleccionar un conductor privado.")
+            else:
+                if not self.conductor_privado_partner_id.name:
+                    errors.append(
+                        "* El conductor privado seleccionado no tiene Nombre.")
+                elif len(self.conductor_privado_partner_id.name) < 4:
+                    errors.append(
+                        "* El nombre del conductor privado seleccionado debe tener más de 4 carácteres")
+
+                if not self.conductor_privado_partner_id.vat:
+                    errors.append(
+                        "* El conductor privado seleccionado no tiene documento.")
+                if not self.conductor_privado_partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code:
+                    errors.append(
+                        "* La conductor privado seleccionado no tiene tipo de documento.")
+
+                if not self.date:
+                    errors.append(
+                        "* La fecha de inicio de traslado es obligatorio")
+
+            if not self.vehiculo_privado_id:
+                errors.append("* El Vehículo privado es Obligatorio.")
+            elif not self.vehiculo_privado_id.numero_placa:
+                errors.append(
+                    "* El Vehículo pivado seleccionado no tiene Número de Placa")
+
+        return errors
+
+    def validar_lugar_partida(self):
+        errors = []
+        if not self.lugar_partida_direccion:
+            errors.append(
+                "* La dirección del lugar de partida es obligatorio.")
+        elif len(self.lugar_partida_direccion) < 6 and len(self.lugar_partida_direccion) >= 100:
+            errors.append(
+                "* La dirección del lugar de partida tiene como mínimo 6 carácteres.")
+
+        if not self.lugar_partida_ubigeo_code:
+            errors.append("* El ubigeo del lugar de partida es obligatorio.")
+        elif not self.validar_ubigeo(self.lugar_partida_ubigeo_code.code):
+            errors.append("* El ubigeo de la dirección de partida no existe.")
+
+        return errors
+
+    def validar_lugar_llegada(self):
+        errors = []
+        if not self.lugar_llegada_direccion:
+            errors.append(
+                "* La dirección del lugar de llegada es obligatorio.")
+        elif len(self.lugar_llegada_direccion) < 6 and len(self.lugar_llegada_direccion) >= 100:
+            errors.append(
+                "* La dirección del lugar de llegada tiene como mínimo 6 carácteres.")
+
+        if not self.lugar_llegada_ubigeo_code:
+            errors.append("* El ubigeo del lugar de llegada es obligatorio.")
+        elif not self.validar_ubigeo(self.lugar_llegada_ubigeo_code.code):
+            errors.append("* El ubigeo de la dirección de llegada no existe.")
+
+        return errors
+
+    def validar_ubigeo(self, ubigeo):
+        ubigeo_objs = self.env["res.country.state"].sudo().search(
+            [("code", "=", ubigeo)])
+        if ubigeo_objs.exists():
+            return True
+        else:
+            return False

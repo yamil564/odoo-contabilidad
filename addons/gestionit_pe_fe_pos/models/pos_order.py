@@ -186,7 +186,10 @@ class PosOrder(models.Model):
             # Tipos de comprobantes 01- Factura ; 03- Boleta ; 07- Nota de crédito ; 08- Nota de débito
             result["invoice_type_code"] = self.account_move.invoice_type_code
             result["date"] = self.account_move.invoice_date
-        result["lines"] = self.lines.mapped(lambda r:{"product_id":r.product_id.id,"price_unit":r.price_unit,"qty":r.qty})
+            result["payments"] = self.payment_ids.mapped(lambda r:{'id':r.payment_method_id.id,'amount':r.amount})
+        result["lines"] = self.lines.mapped(lambda r:{"product_id":r.product_id.id,
+                                                        "price_unit":r.price_unit,
+                                                        "qty":r.qty})
 
         return result
 

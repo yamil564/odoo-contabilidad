@@ -229,8 +229,30 @@ class AccountMove(models.Model):
 
     documento_baja_id = fields.Many2one(
         "account.comunicacion_baja", copy=False)
-    documento_baja_state = fields.Selection(
-        string="Estado del Documento de Baja", related="documento_baja_id.state", copy=False)
+    # documento_baja_state = fields.Selection(
+    #     string="Estado del Documento de Baja", related="documento_baja_id.state", copy=False)
+
+    documento_baja_state = fields.Selection(selection=[
+            ('A', 'Aceptado'),
+            ('E', 'Enviado a SUNAT'),
+            ('N', 'Envio Erróneo'),
+            ('O', 'Aceptado con Observación'),
+            ('R', 'Rechazado'),
+            ('P', 'Pendiente de envió a SUNAT')
+        ],
+        string="Estado del Documento de Baja", compute="_compute_documento_baja_state", copy=False)
+
+    def _compute_documento_baja_state(self):
+        for record in self:
+            if record.documento_baja_id:
+                record.documento_baja_state = record.documento_baja_id.state
+                return
+            elif record.account_summary_id:
+                if record.account_summary_id.cod_operacion == '3':
+                    record.documento_baja_state = record.account_summary_id.estado_emision
+                    return
+            record.documento_baja_state = False
+
 
     resumen_anulacion_id = fields.Many2one("account.summary", copy=False)
     resumen_anulacion_state = fields.Selection(
