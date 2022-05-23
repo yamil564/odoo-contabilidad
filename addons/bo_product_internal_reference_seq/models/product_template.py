@@ -33,7 +33,7 @@ class ProductTemplate(models.Model):
         return res
 
     @api.constrains('default_code')
-    def _check_default_code(self):
+    def _check_default_code_aux(self):
         for record in self:
             referece = self.env['product.template'].search([('default_code', 'not in', ('', False)), ('default_code', '=', self.default_code), ('id', '!=', self.id), ('company_id', 'in' , (self.env.company.id,False))])
             if self.default_code.isdigit():
