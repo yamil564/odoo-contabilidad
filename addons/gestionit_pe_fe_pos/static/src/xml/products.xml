@@ -15,6 +15,11 @@
                 <t t-esc="'['+line.get_product().default_code+']'"/>
             </span>
         </t>
+        <!-- <t t-jquery=".info-list" t-operation="after">
+            <t t-foreach="line.get_taxes()" t-as="tax">
+                <span> <t t-esc="tax.name"/></span>
+            </t>
+        </t> -->
     </t>
 
 </templates>

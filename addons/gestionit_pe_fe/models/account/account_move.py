@@ -847,7 +847,7 @@ class AccountMove(models.Model):
         if not (self.current_log_status_id and (self.journal_id.invoice_type_code_id == "01" or self.journal_id.tipo_comprobante_a_rectificar == "01")):
             self.action_generate_and_signed_xml()
 
-        if self.current_log_status_id.status in ["P", False]:
+        if self.current_log_status_id.status in ["P", "N",False]:
             try:
                 vals = send_doc_xml(self)
                 self.current_log_status_id.write(vals)
@@ -1348,7 +1348,7 @@ class AccountMove(models.Model):
         return action
 
     def cron_action_send_invoice(self):
-        invoices = self.env["account.move"].search([["estado_emision", "in", ["P", "", False]],
+        invoices = self.env["account.move"].search([["estado_emision", "in", ["P", "N","", False]],
                                                     ["name", "not in",
                                                         [False, "/"]],
                                                     ["state", "=", "posted"],
