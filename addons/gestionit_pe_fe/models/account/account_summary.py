@@ -311,7 +311,7 @@ class AccountSummary(models.Model):
             return result
     
     def cron_action_send_summary_pending(self):
-        summarys = self.env["account.summary"].search([("current_log_status_id.status","=","P")])
+        summarys = self.env["account.summary"].search([("current_log_status_id.status","in",["P","N",False,""])])
         for summ in summarys:
             if summ.cod_operacion == "1":
                 summ.action_send_summary()

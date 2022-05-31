@@ -7,6 +7,7 @@ odoo.define('gestionit_pe_fe_pos.screens', function(require){
     var rpc = require("web.rpc");
     var QWeb = core.qweb;
     var pos_order_mgmt = require('pos_order_mgmt.widgets')
+    
     var exports = {}
 
     screens.PaymentScreenWidget.include({
@@ -427,26 +428,19 @@ odoo.define('gestionit_pe_fe_pos.screens', function(require){
         }
     })
 
-    // screens.ReceiptScreenWidget.include({
-    //     print_web: function() {
-    //         if ($.browser.safari) {
-    //             document.execCommand('print', false, null);
-    //         } else {
-    //             try {
-    //                 window.print();
-    //             } catch(err) {
-    //                 if (navigator.userAgent.toLowerCase().indexOf("android") > -1) {
-    //                     this.gui.show_popup('error',{
-    //                         'title':_t('Printing is not supported on some android browsers'),
-    //                         'body': _t('Printing is not supported on some android browsers due to no default printing protocol is available. It is possible to print your tickets by making use of an IoT Box.'),
-    //                     });
-    //                 } else {
-    //                     throw err;
-    //                 }
-    //             }
-    //         }
-    //         this.pos.get_order()._printed = true;
-    //     },
+
+    // screens.OrderWidget.include({
+    //     render_orderline: function(orderline){
+    //         var res = this._super(orderline);
+    //         var btn = $("<button>Gratuito</button>")
+    //         btn.on('click',()=>{
+    //             console.log(orderline)
+    //         })
+    //         btn.appendTo(res)
+    //         console.log("render_orderline")
+    //         console.log(res)
+    //         return res
+    //     }
     // })
 
     exports.screens = screens;

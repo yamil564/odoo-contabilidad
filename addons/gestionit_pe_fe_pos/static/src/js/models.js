@@ -2,16 +2,21 @@ odoo.define("gestionit_pe_fe_pos.models",[
     "gestionit_pe_fe_pos.DB",
     "point_of_sale.models",
     "web.rpc",
+    "web.utils",
     "web.session"
 ],function(require){
     "use strict";
     var models = require("point_of_sale.models")
     var PosDB = require("gestionit_pe_fe_pos.DB")
     var session = require('web.session');
+    var utils = require('web.utils');
     var PosModelSuper = models.PosModel;
     var OrderSuper = models.Order
+    var OrderlineSuper = models.Orderline
     var PaymentlineSuper = models.Paymentline
     var exports = {}
+    var round_di = utils.round_decimals;
+    var round_pr = utils.round_precision;
 
     _.find(PosModelSuper.prototype.models,function(el){return el.model == 'res.partner'}).fields.push('l10n_latam_identification_type_id','mobile');
     _.find(PosModelSuper.prototype.models,function(el){return el.model == 'res.company'}).fields.push('logo','street','phone','website_invoice_search');
@@ -435,7 +440,111 @@ odoo.define("gestionit_pe_fe_pos.models",[
             this.select_paymentline(newPaymentline);
     
         },
+        // get_total_for_taxes: function(tax_id){
+        //     var total = 0;
+    
+        //     if (!(tax_id instanceof Array)) {
+        //         tax_id = [tax_id];
+        //     }
+    
+        //     var tax_set = {};
+    
+        //     for (var i = 0; i < tax_id.length; i++) {
+        //         tax_set[tax_id[i]] = true;
+        //     }
+    
+        //     this.orderlines.each(function(line){
+        //         // var taxes_ids = line.get_product().taxes_id;
+        //         var taxes_ids = line.taxes_id;
+        //         for (var i = 0; i < taxes_ids.length; i++) {
+        //             if (tax_set[taxes_ids[i]]) {
+        //                 total += line.get_price_with_tax();
+        //                 return;
+        //             }
+        //         }
+        //     });
+    
+        //     return total;
+        // },
     });
+
+    // models.Orderline = models.Orderline.extend({
+    //     initialize: function(attr,options){
+    //         OrderlineSuper.prototype.initialize.apply(this, arguments);
+    //         this.taxes_id = this.product.taxes_id
+    //         console.log(this.taxes_id)
+    //     },
+    //     set_taxes_id:function(taxes_id){
+    //         this.taxes_id = taxes_id
+    //     },
+    //     get_display_price_one: function(){
+    //         var rounding = this.pos.currency.rounding;
+    //         var price_unit = this.get_unit_price();
+    //         if (this.pos.config.iface_tax_included !== 'total') {
+    //             return round_pr(price_unit * (1.0 - (this.get_discount() / 100.0)), rounding);
+    //         } else {
+    //             // var product =  this.get_product();
+    //             var taxes_ids = this.taxes_id;
+    //             var taxes =  this.pos.taxes;
+    //             var product_taxes = [];
+    
+    //             _(taxes_ids).each(function(el){
+    //                 product_taxes.push(_.detect(taxes, function(t){
+    //                     return t.id === el;
+    //                 }));
+    //             });
+    
+    //             var all_taxes = this.compute_all(product_taxes, price_unit, 1, this.pos.currency.rounding);
+    
+    //             return round_pr(all_taxes.total_included * (1 - this.get_discount()/100), rounding);
+    //         }
+    //     },
+    //     get_taxes: function(){
+    //         // var taxes_ids = this.get_product().taxes_id;
+    //         var taxes_ids = this.taxes_id;
+    //         var taxes = [];
+    //         for (var i = 0; i < taxes_ids.length; i++) {
+    //             taxes.push(this.pos.taxes_by_id[taxes_ids[i]]);
+    //         }
+    //         return taxes;
+    //     },
+    //     get_all_prices: function(){
+    //         var self = this;
+    
+    //         var price_unit = this.get_unit_price() * (1.0 - (this.get_discount() / 100.0));
+    //         var taxtotal = 0;
+    
+    //         // var product =  this.get_product();
+    //         // var taxes_ids = product.taxes_id;
+    //         var taxes_ids = this.taxes_id;
+    //         var taxes =  this.pos.taxes;
+    //         var taxdetail = {};
+    //         var product_taxes = [];
+    
+    //         _(taxes_ids).each(function(el){
+    //             var tax = _.detect(taxes, function(t){
+    //                 return t.id === el;
+    //             });
+    //             product_taxes.push.apply(product_taxes, self._map_tax_fiscal_position(tax));
+    //         });
+    
+    //         var all_taxes = this.compute_all(product_taxes, price_unit, this.get_quantity(), this.pos.currency.rounding);
+    //         var all_taxes_before_discount = this.compute_all(product_taxes, this.get_unit_price(), this.get_quantity(), this.pos.currency.rounding);
+    //         _(all_taxes.taxes).each(function(tax) {
+    //             taxtotal += tax.amount;
+    //             taxdetail[tax.id] = tax.amount;
+    //         });
+    
+    //         return {
+    //             "priceWithTax": all_taxes.total_included,
+    //             "priceWithoutTax": all_taxes.total_excluded,
+    //             "priceSumTaxVoid": all_taxes.total_void,
+    //             "priceWithTaxBeforeDiscount": all_taxes_before_discount.total_included,
+    //             "tax": taxtotal,
+    //             "taxDetails": taxdetail,
+    //         };
+    //     },
+    // })
 
     exports.models =models
 

@@ -23,11 +23,13 @@
 					Telefono:
 					<t t-esc="widget.pos.company.phone || ''" />
 				</div>
-				<t t-if="widget.pos.config.is_header_or_footer != false">
-					<div style='text-align:justify;font-size:11px'>
-						<span t-esc="widget.pos.config.receipt_header" style="white-space: pre-wrap;"/>
-					</div>
-					<br />
+				<t t-if="widget.pos.config.is_header_or_footer">
+					<t t-if="widget.pos.config.receipt_header">
+						<div style='text-align:justify;font-size:11px' >
+							<span t-esc="widget.pos.config.receipt_header" style="white-space: pre-wrap;"/>
+						</div>
+						<br />
+					</t>
 				</t>
 				<div class="pos-center-align">
 					RUC:
