@@ -1,6 +1,6 @@
 <odoo>
-    <record id="google_coversion_tracking_tag" model="ir.ui.view">
-        <field name="name">google.conversion.tracking</field>
+    <record id="res_config_settings_google_coversion_tracking_tag" model="ir.ui.view">
+        <field name="name">res.config.settings.google.conversion.tracking</field>
         <field name="model">res.config.settings</field>
         <field name="inherit_id" ref="website.res_config_settings_view_form"/>
         <field name="arch" type="xml">
