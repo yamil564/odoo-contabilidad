@@ -22,7 +22,7 @@ _logger = logging.getLogger(__name__)
 
 patron_dni = re.compile("\d{8}$")
 patron_ruc = re.compile("[12]\d{10}$")
-patron_placa_vehicular = re.compile("[a-zA-Z]{3}[0-9]{3}|[a-zA-Z]{3}-[0-9]{3}|[a-zA-Z]{3}-[0-9]{2}[a-zA-Z]$")
+patron_placa_vehicular = re.compile("[0-9a-zA-Z]{3}[0-9]{3}|[0-9a-zA-Z]{3}-[0-9]{3}|[0-9a-zA-Z]{3}-[0-9]{2}[0-9a-zA-Z]$")
 
 codigo_unidades_de_medida = [
     "DZN",
