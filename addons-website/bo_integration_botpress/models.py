@@ -5,6 +5,7 @@ import logging
 
 class Website(models.Model):
     _inherit = "website"
+    has_botpress = fields.Boolean("Botpress",default=False)
     botpress_bot_id = fields.Char("Botpress Bot Id")
     botpress_host = fields.Char("Botpress Host")
 
@@ -21,6 +22,7 @@ class Website(models.Model):
 class ResConfigSettings(models.TransientModel):
     _inherit = "res.config.settings"
 
+    has_botpress = fields.Boolean(related="website_id.has_botpress",readonly=False)
     botpress_bot_id = fields.Char(related="website_id.botpress_bot_id",readonly=False)
     botpress_host = fields.Char(related="website_id.botpress_host",readonly=False)
 
