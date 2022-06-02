@@ -123,7 +123,7 @@ class PleSaleLine(models.Model):
 				if len(invoice_number)>1:
 					rec.numero_comprobante= invoice_number[1] or ''
 				else:
-					rec.numero_comprobante= ''
+					rec.numero_comprobante= invoice_number
 			else:
 				rec.numero_comprobante = ''
 
@@ -278,19 +278,34 @@ class PleSaleLine(models.Model):
 	###########################################################
 
 
-	@api.depends('invoice_id')
+	@api.depends('invoice_id','ple_sale_id')
 	def _compute_campo_oportunidad_anotacion(self):
 		for rec in self:
 			if rec.invoice_id:
 				valor_campo=''
-				
 
-				if tools.getDateYYYYMM(rec.invoice_id.date) == tools.getDateYYYYMM(rec.invoice_id.invoice_date):
-					if rec.invoice_id.state=='cancel':
-						valor_campo='2'
-					else:
+				if rec.invoice_id.date and rec.invoice_id.invoice_date and \
+					tools.getDateYYYYMM(rec.invoice_id.date) == tools.getDateYYYYMM(rec.invoice_id.invoice_date):
+					if rec.invoice_id.amount_igv==0.00:
+						valor_campo='0'
+					elif rec.invoice_id.amount_igv>0.00:
 						valor_campo='1'
-				elif tools.getDateYYYYMM(rec.invoice_id.date) > tools.getDateYYYYMM(rec.invoice_id.invoice_date):
-					valor_campo='8'					
-				rec.oportunidad_anotacion=valor_campo
 
+				elif rec.invoice_id.date and rec.invoice_id.invoice_date and \
+					tools.getDateYYYYMM(rec.invoice_id.date) > tools.getDateYYYYMM(rec.invoice_id.invoice_date):
+					valor_campo='8'
+
+				elif rec.invoice_id.state=='cancel' and rec.invoice_id.date and rec.ple_sale_id:
+
+					anio=rec.ple_sale_id.fiscal_year
+					mes = rec.ple_sale_id.fiscal_month
+					
+					if len(mes or '')==1:
+						mes="0%s"%(mes)
+					
+					if "%s%s"%(anio,mes)==tools.getDateYYYYMM(rec.invoice_id.date):
+						valor_campo='2'
+					elif "%s%s"%(anio,mes)>tools.getDateYYYYMM(rec.invoice_id.date):
+						valor_campo='8'
+
+				rec.oportunidad_anotacion=valor_campo

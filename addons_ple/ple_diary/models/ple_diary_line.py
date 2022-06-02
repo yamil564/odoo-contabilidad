@@ -53,6 +53,12 @@ class PleDiaryLine(models.Model):
 	def _compute_campo_periodo_apunte(self):
 		for rec in self:
 			mes=(rec.move_id.date and rec.move_id.date.month) or ''
+			
+			if mes<10:
+				mes="0%s"%(mes)
+			elif mes>=10:
+				mes="%s"%(mes)
+
 			if rec.move_id.date:
 				rec.periodo_apunte = "%s%s00" % (rec.move_id.date and rec.move_id.date.year or 'YYYY', mes or 'MM')
 			else:
@@ -146,7 +152,9 @@ class PleDiaryLine(models.Model):
 					number = ''
 				rec.num_serie_comprobante_pago = number
 			else:
-				rec.num_serie_comprobante_pago = ''
+				if rec.move_line_id.move_id and rec.move_line_id.move_id.name:
+					partes = rec.move_line_id.move_id.name.split('-')
+					rec.num_serie_comprobante_pago = partes[0] 
 
 
 	@api.depends('move_line_id','tipo_comprobante_pago')
@@ -175,7 +183,16 @@ class PleDiaryLine(models.Model):
 					number = '-'
 				rec.num_comprobante_pago = (number or '').strip()
 			else:
-				rec.num_comprobante_pago = rec.move_line_id.move_id.name or '-'
+				if rec.move_line_id.move_id and rec.move_line_id.move_id.name:
+					partes = rec.move_line_id.move_id.name.split('-')
+					if len(partes or '')>1:
+						rec.num_comprobante_pago = partes[1] or '-'
+					else:
+						rec.num_comprobante_pago = partes[0] or '-'
+				else:
+
+					rec.num_comprobante_pago = '-'
+
 
 	@api.depends('move_line_id') # ES LA FECHA QUE FIGURA EN EL APUNTE CONTABLE !!!!
 	def _compute_campo_fecha_contable(self):
