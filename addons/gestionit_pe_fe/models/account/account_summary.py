@@ -279,8 +279,7 @@ class AccountSummary(models.Model):
     def action_generate_and_signed_xml(self):
         if not self.company_id:
             raise UserError("El campo de compañía es Obligatoria.")
-        if not self.identificador_resumen:
-            raise UserError("Debe publicar el resumen diario para generar el identificador del resumen")
+        
         # tipo_envio = self.company_id.tipo_envio
         summary_json = self._generate_summary_json()
         credentials = summary_json.get("company")
@@ -338,7 +337,7 @@ class AccountSummary(models.Model):
             raise UserError("El campo de ticket esta vacío")
         response = self.current_log_status_id.action_request_status_ticket_summary()
 
-        if response.get("status") == "A" and self.cod_operacion == "1":
+        if response.get("status") == "A" and self.cod_operacion in ["1","2"]:
             self.account_invoice_ids.write({'estado_comprobante_electronico':'1_ACEPTADO'})
         if response.get("status") == "A" and self.cod_operacion == "3":
             self.account_invoice_ids.write({'estado_comprobante_electronico':'2_ANULADO'})
