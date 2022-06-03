@@ -57,6 +57,7 @@ class AccountMove(models.Model):
         self = self.with_context(force_company=self.journal_id.company_id.id)
 
         warning = {}
+        rec_account = ''
         if self.partner_id:
             if self.currency_id and self.currency_id != self.company_id.currency_id:
                 if self.journal_id.invoice_type_code_id=='02':

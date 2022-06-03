@@ -153,6 +153,34 @@ class AccountMove(models.Model):
                                          readonly=True
                                          )
 
+    ##### DOMAIN DINAMICO PARA TIPOS DE DOCUMENTO VENTA Y COMPRA ########
+    def _selection_tipo_documento_table_10(self):
+        return [i[0] for i in tdc]
+
+    @api.onchange('invoice_type_code','journal_ids','journal_type','type','warehouse_id')
+    def set_domain_for_journal_id(self):
+        for rec in self:
+            if rec.invoice_type_code and rec.journal_ids and rec.journal_type and rec.warehouse_id and rec.type in ['out_invoice','out_refund']:
+                res={}
+                res['domain']={'journal_id':[
+                    ('invoice_type_code_id','=',rec.invoice_type_code),
+                    #('id','in',[i.id for i in rec.journal_ids]),
+                    ('type','=',rec.journal_type)]}
+                
+                return res
+
+            elif rec.invoice_type_code and rec.journal_ids and rec.journal_type and rec.warehouse_id and rec.type in ['in_invoice','in_refund']:
+                res={}
+                res['domain']={'journal_id':[
+                    ('invoice_type_code_id','=',self._selection_tipo_documento_table_10()),
+                    #('id','in',[i.id for i in rec.journal_ids]),
+                    ('type','=',rec.journal_type)]}
+                
+                return res
+
+
+    #####################################################################
+
     account_log_status_ids = fields.One2many(
         "account.log.status", "account_move_id", string="Registro de Envíos", copy=False)
     current_log_status_id = fields.Many2one("account.log.status", copy=False)
