@@ -140,8 +140,8 @@ class AccountSummary(models.Model):
                                                                     ("partner_id.vat","!=",False),
                                                                     ("company_id","=",self.company_id.id),
                                                                     ("estado_comprobante_electronico", "in", ["-", False, "0_NO_EXISTE"])])
-            _logger.info(account_invoices)
-            account_invoices = account_invoices.filtered(lambda r:r.account_summary_id.estado_emision in [False,"N","R"])
+            # _logger.info(account_invoices)
+            account_invoices = account_invoices.filtered(lambda r:r.account_summary_id.estado_emision in [False,"N","R"] and re.match("^B\w{3}-\d{1,8}$", r.name))
 
             # Listar las notas de Crédito
             nota_credito_ids = self.env["account.move"].search([("invoice_date","=",self.fecha_emision_documentos),
@@ -152,11 +152,12 @@ class AccountSummary(models.Model):
                                                                         ("reversed_entry_id","!=",False),
                                                                         ("company_id","=",self.company_id.id),
                                                                         ("estado_comprobante_electronico", "in", ["-", False, "0_NO_EXISTE"])])
-            _logger.info(nota_credito_ids)
+            # _logger.info(nota_credito_ids)
             # nota_credito_ids = [nc for nc in nota_credito_ids if nc.reversed_entry_id.invoice_type_code == "03"]
             nota_credito_ids = nota_credito_ids.filtered(lambda nc: nc.reversed_entry_id.invoice_type_code == "03" and \
                                                                     nc.reversed_entry_id.estado_comprobante_electronico == "1_ACEPTADO" and \
-                                                                    nc.account_summary_id.estado_emision in [False,"N","R"])
+                                                                    nc.account_summary_id.estado_emision in [False,"N","R"] and \
+                                                                    re.match("^B\w{3}-\d{1,8}$", nc.name))
 
             # Listar las notas de Débito
             nota_debito_ids = self.env["account.move"].search([("invoice_date","=",self.fecha_emision_documentos),
@@ -171,7 +172,8 @@ class AccountSummary(models.Model):
             # nota_debito_ids = [nd for nd in nota_debito_ids if nd.reversed_entry_id.invoice_type_code == "03"]
             nota_debito_ids = nota_debito_ids.filtered(lambda nd: nd.debit_origin_id.invoice_type_code == "03" and \
                                                                     nd.debit_origin_id.estado_comprobante_electronico == "1_ACEPTADO" and \
-                                                                    nd.account_summary_id.estado_emision in [False,"N","R"])
+                                                                    nd.account_summary_id.estado_emision in [False,"N","R"] and \
+                                                                    re.match("^B\w{3}-\d{1,8}$", nd.name))
 
             # Consolidado Boleta y Notas Asociadas
             account_invoices = account_invoices + nota_credito_ids + nota_debito_ids
