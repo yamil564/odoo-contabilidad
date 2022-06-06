@@ -7,6 +7,7 @@
                     window.botpressWebChat.init({
                         host: "<t t-esc='website.get_botpress_host()'/>",
                         botId: "<t t-esc='website.get_botpress_bot_id()'/>",
+                        extraStylesheet:"<t t-esc='website.botpress_url_stylesheet or "" '/>"
                     });
                     var bp_first,bp_first_open,userId;
 
@@ -18,8 +19,6 @@
                         //console.log(bp_first_open !== "1")
                         if(bp_first_open !== "1"){
                             window.botpressWebChat.sendEvent({type:'show'});
-                            window.botpressWebChat.configure({"userId":userId})
-                            
                             await localStorage.setItem("bp_first_open","1");
                         }else{
                              window.botpressWebChat.sendEvent({type:'hide'});

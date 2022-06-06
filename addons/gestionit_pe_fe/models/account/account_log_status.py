@@ -233,17 +233,27 @@ class AccountLogStatus(models.Model):
         url = "https://api.sunat.gob.pe/v1/contribuyente/contribuyentes/{}/validarcomprobante".format(company.vat)
         
         if self.account_move_id.journal_id.electronic_invoice and \
-            (re.match("^F\w{3}-\d{1,8}$", self.account_move_id.name) or re.match("^B\w{3}-\d{1,8}$", self.account_move_id.name)) and \
+            (re.match("^F\w{3}-\d{1,8}$", self.account_move_id.name) or re.match("^B\w{3}-\d{1,8}$", self.account_move_id.name)) or re.match("\d{4}-\d{1,8}$", self.account_move_id.name) and \
             self.account_move_id.invoice_type_code in ["01","03","07","08"]:
 
-            comp = self.account_move_id.mapped(lambda r:{
-                "numRuc":company.vat,
-                "codComp":r.journal_id.invoice_type_code_id,
-                "numeroSerie":r.name.split("-")[0],
-                "numero":int(r.name.split("-")[1]),
-                "fechaEmision":r.invoice_date.strftime("%d/%m/%Y"),
-                "monto": str(round(r.amount_total,2)) 
-            })
+            if self.account_move_id.is_contingencia:
+                comp = self.account_move_id.mapped(lambda r:{
+                    "numRuc":company.vat,
+                    "codComp":r.journal_id.invoice_type_code_id,
+                    "numeroSerie":r.name.split("-")[0],
+                    "numero":int(r.name.split("-")[1]),
+                    "fechaEmision":r.invoice_date.strftime("%d/%m/%Y")
+                })
+            else:
+                comp = self.account_move_id.mapped(lambda r:{
+                    "numRuc":company.vat,
+                    "codComp":r.journal_id.invoice_type_code_id,
+                    "numeroSerie":r.name.split("-")[0],
+                    "numero":int(r.name.split("-")[1]),
+                    "fechaEmision":r.invoice_date.strftime("%d/%m/%Y"),
+                    "monto": str(round(r.amount_total,2)) 
+                })
+
             headers = {
                 'Authorization': "Bearer {}".format(token),
                 'Content-Type': "application/json"

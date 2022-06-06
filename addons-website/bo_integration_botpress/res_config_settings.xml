@@ -27,6 +27,14 @@
                             <div class="col-md-6">    
                                 <field name="botpress_bot_id" attrs="{'required':[('has_botpress','=',True)]}" class="w-100"/>
                             </div>
+                            <div class="col-md-6">
+                                <label for="botpress_url_stylesheet"  string="ULR Estilo"/>
+                                <p class="text-muted">Estilos de Chabot.</p>
+                            </div>
+                            <div class="col-md-6">    
+                                <field name="botpress_url_stylesheet" class="w-100"/>
+                            </div>
+                            
                         </div>
                     </div>
                 </div>
