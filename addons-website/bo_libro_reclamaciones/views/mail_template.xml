@@ -21,6 +21,6 @@
         </field>
         <field name="auto_delete" eval="False"/>
         <field name="report_name">Reclamación ${(object.name or '')}</field>
-        <field name="report_template" ref="report_libro_reclamaciones"/>
+        <field name="report_template" ref="bo_libro_reclamaciones.report_libro_reclamaciones"/>
     </record>
 </odoo>

@@ -7,9 +7,9 @@
         'views/assets.xml',
         'views/views.xml',
         'views/res_config_settings.xml',
+        'report/report.xml',
         'views/mail_template.xml',
         'report/libro_reclamaciones_template.xml',
-        'report/report.xml',
         'static/src/xml/libro_reclamaciones.xml'
      ],
 }
