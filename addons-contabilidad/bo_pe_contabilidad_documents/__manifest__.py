@@ -10,6 +10,7 @@
 			> Configuraciones de Contabilidad en Moneda Extranjera
 		''',
 	'data':[
+		'security/res_groups.xml',
 		'views/res_config_settings_view.xml',
 		'views/res_partner_view.xml',
 		'views/account_move_view.xml',
