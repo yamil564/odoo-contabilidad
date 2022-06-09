@@ -645,7 +645,7 @@ def crear_json_fac_bol(self):
     #         "tasaImpuesto": 0.18
     #     })
 
-    for item in self.invoice_line_ids.filtered(lambda r: not r.is_charge_or_discount):
+    for item in self.invoice_line_ids.filtered(lambda r: not r.is_charge_or_discount and not r.display_type):
         #price_unit = item.price_unit*(1-(item.discount/100)) - item.descuento_unitario
         #descuento = item.price_unit*item.discount/100 + item.descuento_unitario
         """
@@ -869,7 +869,7 @@ def crear_json_not_cred_deb(self):
     #         "tasaImpuesto": 0.18
     #     })
 
-    for item in self.invoice_line_ids.filtered(lambda r: not r.is_charge_or_discount):
+    for item in self.invoice_line_ids.filtered(lambda r: not r.is_charge_or_discount and not r.display_type):
         # price_unit = item.price_unit * \
         #     (1-(item.discount/100)) - item.descuento_unitario
         # if (item.invoice_line_tax_ids.price_include):

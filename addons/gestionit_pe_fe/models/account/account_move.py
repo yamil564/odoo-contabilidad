@@ -1043,7 +1043,7 @@ class AccountMove(models.Model):
                 errors.append(
                     "* El RUC del cliente selecionado debe tener 11 dígitos")
 
-            for line in self.invoice_line_ids:
+            for line in self.invoice_line_ids.filtered(lambda r: not r.display_type):
                 if len(line.tax_ids) == 0:
                     errors.append(
                         "* El Producto debe tener al menos un tipo de impuesto Asociado")
