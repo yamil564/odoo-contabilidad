@@ -10,6 +10,11 @@
         <xpath expr="//div[hasclass('page')]/h2" position="attributes">
             <attribute name="class">d-none</attribute>
         </xpath>
+        <xpath expr="//div[hasclass('page')]" position="after">
+            <div class="marca-de-agua" style="transform: rotate(20deg);" t-if="o.estado_comprobante_electronico == '2_ANULADO'">
+                <img style="transform: rotate(20deg);" alt="" src="gestionit_pe_fe/static/img/anulado.png" />
+            </div>
+        </xpath>
         <xpath expr="//div[hasclass('page')]/h2" position="before">
             <t t-set="company" t-value="o.company_id"/>
             <t t-set="documents" t-value="{'out_invoice_01':'FACTURA ELECTRÓNICA',
