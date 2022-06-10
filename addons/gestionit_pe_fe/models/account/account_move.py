@@ -157,7 +157,7 @@ class AccountMove(models.Model):
     def _selection_tipo_documento_table_10(self):
         return [i[0] for i in tdc]
 
-    @api.onchange('invoice_type_code','journal_ids','journal_type','type','warehouse_id')
+    """@api.onchange('invoice_type_code','journal_ids','journal_type','type','warehouse_id')
     def set_domain_for_journal_id(self):
         for rec in self:
             if rec.invoice_type_code and rec.journal_ids and rec.journal_type and rec.warehouse_id and rec.type in ['out_invoice','out_refund']:
@@ -170,6 +170,20 @@ class AccountMove(models.Model):
                 return res
 
             elif rec.invoice_type_code and rec.journal_ids and rec.journal_type and rec.warehouse_id and rec.type in ['in_invoice','in_refund']:
+                res={}
+                res['domain']={'journal_id':[
+                    ('invoice_type_code_id','=',self._selection_tipo_documento_table_10()),
+                    #('id','in',[i.id for i in rec.journal_ids]),
+                    ('type','=',rec.journal_type)]}
+                
+                return res"""
+
+    #####################################################################
+    @api.onchange('invoice_type_code','journal_ids','journal_type','type','warehouse_id')
+    def set_domain_for_journal_id(self):
+        for rec in self:
+
+            if rec.invoice_type_code and rec.journal_ids and rec.journal_type and rec.warehouse_id and rec.type in ['in_invoice','in_refund']:
                 res={}
                 res['domain']={'journal_id':[
                     ('invoice_type_code_id','=',self._selection_tipo_documento_table_10()),
@@ -1029,7 +1043,7 @@ class AccountMove(models.Model):
                 errors.append(
                     "* El RUC del cliente selecionado debe tener 11 dígitos")
 
-            for line in self.invoice_line_ids:
+            for line in self.invoice_line_ids.filtered(lambda r: not r.display_type):
                 if len(line.tax_ids) == 0:
                     errors.append(
                         "* El Producto debe tener al menos un tipo de impuesto Asociado")

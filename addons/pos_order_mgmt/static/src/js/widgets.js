@@ -221,6 +221,7 @@ odoo.define("pos_order_mgmt.widgets", function(require) {
                     pos: this.pos,
                 }
             );
+            
             // Get Customer
             if (order_data.partner_id) {
                 order.set_client(this.pos.db.get_partner_by_id(order_data.partner_id[0]));
@@ -307,6 +308,7 @@ odoo.define("pos_order_mgmt.widgets", function(require) {
                     self.unknown_products.push(String(line.product_id));
                 } else {
                     // Create a new order line
+                    order.temp = true
                     order.add_product(
                         product,
                         self._prepare_product_options_from_orderline_data(
