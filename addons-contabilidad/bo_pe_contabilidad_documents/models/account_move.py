@@ -160,8 +160,23 @@ class AccountMoveLine(models.Model):
                 balance = line.amount_currency
                 if line.currency_id and company_currency and line.currency_id != company_currency:
                     _logger.info('\n\nENTRE IF RECOMPUTE\n\n')
-                    balance = line.currency_id._convert(balance, company_currency, line.account_id.company_id,
-                        line.move_id.invoice_date or line.move_id.date or fields.Date.today())
+
+                    #### Calculo de Date de Rate
+                    date_rate = ''
+
+                    if line.move_id.type == 'in_refund':
+                        date_rate = line.move_id.reversed_entry_id.invoice_date or \
+                            line.move_id.reversed_entry_id.date or fields.Date.today()
+                    elif line.move_id.type == 'in_invoice':
+                        date_rate = line.move_id.invoice_date or \
+                            line.move_id.date or fields.Date.today()
+
+                    #balance = line.currency_id._convert(balance, company_currency, line.account_id.company_id,
+                    #    line.move_id.invoice_date or line.move_id.date or fields.Date.today())
+
+                    balance = line.currency_id._convert(balance, company_currency, 
+                        line.account_id.company_id, date_rate)
+                    
                     line.debit = balance > 0 and balance or 0.0
                     line.credit = balance < 0 and -balance or 0.0
     ##########################################################
