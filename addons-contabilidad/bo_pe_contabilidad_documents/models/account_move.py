@@ -176,7 +176,7 @@ class AccountMoveLine(models.Model):
 
                     balance = line.currency_id._convert(balance, company_currency, 
                         line.account_id.company_id, date_rate)
-                    
+
                     line.debit = balance > 0 and balance or 0.0
                     line.credit = balance < 0 and -balance or 0.0
     ##########################################################
@@ -186,13 +186,23 @@ class AccountMoveLine(models.Model):
         ret=super(AccountMoveLine,self)._get_fields_onchange_subtotal()
         
         if self.move_id.type in ['in_invoice','in_refund']:
-            return self._get_fields_onchange_subtotal_model(
-                price_subtotal=price_subtotal or self.price_subtotal,
-                move_type=move_type or self.move_id.type,
-                currency=currency or self.currency_id,
-                company=company or self.move_id.company_id,
-                date=date or self.move_id.invoice_date or self.move_id.date,
-            )
+
+            if self.move_id.type in ['in_invoice']:
+                return self._get_fields_onchange_subtotal_model(
+                    price_subtotal=price_subtotal or self.price_subtotal,
+                    move_type=move_type or self.move_id.type,
+                    currency=currency or self.currency_id,
+                    company=company or self.move_id.company_id,
+                    date=date or self.move_id.invoice_date or self.move_id.date,
+                )
+            elif self.move_id.type in ['in_refund']:
+                return self._get_fields_onchange_subtotal_model(
+                    price_subtotal=price_subtotal or self.price_subtotal,
+                    move_type=move_type or self.move_id.type,
+                    currency=currency or self.currency_id,
+                    company=company or self.move_id.company_id,
+                    date=date or self.move_id.reversed_entry_id.invoice_date or self.move_id.invoice_date or self.move_id.date,
+                )
         
         else:
             return ret
