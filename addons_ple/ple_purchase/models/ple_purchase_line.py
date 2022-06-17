@@ -307,7 +307,7 @@ class PlePurchaseLine(models.Model):
 			
 			rec.oportunidad_anotacion = valor_campo_3
 
-			rec.no_domiciliado_oportunidad_anotacion=valor_campo_3
+			rec.no_domiciliado_oportunidad_anotacion='0'
 
 
 	@api.depends('move_id')
