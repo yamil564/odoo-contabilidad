@@ -289,10 +289,14 @@ class PleSaleLine(models.Model):
 
 				if rec.invoice_id.state not in ['cancel'] and rec.invoice_id.date and rec.invoice_id.invoice_date and \
 					tools.getDateYYYYMM(rec.invoice_id.date) == tools.getDateYYYYMM(rec.invoice_id.invoice_date):
-					if rec.invoice_id.amount_igv==0.00:
-						valor_campo='0'
-					elif rec.invoice_id.amount_igv>0.00:
+					
+					if rec.invoice_id.journal_id.invoice_type_code_id=='03':
 						valor_campo='1'
+					else:
+						if rec.invoice_id.amount_igv==0.00:
+							valor_campo='0'
+						elif rec.invoice_id.amount_igv>0.00:
+							valor_campo='1'
 
 				elif rec.invoice_id.state not in ['cancel'] and rec.invoice_id.date and rec.invoice_id.invoice_date and \
 					tools.getDateYYYYMM(rec.invoice_id.date) > tools.getDateYYYYMM(rec.invoice_id.invoice_date):
