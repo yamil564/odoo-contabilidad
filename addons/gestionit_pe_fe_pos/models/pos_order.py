@@ -21,20 +21,25 @@ class PosOrder(models.Model):
     def _selection_credit_note_type(self):
         return tnc
 
-    # def _prepare_invoice_line(self, order_line):
-    #     if order_line.price_unit*order_line.qty > 0:
-    #         return {
-    #             'product_id': order_line.product_id.id,
-    #             'quantity': order_line.qty if self.amount_total >= 0 else -order_line.qty,
-    #             'discount': order_line.discount,
-    #             'price_unit': order_line.price_unit,
-    #             'name': order_line.product_id.display_name,
-    #             'tax_ids': [(6, 0, order_line.tax_ids_after_fiscal_position.ids)],
-    #             'product_uom_id': order_line.product_uom_id.id,
-    #             'lot_name': ",".join(order_line.pack_lot_ids.mapped('lot_name'))
-    #         }
-    #     else:
-    #         self.desc_global += abs(order_line.qty*order_line.price_unit)
+    def _prepare_invoice_line(self, order_line):
+        res = super(PosOrder,self)._prepare_invoice_line(order_line)
+        res.update({
+            'lot_name': ",".join(order_line.pack_lot_ids.mapped('lot_name'))
+        })
+        return res
+        # if order_line.price_unit*order_line.qty > 0:
+        #     return {
+        #         'product_id': order_line.product_id.id,
+        #         'quantity': order_line.qty if self.amount_total >= 0 else -order_line.qty,
+        #         'discount': order_line.discount,
+        #         'price_unit': order_line.price_unit,
+        #         'name': order_line.product_id.display_name,
+        #         'tax_ids': [(6, 0, order_line.tax_ids_after_fiscal_position.ids)],
+        #         'product_uom_id': order_line.product_uom_id.id,
+        #         'lot_name': ",".join(order_line.pack_lot_ids.mapped('lot_name'))
+        #     }
+        # else:
+        #     self.desc_global += abs(order_line.qty*order_line.price_unit)
 
     def _prepare_invoice_vals(self):
         vals = super(PosOrder, self)._prepare_invoice_vals()
