@@ -307,7 +307,7 @@ class PlePurchaseLine(models.Model):
 			
 			rec.oportunidad_anotacion = valor_campo_3
 
-			rec.no_domiciliado_oportunidad_anotacion=valor_campo_3
+			rec.no_domiciliado_oportunidad_anotacion='0'
 
 
 	@api.depends('move_id')
@@ -398,19 +398,20 @@ class PlePurchaseLine(models.Model):
 	@api.depends('move_id')
 	def _compute_campo_fecha_detraccion(self):
 		for rec in self:
-			rec.fecha_detraction_id=''
+			if rec.move_id.register_detraction_id:
+				rec.fecha_detraccion = rec.move_id.register_detraction_id.fecha_pago or False
 
 
 
 	@api.depends('move_id')
 	def _compute_campo_numero_detraccion(self):
 		for rec in self:
-			if rec.move_id:
-				rec.numero_detraccion = ''
+			if rec.move_id.register_detraction_id:
+				rec.numero_detraccion = rec.move_id.register_detraction_id.nro_constancia or ''
 
 	############################################################################
 
-	################### NO DOMICILIADOS CAMPOS COMPUTE !!!
+	########################################### NO DOMICILIADOS CAMPOS COMPUTE !!!
 	
 
 	@api.depends('partner_id')

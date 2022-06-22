@@ -39,4 +39,5 @@ RUN pip install culqi
 RUN pip install mercadopago
 RUN pip3 install facebook-sdk
 RUN pip3 install pillow
+RUN pip3 install html2text
 RUN apt-get clean && apt-get autoclean
