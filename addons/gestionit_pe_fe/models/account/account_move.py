@@ -841,7 +841,7 @@ class AccountMove(models.Model):
                     msg_error = []
                     msg_error += move.validar_datos_compania()
                     msg_error += move.validar_diario()
-                    msg_error += move.validar_fecha_emision()
+                    #msg_error += move.validar_fecha_emision()
                     msg_error += move.validar_lineas()
                     msg_error += move.validacion_exportacion()
 
