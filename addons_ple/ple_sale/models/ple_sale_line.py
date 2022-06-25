@@ -87,7 +87,7 @@ class PleSaleLine(models.Model):
 	def _compute_campo_fecha_vencimiento(self):
 		for rec in self:
 			if rec.invoice_id:
-				rec.fecha_vencimiento=rec.invoice_id.invoice_date_due or ''
+				rec.fecha_vencimiento=rec.invoice_id.invoice_date or ''
 			else:
 				rec.fecha_vencimiento=''
 
@@ -139,24 +139,27 @@ class PleSaleLine(models.Model):
 	@api.depends('invoice_id')
 	def _compute_campo_tipo_documento_cliente(self):
 		for rec in self:
-			if rec.invoice_id:
+			if rec.invoice_id and rec.invoice_id.state not in ['cancel']:
 				rec.tipo_documento_cliente=rec.invoice_id.partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code or ''
-			else:
+			elif rec.invoice_id.state in ['cancel']:
 				rec.tipo_documento_cliente= ''
 
 
 	@api.depends('invoice_id')
 	def _compute_campo_numero_documento_cliente(self):
 		for rec in self:
-			if rec.invoice_id:
+			if rec.invoice_id and rec.invoice_id.state not in ['cancel']:
 				rec.numero_documento_cliente=rec.invoice_id.partner_id.vat or ''
-
+			elif rec.invoice_id.state in ['cancel']:
+				rec.numero_documento_cliente='00000000'
 
 	@api.depends('invoice_id')
 	def _compute_campo_razon_social(self):
 		for rec in self:
-			if rec.invoice_id:
+			if rec.invoice_id and rec.invoice_id.state not in ['cancel']:
 				rec.razon_social=rec.invoice_id.partner_id.name or ''
+			elif rec.invoice_id.state in ['cancel']:
+				rec.razon_social="ANULADO"
 
 
 	@api.depends('invoice_id')
@@ -284,14 +287,18 @@ class PleSaleLine(models.Model):
 			if rec.invoice_id:
 				valor_campo=''
 
-				if rec.invoice_id.date and rec.invoice_id.invoice_date and \
+				if rec.invoice_id.state not in ['cancel'] and rec.invoice_id.date and rec.invoice_id.invoice_date and \
 					tools.getDateYYYYMM(rec.invoice_id.date) == tools.getDateYYYYMM(rec.invoice_id.invoice_date):
-					if rec.invoice_id.amount_igv==0.00:
-						valor_campo='0'
-					elif rec.invoice_id.amount_igv>0.00:
+					
+					if rec.invoice_id.journal_id.invoice_type_code_id=='03':
 						valor_campo='1'
+					else:
+						if rec.invoice_id.amount_igv==0.00:
+							valor_campo='0'
+						elif rec.invoice_id.amount_igv>0.00:
+							valor_campo='1'
 
-				elif rec.invoice_id.date and rec.invoice_id.invoice_date and \
+				elif rec.invoice_id.state not in ['cancel'] and rec.invoice_id.date and rec.invoice_id.invoice_date and \
 					tools.getDateYYYYMM(rec.invoice_id.date) > tools.getDateYYYYMM(rec.invoice_id.invoice_date):
 					valor_campo='8'
 
@@ -305,7 +312,7 @@ class PleSaleLine(models.Model):
 					
 					if "%s%s"%(anio,mes)==tools.getDateYYYYMM(rec.invoice_id.date):
 						valor_campo='2'
-					elif "%s%s"%(anio,mes)>tools.getDateYYYYMM(rec.invoice_id.date):
-						valor_campo='8'
+					#elif "%s%s"%(anio,mes)>tools.getDateYYYYMM(rec.invoice_id.date):
+					#	valor_campo='8'  ## Se esta en duda que un comprobante anulado entre en periodos posteriores.
 
 				rec.oportunidad_anotacion=valor_campo

@@ -15,11 +15,14 @@ class Website(models.Model):
         url = "https://wa.me/{}?text={}"
         # _logger.info(request.httprequest.__dict__)
         path = request.httprequest.__dict__.get("path","")
-        # _logger.info(path)
+        _logger.info(path)
         order = self.sale_get_order()
         if "/shop/product" in path and ("{producto}" in self.website_floating_whatsapp_message_product):
+            path = path.split("?")[0]
             product_id = path.split("-")[-1]
-            product = self.env["product.product"].browse(int(product_id))
+            # _logger.info(product_id)
+            product = self.env["product.template"].browse(int(product_id))
+            # _logger.info(product.read())
             return url.format(self.website_floating_whatsapp,self.website_floating_whatsapp_message_product.format(producto=product.display_name))
         elif ("/shop" in path or "/payment" in path or "/chechout" in path) and len(order.order_line) > 0:
             return url.format(self.website_floating_whatsapp,self.website_floating_whatsapp_message_order.format(orden=order.name))

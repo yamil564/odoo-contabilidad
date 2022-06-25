@@ -17,12 +17,29 @@
                 </field>
 
 
-                <field name="invoice_type_code_catalog_51" position="attributes">
+               <!--<field name="invoice_type_code_catalog_51" position="attributes">
                     <attribute name="invisible">[('type','not in',['in_invoice','in_refund'])]</attribute>
+                </field>-->
+
+            </field>
+        </record>
+
+         <record id="view_move_form_inherit_catalog_51" model="ir.ui.view">
+            <field name="name">view_move_form_inherit_catalog_51</field>
+            <field name="model">account.move</field>
+            <field name="inherit_id" ref="gestionit_pe_fe.view_account_move_tipo_comprobante"/>
+
+            <field name="groups_id" eval="[(4,ref('bo_pe_contabilidad_documents.group_catalog_51'))]"/>
+
+            <field name="arch" type="xml">
+
+                <field name="invoice_type_code_catalog_51" position="attributes">
+                    <attribute name="invisible">1</attribute>
                 </field>
 
             </field>
         </record>
+
 
         <record id="view_account_invoice_filter_inherit_receipt_of_fees" model="ir.ui.view">
             <field name="name">account.invoice.select.inherit.receipt_of_fees</field>
