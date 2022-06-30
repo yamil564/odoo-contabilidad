@@ -306,10 +306,9 @@ class SaleOrder(models.Model):
 
             total_descuentos = sum(
                 [
-                    ((line.price_subtotal / (1-(line.discount/100.0)))
-                     * line.discount/100.0)
+                    ((line.price_subtotal / (1-(line.discount/100.0))) * line.discount/100.0)
                     for line in order.order_line
-                    if line.discount <= 100
+                        if line.discount < 100
                 ]) + total_descuento_global
 
             # amount_tax = (sum(
