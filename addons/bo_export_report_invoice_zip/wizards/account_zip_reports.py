@@ -15,7 +15,6 @@ class AccountZipReports(models.TransientModel):
     file = fields.Binary(string="Reportes", readonly=True, compute="get_file")
     invoice_ids = fields.Many2many('account.move', string="Facturas")
 
-    @api.onchange('invoice_ids')
     def get_file(self):
         route = self.env["ir.config_parameter"].sudo().search([('key', '=', 'account_report_zip_path')]).value
         path = route + 'reports-'+str(fields.Date.today())

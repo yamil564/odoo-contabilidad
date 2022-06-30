@@ -34,13 +34,6 @@ class AccountMove(models.Model):
             file.close()
 
         archivo_zip = shutil.make_archive(route + str(fields.Date.today()), "zip", path)
-        logger.info('aquii lmmm')
-        logger.info('aquii lmmm')
-        logger.info('aquii lmmm')
-        logger.info('aquii lmmm')
-        logger.info('aquii lmmm')
-        logger.info('aquii lmmm')
-        logger.info(route + str(fields.Date.today()))
         ctx = {
             'default_file':archivo_zip,
         }
