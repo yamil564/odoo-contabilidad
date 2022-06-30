@@ -137,9 +137,9 @@
                                         <field name="exist_saldos_iniciales" invisible="1"/>
                                         <field name="exist_movimientos_periodo" invisible="1"/>
                                         
-                                       <!-- <button name="button_view_saldos_iniciales" string="Saldos Iniciales" type="object" class="oe_highlight" attrs="{'invisible': [('exist_saldos_iniciales','!=',True)]}" readonly="0"/>
+                                       <button name="button_view_saldos_iniciales" string="Saldos Iniciales" type="object" class="oe_highlight" attrs="{'invisible': [('exist_saldos_iniciales','!=',True)]}" readonly="0"/>
 
-                                        <button name="button_view_movimientos_periodo" string="Movimientos Periodo" type="object" class="oe_highlight" attrs="{'invisible': [('exist_movimientos_periodo','!=',True)]}" readonly="0"/> -->
+                                        <button name="button_view_movimientos_periodo" string="Movimientos Periodo" type="object" class="oe_highlight" attrs="{'invisible': [('exist_movimientos_periodo','!=',True)]}" readonly="0"/>
                                     </tree>      
                                 </field>
                             </page>
@@ -156,7 +156,11 @@
                 <tree>
                     <field name="company_id"/>
                     <field name="name"/>
-                    <!-- <field name="date"/> -->
+                    <field name="state"/>
+        
+                    <field name="fecha_inicio"/>
+                    <field name="fecha_final"/>
+                    <field name="currency_id"/>
                     <field name="observations"/>
                 </tree>
             </field>
@@ -178,12 +182,6 @@
             sequence="0" groups="account.group_account_invoice"/>
 
         <menuitem id="menu_report_amount_balances_optimized_native" name="Balance de Comprobación Nativo" parent="menu_report_amount_balances_optimized_native_root"  groups="account.group_account_invoice" action="action_report_amount_balances_optimized_native"/>
-
-<!--         <menuitem 
-            id="menu_account_receivable_and_payable_optimized_root" 
-            name="REPORTE DE CUENTAS POR COBRAR Y PAGAR" 
-            parent="account.menu_finance_reports"
-            sequence="0"/> -->
              
 	</data>
 </odoo>

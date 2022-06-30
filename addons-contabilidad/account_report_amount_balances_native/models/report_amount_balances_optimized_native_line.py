@@ -11,9 +11,9 @@ _logger = logging.getLogger(__name__)
 
 class ReportAmountBalancesOptimizedNativeLine(models.Model):
 	_name = 'report.amount.balances.optimized.native.line'
-	_description = "Balance de Sumas y Saldos Nativo"
+	_description = "Balance de Comprobación Nativo"
 	# _rec_name = "name"
-	report_amount_balances_optimized_id = fields.Many2one('report.amount.balances.optimized.native',string="Balance de Sumas y Saldos", ondelete="cascade", readonly=True)
+	report_amount_balances_optimized_id = fields.Many2one('report.amount.balances.optimized.native',string="Balance de Comprobación", ondelete="cascade", readonly=True)
 	account_id = fields.Many2one('account.account', string="Cuenta", readonly=True)
 	name_account=fields.Char(string="Cuenta", readonly=True)
 	saldos_iniciales_deudor = fields.Char(string="Saldos Iniciales Deudor", readonly=True)
