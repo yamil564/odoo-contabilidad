@@ -59,6 +59,9 @@
                 <field name="account_summary_id" attrs="{'invisible': [('invoice_type_code','!=','03')]}" />
                 <field name="estado_comprobante_electronico" readonly="1" force_save="1"/>
                 <!-- Detracciones -->
+
+                <field name="is_invoice_in_me" invisible="1"/>
+
                 <field name="has_detraction"
                             groups="gestionit_pe_fe.group_fe_detraction_user"
                             attrs="{'readonly':[['state','not in',['draft']]],'invisible':[('type','in',['out_refund','in_refund'])]}"/>
@@ -72,14 +75,34 @@
 
                 <field name="account_journal_national_bank" options="{'no_open':True,'no_create':True,'no_quick_create':True}" string="Número de cuenta del Banco de la Nación" groups="gestionit_pe_fe.group_fe_detraction_user" attrs="{'required':[('has_detraction','=',True)],'invisible':[('has_detraction','=',False)],'readonly':[['state','not in',['draft']]]}"/>
                 <field name="bank_account_number_national" groups="gestionit_pe_fe.group_fe_detraction_user" attrs="{'required':[('has_detraction','=',True)],'readonly':[['state','not in',['draft']]]}" invisible="1"/>
+
+                
+                
+
+                <field name="original_detraction_amount"
+                        groups="gestionit_pe_fe.group_fe_detraction_user"
+                        widget="monetary" options="{'currency_field': 'currency_id'}"
+                        attrs="{'required':[('has_detraction','=',True)],'invisible':[('has_detraction','=',False)],'readonly':[['state','not in',['draft']]]}"/>
+
                 <field name="detraction_amount"
                         groups="gestionit_pe_fe.group_fe_detraction_user"
                         widget="monetary" options="{'currency_field': 'currency_id'}"
                         attrs="{'required':[('has_detraction','=',True)],'invisible':[('has_detraction','=',False)],'readonly':[['state','not in',['draft']]]}"/>
+
+
+                <!--<field name="original_detraction_amount_pen"
+                        groups="gestionit_pe_fe.group_fe_detraction_user"
+                        widget="monetary" options="{'currency_field': 'company_currency_id'}"
+                        attrs="{'required':[('has_detraction','=',True)],'invisible':[('has_detraction','=',False)],'readonly':[['state','not in',['draft']]]}"/>-->
+
+
                 <field name="detraction_amount_pen"
                         groups="gestionit_pe_fe.group_fe_detraction_user"
                         widget="monetary" options="{'currency_field': 'company_currency_id'}"
-                        attrs="{'required':[('has_detraction','=',True)],'invisible':[('has_detraction','=',False)],'readonly':[['state','not in',['draft']]]}"/>
+                        attrs="{'required':[('has_detraction','=',True)],'invisible':['|',('has_detraction','=',False),('is_invoice_in_me','!=',True)],'readonly':[['state','not in',['draft']]]}"/>
+
+                <!-- ##########-->
+
                 <field name="detraction_medio_pago"
                         groups="gestionit_pe_fe.group_fe_detraction_user"
                         attrs="{'required':[('has_detraction','=',True)],'invisible':[('has_detraction','=',False)],'readonly':[['state','not in',['draft']]]}"
