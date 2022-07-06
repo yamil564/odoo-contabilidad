@@ -312,13 +312,46 @@ class AccountMove(models.Model):
             else:
                 record.anulacion_comprobante = "-"
 
-    @api.depends("amount_total", "type_detraction", "detraction_rate")
+
+    #######################################################################
+    @api.depends("amount_total", "type_detraction", "detraction_rate","is_invoice_in_me")
+    def _compute_original_amount_detraction(self):
+        for record in self:
+
+            record.original_detraction_amount = round(
+                record.amount_total*record.detraction_rate/100,2)
+
+            if record.is_invoice_in_me:
+                record.original_detraction_amount_pen = round(
+                    record.exchange_rate_day*record.amount_total*record.detraction_rate/100,2)
+    #######################################################################
+
+
+    @api.depends("amount_total", "type_detraction", "detraction_rate","is_invoice_in_me")
     def _compute_amount_detraction(self):
         for record in self:
+
             record.detraction_amount = round(
-                record.amount_total*record.detraction_rate/100, 2)
+                record.amount_total*record.detraction_rate/100)
+
             record.detraction_amount_pen = round(
-                record.exchange_rate_day*record.amount_total*record.detraction_rate/100, 2)
+                record.exchange_rate_day*record.amount_total*record.detraction_rate/100)
+
+    ####### CAMPO DETECTOR SI DOC ES EN ME
+    is_invoice_in_me = fields.Boolean(string="Es Documento en Moneda Extranjera",
+        compute="compute_is_invoice_in_me",
+        store=True)
+
+
+    @api.depends('company_id','currency_id')
+    def compute_is_invoice_in_me(self):
+        for rec in self:
+            rec.is_invoice_in_me = False
+            if rec.currency_id and rec.currency_id != rec.company_id.currency_id:
+                rec.is_invoice_in_me = True
+            else:
+                rec.is_invoice_in_me = False
+    #########################################################
 
     # @api.onchange("amount_total", "type_detraction","detraction_rate")
     # def onchange_amount_detraction(self):
@@ -334,10 +367,20 @@ class AccountMove(models.Model):
     detraction_rate = fields.Float("Tasa %", default=0)
     detraction_code = fields.Char("Código")
     bank_account_number_national = fields.Char("Banco de la nación")
+    
+    ##############################################################
+    original_detraction_amount = fields.Float(
+        "Monto Exacto de Detracción", compute="_compute_original_amount_detraction", store=True)
+    original_detraction_amount_pen = fields.Float(
+        "Monto Exacto de Detracción PEN", compute="_compute_original_amount_detraction", store=True)
+    ##############################################################
+
     detraction_amount = fields.Float(
         "Monto de Detracción", compute="_compute_amount_detraction", store=True)
     detraction_amount_pen = fields.Float(
         "Monto de Detracción PEN", compute="_compute_amount_detraction", store=True)
+    
+
     detraction_medio_pago = fields.Many2one("sunat.catalog.59",
                                             string="Medio de Pago",
                                             default=lambda self: self.env.ref("gestionit_pe_fe.catalog_59_001", raise_if_not_found=False))
@@ -345,6 +388,22 @@ class AccountMove(models.Model):
 
     invoice_payment_term_type = fields.Char(
         compute="_compute_invoice_payment_term_type")
+
+
+    ################################### RESTRICCIÓN PARA LAS FECHAS DE VENCIMIENTO Y FECHAS DE CUOTAS #########
+    @api.constrains("invoice_date_due", "paymentterm_line","paymentterm_line.date_due")
+    def check_invoice_date_due_vs_cuotas(self):
+        for record in self:
+
+            if record.invoice_date_due and record.paymentterm_line and record.paymentterm_line.mapped('date_due'):
+                _logger.info('\n\nENTRE \n\n')
+                date_due_max = max(record.paymentterm_line.mapped('date_due'))
+                if record.invoice_date_due < date_due_max:
+                    raise UserError(
+                        "Ninguna de las Fechas de Pago de las Cuotas debe ser mayor a la Fecha de Vencimiento del Documento !!")
+
+
+    ###########################################################################################################
 
     @api.depends("invoice_payment_term_id", "invoice_date_due")
     def _compute_invoice_payment_term_type(self):
@@ -841,7 +900,14 @@ class AccountMove(models.Model):
                     msg_error = []
                     msg_error += move.validar_datos_compania()
                     msg_error += move.validar_diario()
-                    msg_error += move.validar_fecha_emision()
+
+                    ######################## GROUP_USER PARA EMISIÓN FUERA DE PLAZO #######
+                    current_user = self.env.user
+                    
+                    if not current_user.has_group('gestionit_pe_fe.group_user_sunat_send_out_date'):
+                        msg_error += move.validar_fecha_emision()
+                    ###############################
+
                     msg_error += move.validar_lineas()
                     msg_error += move.validacion_exportacion()
 
