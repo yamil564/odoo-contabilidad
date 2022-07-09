@@ -166,13 +166,13 @@ def handle(data, user_credentials, self_signed=False):
     # _logger.info(file_name + ".xml")
     if document_type in ["01", "03", "07", "08", "09"]:
         final_xml = firma.generate_envio_xml(
-            ruc + usuario,
+            str(ruc) + str(usuario or ""),
             password,
             file_name + ".zip", doc_zip.decode()
         )
     elif document_type in ["RC", "RA"]:
         final_xml = firma.generate_envio_resumen_xml(
-            ruc + usuario,
+            str(ruc) + str(usuario or ""),
             password,
             file_name + ".zip", doc_zip.decode()
         )
