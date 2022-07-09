@@ -900,7 +900,14 @@ class AccountMove(models.Model):
                     msg_error = []
                     msg_error += move.validar_datos_compania()
                     msg_error += move.validar_diario()
-                    msg_error += move.validar_fecha_emision()
+
+                    ######################## GROUP_USER PARA EMISIÓN FUERA DE PLAZO #######
+                    current_user = self.env.user
+                    
+                    if not current_user.has_group('gestionit_pe_fe.group_user_sunat_send_out_date'):
+                        msg_error += move.validar_fecha_emision()
+                    ###############################
+
                     msg_error += move.validar_lineas()
                     msg_error += move.validacion_exportacion()
 

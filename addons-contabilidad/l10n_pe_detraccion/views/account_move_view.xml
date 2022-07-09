@@ -11,7 +11,7 @@
                     <field name="detraccion" invisible="1"/>
 
                     <div class="alert alert-info" role="alert" style="margin-bottom:0px" attrs="{'invisible': [('detraccion','=',False)]}">
-                        <bold>Documento sujeto a Detraccion</bold> 
+                        <bold>Documento sujeto a Detraccion !</bold> 
                     </div>
 
                 </xpath>
@@ -27,41 +27,6 @@
                 </header>
 
 
-                <xpath expr="//form/sheet/notebook" position="inside">
-                    
-                    <page string="Registro de Detracción" id="detraccion_page" attrs="{'invisible': [('detraccion','!=',True)]}">
-
-                        <group>
-                            <field name="exist_detraccion" invisible="1"/>
-                            <group>
-                                <field name="detraccion_nro_constancia" attrs="{'readonly': [('exist_detraccion','=',True)]}"/>
-                                <field name="detraccion_journal_id" attrs="{'readonly': [('exist_detraccion','=',True)]}"/>
-                                <field name="detraccion_fecha_pago" attrs="{'readonly': [('exist_detraccion','=',True)]}"/>
-                                <field name="total_detraccion_contabilidad"/>
-                                <!-- attrs="{'readonly': [('exist_detraccion','=',True)]}"/>-->
-                                <field name="total_detraccion_contabilidad_manual" attrs="{'readonly': [('exist_detraccion','=',True)]}"/>
-                                <field name="detraccion_company_currency_id" attrs="{'readonly': [('exist_detraccion','=',True)]}"/>
-                                <field name="detraccion_currency_id" attrs="{'readonly': [('exist_detraccion','=',True)]}"/>
-                                <field name="detraccion_operation_type" attrs="{'readonly': [('exist_detraccion','=',True)]}"/>
-                                <field name="detraccion_acc_number" attrs="{'readonly': [('exist_detraccion','=',True)]}"/>
-                            </group>
-
-                            <group>
-                                <field name="detraccion_fecha_registro" attrs="{'readonly': [('exist_detraccion','=',True)]}"/>
-                                <field name="detraccion_tipo_detraccion_id" attrs="{'readonly': [('exist_detraccion','=',True)]}"/>
-                                <field name="detraccion_communication" attrs="{'readonly': [('exist_detraccion','=',True)]}"/>
-                               
-                            </group>
-
-                        </group>
-                    </page>
-                </xpath>
-
-              <!-- <field name="currency_id" position="after">
-                   <group>
-                        <field name="cliente_create_detraccion" attrs="{'invisible': [('detraccion','!=',True)]}"/>
-                   </group>
-               </field> -->
 
                <xpath expr="//form/sheet/div[@class='oe_button_box']" position="inside">
                     <field name="exist_detraccion" invisible="1"/>
