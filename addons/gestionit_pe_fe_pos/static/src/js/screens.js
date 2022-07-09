@@ -45,7 +45,7 @@ odoo.define('gestionit_pe_fe_pos.screens', function(require){
     pos_order_mgmt.OrderListScreenWidget.include({
         _prepare_order_from_order_data:function(order_data, action) {
             var order = this._super(order_data, action);
-            console.log(order)
+            // console.log(order)
             if(order_data.to_invoice == true){
                 order.set_invoice_journal_id(order_data.invoice_journal_id);
                 order.set_invoice_type_code_id(order_data.invoice_type_code_id);

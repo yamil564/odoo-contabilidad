@@ -5,6 +5,8 @@ from odoo import api, models, fields
 class ResCompany(models.Model):
     _inherit = "res.company"
 
+    sunat_provider = fields.Selection(selection=[("sunat","SUNAT"),("efact","Efact")],default="sunat")
+
     sunat_user = fields.Char(
         "USUARIO SUNAT", help="Nombre del usuario secundario con permiso para emisión de comprobantes electrónicos.")
     sunat_pass = fields.Char(

@@ -29,7 +29,7 @@ def firmar(document, signer, key, cert):
         ET.register_namespace(k, v)
         if k:
             namespaces[k] = v
-    _logger.info(data_document.toxml(encoding="ISO-8859-1"))
+    # _logger.info(data_document.toxml(encoding="ISO-8859-1"))
     data_unsigned = ET.fromstring(data_document.toxml(encoding="ISO-8859-1").decode("ISO-8859-1"))
 
     # try:

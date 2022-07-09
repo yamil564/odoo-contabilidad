@@ -44,6 +44,14 @@ urls_production = [
     "https://e-guiaremision.sunat.gob.pe/ol-ti-itemision-guia-gem/billService",  # Guia
     "https://e-factura.sunat.gob.pe/ol-ti-itemision-otroscpe-gem/billService",  # REte
 ]
+
+#Producción Efact
+urls_production_efact = [
+    "https://ose.efact.pe/ol-ti-itcpe/billService?wsdl",
+    "https://ose.efact.pe/ol-ti-itcpe/billService?wsdl",
+    "https://ose.efact.pe/ol-ti-itcpe/billService?wsdl",
+]
+
 #Consulta de tickets
 
 
@@ -243,21 +251,29 @@ def send_doc_xml(doc):
     tipo_envio = doc.journal_id.tipo_envio
     invoice_type_code = doc.journal_id.invoice_type_code_id
 
-    if int(tipo_envio) == 0:
-        if invoice_type_code in ["01","03","07","08","RC"]:
-            endpoint = urls_test[0]
-        elif invoice_type_code == "09":
-            endpoint = urls_test[1]
+    if doc.company_id.sunat_provider == "sunat":
+        if int(tipo_envio) == 0:
+            if invoice_type_code in ["01","03","07","08","RC"]:
+                endpoint = urls_test[0]
+            elif invoice_type_code == "09":
+                endpoint = urls_test[1]
+        elif int(tipo_envio) == 1: 
+            if invoice_type_code in ["01","03","07","08","RC"]:
+                endpoint = urls_production[0]
+            elif invoice_type_code == "09":
+                endpoint = urls_production[1]
+        else:
+            raise Exception("Tipo de envio incorrecto. Tipos de envío posibles: 0 - Pruebas u 1- Producción")
 
-    elif int(tipo_envio) == 1: 
-        if invoice_type_code in ["01","03","07","08","RC"]:
-            endpoint = urls_production[0]
-        elif invoice_type_code == "09":
-            endpoint = urls_production[1]
-    else:
-        raise Exception("Tipo de envio incorrecto. Tipos de envío posibles: 0 - Pruebas u 1- Producción")
-
-
+    elif doc.company_id.sunat_provider == "efact":
+        if int(tipo_envio) == 1: 
+            if invoice_type_code in ["01","03","07","08","RC"]:
+                endpoint = urls_production_efact[0]
+            elif invoice_type_code == "09":
+                endpoint = urls_production_efact[1]
+        else:
+            raise Exception("Tipo de envio incorrecto. Tipos de envío posibles: 1- Producción")
+    _logger.info(endpoint)
     try:
         headers = {"Content-Type": "application/xml"}
         response = requests.post(endpoint,
