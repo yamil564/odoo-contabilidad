@@ -109,13 +109,20 @@ def send_summary_xml(doc):
     signed_xml_with_creds = doc.current_log_status_id.signed_xml_with_creds
     tipo_envio = doc.company_id.tipo_envio
 
-    if int(tipo_envio) == 0:
-        endpoint = urls_test[0]
+    if doc.company_id.sunat_provider == "sunat":
+        if int(tipo_envio) == 0:
+            endpoint = urls_test[0]
 
-    elif int(tipo_envio) == 1: 
-        endpoint = urls_production[0]
-    else:
-        raise Exception("Tipo de envio incorrecto. Tipos de envío posibles: 0 - Pruebas u 1- Producción")
+        elif int(tipo_envio) == 1: 
+            endpoint = urls_production[0]
+        else:
+            raise Exception("Tipo de envio incorrecto. Tipos de envío posibles: 0 - Pruebas , 1- Producción")
+
+    elif doc.company_id.sunat_provider == "efact":
+        if int(tipo_envio) == 1: 
+            endpoint = urls_production_efact[0]
+        else:
+            raise Exception("Tipo de envio incorrecto. Tipos de envío posibles: 1- Producción")
 
     try:
         headers = {"Content-Type": "application/xml"}
@@ -179,13 +186,20 @@ def send_voided_xml(doc):
     signed_xml_with_creds = doc.current_log_status_id.signed_xml_with_creds
     tipo_envio = doc.company_id.tipo_envio
 
-    if int(tipo_envio) == 0:
-        endpoint = urls_test[0]
+    if doc.company_id.sunat_provider == "sunat":
+        if int(tipo_envio) == 0:
+            endpoint = urls_test[0]
 
-    elif int(tipo_envio) == 1: 
-        endpoint = urls_production[0]
-    else:
-        raise Exception("Tipo de envio incorrecto. Tipos de envío posibles: 0 - Pruebas u 1- Producción")
+        elif int(tipo_envio) == 1: 
+            endpoint = urls_production[0]
+        else:
+            raise Exception("Tipo de envio incorrecto. Tipos de envío posibles: 0 - Pruebas u 1- Producción")
+            
+    elif doc.company_id.sunat_provider == "efact":
+        if int(tipo_envio) == 1: 
+            endpoint = urls_production_efact[0]
+        else:
+            raise Exception("Tipo de envio incorrecto. Tipos de envío posibles: 1- Producción")
 
     try:
         headers = {"Content-Type": "application/xml"}
