@@ -35,6 +35,7 @@ def set_xml_attributes(data_document):
 
 
 def get_response_status_invoice(xml_response):
+    _logger.info(xml_response)
     xml_response = set_xml_attributes(xml_response)
     doc = minidom.parseString(xml_response.encode("ISO-8859-1"))
     faultcodes = doc.getElementsByTagName("soap-env:Fault")

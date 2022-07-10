@@ -27,7 +27,7 @@ class ResCompany(models.Model):
     calc_peso = fields.Boolean(string="Calcular peso")
 
     def get_username_sunat(self):
-        return "{}{}".format(self.vat, self.sunat_user)
+        return "{}{}".format(self.vat, self.sunat_user or "")
 
 
 class ResConfigSettings(models.TransientModel):
