@@ -273,13 +273,16 @@ def send_doc_xml(doc):
                 endpoint = urls_production_efact[1]
         else:
             raise Exception("Tipo de envio incorrecto. Tipos de envío posibles: 1- Producción")
+    
     _logger.info(endpoint)
+
     try:
-        headers = {"Content-Type": "application/xml"}
+        headers = {"Content-Type": 'text/xml; charset=utf-8'}
         response = requests.post(endpoint,
                                 data=signed_xml_with_creds,
                                 headers=headers,
                                 timeout=20)
+        _logger.info(response.text)
         result = sunat_response_handle.get_response(response.text)
         data = {
             "response_json":json.dumps(result,indent=4),
@@ -1046,26 +1049,26 @@ def enviar_doc_resumen_url(data_doc, tipoEnvio):
     return r
 
 
-def baja_doc(self):
-    token = generate_token(self.company_id.api_key,
-                           self.company_id.api_secret, 10000)
-    data_doc = crear_json_baja(self)
-    response_env = enviar_doc_resumen_url(
-        self.company_id.endpoint, data_doc, token, self.company_id.tipo_envio)
-    self.json_comprobante = data_doc
-    self.json_respuesta = json.dumps(response_env.json(), indent=4)
-    if response_env.ok:
-        self.status_envio = True
-        self.estado_emision = extaer_estado_emision(response_env.json())
-        return True, ""
-    else:
-        recepcionado, estado_emision, msg_error = extraer_error(response_env)
-        if recepcionado:
-            self.status_envio = True
-            self.estado_emision = estado_emision
-            return True, msg_error
-        else:
-            return False, msg_error
+# def baja_doc(self):
+#     token = generate_token(self.company_id.api_key,
+#                            self.company_id.api_secret, 10000)
+#     data_doc = crear_json_baja(self)
+#     response_env = enviar_doc_resumen_url(
+#         self.company_id.endpoint, data_doc, token, self.company_id.tipo_envio)
+#     self.json_comprobante = data_doc
+#     self.json_respuesta = json.dumps(response_env.json(), indent=4)
+#     if response_env.ok:
+#         self.status_envio = True
+#         self.estado_emision = extaer_estado_emision(response_env.json())
+#         return True, ""
+#     else:
+#         recepcionado, estado_emision, msg_error = extraer_error(response_env)
+#         if recepcionado:
+#             self.status_envio = True
+#             self.estado_emision = estado_emision
+#             return True, msg_error
+#         else:
+#             return False, msg_error
 
 
 def extaer_estado_emision(response_env):
