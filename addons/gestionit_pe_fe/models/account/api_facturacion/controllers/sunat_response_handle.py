@@ -9,7 +9,33 @@ import xml.etree.ElementTree as ET
 _logger = logging.getLogger(__name__)
 
 
+#data_document: minidom xml
+def set_xml_attributes(data_document):
+    data_document = minidom.parseString(data_document)
+    namespaces = {"":"urn:oasis:names:specification:ubl:schema:xsd:Invoice-2",
+                    "ar":"urn:oasis:names:specification:ubl:schema:xsd:ApplicationResponse-2",
+                    "cac":"urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2",
+                    "cbc":"urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2",
+                    "date":"http://exslt.org/dates-and-times",
+                    "ds":"http://www.w3.org/2000/09/xmldsig#",
+                    "ext":"urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2",
+                    "regexp":"http://exslt.org/regular-expressions",
+                    "sac":"urn:sunat:names:specification:ubl:peru:schema:xsd:SunatAggregateComponents-1",
+                    "soap":"http://schemas.xmlsoap.org/soap/envelope/",
+                    "xs":"http://www.w3.org/2001/XMLSchema"}
+    
+    for k in namespaces:
+        v = namespaces[k]
+        ET.register_namespace(k,v)
+
+    data_document = ET.fromstring(data_document.toxml(encoding="ISO-8859-1"))
+    result = ET.tostring(data_document, encoding="ISO-8859-1")
+
+    return result.decode("ISO-8859-1")
+
+
 def get_response_status_invoice(xml_response):
+    xml_response = set_xml_attributes(xml_response)
     doc = minidom.parseString(xml_response.encode("ISO-8859-1"))
     faultcodes = doc.getElementsByTagName("soap-env:Fault")
     applicationResponse = doc.getElementsByTagName("content")
@@ -166,31 +192,6 @@ def get_response_status_invoice(xml_response):
         "status": status,
         "xml_content": xml_content
     }
-
-#data_document: string
-def set_xml_attributes(data_document):
-    data_document = minidom.parseString(data_document)
-    namespaces = {"":"urn:oasis:names:specification:ubl:schema:xsd:Invoice-2",
-                    "ar":"urn:oasis:names:specification:ubl:schema:xsd:ApplicationResponse-2",
-                    "cac":"urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2",
-                    "cbc":"urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2",
-                    "date":"http://exslt.org/dates-and-times",
-                    "ds":"http://www.w3.org/2000/09/xmldsig#",
-                    "ext":"urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2",
-                    "regexp":"http://exslt.org/regular-expressions",
-                    "sac":"urn:sunat:names:specification:ubl:peru:schema:xsd:SunatAggregateComponents-1",
-                    "soap":"http://schemas.xmlsoap.org/soap/envelope/",
-                    "xs":"http://www.w3.org/2001/XMLSchema"}
-    
-    for k in namespaces:
-        v = namespaces[k]
-        ET.register_namespace(k,v)
-
-    data_document = ET.fromstring(data_document.toxml(encoding="ISO-8859-1"))
-    result = ET.tostring(data_document, encoding="ISO-8859-1")
-
-    return result.decode("ISO-8859-1")
-
 
 
 def get_response(xml_response):
@@ -370,6 +371,7 @@ def get_response(xml_response):
 
 
 def get_response_ticket(xml_response):
+    xml_response = set_xml_attributes(xml_response)
     doc = minidom.parseString(xml_response)
     faultcodes = doc.getElementsByTagName("soap-env:Fault")
     errors = []
