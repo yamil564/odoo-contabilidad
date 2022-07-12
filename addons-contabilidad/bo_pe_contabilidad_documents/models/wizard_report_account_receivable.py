@@ -38,7 +38,7 @@ class WizardReportAccountReceivable(models.TransientModel):
         if records:
             if self.type_report=='partner':
                 diccionario = {
-                    'name': 'Cuentas por Pagar a la Fecha',
+                    'name': 'Cuentas por Cobrar a la Fecha',
                     'view_type': 'form',
                     'view_mode': 'tree,form',
                     'res_model': 'account.move.line',
@@ -54,7 +54,7 @@ class WizardReportAccountReceivable(models.TransientModel):
 
             elif self.type_report=='account':
                 diccionario = {
-                    'name': 'Cuentas por Pagar a la Fecha',
+                    'name': 'Cuentas por Cobrar a la Fecha',
                     'view_type': 'form',
                     'view_mode': 'tree,form',
                     'res_model': 'account.move.line',
@@ -70,7 +70,7 @@ class WizardReportAccountReceivable(models.TransientModel):
 
             elif self.type_report=='account_partner':
                 diccionario = {
-                    'name': 'Cuentas por Pagar a la Fecha',
+                    'name': 'Cuentas por Cobrar a la Fecha',
                     'view_type': 'form',
                     'view_mode': 'tree,form',
                     'res_model': 'account.move.line',
@@ -87,7 +87,7 @@ class WizardReportAccountReceivable(models.TransientModel):
 
             elif self.type_report=='partner_account':
                 diccionario = {
-                    'name': 'Cuentas por Pagar a la Fecha',
+                    'name': 'Cuentas por Cobrar a la Fecha',
                     'view_type': 'form',
                     'view_mode': 'tree,form',
                     'res_model': 'account.move.line',
