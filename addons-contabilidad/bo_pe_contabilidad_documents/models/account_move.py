@@ -2,14 +2,37 @@ from odoo import models, fields, api, _
 from odoo.exceptions import UserError, ValidationError, Warning, RedirectWarning
 import re
 import logging
+
+from odoo.addons.gestionit_pe_fe.models.parameters.catalogs import tdc
+
+
 _logger = logging.getLogger(__name__)
 
 class AccountMove(models.Model):
     _inherit = "account.move"
 
 
-    prefix_code=fields.Char(string="Número Serie")
-    invoice_number=fields.Char(string="Correlativo")
+    prefix_code=fields.Char(string="Serie del Comprobante")
+    invoice_number=fields.Char(string="Correlativo del Comprobante")
+
+    inv_supplier_ref = fields.Char(default="-")
+
+    type_document_id = fields.Selection(string="Tipo de Documento",selection="_selection_invoice_type",
+        compute="compute_campo_type_document_id",store=True)
+    ### EL TIPO DOC EN ASIENTOWS VIENE DADO bPOR EL TD DEL DIARIO USADO
+
+
+    def _selection_invoice_type(self):
+        return tdc
+
+
+    @api.depends('journal_id')
+    def compute_campo_type_document_id(self):
+        for rec in self:
+            rec.type_document_id = False
+            if rec.journal_id and rec.journal_id.invoice_type_code_id:
+                rec.type_document_id = rec.journal_id.invoice_type_code_id
+
 
     ###################################################################
     @api.onchange('date','invoice_date','currency_id')
@@ -42,9 +65,27 @@ class AccountMove(models.Model):
 
 
     def post(self):
+
         for rec in self:
-            if rec.type in ['in_invoice','in_refund']:
-                rec.inv_supplier_ref='-'
+            if not rec.inv_supplier_ref:
+                rec.inv_supplier_ref = '-'
+
+
+        for rec in self:
+            for line in rec.line_ids:
+                if not line.prefix_code:
+                    line.write({'prefix_code':rec.prefix_code or ''})
+
+        for rec in self:
+            for line in rec.line_ids:
+                if not line.invoice_number:
+                    line.write({'invoice_number':rec.invoice_number or ''})
+
+        for rec in self:
+            for line in rec.line_ids:
+                if not line.type_document_id:
+                    line.write({'type_document_id':rec.type_document_id or False})
+
             
         super(AccountMove,self).post()
 
@@ -207,3 +248,81 @@ class AccountMoveLine(models.Model):
         else:
             return ret
     ##########################################################
+
+    #### VISTAS DE LOS REPORTES DE CUENTAS X COBRAR Y PAGAR
+    def get_query_account_receivable(self):
+        query="""
+            select aml.id   
+                from account_move_line as aml 
+            join account_move am on am.id=aml.move_id
+            join account_account acac on acac.id = aml.account_id 
+            where acac.internal_type ='receivable' and 
+                am.state='posted' and 
+                (aml.amount_residual != 0.00 or aml.amount_residual_currency != 0.00)"""
+
+        return query
+
+    def get_query_account_payable(self):
+        query="""
+            select aml.id   
+                from account_move_line as aml 
+            join account_move am on am.id=aml.move_id
+            join account_account acac on acac.id = aml.account_id 
+            where acac.internal_type ='payable' and 
+                am.state='posted' and 
+                (aml.amount_residual != 0.00 or aml.amount_residual_currency != 0.00)"""
+
+        return query
+
+
+
+    def button_view_tree_account_receivable(self):
+        self.ensure_one()
+        view = self.env.ref('bo_pe_contabilidad_documents.view_move_line_document_details_tree')
+
+        query = self.get_query_account_receivable()
+        self.env.cr.execute(query)
+        records = self.env.cr.dictfetchall()
+
+        if records:
+            diccionario = {
+                'name': 'Cuentas por Cobrar a la Fecha',
+                'view_type': 'form',
+                'view_mode': 'tree,form',
+                'res_model': 'account.move.line',
+                'view_id': view.id,
+                'views': [(view.id,'tree')],
+                'type': 'ir.actions.act_window',
+                'domain': [('id', 'in', [i['id'] for i in records] or [])],
+                'context':{
+                    'search_default_filter_socio':1,
+                    'search_default_filter_cuenta':1,
+                    }
+            }
+            return diccionario
+
+    #########################################################
+    def button_view_tree_account_payable(self):
+        self.ensure_one()
+        view = self.env.ref('bo_pe_contabilidad_documents.view_move_line_document_details_tree')
+
+        query_2 = self.get_query_account_payable()
+        self.env.cr.execute(query_2)
+        records_2 = self.env.cr.dictfetchall()
+
+        if records_2:
+            diccionario = {
+                'name': 'Cuentas por Pagar a la Fecha',
+                'view_type': 'form',
+                'view_mode': 'tree,form',
+                'res_model': 'account.move.line',
+                'view_id': view.id,
+                'views': [(view.id,'tree')],
+                'type': 'ir.actions.act_window',
+                'domain': [('id', 'in', [i['id'] for i in records_2] or [])],
+                'context':{
+                    'search_default_filter_socio':1,
+                    'search_default_filter_cuenta':1,
+                    }
+            }
+            return diccionario
