@@ -9,6 +9,7 @@
                     <page name="credentials" string="Credenciales de API FE">
                         <group>
                             <group>
+                                <field name="sunat_provider" string="Proveedor"/>
                                 <field name="tipo_envio" required="1" />
                             </group>
                             <group>

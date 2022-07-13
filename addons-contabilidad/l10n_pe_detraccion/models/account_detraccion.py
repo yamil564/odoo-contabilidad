@@ -40,23 +40,32 @@ class AccountDetraction(models.Model):
 		'move_id.line_ids.currency_id')
 	def _compute_residual(self):
 		#self.ensure_one()
-		residual = 0.0
-		residual_company_signed = 0.0
-		for line in self._get_aml_for_amount_residual():
-			residual_company_signed += line.amount_residual
-			if line.currency_id == self.currency_id:
-				residual += line.amount_residual_currency if line.currency_id else line.amount_residual
-			else:
-				if line.currency_id:
-					residual += line.currency_id._convert(line.amount_residual_currency, self.currency_id, line.company_id, line.date or fields.Date.today())
+		for rec in self:
+			residual = 0.0
+			residual_company_signed = 0.0
+
+			if rec.move_id:
+
+				for line in rec._get_aml_for_amount_residual():
+
+					residual_company_signed += line.amount_residual
+					if line.currency_id == rec.currency_id:
+						residual += line.amount_residual_currency if line.currency_id else line.amount_residual
+					else:
+						if line.currency_id:
+							residual += line.currency_id._convert(line.amount_residual_currency, 
+								rec.currency_id, line.company_id, line.date or fields.Date.today())
+
+						else:
+							residual += line.company_id.currency_id._convert(line.amount_residual, rec.currency_id, 
+								line.company_id, line.date or fields.Date.today())
+
+				rec.residual = abs(residual)
+				digits = rec.currency_id.rounding
+				if float_is_zero(rec.residual, precision_rounding=digits):
+					rec.reconciled = True
 				else:
-					residual += line.company_id.currency_id._convert(line.amount_residual, self.currency_id, line.company_id, line.date or fields.Date.today())
-		self.residual = abs(residual)
-		digits = self.currency_id.rounding
-		if float_is_zero(self.residual, precision_rounding=digits):
-			self.reconciled = True
-		else:
-			self.reconciled = False
+					rec.reconciled = False
 
 
 	journal_id = fields.Many2one('account.journal',
@@ -115,8 +124,11 @@ class AccountDetraction(models.Model):
 		readonly=True, states={'draft': [('readonly', False)]},
 		string="cuenta destino")
 
+
 	residual = fields.Monetary(string="Importe adeudado",
 		compute='_compute_residual', store=True, currency_field='company_currency_id')
+
+
 	reconciled = fields.Boolean(string="reconciled", compute="_compute_residual", store=True)
 
 	operation_type = fields.Selection(selection=_operation_type,
@@ -147,12 +159,26 @@ class AccountDetraction(models.Model):
 	
 	def action_cancel_detraccion(self):
 		if self.move_id and self.move_id.line_ids:
-			self._cr.execute("DELETE FROM account_move_line WHERE move_id=%s" % self.move_id.id)
+
+			self._cr.execute("DELETE FROM account_move_line WHERE move_id=%s"%self.move_id.id)
+			self._cr.execute("DELETE FROM account_move WHERE id=%s"%self.move_id.id)
+
 		self.write({'state':'cancel'})
 
 	
 	def action_draft_detraccion(self):
 		self.write({'state':'draft'})
+
+
+	######################################
+	def unlink (self):
+		for line in self:
+			if line.move_id and line.move_id.line_ids:
+				self._cr.execute("DELETE FROM account_move_line WHERE move_id=%s"%line.move_id.id)
+				self._cr.execute("DELETE FROM account_move WHERE id=%s"%line.move_id.id)
+			
+			return super(AccountDetraction,line).unlink()
+	######################################
 
 
 	def action_validate_detraction(self):
