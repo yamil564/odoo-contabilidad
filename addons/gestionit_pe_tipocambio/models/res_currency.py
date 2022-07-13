@@ -292,6 +292,8 @@ class Tipocambio(models.Model):
             except Exception as e:
                 raise UserError(e)
 
+        vals = []
+
         for comp in company_ids:
             currency_usd_sale = self.env["res.currency"].search(
                 [('type', '=', 'sale'), ('name', '=', 'USD')], limit=1)
@@ -304,37 +306,55 @@ class Tipocambio(models.Model):
             factor_commercial = (factor_sale + factor_purchase)/2
             if currency_usd_sale.exists():
                 rate_sale = 1/factor_sale
-                currency_rate_usd_sale = currency_usd_sale.rate_ids.filtered(
-                    lambda r: r.name == today)
+                currency_rate_usd_sale = currency_usd_sale.rate_ids.filtered(lambda r: r.name == today and r.company_id == comp)
+
                 if len(currency_rate_usd_sale) == 0:
-                    self.env["res.currency.rate"].create({"name": today,
-                                                          "type": "sale",
-                                                          "company_id": comp.id,
-                                                          "rate": rate_sale,
-                                                          "currency_id": currency_usd_sale.id,
-                                                          "factor": factor_sale})
+                    vals.append({"name": today,
+                            "type": "sale",
+                            "company_id": comp.id,
+                            "rate": rate_sale,
+                            "currency_id": currency_usd_sale.id,
+                            "factor": factor_sale})
+                    #self.env["res.currency.rate"].sudo().create({"name": today,
+                    #                                      "type": "sale",
+                    #                                      "company_id": comp.id,
+                    #                                      "rate": rate_sale,
+                    #                                      "currency_id": currency_usd_sale.id,
+                    #                                      "factor": factor_sale})
             if currency_usd_purchase.exists():
                 rate_purchase = 1/factor_purchase
-                currency_rate_usd_purchase = currency_usd_purchase.rate_ids.filtered(
-                    lambda r: r.name == today)
+                currency_rate_usd_purchase = currency_usd_purchase.rate_ids.filtered(lambda r: r.name == today and r.company_id == comp)
                 if len(currency_rate_usd_purchase) == 0:
-                    self.env["res.currency.rate"].create({"name": today,
-                                                          "type": "sale",
-                                                          "company_id": comp.id,
-                                                          "rate": rate_purchase,
-                                                          "currency_id": currency_usd_purchase.id,
-                                                          "factor": factor_purchase})
+                    vals.append({"name": today,
+                                "type": "purchase",
+                                "company_id": comp.id,
+                                "rate": rate_purchase,
+                                "currency_id": currency_usd_purchase.id,
+                                "factor": factor_purchase})
+                    #self.env["res.currency.rate"].create({"name": today,
+                    #                                      "type": "sale",
+                    #                                      "company_id": comp.id,
+                    #                                      "rate": rate_purchase,
+                    #                                      "currency_id": currency_usd_purchase.id,
+                    #                                      "factor": factor_purchase})
             if currency_usd_commercial.exists():
                 rate_commercial = 1/factor_commercial
-                currency_rate_usd_commercial = currency_usd_commercial.rate_ids.filtered(
-                    lambda r: r.name == today)
+                currency_rate_usd_commercial = currency_usd_commercial.rate_ids.filtered(lambda r: r.name == today and r.company_id == comp)
                 if len(currency_rate_usd_commercial) == 0:
-                    self.env["res.currency.rate"].create({"name": today,
-                                                          "type": "commercial",
-                                                          "company_id": comp.id,
-                                                          "rate": rate_commercial,
-                                                          "currency_id": currency_usd_commercial.id,
-                                                          "factor": factor_commercial})
+                    vals.append({"name": today,
+                                "type": "commercial",
+                                "company_id": comp.id,
+                                "rate": rate_commercial,
+                                "currency_id": currency_usd_commercial.id,
+                                "factor": factor_commercial})
+                    #self.env["res.currency.rate"].create({"name": today,
+                    #                                      "type": "commercial",
+                    #                                      "company_id": comp.id,
+                    #                                      "rate": rate_commercial,
+                    #                                      "currency_id": currency_usd_commercial.id,
+                    #                                      "factor": factor_commercial})
+
+        self.env["res.currency.rate"].sudo().create(vals)
 
     def save(self):
         self.env.user.notify_success(
