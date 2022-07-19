@@ -11,7 +11,7 @@
                         <button name="action_print" 
                             string="Imprimir"
                             type="object"
-                            states='open,send'
+                            states='draft,open,send'
                             icon="fa-print"
                             />
                         <button name="action_draft"
