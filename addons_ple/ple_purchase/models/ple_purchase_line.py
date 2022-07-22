@@ -67,8 +67,8 @@ class PlePurchaseLine(models.Model):
 	serie_comprobante_original=fields.Char(string="Serie Comprobante Original", compute='_compute_campo_serie_comprobante_original' ,store=True) # ,
 	codigo_dep_aduanera=fields.Char(string="Código Dependencia Aduanera" ) #, readonly=False , states={'send': [('readonly', True)]})
 	numero_comprobante_original=fields.Char(string="Número Comprobante Original", compute='_compute_campo_numero_comprobante_original' ,store=True )
-	fecha_detraccion=fields.Date(string="Fecha Detracción",compute='_compute_campo_fecha_detraccion' , store=True ) # ,
-	numero_detraccion=fields.Char(string="Número Detracción",compute='_compute_campo_numero_detraccion' ,store=True ) #, readonly=False , states={'send': [('readonly', True)]})
+	fecha_detraccion=fields.Date(string="Fecha Detracción")#,compute='_compute_campo_fecha_detraccion' , store=True ) # ,
+	numero_detraccion=fields.Char(string="Número Detracción")#,compute='_compute_campo_numero_detraccion' ,store=True ) #, readonly=False , states={'send': [('readonly', True)]})
 	marca_retencion=fields.Char(string="Marca Retención") # , readonly=False , states={'send': [('readonly', True)]})
 	clasificacion_bienes=fields.Char(string="Clasificación Bienes Adquiridos" ) #, readonly=False , states={'send': [('readonly', True)]})
 	identificacion_contrato=fields.Char(string="Identificación Contrato" ) #, readonly=False , states={'send': [('readonly', True)]})

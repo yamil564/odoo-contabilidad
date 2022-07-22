@@ -100,6 +100,3 @@ class WizardReportAccountPayable(models.TransientModel):
                         }
                 }
                 return diccionario
-                        
-
-

@@ -865,15 +865,90 @@ class AccountMove(models.Model):
 
             # move.amount_residual = - move.amount_total
 
+    mostrar_button_draft = fields.Boolean(string="Mostrar Botón Draft",
+        compute="compute_mostrar_button_draft")
+
+    mostrar_button_cancel_anulados = fields.Boolean(string="Mostrar Botón Cancelarc Anulados",
+        compute="compute_mostrar_button_cancel_anulados")
+
+
+    @api.depends('type','estado_comprobante_electronico','estado_emision')
+    def compute_mostrar_button_draft(self):
+        for move in self:
+            move.mostrar_button_draft=True
+            if move.type in ['out_invoice','out_refund'] and \
+                move.estado_emision in ["E", "A", "O"] or move.estado_comprobante_electronico in ["1_ACEPTADO"]:
+                move.mostrar_button_draft = False
+
+
+    @api.depends('type','estado_comprobante_electronico','estado_emision')
+    def compute_mostrar_button_cancel_anulados(self):
+        for move in self:
+
+            current_user = self.env.user
+            move.mostrar_button_cancel_anulados=False
+
+            if move.type in ['out_invoice','out_refund'] and \
+                move.estado_emision in ["E", "A", "O"] and \
+                move.estado_comprobante_electronico in ["2_ANULADO"] and \
+                current_user.has_group('gestionit_pe_fe.group_user_cancelar_anulados') and \
+                current_user.has_group('account.group_account_user'):
+
+                move.mostrar_button_cancel_anulados = True
+            else:
+                move.mostrar_button_cancel_anulados = False
+
+
+
+    ####### FUNCIONALIDAD PARA CANCELACIÓN MASIVA !! ##########
+    def button_cancel_anulados_sunat(self):
+        current_user = self.env.user
+        _logger.info('\n\nCANCELAR ANULADOS !!!\n\n')
+
+        if current_user.has_group('gestionit_pe_fe.group_user_cancelar_anulados') and \
+            current_user.has_group('account.group_account_user'):
+
+            for line in self:
+                if line.estado_emision in ["E", "A", "O"] and line.estado_comprobante_electronico in ["2_ANULADO"]:
+
+                    line.button_draft()
+                    line.button_cancel()
+
+                elif line.estado_emision in ["E", "A", "O"] and line.estado_comprobante_electronico in ["1_ACEPTADO"]:
+
+                    raise UserError(
+                        "Este comprobante ya fue enviado a SUNAT y no puede ser editado.")
+
+    ###########################################################
+
+
+    
     def button_draft(self):
         super(AccountMove, self).button_draft()
-        for move in self:
-            if move.estado_emision in ["E", "A", "O"] or move.estado_comprobante_electronico in ["1_ACEPTADO", "2_ANULADO"]:
-                raise UserError(
-                    "Este comprobante ya fue enviado a SUNAT y no puede ser editado.")
-            else:
-                if move.current_log_status_id:
-                    move.current_log_status_id.action_set_last_log_unlink()
+
+        current_user = self.env.user
+
+        if not current_user.has_group('gestionit_pe_fe.group_user_cancelar_anulados'):
+            for move in self:
+
+                if move.estado_emision in ["E", "A", "O"] or move.estado_comprobante_electronico in ["1_ACEPTADO", "2_ANULADO"]:
+                    raise UserError(
+                        "Este comprobante ya fue enviado a SUNAT y no puede ser editado.")
+                else:
+                    if move.current_log_status_id:
+                        move.current_log_status_id.action_set_last_log_unlink()
+        else:
+            for move in self:
+
+                if move.estado_emision in ["E", "A", "O"] and move.estado_comprobante_electronico in ["1_ACEPTADO"]:
+                    raise UserError(
+                        "Este comprobante ya fue enviado a SUNAT y fue ACEPTADO, por lo que no puede ser editado.")
+                else:
+                    if move.current_log_status_id:
+                        move.current_log_status_id.action_set_last_log_unlink()
+
+
+
 
     def post(self):
         # Validar journal
