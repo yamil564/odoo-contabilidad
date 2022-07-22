@@ -21,6 +21,9 @@
                     <span attrs="{'invisible': ['|', '|', ('type', '!=', 'in_receipt'), ('state', '!=', 'draft'), ('name', '!=', '/')]}">Draft Purchase Receipt</span>
                 </h1>
             </xpath>
+            <xpath expr="//field[@name='invoice_date_due']" position="attributes">
+                <attribute name="attrs">{'readonly': ['|', '|', ('invoice_payment_term_id', '!=', False), ('type', 'not in', ('out_invoice', 'out_refund', 'in_invoice', 'in_refund', 'out_receipt', 'in_receipt')),('state','=','posted')]}</attribute>
+            </xpath>
             <xpath expr="//field[@name='line_ids']//tree//field[@name='price_unit']" position="attributes">
                 <attribute name="attrs">{'readonly':[('price_unit','&lt;',0)]}</attribute>
             </xpath>
