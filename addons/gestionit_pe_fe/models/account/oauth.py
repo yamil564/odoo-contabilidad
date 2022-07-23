@@ -109,16 +109,23 @@ def send_summary_xml(doc):
     signed_xml_with_creds = doc.current_log_status_id.signed_xml_with_creds
     tipo_envio = doc.company_id.tipo_envio
 
-    if int(tipo_envio) == 0:
-        endpoint = urls_test[0]
+    if doc.company_id.sunat_provider == "sunat":
+        if int(tipo_envio) == 0:
+            endpoint = urls_test[0]
 
-    elif int(tipo_envio) == 1: 
-        endpoint = urls_production[0]
-    else:
-        raise Exception("Tipo de envio incorrecto. Tipos de envío posibles: 0 - Pruebas u 1- Producción")
+        elif int(tipo_envio) == 1: 
+            endpoint = urls_production[0]
+        else:
+            raise Exception("Tipo de envio incorrecto. Tipos de envío posibles: 0 - Pruebas , 1- Producción")
+
+    elif doc.company_id.sunat_provider == "efact":
+        if int(tipo_envio) == 1: 
+            endpoint = urls_production_efact[0]
+        else:
+            raise Exception("Tipo de envio incorrecto. Tipos de envío posibles: 1- Producción")
 
     try:
-        headers = {"Content-Type": "application/xml"}
+        headers = {"Content-Type": "text/xml; charset=utf-8"}
         response = requests.post(endpoint,
                                 data=signed_xml_with_creds,
                                 headers=headers,
@@ -179,16 +186,23 @@ def send_voided_xml(doc):
     signed_xml_with_creds = doc.current_log_status_id.signed_xml_with_creds
     tipo_envio = doc.company_id.tipo_envio
 
-    if int(tipo_envio) == 0:
-        endpoint = urls_test[0]
+    if doc.company_id.sunat_provider == "sunat":
+        if int(tipo_envio) == 0:
+            endpoint = urls_test[0]
 
-    elif int(tipo_envio) == 1: 
-        endpoint = urls_production[0]
-    else:
-        raise Exception("Tipo de envio incorrecto. Tipos de envío posibles: 0 - Pruebas u 1- Producción")
+        elif int(tipo_envio) == 1: 
+            endpoint = urls_production[0]
+        else:
+            raise Exception("Tipo de envio incorrecto. Tipos de envío posibles: 0 - Pruebas u 1- Producción")
+            
+    elif doc.company_id.sunat_provider == "efact":
+        if int(tipo_envio) == 1: 
+            endpoint = urls_production_efact[0]
+        else:
+            raise Exception("Tipo de envio incorrecto. Tipos de envío posibles: 1- Producción")
 
     try:
-        headers = {"Content-Type": "application/xml"}
+        headers = {"Content-Type": "text/xml; charset=utf-8"}
         response = requests.post(endpoint,
                                 data=signed_xml_with_creds,
                                 headers=headers,
@@ -273,13 +287,16 @@ def send_doc_xml(doc):
                 endpoint = urls_production_efact[1]
         else:
             raise Exception("Tipo de envio incorrecto. Tipos de envío posibles: 1- Producción")
+    
     _logger.info(endpoint)
+
     try:
-        headers = {"Content-Type": "application/xml"}
+        headers = {"Content-Type": 'text/xml; charset=utf-8'}
         response = requests.post(endpoint,
                                 data=signed_xml_with_creds,
                                 headers=headers,
                                 timeout=20)
+        _logger.info(response.text)
         result = sunat_response_handle.get_response(response.text)
         data = {
             "response_json":json.dumps(result,indent=4),
@@ -1046,26 +1063,26 @@ def enviar_doc_resumen_url(data_doc, tipoEnvio):
     return r
 
 
-def baja_doc(self):
-    token = generate_token(self.company_id.api_key,
-                           self.company_id.api_secret, 10000)
-    data_doc = crear_json_baja(self)
-    response_env = enviar_doc_resumen_url(
-        self.company_id.endpoint, data_doc, token, self.company_id.tipo_envio)
-    self.json_comprobante = data_doc
-    self.json_respuesta = json.dumps(response_env.json(), indent=4)
-    if response_env.ok:
-        self.status_envio = True
-        self.estado_emision = extaer_estado_emision(response_env.json())
-        return True, ""
-    else:
-        recepcionado, estado_emision, msg_error = extraer_error(response_env)
-        if recepcionado:
-            self.status_envio = True
-            self.estado_emision = estado_emision
-            return True, msg_error
-        else:
-            return False, msg_error
+# def baja_doc(self):
+#     token = generate_token(self.company_id.api_key,
+#                            self.company_id.api_secret, 10000)
+#     data_doc = crear_json_baja(self)
+#     response_env = enviar_doc_resumen_url(
+#         self.company_id.endpoint, data_doc, token, self.company_id.tipo_envio)
+#     self.json_comprobante = data_doc
+#     self.json_respuesta = json.dumps(response_env.json(), indent=4)
+#     if response_env.ok:
+#         self.status_envio = True
+#         self.estado_emision = extaer_estado_emision(response_env.json())
+#         return True, ""
+#     else:
+#         recepcionado, estado_emision, msg_error = extraer_error(response_env)
+#         if recepcionado:
+#             self.status_envio = True
+#             self.estado_emision = estado_emision
+#             return True, msg_error
+#         else:
+#             return False, msg_error
 
 
 def extaer_estado_emision(response_env):
@@ -1122,18 +1139,24 @@ def extraer_error(response_env):
 
 
 
-def request_status_ticket(username,password,ticket,tipo_envio):
+def request_status_ticket(sunat_provider,username,password,ticket,tipo_envio):
     resumen = ResumenDiario()
-    request_status_xml = resumen.getStatus(username, password, ticket).toprettyxml("  ")
-
+    request_status_xml = resumen.getStatus(username or "", password, ticket).toprettyxml("  ")
+    _logger.info(request_status_xml)
     endpoint = ""
-    if int(tipo_envio) == 0:
-        endpoint = urls_test[0]
-    if int(tipo_envio) == 1:
-        endpoint = urls_production[0]
+    if sunat_provider == "sunat":
+        if int(tipo_envio) == 0:
+            endpoint = urls_test[0]
+        if int(tipo_envio) == 1:
+            endpoint = urls_production[0]
+        
+    elif sunat_provider == "efact":
+        if int(tipo_envio) == 1: 
+            endpoint = urls_production_efact[0]
+        else:
+            raise Exception("Tipo de envio incorrecto. Tipos de envío posibles: 1- Producción")
     
-    
-    response = requests.post(endpoint, data=request_status_xml, headers={"Content-Type": "text/xml"})
+    response = requests.post(endpoint, data=request_status_xml, headers={"Content-Type": "text/xml; charset=utf-8"})
     # _logger.info(response.text)
     if response.status_code != 200:
         raise UserError(response.text)
@@ -1173,7 +1196,12 @@ def request_status_ticket(username,password,ticket,tipo_envio):
             zip_decode = base64.b64decode(zip_data)
             zip_file = zipfile.ZipFile(io.BytesIO(zip_decode))
             xml_read = zip_file.read(zip_file.namelist()[-1])
+            _logger.info(xml_read)
+            xml_read = sunat_response_handle.set_xml_attributes(xml_read)
+            _logger.info(xml_read)
             doc_xml = minidom.parseString(xml_read)
+            
+
             DocumentResponse = doc_xml.getElementsByTagName("cac:DocumentResponse")
             if DocumentResponse:
                 Description = DocumentResponse[0].getElementsByTagName("cbc:Description")[0].firstChild.data
@@ -1183,7 +1211,10 @@ def request_status_ticket(username,password,ticket,tipo_envio):
             if statusCode == 0:
                 cdr = doc_xml.toprettyxml("        ")
                 Description = doc_xml.getElementsByTagName("cbc:Description")[0].firstChild.data
-                digestValue = doc_xml.getElementsByTagName("DigestValue")[0].firstChild.data
+                if doc_xml.getElementsByTagName("DigestValue"):
+                    digestValue = doc_xml.getElementsByTagName("DigestValue")[0].firstChild.data
+                else:
+                    digestValue = doc_xml.getElementsByTagName("ds:DigestValue")[0].firstChild.data
                 status = "A"
             elif statusCode == 99:
                 status = "R"
@@ -1221,13 +1252,13 @@ def request_status_ticket(username,password,ticket,tipo_envio):
 def request_status_invoice(username,password,ruc_emisior,invoice_type,document_number):
     factura = Factura()
     serie,correlativo = document_number.split("-")
-    request_status_cdr = factura.getStatusCdr(username,password,ruc_emisior,invoice_type,serie,correlativo).toprettyxml("  ")
+    request_status_cdr = factura.getStatusCdr(username or "",password,ruc_emisior,invoice_type,serie,correlativo).toprettyxml("  ")
     # endpoint = "https://e-factura.sunat.gob.pe/ol-it-wsconscpegem/billConsultService?wsdl"
     endpoint = "https://ww1.sunat.gob.pe/ol-it-wsconscpegem/billConsultService"
     
     try:
         headers = {
-            'Content-Type': 'text/xml',
+            'Content-Type': "text/xml; charset=utf-8",
             'Cookie': 'f5avraaaaaaaaaaaaaaaa_session_=INMKPNKKIAGOJCILIOEJGGFONADMLGLLFPLFFNCONMMEHKMOHAHFCHKAAHHIDFALMPKDDNOLFDNGJNGKPKPAFOOCFJOMJCHJANAGKCEHOAMFKIJFMNFOFPPGGHOKMPMD'
         }
         # _logger.info(request_status_cdr)

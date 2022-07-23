@@ -24,6 +24,7 @@ errores = {
     "136": "El sistema no puede responder su solicitud. (No se pudo recibir una respuesta del batch)",
     "137": "El sistema no puede responder su solicitud. (Se obtuvo una respuesta nula)",
     "138": "El sistema no puede responder su solicitud. (Error en Base de Datos)",
+    "140": "Existe un Documento igual en Proceso. Vuelva intentarlo en 15 minutos.",
     "151": "El nombre del archivo ZIP es incorrecto",
     "152": "No se puede enviar por este método un archivo de resumen",
     "153": "No se puede enviar por este método un archivo por lotes",

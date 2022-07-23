@@ -141,7 +141,7 @@ class AccountLogStatus(models.Model):
         self.ensure_one()
         if self.summary_ticket:
             company = self.company_id
-            response = request_status_ticket(company.get_username_sunat(),company.sunat_pass,self.summary_ticket,self.company_id.tipo_envio)
+            response = request_status_ticket(company.sunat_provider,company.get_username_sunat(),company.sunat_pass,self.summary_ticket,self.company_id.tipo_envio)
             self.write({
                 "response_xml_without_format":response.get("cdr",False) if response.get("cdr",False) else self.response_xml_without_format,
                 "summary_description_response":response.get("description",False) if response.get("description",False) else self.summary_description_response,
@@ -156,7 +156,7 @@ class AccountLogStatus(models.Model):
         self.ensure_one()
         if self.voided_ticket:
             company = self.company_id
-            response = request_status_ticket(company.get_username_sunat(),company.sunat_pass,self.voided_ticket,self.company_id.tipo_envio)
+            response = request_status_ticket(company.sunat_provider,company.get_username_sunat(),company.sunat_pass,self.voided_ticket,self.company_id.tipo_envio)
             self.write({
                 "response_xml_without_format":response.get("cdr",False) if response.get("cdr",False) else self.response_xml_without_format,
                 # "summary_description_response":response.get("description",False) if response.get("description",False) else self.summary_description_response,
