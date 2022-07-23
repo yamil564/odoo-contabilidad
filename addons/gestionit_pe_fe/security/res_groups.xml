@@ -199,6 +199,13 @@
     </record>
     <!-- ########################################################### -->
 
+    <!--############## GRUPO PARA CANCELAR DOCS ANULADOS ##########-->
+    <record id="group_user_cancelar_anulados" model="res.groups">
+        <field name="name">Permitir Cancelar Documentos Anulados</field>
+        <field name="comment">Permitir Cancelar Documentos Anulados</field>        
+    </record>
+    <!-- ########################################################### -->
+
     <!-- <record id="group_fe_allow_generate_send_xml" model="res.groups">
         <field name="name">vISUALI</field>
     </record> -->

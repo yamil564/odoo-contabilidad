@@ -2,14 +2,45 @@ from odoo import models, fields, api, _
 from odoo.exceptions import UserError, ValidationError, Warning, RedirectWarning
 import re
 import logging
+
+from odoo.addons.gestionit_pe_fe.models.parameters.catalogs import tdc
+
+
 _logger = logging.getLogger(__name__)
 
 class AccountMove(models.Model):
     _inherit = "account.move"
 
 
-    prefix_code=fields.Char(string="Número Serie")
-    invoice_number=fields.Char(string="Correlativo")
+    prefix_code=fields.Char(string="Serie del Comprobante")
+    invoice_number=fields.Char(string="Correlativo del Comprobante")
+
+    inv_supplier_ref = fields.Char(default="-")
+
+    type_document_id = fields.Selection(string="Tipo de Documento",selection="_selection_invoice_type",
+        compute="compute_campo_type_document_id",store=True)
+    ### EL TIPO DOC EN ASIENTOWS VIENE DADO bPOR EL TD DEL DIARIO USADO
+
+
+    def _selection_invoice_type(self):
+        #return tdc
+        tdc_ext = tdc
+        flag = False
+        for l in tdc_ext:
+            if l[0] == "100":
+                flag = True
+        if not flag:
+            tdc_ext.append(("100", "Notas de Venta"))
+        return tdc_ext
+
+
+    @api.depends('journal_id')
+    def compute_campo_type_document_id(self):
+        for rec in self:
+            rec.type_document_id = False
+            if rec.journal_id and rec.journal_id.invoice_type_code_id:
+                rec.type_document_id = rec.journal_id.invoice_type_code_id
+
 
     ###################################################################
     @api.onchange('date','invoice_date','currency_id')
@@ -42,9 +73,27 @@ class AccountMove(models.Model):
 
 
     def post(self):
+
         for rec in self:
-            if rec.type in ['in_invoice','in_refund']:
-                rec.inv_supplier_ref='-'
+            if not rec.inv_supplier_ref:
+                rec.inv_supplier_ref = '-'
+
+
+        for rec in self:
+            for line in rec.line_ids:
+                if not line.prefix_code:
+                    line.write({'prefix_code':rec.prefix_code or ''})
+
+        for rec in self:
+            for line in rec.line_ids:
+                if not line.invoice_number:
+                    line.write({'invoice_number':rec.invoice_number or ''})
+
+        for rec in self:
+            for line in rec.line_ids:
+                if not line.type_document_id:
+                    line.write({'type_document_id':rec.type_document_id or False})
+
             
         super(AccountMove,self).post()
 

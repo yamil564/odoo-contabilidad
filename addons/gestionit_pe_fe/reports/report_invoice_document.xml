@@ -35,7 +35,7 @@
                 <!--DATOS DEL CLIENTE-->
                 <div name="invoice_address" class="w-100">
                     <!-- FACTURA Y BOLETA -->
-                    <table id="table_factura_boleta" class="w-100" t-if="'{}_{}'.format(o.type,o.journal_id.invoice_type_code_id) in ['out_invoice_01','out_invoice_03']">
+                    <table id="table_factura_boleta" class="w-100" t-if="'{}_{}'.format(o.type,o.journal_id.invoice_type_code_id) in ['out_invoice_01','out_invoice_03','in_invoice_01','in_invoice_03']">
                         <tr>
                             <!-- CLIENTE -->
                             <th width="50%">
