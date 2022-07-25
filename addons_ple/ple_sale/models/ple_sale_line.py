@@ -293,8 +293,13 @@ class PleSaleLine(models.Model):
 					if rec.invoice_id.journal_id.invoice_type_code_id=='03':
 						valor_campo='1'
 					else:
+
 						if rec.invoice_id.amount_igv==0.00:
-							valor_campo='0'
+							if rec.invoice_id.total_venta_exportacion:
+								valor_campo='1'
+							else:
+								valor_campo='0'
+
 						elif rec.invoice_id.amount_igv>0.00:
 							valor_campo='1'
 
