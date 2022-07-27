@@ -15,7 +15,7 @@ class PlePurchaseLine(models.Model):
 
 	ple_purchase_id=fields.Many2one("ple.purchase",string="id PLE", ondelete="cascade" )
 
-	ple_purchase_id_no_domiciliados = fields.Many2one("ple.purchase",string="id PLE" , ondelete="cascade" )
+	ple_purchase_id_no_domiciliados = fields.Many2one("ple.purchase",string="id PLE" , ondelete="cascade")
 	ple_purchase_id_recibo_honorarios=fields.Many2one("ple.purchase",string="id PLE",ondelete="cascade")
 	# ple_purchase_id_recibo_honorarios
 	###### CAMPO PRINCIPAL O CAMPO ROOT !!!
