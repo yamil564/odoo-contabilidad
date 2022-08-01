@@ -1,10 +1,10 @@
 {
 	'name': 'SUNAT PLE-Compras',
-	'version': "1.1.0",
+	'version': "13.0.3",
 	'author': 'Franco Najarro',
 	'website':'',
 	'category':'',
-	'depends':['account','ple_base','bo_pe_contabilidad_documents','l10n_pe_detraccion'],
+	'depends':['account','ple_base','bo_pe_contabilidad_documents'],
 	'description':'''
 		Modulo de reportes PLE de Najarro.
 			> Compras

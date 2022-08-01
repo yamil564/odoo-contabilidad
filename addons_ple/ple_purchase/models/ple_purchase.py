@@ -18,12 +18,18 @@ class PlePurchase(models.Model):
 	_inherit='ple.base'
 	_description = "Modulo PLE Libros de Compras"
 
-	ple_purchase_line_ids=fields.One2many('ple.purchase.line','ple_purchase_id',string="Registros de compra" ,readonly=True, states={'draft': [('readonly', False)]})
-	ple_purchase_line_no_domiciliados_ids=fields.One2many('ple.purchase.line','ple_purchase_id_no_domiciliados',string="Registros de compra" , readonly=True, states={'draft': [('readonly', False)]})
-	ple_purchase_line_recibo_honorarios_ids=fields.One2many('ple.purchase.line','ple_purchase_id_recibo_honorarios',string="Registros de compra" , readonly=True, states={'draft': [('readonly', False)]})
+	ple_purchase_line_ids=fields.One2many('ple.purchase.line','ple_purchase_id',string="Registros de compra",
+		readonly=False, states={'send': [('readonly',True)]})
+	
+	ple_purchase_line_no_domiciliados_ids=fields.One2many('ple.purchase.line','ple_purchase_id_no_domiciliados',
+		string="Registros de compra" , readonly=False, states={'send': [('readonly',True)]})
+	
+	ple_purchase_line_recibo_honorarios_ids=fields.One2many('ple.purchase.line','ple_purchase_id_recibo_honorarios',
+		string="Registros de compra" , readonly=True, states={'draft': [('readonly', False)]})
 	
 	identificador_operaciones = fields.Selection(selection=[('0','Cierre de operaciones'),('1','Empresa operativa'),('2','Cierre de libro')],
 		string="Identificador de operaciones", required=True, default="1")
+
 	identificador_libro = fields.Selection(selection='available_formats_purchase_sunat', string="Identificador de libro" )
 	print_order = fields.Selection(default="date")
 
@@ -133,7 +139,7 @@ class PlePurchase(models.Model):
 		for line in self:
 			for line2 in line.ple_purchase_line_ids + line.ple_purchase_line_no_domiciliados_ids + line.ple_purchase_line_recibo_honorarios_ids:
 				line2.move_id.write({'declared_ple_8_1_8_2':False})
-			return super(PlePurchase, line2).unlink()
+			return super(PlePurchase,line).unlink()
 
 	
 	def available_formats_purchase_sunat(self):
