@@ -101,6 +101,9 @@ class AccountMove(models.Model):
                                          ondelete="set null",copy=False,
                                          default=False)
 
+    
+
+
     @api.depends('credit_note_ids')
     def _compute_credit_count(self):
         for inv in self:
@@ -108,6 +111,8 @@ class AccountMove(models.Model):
                 "select count(*) from account_move where reversed_entry_id = {}".format(inv.id))
             result = self.env.cr.fetchall()
             inv.credit_note_count = result[0][0]
+
+
 
     def action_view_credit_notes(self):
         self.ensure_one()
@@ -118,6 +123,8 @@ class AccountMove(models.Model):
             'view_mode': 'tree,form',
             'domain': [('reversed_entry_id', '=', self.id)],
         }
+
+
 
     @api.model
     def default_get(self, fields_list):
@@ -868,7 +875,7 @@ class AccountMove(models.Model):
     mostrar_button_draft = fields.Boolean(string="Mostrar Botón Draft",
         compute="compute_mostrar_button_draft")
 
-    mostrar_button_cancel_anulados = fields.Boolean(string="Mostrar Botón Cancelarc Anulados",
+    mostrar_button_cancel_anulados = fields.Boolean(string="Mostrar Botón Cancelar Anulados",
         compute="compute_mostrar_button_cancel_anulados")
 
 
@@ -881,6 +888,7 @@ class AccountMove(models.Model):
                 move.mostrar_button_draft = False
 
 
+
     @api.depends('type','estado_comprobante_electronico','estado_emision')
     def compute_mostrar_button_cancel_anulados(self):
         for move in self:
@@ -889,8 +897,8 @@ class AccountMove(models.Model):
             move.mostrar_button_cancel_anulados=False
 
             if move.type in ['out_invoice','out_refund'] and \
-                move.estado_emision in ["E", "A", "O"] and \
-                move.estado_comprobante_electronico in ["2_ANULADO"] and \
+                ((move.estado_emision in ["E", "A", "O"] and \
+                move.estado_comprobante_electronico in ["2_ANULADO"]) or move.estado_comprobante_electronico in ["2_ANULADO"]) and \
                 current_user.has_group('gestionit_pe_fe.group_user_cancelar_anulados') and \
                 current_user.has_group('account.group_account_user'):
 
@@ -909,7 +917,8 @@ class AccountMove(models.Model):
             current_user.has_group('account.group_account_user'):
 
             for line in self:
-                if line.estado_emision in ["E", "A", "O"] and line.estado_comprobante_electronico in ["2_ANULADO"]:
+                if (line.estado_emision in ["E", "A", "O"] and line.estado_comprobante_electronico in ["2_ANULADO"]) or \
+                    (line.estado_comprobante_electronico in ["2_ANULADO"]):
 
                     line.button_draft()
                     line.button_cancel()
@@ -1171,6 +1180,7 @@ class AccountMove(models.Model):
         return errors
 
     def validacion_factura(self):
+        ### AMOUNT_TOTAL <= 700
         errors = []
         if self.invoice_type_code_catalog_51.code not in ["0200","0201","0202","0203","0204","0205","0206","0207","0208"]:
             if self.partner_id.l10n_latam_identification_type_id.l10n_pe_vat_code != "6":
@@ -1180,6 +1190,7 @@ class AccountMove(models.Model):
             if not self.partner_id.vat:
                 errors.append(
                     "* El cliente selecionado no tiene RUC, esto es necesario para facturas")
+
             elif len(self.partner_id.vat) != 11:
                 errors.append(
                     "* El RUC del cliente selecionado debe tener 11 dígitos")
