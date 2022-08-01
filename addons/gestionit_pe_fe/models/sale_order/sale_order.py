@@ -56,9 +56,19 @@ class SaleOrder(models.Model):
     # * INICIO: Cuotas de pago en orden de venta
     paymentterm_line = fields.One2many("sale.paymentterm.line", "order_id")
     payment_term_type = fields.Char(compute="_compute_payment_term_type")
+    date_due = fields.Date('Fecha de Vencimiento', compute='_get_date_due')
 
     residual_credit_paymentterm = fields.Monetary(
         "Saldo restante de plazos de pago a crédito", compute="_compute_residual_credit_paymentterm")
+
+    @api.depends('payment_term_id')
+    def _get_date_due(self):
+        for record in self:
+            if record.payment_term_id and record.date_order:
+                self.date_due = record.payment_term_id.compute(0, date_ref=record.date_order, currency=record.company_id.currency_id)[0][0]
+            else:
+                self.date_due = False
+
 
     @api.depends("paymentterm_line",
                  "paymentterm_line.amount",
