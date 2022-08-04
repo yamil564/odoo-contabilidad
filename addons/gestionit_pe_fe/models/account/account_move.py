@@ -131,23 +131,28 @@ class AccountMove(models.Model):
         res = super(AccountMove, self).default_get(fields_list)
         refund_id = self._context.get("default_refund_invoice_id", False)
         domain = []
-
+        # _logger.info(self.env.user)
         user = self.env.user
-        allowed_company_ids = self._context.get("allowed_company_ids")
-        warehouse_ids = user.warehouse_ids.filtered(
-            lambda r: r.company_id.id in allowed_company_ids)
 
-        if len(warehouse_ids) > 0:
-            res.update({"warehouse_id": warehouse_ids[0].id})
-            journal_ids = warehouse_ids[0].journal_ids.filtered(lambda r: r.invoice_type_code_id == res.get(
-                "invoice_type_code") and r.type == res.get("journal_type"))
-            if len(journal_ids) > 0:
-                res.update({"journal_id": journal_ids[0].id})
+        if user.active:
+            allowed_company_ids = self._context.get("allowed_company_ids")
+            # _logger.info(self._context)
+            # _logger.info(user.warehouse_ids)
+            # _logger.info(allowed_company_ids)
+            warehouse_ids = user.warehouse_ids.filtered(
+                lambda r: r.company_id.id in allowed_company_ids)
 
-        if refund_id:
-            refund_obj = self.env["account.move"].browse(refund_id)
-            domain += [['tipo_comprobante_a_rectificar',
-                        'in', [refund_obj.invoice_type_code]]]
+            if len(warehouse_ids) > 0:
+                res.update({"warehouse_id": warehouse_ids[0].id})
+                journal_ids = warehouse_ids[0].journal_ids.filtered(lambda r: r.invoice_type_code_id == res.get(
+                    "invoice_type_code") and r.type == res.get("journal_type"))
+                if len(journal_ids) > 0:
+                    res.update({"journal_id": journal_ids[0].id})
+
+            if refund_id:
+                refund_obj = self.env["account.move"].browse(refund_id)
+                domain += [['tipo_comprobante_a_rectificar',
+                            'in', [refund_obj.invoice_type_code]]]
 
         return res
 
