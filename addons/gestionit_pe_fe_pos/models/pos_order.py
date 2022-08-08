@@ -52,8 +52,7 @@ class PosOrder(models.Model):
         #     raise ValidationError(
         #         "La creación del comprobante requiere de la selección de una Serie de facturación.")
 
-        desc_percent = (abs(self.desc_global)*100) / \
-            (abs(self.desc_global)+self.amount_total)
+        # desc_percent = (abs(self.desc_global)*100) / (abs(self.desc_global)+self.amount_total)
 
         vals.update({
             "journal_id": self.invoice_journal_id.id,
@@ -63,9 +62,9 @@ class PosOrder(models.Model):
             "sustento_nota": self.credit_note_comment,
             "type": self.invoice_type,
             # Cambio para loyalty
-            'invoice_line_ids': [(0, None, self._prepare_invoice_line(line)) for line in self.lines if line.price_unit*line.qty > 0],
-            "apply_global_discount": True if abs(desc_percent) > 0 else False,
-            "descuento_global": abs(desc_percent)
+            # 'invoice_line_ids': [(0, None, self._prepare_invoice_line(line)) for line in self.lines if line.price_unit*line.qty > 0],
+            # "apply_global_discount": True if abs(desc_percent) > 0 else False,
+            # "descuento_global": abs(desc_percent)
         })
 
         return vals
