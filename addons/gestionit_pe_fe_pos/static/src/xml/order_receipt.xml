@@ -267,8 +267,8 @@
 					<script type="text/javascript">
 						var qrcode = new QRCode('qrcode' , {
 							text: "http://jindo.dev.naver.com/collie",
-							width: 120,
-							height: 120,
+							width: 90,
+							height: 90,
 							colorDark : "#000000",
 							colorLight : "#ffffff",
 							correctLevel : QRCode.CorrectLevel.H
@@ -288,8 +288,8 @@
 				</t>
 				<span t-if="order.invoice_type_code_id == '01'" style="font-size:14px">
 					Representación impresa de la FACTURA ELECTRÓNICA
-					<t t-if="widget.pos.company.website_invoice_search">, 
-						comprobante emitido desde sistemas del contribuyente, puede consultar este comprobante ingresando a
+					<t t-if="widget.pos.company.website_invoice_search">
+						, comprobante emitido desde sistemas del contribuyente, puede consultar este comprobante ingresando a
 						<t t-esc="widget.pos.company.website_invoice_search" />
 					</t>
 				</span>
