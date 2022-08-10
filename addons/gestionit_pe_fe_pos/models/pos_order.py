@@ -9,24 +9,28 @@ class PosOrder(models.Model):
     _inherit = "pos.order"
 
     invoice_journal_id = fields.Many2one("account.journal")
-    desc_global = fields.Float(string="Descuento global", default=0)
+    # desc_global = fields.Float(string="Descuento global", default=0)
 
-    invoice_type = fields.Selection(selection=[('out_refund','Devolución'),('out_invoice','Venta')],string="Tipo de movimiento",default="")
-    invoice_type_code_id = fields.Char(string="Tipo de comprobante electrónico")
-    refund_invoice_id = fields.Many2one("account.move",string="Comprobante a rectificar")
+    invoice_type = fields.Selection(selection=[('out_refund', 'Devolución'), (
+        'out_invoice', 'Venta')], string="Tipo de movimiento", default="")
+    invoice_type_code_id = fields.Char(
+        string="Tipo de comprobante electrónico")
+    refund_invoice_id = fields.Many2one(
+        "account.move", string="Comprobante a rectificar")
     credit_note_comment = fields.Char(string="Sustento de nota")
     credit_note_type = fields.Selection(string='Tipo de Nota de Crédito', readonly=True,
-                                         selection="_selection_credit_note_type", states={'draft': [('readonly', False)]})
-    
+                                        selection="_selection_credit_note_type", states={'draft': [('readonly', False)]})
+
     def _selection_credit_note_type(self):
         return tnc
 
     def _prepare_invoice_line(self, order_line):
-        res = super(PosOrder,self)._prepare_invoice_line(order_line)
+        res = super(PosOrder, self)._prepare_invoice_line(order_line)
         res.update({
             'lot_name': ",".join(order_line.pack_lot_ids.mapped('lot_name'))
         })
         return res
+
         # if order_line.price_unit*order_line.qty > 0:
         #     return {
         #         'product_id': order_line.product_id.id,
@@ -52,12 +56,13 @@ class PosOrder(models.Model):
 
         vals.update({
             "journal_id": self.invoice_journal_id.id,
-            "reversed_entry_id":self.refund_invoice_id.id,
+            "reversed_entry_id": self.refund_invoice_id.id,
             "invoice_type_code": self.invoice_journal_id.invoice_type_code_id,
-            "tipo_nota_credito":self.credit_note_type,
-            "sustento_nota":self.credit_note_comment,
-            "type":self.invoice_type
-            # 'invoice_line_ids': [(0, None, self._prepare_invoice_line(line)) for line in self.lines if line.price_unit >= 0 and line.qty >= 0],
+            "tipo_nota_credito": self.credit_note_type,
+            "sustento_nota": self.credit_note_comment,
+            "type": self.invoice_type,
+            # Cambio para loyalty
+            # 'invoice_line_ids': [(0, None, self._prepare_invoice_line(line)) for line in self.lines if line.price_unit*line.qty > 0],
             # "apply_global_discount": True if abs(desc_percent) > 0 else False,
             # "descuento_global": abs(desc_percent)
         })
@@ -103,12 +108,13 @@ class PosOrder(models.Model):
         vals = super(PosOrder, self)._order_fields(ui_order)
         if ui_order.get("invoice_journal_id", False):
             vals.update({'invoice_journal_id': ui_order.get("invoice_journal_id"),
-                        'invoice_type_code_id':ui_order.get("invoice_type_code_id"),
-                        'invoice_type':ui_order.get("invoice_type"),
-                        'credit_note_comment':ui_order.get("credit_note_comment"),
-                        'credit_note_type':ui_order.get("credit_note_type")})
-        if len(ui_order.get("refund_invoice",[])) == 2:
-            vals.update({"refund_invoice_id":ui_order.get("refund_invoice",[])[0]})
+                         'invoice_type_code_id': ui_order.get("invoice_type_code_id"),
+                         'invoice_type': ui_order.get("invoice_type"),
+                         'credit_note_comment': ui_order.get("credit_note_comment"),
+                         'credit_note_type': ui_order.get("credit_note_type")})
+        if len(ui_order.get("refund_invoice", [])) == 2:
+            vals.update(
+                {"refund_invoice_id": ui_order.get("refund_invoice", [])[0]})
 
         return vals
 
@@ -155,23 +161,22 @@ class PosOrder(models.Model):
             return "{} {}".format(invoice_type_name, name)
         return ""
 
-
     def _prepare_done_order_for_pos(self):
         res = super(PosOrder, self)._prepare_done_order_for_pos()
         if self.partner_id:
             res.update({
-                "partner_id":[self.partner_id.id,self.partner_id.name],
+                "partner_id": [self.partner_id.id, self.partner_id.name],
             })
         if self.account_move.state == "posted":
             res.update({
-                "invoice_journal_id":self.invoice_journal_id.id,
-                "invoice_type_code_id":self.account_move.invoice_type_code,
-                "number":self.account_move.name,
-                "sequence_number":self.account_move.name.split("-")[1],
-                "digest_value":self.account_move.digest_value,
-                "account_move":[self.account_move.id,self.account_move.name],
-                "refund_invoice":[self.account_move.reversed_entry_id.id,self.account_move.reversed_entry_id.name],
-                "credit_note_type_name":self.account_move.tipo_nota_credito
+                "invoice_journal_id": self.invoice_journal_id.id,
+                "invoice_type_code_id": self.account_move.invoice_type_code,
+                "number": self.account_move.name,
+                "sequence_number": self.account_move.name.split("-")[1],
+                "digest_value": self.account_move.digest_value,
+                "account_move": [self.account_move.id, self.account_move.name],
+                "refund_invoice": [self.account_move.reversed_entry_id.id, self.account_move.reversed_entry_id.name],
+                "credit_note_type_name": self.account_move.tipo_nota_credito
             })
         return res
 
@@ -181,20 +186,22 @@ class PosOrder(models.Model):
         return res
 
     def get_order(self):
-        result = {"has_invoice":False}
+        result = {"has_invoice": False}
         self.ensure_one()
         result["date"] = self.date_order
         result["order_name"] = self.name
         if self.account_move:
             result["has_invoice"] = True
-            result["invoice_id"]  = [self.account_move.id,self.account_move.name]
+            result["invoice_id"] = [
+                self.account_move.id, self.account_move.name]
             # Tipos de comprobantes 01- Factura ; 03- Boleta ; 07- Nota de crédito ; 08- Nota de débito
             result["invoice_type_code"] = self.account_move.invoice_type_code
             result["date"] = self.account_move.invoice_date
-            result["payments"] = self.payment_ids.mapped(lambda r:{'id':r.payment_method_id.id,'amount':r.amount})
-        result["lines"] = self.lines.mapped(lambda r:{"product_id":r.product_id.id,
-                                                        "price_unit":r.price_unit,
-                                                        "qty":r.qty})
+            result["payments"] = self.payment_ids.mapped(
+                lambda r: {'id': r.payment_method_id.id, 'amount': r.amount})
+        result["lines"] = self.lines.mapped(lambda r: {"product_id": r.product_id.id,
+                                                       "price_unit": r.price_unit,
+                                                       "qty": r.qty})
 
         return result
 
