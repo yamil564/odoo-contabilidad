@@ -904,8 +904,7 @@ class AccountMove(models.Model):
             if move.type in ['out_invoice','out_refund'] and \
                 ((move.estado_emision in ["E", "A", "O"] and \
                 move.estado_comprobante_electronico in ["2_ANULADO"]) or move.estado_comprobante_electronico in ["2_ANULADO"]) and \
-                current_user.has_group('gestionit_pe_fe.group_user_cancelar_anulados') and \
-                current_user.has_group('account.group_account_user'):
+                current_user.has_group('gestionit_pe_fe.group_user_cancelar_anulados'):
 
                 move.mostrar_button_cancel_anulados = True
             else:
@@ -918,8 +917,7 @@ class AccountMove(models.Model):
         current_user = self.env.user
         _logger.info('\n\nCANCELAR ANULADOS !!!\n\n')
 
-        if current_user.has_group('gestionit_pe_fe.group_user_cancelar_anulados') and \
-            current_user.has_group('account.group_account_user'):
+        if current_user.has_group('gestionit_pe_fe.group_user_cancelar_anulados'):
 
             for line in self:
                 if (line.estado_emision in ["E", "A", "O"] and line.estado_comprobante_electronico in ["2_ANULADO"]) or \
