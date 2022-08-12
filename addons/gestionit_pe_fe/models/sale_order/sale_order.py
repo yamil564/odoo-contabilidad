@@ -46,7 +46,7 @@ class SalePaymenttermLine(models.Model):
     currency_id = fields.Many2one(
         "res.currency", related="order_id.currency_id")
     order_id = fields.Many2one("sale.order", "Sale order")
-    date_due = fields.Date("Fecha de vencimiento")
+    date_due = fields.Date("Fecha de vencimiento estimada")
     amount = fields.Float("Monto")
 
 
