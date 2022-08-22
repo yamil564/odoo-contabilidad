@@ -23,15 +23,7 @@ class AccountMove(models.Model):
 
 
     def _selection_invoice_type(self):
-        #return tdc
-        tdc_ext = tdc
-        flag = False
-        for l in tdc_ext:
-            if l[0] == "100":
-                flag = True
-        if not flag:
-            tdc_ext.append(("100", "Notas de Venta"))
-        return tdc_ext
+        return tdc
 
 
     @api.depends('journal_id')
