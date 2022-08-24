@@ -56,7 +56,7 @@
                                 <div class="o_settings_right_pane">
                                     <laber for="property_account_payable_fees_id"/>
                                     <div class="text-muted">
-                                        Establecer Cuenta Recibo Honorarios a Pagar.
+                                        Establecer Cuenta Recibo Honorarios por Pagar.
                                     </div>
                                     <field name="property_account_payable_fees_id"/>
                                 </div>
@@ -97,7 +97,7 @@
                                     <div class="o_settings_right_pane">
                                         <laber for="property_account_payable_me_fees_id"/>
                                         <div class="text-muted">
-                                            Establecer Cuenta Recibo Honorarios a Pagar en Moneda Extranjera.
+                                            Establecer Cuenta Recibo Honorarios por Pagar en Moneda Extranjera.
                                         </div>
                                         <field name="property_account_payable_me_fees_id"/>
 

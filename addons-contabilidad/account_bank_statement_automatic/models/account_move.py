@@ -10,10 +10,19 @@ class AccountMove(models.Model):
 	_inherit = "account.move"
 
 
+
 	def button_cancel(self):
 		for rec in self:
 			rec._balance_end_real()
 			super(AccountMove,rec).button_cancel()
+
+	## al pasar a borrador no se elimina el registro del extracto, por ello cuando el asiento se vuelve a publicar,se vuelve a
+	## insertar el mismo movimiento en el extracto
+	def button_draft(self):
+		for rec in self:
+			rec._balance_end_real()
+			super(AccountMove,rec).button_draft()
+
 
 
 	def _balance_end_real(self):

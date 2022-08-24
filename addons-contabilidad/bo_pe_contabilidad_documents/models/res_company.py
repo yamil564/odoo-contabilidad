@@ -6,22 +6,22 @@ class ResCompany(models.Model):
 
 
     property_account_payable_fees_id=fields.Many2one('account.account',
-        string="Cuenta Recibo Honorarios a Pagar",
+        string="Cuenta Recibo Honorarios por Pagar",
         domain="[('internal_type', '=', 'payable'), ('deprecated', '=', False)]")
 
     ###############################################################
     property_account_receivable_me_id=fields.Many2one('account.account',
-        string="Cuenta a cobrar ME",
+        string="Cuenta por cobrar ME",
         domain="[('internal_type', '=', 'receivable'), ('deprecated', '=', False)]",
         implied_group='base.group_multi_currency')
 
     property_account_payable_me_id=fields.Many2one('account.account',
-        string="Cuenta a pagar ME",
+        string="Cuenta por pagar ME",
         domain="[('internal_type', '=', 'payable'), ('deprecated', '=', False)]",
         implied_group='base.group_multi_currency')
 
 
     property_account_payable_me_fees_id=fields.Many2one('account.account',
-        string="Cuenta Recibo Honorarios a Pagar ME",
+        string="Cuenta Recibo Honorarios por Pagar ME",
         domain="[('internal_type', '=', 'payable'), ('deprecated', '=', False)]",
         implied_group='base.group_multi_currency')

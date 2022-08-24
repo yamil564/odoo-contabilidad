@@ -15,8 +15,8 @@ class AccountPayment(models.Model):
 
     @api.depends('invoice_ids', 'payment_type', 'partner_type', 'partner_id','force_destination_account_id')
     def _compute_destination_account_id(self):
-    	super(AccountPayment,self)._compute_destination_account_id()
-    	##########################################
-    	for payment in self:
-    		if payment.force_destination_account_id:
-    			payment.destination_account_id = payment.force_destination_account_id
+        super(AccountPayment,self)._compute_destination_account_id()
+        ##########################################
+        for payment in self:
+            if payment.force_destination_account_id:
+                payment.destination_account_id = payment.force_destination_account_id

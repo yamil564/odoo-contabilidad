@@ -1,5 +1,5 @@
 {
-	'name': 'Configuraciones de Contabilidad en Moneda Extranjera',
+	'name': 'Configuraciones de Contabilidad en Moneda Extranjera-Recibos por Honorarios',
 	'version': "1.1.0",
 	'author': 'Franco Najarro',
 	'website':'',
