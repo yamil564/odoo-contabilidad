@@ -370,11 +370,11 @@ class PleSale(models.Model):
 		
 
 		ws.write(2,1,'RUC :',titulo_1)
-		ws.write(2,2,users.company_id.vat or '',titulo_2)
+		ws.write(2,2,self.company_id.vat or '',titulo_2)
 		
 		ws.merge_range('B4:F4','APELLIDOS Y NOMBRES, DENOMINACIÓN O RAZÓN SOCIAL:', titulo_1)
-		ws.write(3,6,users.company_id.name,titulo_2)
-		ws.merge_range('G4:J4',users.company_id.name, titulo_2)
+		ws.write(3,6,self.company_id.name or '',titulo_2)
+		ws.merge_range('G4:J4',self.company_id.name or '', titulo_2)
 
 				
 		ws.merge_range('B6:B11','NÚMERO CORRELATIVO DEL REGISTRO O CÓDIGO UNICO DE LA OPERACIÓN', titulo2)

@@ -189,3 +189,49 @@ def query_account_amount_balances_currency_native(fecha_movimiento_debe,fecha_mo
 	return query_total
 
 #######################################################################################################
+
+def query_account_amount_balances_with_period_group_account_cum(group_accounts,fecha_movimiento_debe,fecha_movimiento_haber,query_extras):
+	group_accounts_str=""
+	accounts = tuple(group_accounts)
+	len_accounts = len(accounts or '')
+	if len(accounts):
+		group_accounts_str = " %s" % (str(accounts) if len_accounts!=1 else str(accounts)[0:len(str(accounts))-2] + ')')
+
+	inicio_anio=fecha_movimiento_debe.split('-')[0]
+
+	query_total = """select sum(balance) as balance from
+		((select sum(aml.balance) as balance 
+		from account_move_line aml join account_move as am on am.id= aml.move_id join account_period apfy on apfy.id=aml.period_id where
+		am.state='posted' and 
+		aml.period_id not in (select id from account_period where code='00/%s' ) and 
+		aml.date<'%s' and aml.date>='%s' %s and
+		aml.account_id in %s )
+		UNION
+		(select sum(aml.balance) as balance from
+		account_move_line aml join account_move as am on am.id= aml.move_id join account_period apfy on apfy.id=aml.period_id
+		where 
+		am.state='posted' and 
+		aml.period_id in (select id from account_period where code='00/%s' ) and
+		aml.account_id in %s ) 
+		UNION 
+		(select sum(aml.balance) as balance from
+		account_move_line aml join account_move as am on am.id= aml.move_id join account_period apfy on apfy.id=aml.period_id 
+		where
+		am.state='posted' and 
+		aml.period_id not in (select id from account_period where code='00/%s' ) and 
+		aml.date>='%s' and aml.date<='%s' %s and 
+		aml.account_id in %s )) as table_saldo_accounts""" % (
+			inicio_anio,
+			fecha_movimiento_debe,
+			"%s-01-01"%(inicio_anio),
+			query_extras,
+			group_accounts_str,
+			inicio_anio,
+			group_accounts_str,
+			inicio_anio,
+			fecha_movimiento_debe,
+			fecha_movimiento_haber,
+			query_extras,
+			group_accounts_str)
+
+	return query_total
