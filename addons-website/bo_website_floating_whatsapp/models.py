@@ -1,3 +1,4 @@
+from csv import excel
 from odoo import models,fields,api
 from odoo.http import request
 import logging
@@ -17,17 +18,29 @@ class Website(models.Model):
         path = request.httprequest.__dict__.get("path","")
         _logger.info(path)
         order = self.sale_get_order()
+        if not order:
+            order = self.sale_get_order(force_create=True)
+
         if "/shop/product" in path and ("{producto}" in self.website_floating_whatsapp_message_product):
             path = path.split("?")[0]
             product_id = path.split("-")[-1]
-            # _logger.info(product_id)
-            product = self.env["product.template"].browse(int(product_id))
-            # _logger.info(product.read())
-            return url.format(self.website_floating_whatsapp,self.website_floating_whatsapp_message_product.format(producto=product.display_name))
-        elif ("/shop" in path or "/payment" in path or "/chechout" in path) and len(order.order_line) > 0:
+            try:
+                product = self.env["product.template"].browse(int(product_id))
+                return url.format(self.website_floating_whatsapp,self.website_floating_whatsapp_message_product.format(producto=product.display_name))
+            except Exception as e:
+                pass
+        elif ("/shop" in path or "/payment" in path or "/checkout" in path) and len(order.order_line) > 0:
             return url.format(self.website_floating_whatsapp,self.website_floating_whatsapp_message_order.format(orden=order.name))
         elif "/shop" in path or "/" == path:
             return url.format(self.website_floating_whatsapp,self.website_floating_whatsapp_message_shop)
+        if "/slides" in path and ("{producto}" in self.website_floating_whatsapp_message_product):
+            path = path.split("?")[0]
+            product_id = path.split("-")[-1]
+            try:
+                product = self.env["slide.channel"].browse(int(product_id))
+                return url.format(self.website_floating_whatsapp,self.website_floating_whatsapp_message_product.format(producto=product.display_name))
+            except Exception as e:
+                pass
         return False
 
 class ResConfigSettings(models.TransientModel):
