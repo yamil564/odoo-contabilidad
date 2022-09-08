@@ -51,13 +51,15 @@ class ResConfigSettings(models.TransientModel):
     
     def sync_account_me_partners(self):
         self.with_context(force_company=self.company_id.id)
-        partner_ids = self.env['res.partner'].search([('active','=',True),('massive_update_account_me','=',True)])
+        partner_ids = self.env['res.partner'].search([('active','=',True),
+            ('massive_update_account_me','=',True),('parent_id','in',[False,None,''])])
         
         for partner_id in partner_ids:
-            partner_id.write({
-                'property_account_receivable_me_id':self.property_account_receivable_me_id.id,
-                'property_account_payable_me_id':self.property_account_payable_me_id.id})
+
+            partner_id.write({'property_account_receivable_me_id':self.property_account_receivable_me_id.id})
+            partner_id.write({'property_account_payable_me_id':self.property_account_payable_me_id.id})
     
+
     #def sync_account_me_partners(self):
     #	query_update="""
     #		update res_partner set property_account_receivable_me_id=%s,
@@ -72,7 +74,8 @@ class ResConfigSettings(models.TransientModel):
 
     def sync_account_fees_partners(self):
         self.with_context(force_company=self.company_id.id)
-        partner_ids = self.env['res.partner'].search([('active','=',True),('massive_update_account_fees','=',True)])
+        partner_ids = self.env['res.partner'].search([('active','=',True),
+            ('parent_id','in',[False,None,'']),('massive_update_account_fees','=',True)])
         
         for partner_id in partner_ids:
             partner_id.write({
@@ -89,7 +92,9 @@ class ResConfigSettings(models.TransientModel):
 
     def sync_account_me_fees_partners(self):
         self.with_context(force_company=self.company_id.id)
-        partner_ids = self.env['res.partner'].search([('active','=',True),('massive_update_account_fees_me','=',True)])
+        partner_ids = self.env['res.partner'].search([('active','=',True),
+            ('massive_update_account_fees_me','=',True),
+            ('parent_id','in',[False,None,''])])
 
         for partner_id in partner_ids:
             partner_id.write({

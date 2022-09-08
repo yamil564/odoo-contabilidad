@@ -33,6 +33,7 @@ RUN pip3 install flex
 RUN pip3 install pandas
 RUN pip3 install numpy
 RUN pip3 install simplejson
+RUN pip3 install paramiko
 RUN apt-get install -y libmagic-dev
 RUN pip3 install --user libmagic
 RUN pip install culqi

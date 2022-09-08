@@ -101,6 +101,7 @@ tdc = [
     ("97","Nota de Crédito - No Domiciliado"),
     ("98","Nota de Débito - No Domiciliado"),
     # ("99","Otros -  Consolidado de Boletas de Venta")
+    ("100", "Notas de Venta"),
 ]
 
 # ESTADO DE COMPROBANTE ELECTRÓNICO
