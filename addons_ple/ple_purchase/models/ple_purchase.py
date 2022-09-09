@@ -183,17 +183,44 @@ class PlePurchase(models.Model):
 
 	def _get_domain(self):
 		#####################
+		domain = []
+
 		if self.fecha:
 			self.fecha_inicio=self.date_from
 			self.fecha_fin=self.date_to
 
+			domain = [
+				('date','>=',self.fecha_inicio),
+				('date','<=',self.fecha_fin),
+				('type','in',['in_invoice','in_refund']),
+				('state','in',['posted'])
+				]
+
+
 		elif self.periodo:
+
 			if self.incluir_anteriores_no_declarados:
-				self.fecha_inicio= "%s-01-01" %(self.fiscal_year)
+
 				self.fecha_fin= self._get_end_date()
+
+				domain = [
+					('date','<=',self.fecha_fin),
+					('type','in',['in_invoice','in_refund']),
+					('state','in',['posted']),
+					('declared_ple_8_1_8_2','!=',True)
+					]
+
 			else:
 				self.fecha_inicio= self._get_star_date()
 				self.fecha_fin= self._get_end_date()
+
+				domain = [
+					('date','>=',self.fecha_inicio),
+					('date','<=',self.fecha_fin),
+					('type','in',['in_invoice','in_refund']),
+					('state','in',['posted']),
+					('declared_ple_8_1_8_2','!=',True)
+					]
 		#####################
 
 		'''if self.fecha:
@@ -203,12 +230,12 @@ class PlePurchase(models.Model):
 			self.fecha_inicio= self._get_star_date()
 			self.fecha_fin= self._get_end_date()'''
 
-		domain = [
+		"""domain = [
 			('date','>=',self.fecha_inicio),
 			('date','<=',self.fecha_fin),
 			('type','in',['in_invoice','in_refund']),
 			('state','in',['posted'])
-			]
+			]"""
 
 
 		partners=list(self.partner_ids.mapped('id'))
