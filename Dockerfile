@@ -5,7 +5,6 @@ USER root
 
 
 RUN set -x; \
-
         apt-get update \
         && apt-get install -y --no-install-recommends python3-dev\
             build-essential \
@@ -24,6 +23,7 @@ RUN set -x; \
             signxml \
             openpyxl
 
+RUN python3 -m pip install --upgrade pip
 RUN apt-get clean && apt-get autoclean
 RUN pip3 install pyjwt
 RUN pip3 install phonenumbers
@@ -40,4 +40,13 @@ RUN pip install mercadopago
 RUN pip3 install facebook-sdk
 RUN pip3 install pillow
 RUN pip3 install html2text
+RUN pip install wheel 
+RUN pip install cerberus 
+RUN pip install pyquerystring 
+RUN pip install parse-accept-language 
+RUN pip install apispec 
+RUN pip install cachetools 
+RUN pip install marshmallow 
+RUN pip install marshmallow_objects 
+RUN pip install jsondiff
 RUN apt-get clean && apt-get autoclean

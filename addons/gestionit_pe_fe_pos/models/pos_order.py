@@ -107,9 +107,15 @@ class PosOrder(models.Model):
     def _order_fields(self, ui_order):
         vals = super(PosOrder, self)._order_fields(ui_order)
         if ui_order.get("invoice_journal_id", False):
+            if ui_order.get("invoice_type_code_id") in ["01","03"]:
+                invoice_type = "out_invoice"
+            elif ui_order.get("invoice_type_code_id") == "07":
+                invoice_type = "out_refund"
+            # invoice_journal = self.env["account.journal"].sudo().browse(invoice_journal_id)
+            # if invoice_journal.
             vals.update({'invoice_journal_id': ui_order.get("invoice_journal_id"),
                          'invoice_type_code_id': ui_order.get("invoice_type_code_id"),
-                         'invoice_type': ui_order.get("invoice_type"),
+                         'invoice_type': ui_order.get("invoice_type",invoice_type),
                          'credit_note_comment': ui_order.get("credit_note_comment"),
                          'credit_note_type': ui_order.get("credit_note_type")})
         if len(ui_order.get("refund_invoice", [])) == 2:
