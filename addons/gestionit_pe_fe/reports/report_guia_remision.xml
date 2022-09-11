@@ -230,7 +230,8 @@
                                                     <t t-esc="index"></t>
                                                 </th>
                                                 <td>
-                                                    <span t-field="line.description"/>
+                                                    <!-- <span t-field="line.description"/> -->
+                                                    <span t-field="line.product_id"/>
                                                 </td>
                                                 <td>
                                                     <span t-field="line.uom_id"/>

@@ -86,14 +86,16 @@ class ResPartner(models.Model):
         cie = self.env.ref('l10n_latam_base.it_fid')
         passport = self.env.ref('l10n_latam_base.it_pass')
         check_flag = self.env.context.get('check_flag', False)
+
         if check_flag is False:
-            if self.l10n_latam_identification_type_id.id in (ruc.id, dni.id, ruc2.id, cie.id, passport.id):
-                if self.vat not in ('', False, '0'):
-                    if not self.parent_id:
-                        customers = self.env['res.partner'].search([('vat', '!=', False),('vat', '!=', ''), ('vat', '=', self.vat), ('id', '!=', self.id)])
-                        for customer in customers:
-                            if customer.l10n_latam_identification_type_id.id in (ruc.id, dni.id, ruc2):
-                                raise ValidationError('Ya existe un cliente con el mismo Número de Documento.')
+            for rec in self:
+                if rec.l10n_latam_identification_type_id.id in (ruc.id, dni.id, ruc2.id, cie.id, passport.id):
+                    if rec.vat not in ('', False, '0'):
+                        if not rec.parent_id:
+                            customers = self.env['res.partner'].search([('vat', '!=', False),('vat', '!=', ''), ('vat', '=', rec.vat), ('id', '!=', rec.id)])
+                            for customer in customers:
+                                if customer.l10n_latam_identification_type_id.id in (ruc.id, dni.id, ruc2):
+                                    raise ValidationError('Ya existe un cliente con el mismo Número de Documento.')
 
     @api.onchange("street","type")
     def get_name_street(self):

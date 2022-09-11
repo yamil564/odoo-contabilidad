@@ -279,10 +279,16 @@ class PlePurchaseLine(models.Model):
 	###########################
 	def pertenece_periodo(self,date_1,date_2):
 		if date_1 and date_2:
+			
 			if date_1.year == date_2.year and date_1.month == date_2.month:
 				return 1
-			else:
-				return 0
+			
+			elif date_1 + timedelta(days=365) >= date_2:
+				return 2
+			
+			elif date_1 + timedelta(days=365) < date_2:
+				return 3
+
 	###########################
 	## LA CONSULTA DEBERIA EVITAR QUE SE FILTREN DOCUMENTOS CON MAS DE 12 MESES DE ANTIGUEDAD
 
@@ -297,11 +303,12 @@ class PlePurchaseLine(models.Model):
 				elif self.pertenece_periodo(date_periodo,rec.move_id.invoice_date)==1 and (rec.move_id.amount_igv>0):
 					valor_campo_3='1'
 
-				elif self.pertenece_periodo(date_periodo,rec.move_id.invoice_date)==0 and (rec.move_id.amount_igv>0):
+				elif self.pertenece_periodo(rec.move_id.invoice_date,date_periodo) in [1,2] and (rec.move_id.amount_igv>0 or rec.move_id.amount_igv==0):
 					valor_campo_3='6'
 
-				elif self.pertenece_periodo(date_periodo,rec.move_id.invoice_date)==0 and (rec.move_id.amount_igv==0):
+				elif self.pertenece_periodo(rec.move_id.invoice_date,date_periodo)==3 and (rec.move_id.amount_igv==0):
 					valor_campo_3='7'
+			
 			else:
 				valor_campo_3='-'
 			
