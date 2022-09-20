@@ -14,8 +14,10 @@ odoo.define("gestionit_pe_fe_pos.credit_note",function(require){
     chrome.OrderSelectorWidget.include({
         order_click_handler: function(event,$el) {
             this._super(event,$el)
-            if(this.pos.get_order().get_invoice_type() == 'out_refund'){
-                this.gui.show_screen("screen_credit_note")
+            if(this.pos.get_order()){
+                if(this.pos.get_order().get_invoice_type() == 'out_refund'){
+                    this.gui.show_screen("screen_credit_note")
+                }
             }
         },
     })
@@ -23,8 +25,10 @@ odoo.define("gestionit_pe_fe_pos.credit_note",function(require){
     chrome.Chrome.include({
         build_widgets:function(){
             this._super();
-            if(this.pos.get_order().get_invoice_type() == 'out_refund'){
-                this.gui.show_screen("screen_credit_note")
+            if(this.pos.get_order()){
+                if(this.pos.get_order().get_invoice_type() == 'out_refund'){
+                    this.gui.show_screen("screen_credit_note")
+                }
             }
         }
     })

@@ -34,10 +34,11 @@ odoo.define('gestionit_pe_fe_pos.screens', function(require){
             this._super();
             var self = this
             var order = this.pos.get_order()
-            if(order.refund_order_id){
-                $(self.$el).find(".payment-numpad").css("display","none")
-                $(self.$el).find(".paymentmethods-container").css("display","none")
-                
+            if(order){
+                if(order.refund_order_id){
+                    $(self.$el).find(".payment-numpad").css("display","none")
+                    $(self.$el).find(".paymentmethods-container").css("display","none")
+                }
             }
         }
     })
