@@ -69,7 +69,7 @@ class ResPartner(models.Model):
     def _check_valid_numero_documento(self):
         for record in self:
             vat_str = (record.vat or "").strip()
-            if record.l10n_latam_identification_type_id and record.type in ["contact"] and record.parent_id is False:
+            if record.l10n_latam_identification_type_id and record.type in ["contact"]:# and record.parent_id is False:
                 if record.l10n_latam_identification_type_id.l10n_pe_vat_code == "6":
                     if not record._check_valid_ruc(vat_str):
                         raise UserError("El número de RUC ingresado es inválido.")
