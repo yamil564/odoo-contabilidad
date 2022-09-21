@@ -135,7 +135,7 @@ class AccountMove(models.Model):
         user = self.env.user
 
         if user.active:
-            allowed_company_ids = self._context.get("allowed_company_ids")
+            allowed_company_ids = self._context.get("allowed_company_ids", [user.company_id.id])
             # _logger.info(self._context)
             # _logger.info(user.warehouse_ids)
             # _logger.info(allowed_company_ids)
