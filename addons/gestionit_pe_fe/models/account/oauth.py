@@ -612,7 +612,7 @@ def crear_json_fac_bol(self):
             "factor": round(self.retention_rate/100.00, 4),
             "montoRetencion": round(self.amount_retention, 2),
             # El atributo amount_untaxed es el monto del total de ventas sin impuestos
-            "montoBase": round(self.total_venta_gravado + self.total_venta_exonerada + self.total_venta_inafecto + self.amount_igv + self.total_descuento_global, 2)
+            "montoBase": round(round(self.total_venta_gravado,2) + round(self.total_venta_exonerada,2) + round(self.total_venta_inafecto,2) + round(self.amount_igv,2) + round(self.total_descuento_global,2), 2)
         }
 
     # if self.numero_guia_remision:
