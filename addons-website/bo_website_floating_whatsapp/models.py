@@ -1,4 +1,3 @@
-from csv import excel
 from odoo import models,fields,api
 from odoo.http import request
 import logging
@@ -16,7 +15,7 @@ class Website(models.Model):
         url = "https://wa.me/{}?text={}"
         # _logger.info(request.httprequest.__dict__)
         path = request.httprequest.__dict__.get("path","")
-        _logger.info(path)
+        # _logger.info(path)
         order = self.sale_get_order()
         if not order:
             order = self.sale_get_order(force_create=True)

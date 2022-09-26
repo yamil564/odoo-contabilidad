@@ -2,9 +2,9 @@
 
     <template id="checkout_select_invoice_type" inherit_id="website_sale.address">
 
-        <xpath expr="//input[@name='field_required']" position="attributes">
+        <!-- <xpath expr="//input[@name='field_required']" position="attributes">
             <attribute name="t-att-value">'phone,name,street'</attribute>
-        </xpath>
+        </xpath> -->
 
         <xpath expr="//div[contains(@t-attf-class,'div_street')]/label" position="attributes">
             <attribute name="class">col-form-label label-optional</attribute>
@@ -74,12 +74,14 @@
         </xpath>
 
         <xpath expr="//div[@id='div_phone']" position="after">
-            <div class="col-12" t-if="mode == ('edit','billing')">
+            <!-- <div class="col-12" t-if="mode == ('edit','billing')">
                 <label class="col-form-label" for="vat">Tipo de documento de identidad </label>
                 <div class="form-group d-flex flex-row justify-content-between flex-wrap">
                     <t t-foreach="request.env['l10n_latam.identification.type'].sudo().search([])" t-as="idt">
-                        <div class="form-check pt-2">
-                            <input class="form-check-input" type="radio" name="l10n_latam_identification_type_id" 
+                        <div t-attf-class="form-check pt-2 #{error.get('l10n_latam_identification_type_id') and 'o_has_error' or ''}">
+                            <input t-attf-class="form-check-input #{error.get('l10n_latam_identification_type_id') and 'is-invalid' or ''}" 
+                                    type="radio" 
+                                    name="l10n_latam_identification_type_id" 
                                     id="l10n_latam_identification_type_id" 
                                     t-att-id="idt.name" t-att-value="idt.id" 
                                     t-att-data-itc="idt.l10n_pe_vat_code" 
@@ -90,17 +92,18 @@
                         </div>
                     </t>
                 </div>
-            </div>
-            <div class="col-12" t-if="mode == ('new','billing')">
+            </div> -->
+            <div class="col-12" t-if="mode == ('new','billing') or mode == ('edit','billing')">
                 <label class="col-form-label" for="vat">Tipo de documento de identidad </label>
                 <div class="form-group d-flex flex-row justify-content-between flex-wrap">
                     <t t-foreach="request.env['l10n_latam.identification.type'].sudo().search([])" t-as="idt">
-                        <div class="form-check pt-2">
-                            <input class="form-check-input" type="radio" name="l10n_latam_identification_type_id" 
+                        <div t-attf-class="form-check pt-2 #{error.get('l10n_latam_identification_type_id') and 'o_has_error' or ''}">
+                            <input t-attf-class="form-check-input #{error.get('l10n_latam_identification_type_id') and (int(checkout['l10n_latam_identification_type_id']) == idt.id) and 'is-invalid' or ''}" 
+                                    type="radio" name="l10n_latam_identification_type_id" 
                                     id="l10n_latam_identification_type_id" 
                                     t-att-id="idt.name" t-att-value="idt.id" 
                                     t-att-data-itc="idt.l10n_pe_vat_code" 
-                                    t-att-checked="'l10n_latam_identification_type_id' in checkout and checkout['l10n_latam_identification_type_id'] == idt.id or idt.name=='DNI'" />
+                                    t-att-checked="'l10n_latam_identification_type_id' in checkout and int(checkout['l10n_latam_identification_type_id']) == idt.id or idt.name=='DNI'" />
                             <label class="form-check-label" t-att-for="idt.name" style="font-weight:100 !important">
                                 <t t-esc="idt.name"/>
                             </label>
@@ -124,11 +127,13 @@
         </xpath>
 
         <xpath expr="//div[contains(@t-attf-class, 'div_country')]" position="replace">
+            <t t-if="'country_id' not in checkout or not country">
+                <t t-set="country" t-value="request.env['res.country'].search([('code', '=', 'PE')], limit=1)"/>
+            </t>
             <div class="col-md-3 pt-3 d-none" >
                 <div class="form-floating pais">
                     <select class="form-select" id="country" aria-label="Floating label select" required="" >
                         <option value="0" selected="" disabled="">Seleccionar</option>
-                        <!-- <option value="1">Perú</option> -->
                         <t t-foreach="countries" t-as="c">
                             <option t-att-value="c.id" t-att-selected="c.id == (country and country.id or -1)">
                                 <t t-esc="c.name" />
@@ -144,10 +149,6 @@
         </xpath>
 
         <xpath expr="//div[contains(@t-attf-class, 'div_state')]" position="replace">
-            <!-- <t t-esc="mode"/> 
-             <t t-esc="checkout"/> -->
-             <!-- <t t-esc="mode"/> 
-             <t t-esc="error"/> -->
             <t t-set="departamentos" t-value="request.env['res.country.state']"/>
             <t t-set="provincias" t-value="request.env['res.country.state']"/>
             <t t-set="distritos" t-value="request.env['res.country.state']"/>
@@ -171,66 +172,79 @@
                 <t t-if="country">
                     <t t-set="departamentos" t-value="request.env['res.country.state'].sudo().search([('country_id','=',country.id),('state_id','=',False),('province_id','=',False)])"/>
                 </t>
-                <t t-set="departamento" t-value="request.env['res.country.state'].sudo().browse(int(checkout.get('state_id',0)))"/>
-
+                <t t-set="departamento" t-value="checkout.get('state_id')"/>
+                <!-- <t t-esc="checkout"/> -->
                 <t t-if="departamento">
-                    <t t-set="provincias" t-value="request.env['res.country.state'].sudo().search([('country_id','=',country.id),('state_id','=',departamento.id),('province_id','=',False)])"/>
+                    <t t-set="provincias" t-value="request.env['res.country.state'].sudo().search([('country_id','=',country.id),('state_id','=',int(departamento)),('province_id','=',False)])"/>
                 </t>
-                <t t-set="provincia" t-value="request.env['res.country.state'].sudo().browse(int(checkout.get('province_id',0)))"/>
+                <t t-set="provincia" t-value="checkout.get('province_id')"/>
 
                 <t t-if="provincia">
-                    <t t-set="distritos" t-value="request.env['res.country.state'].sudo().search([('country_id','=',country.id),('state_id','=',departamento.id),('province_id','=',provincia.id)])"/>
+                    <t t-set="distritos" t-value="request.env['res.country.state'].sudo().search([('country_id','=',country.id),('state_id','=',int(departamento)),('province_id','=',int(provincia))])"/>
                 </t>
-                <t t-set="distrito" t-value="request.env['res.country.state'].sudo().browse(int(checkout.get('district_id',0)))"/>
+                <t t-set="distrito" t-value="checkout.get('district_id')"/>
             </t>
-            
+
+            <!-- Departamento - state_id -->
+            <!-- <t t-esc="error"/> -->
             <div class="col-md-3 pt-3 pb-3">
-                <div class="form-floating departamento">
-                    <select class="form-select" name="state_id" id="departamento" aria-label="Floating label select" required="" >
+                <div t-attf-class="form-floating #{error.get('state_id') and 'o_has_error' or ''}">
+                    <select t-attf-class="form-select #{error.get('state_id') and 'is-invalid' or ''}" name="state_id" id="departamento" aria-label="Floating label select" required="" >
                         <option value="0" selected="" disabled="">Seleccionar</option>
                         <t t-foreach="departamentos" t-as="d">
-                            <option t-att-value="d.id" t-att-selected="d.id == (departamento and departamento.id or -1)">
+                            <option t-att-value="d.id" 
+                                t-att-selected="d.id == ('state_id' in checkout and country and checkout['state_id'] != '' and int(checkout['state_id']))">
                                 <t t-esc="d.name"/>
                             </option>
                         </t>
                     </select>
-                    <label for="departamento" class="form-label">Departamento</label>
-                </div>
-                <div class="invalid-feedback">
-                    Please select a valid department.
+                    <label for="departamento" class="form-label">Departamento*</label>
                 </div>
             </div>
+            <!-- Provicncia - province_id -->
             <div class="col-md-3 pt-3 pb-3">
-                <div class="form-floating">
-                    <select class="form-select" name="province_id" id="provincia" aria-label="Floating label select" required="" >
+                <div t-attf-class="form-floating #{error.get('province_id') and 'o_has_error' or ''}">
+                    <select t-attf-class="form-select #{error.get('province_id') and 'is-invalid' or ''}" name="province_id" id="provincia" aria-label="Floating label select" required="" >
                         <option value="0" selected="" disabled="">Seleccionar</option>
                         <t t-foreach="provincias" t-as="p">
-                            <option t-att-value="p.id" t-att-selected="p.id == (provincia and provincia.id or -1)">
+                            <option t-att-value="p.id" 
+                                t-att-selected="p.id == ('province_id' in checkout and country and checkout['province_id'] != '' and int(checkout['province_id']))">
                                 <t t-esc="p.name"/>
                             </option>
                         </t>
                     </select>
-                    <label for="provincia" class="form-label">Provincia</label>
-                </div>
-                <div class="invalid-feedback">
-                    Please provide a valid state.
+                    <label for="provincia" class="form-label">Provincia*</label>
                 </div>
             </div>
+            <!-- Distrito - district_id -->
             <div class="col-md-3 pt-3 pb-3">
-                <div class="form-floating">
-                    <select class="form-select" name="district_id" id="distrito" aria-label="Floating label select" required="" >
+                <div t-attf-class="form-floating #{error.get('district_id') and 'o_has_error' or ''}">
+                    <select t-attf-class="form-select #{error.get('district_id') and 'is-invalid' or ''}" name="district_id" id="distrito" aria-label="Floating label select" required="" >
                         <option value="0" selected="" disabled="">Seleccionar</option>
                         <t t-foreach="distritos" t-as="d">
-                            <option t-att-value="d.id" t-att-selected="d.id == (distrito and distrito.id or -1)">
+                            <option t-att-value="d.id" 
+                                    t-att-selected="d.id == ('district_id' in checkout and country and checkout['district_id'] != '' and int(checkout['district_id']))">
                                 <t t-esc="d.name"/>
                             </option>
                         </t>
                     </select>
-                    <label for="distrito" class="form-label">Distrito</label>
+                    <label for="distrito" class="form-label">Distrito*</label>
                 </div>
-                <div class="invalid-feedback">
-                    Please provide a valid city.
+            </div>
+            
+            <div class="col-12 pt-3 pb-3">
+                <!-- <t t-esc="checkout.allow_receive_mails"/> -->
+                <div t-attf-class="form-check #{error.get('allow_receive_mails') and 'o_has_error' or ''}">
+                    <input t-attf-class="form-check-input #{error.get('allow_receive_mails') and 'is-invalid' or ''}" 
+                            type="checkbox" 
+                            t-att-checked="'allow_receive_mails' in checkout and checkout['allow_receive_mails']"
+                            id="allow_receive_mails" 
+                            name="allow_receive_mails"/>
+                    <label class="form-check-label" for="allow_receive_mails">
+                       Recibir ofertas de nuestros socios*
+                    </label>
                 </div>
+                
             </div>
         </xpath>
 

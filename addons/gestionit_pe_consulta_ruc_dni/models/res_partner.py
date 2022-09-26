@@ -69,8 +69,12 @@ class ResPartner(models.Model):
     def _check_valid_numero_documento(self):
         for record in self:
             vat_str = (record.vat or "").strip()
-            if record.l10n_latam_identification_type_id and record.type in ["contact"]:# and record.parent_id is False:
+            if record.l10n_latam_identification_type_id and record.type in ["contact"] and not record.commercial_partner_id:# and record.parent_id is False:
+                _logger.info(record.l10n_latam_identification_type_id)
                 if record.l10n_latam_identification_type_id.l10n_pe_vat_code == "6":
+                    _logger.info("_check_valid_numero_documento")
+                    _logger.info(vat_str)
+                    _logger.info(record._check_valid_ruc(vat_str))
                     if not record._check_valid_ruc(vat_str):
                         raise UserError("El número de RUC ingresado es inválido.")
 
@@ -92,9 +96,9 @@ class ResPartner(models.Model):
                 if rec.l10n_latam_identification_type_id.id in (ruc.id, dni.id, ruc2.id, cie.id, passport.id):
                     if rec.vat not in ('', False, '0'):
                         if not rec.parent_id:
-                            customers = self.env['res.partner'].search([('vat', '!=', False),('vat', '!=', ''), ('vat', '=', rec.vat), ('id', '!=', rec.id)])
+                            customers = self.env['res.partner'].search([('vat', '!=', False),('vat', '!=', ''), ('vat', '=', rec.vat), ('id', '!=', rec.id),('parent_id.vat','!=',rec.vat)])
                             for customer in customers:
-                                if customer.l10n_latam_identification_type_id.id in (ruc.id, dni.id, ruc2):
+                                if customer.l10n_latam_identification_type_id.id in (ruc.id, dni.id, ruc2.id):
                                     raise ValidationError('Ya existe un cliente con el mismo Número de Documento.')
 
     @api.onchange("street","type")

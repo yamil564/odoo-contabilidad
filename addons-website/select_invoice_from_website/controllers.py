@@ -14,7 +14,11 @@ class WebsiteSaleExtend(WebsiteSale):
         res = super(WebsiteSaleExtend,self)._get_mandatory_billing_fields()
         res.append("vat")
         res.append("l10n_latam_identification_type_id")
-        res.remove("street")
+        res.append("state_id")
+        res.append("province_id")
+        res.append("district_id")
+
+        # res.remove("street")
         res.remove("city")
         res.remove("country_id")
         return res
@@ -29,6 +33,21 @@ class WebsiteSaleExtend(WebsiteSale):
 
     def checkout_form_validate(self, mode, all_form_values, data):
         error, error_message  = super(WebsiteSaleExtend,self).checkout_form_validate(mode, all_form_values, data)
+        # _logger.info(data.get("vat"))
+        # _logger.info(data.get("l10n_latam_identification_type_id"))
+        vat = data.get("vat",False)
+        l10n_latam_identification_type_id = data.get("l10n_latam_identification_type_id")
+        if vat or l10n_latam_identification_type_id:
+            if not request.env["res.partner"].check_number_doc(vat,l10n_latam_identification_type_id):
+                error["vat"] = "error"
+                error["l10n_latam_identification_type_id"] = "error"
+                error_message.append("Número de documento o Tipo de documento inválido")
+        _logger.info(data)
+        if not data.get("allow_receive_mails",False):
+            error["allow_receive_mails"] = "error"
+
+        _logger.info(error)
+        # _logger.info(error_message)
         return error, error_message
 
     @http.route("/change_invoice_type_code",type="json",method="POST",csrf=True,auth="public", website=True)
@@ -44,7 +63,7 @@ class WebsiteSaleExtend(WebsiteSale):
     @http.route(['/change_vat'], type='json', auth="public", website=True)
     def change_vat(self, **kw):
         """
-            Este Método regresa la información concerniente a el numero de identificación
+            Este Método regresa la información concerniente al numero de identificación
             :param kwargs:
             :return:
         """
@@ -161,8 +180,10 @@ class WebsiteSaleExtend(WebsiteSale):
                 commercial_partner_id = Partner.sudo().search([("vat","=",vat),("parent_id","=",False)])
                 if commercial_partner_id.exists():                
                     checkout.update({"commercial_partner_id":commercial_partner_id[0].id,"parent_id":commercial_partner_id[0].id})
-                del checkout["vat"]
-
+                    del checkout["vat"]
+                    del checkout["l10n_latam_identification_type_id"]
+                
+            # _logger.info(checkout)
             partner = Partner.sudo().with_context(tracking_disable=True).create(checkout)
             partner.country_id = int(request.env.ref("base.pe").id)
             partner.state_id = int(all_values['state_id'])
@@ -180,11 +201,13 @@ class WebsiteSaleExtend(WebsiteSale):
                 if partner_id not in shippings.mapped('id') and partner_id != order.partner_id.id:
                     return Forbidden()
                 partner = Partner.browse(partner_id).sudo()
+
                 partner.write(checkout)
                 partner.country_id = int(request.env.ref("base.pe").id)
                 partner.state_id = int(all_values['state_id'])
                 partner.province_id = int(all_values['province_id'])
                 partner.district_id = int(all_values['district_id'])
+                partner.allow_receive_mails = bool(all_values['allow_receive_mails'])
                 # _logger.info(partner.district_id.code)
                 if partner.district_id:
                     partner.ubigeo = partner.district_id.code or ""
