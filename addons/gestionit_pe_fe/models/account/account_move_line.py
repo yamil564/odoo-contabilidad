@@ -87,3 +87,14 @@ class AccountMoveLine(models.Model):
         self.tipo_afectacion_igv_type = self.tax_ids[0].tax_group_id.tipo_afectacion if self.tax_ids else False
         self.tipo_afectacion_igv_code = self.tax_ids[0].tax_group_id.codigo if self.tax_ids else False
         self.tipo_afectacion_igv_name = self.tax_ids[0].tax_group_id.descripcion if self.tax_ids else False
+
+    
+    @api.constrains("tax_ids")
+    def check_type_tax_ids(self):
+        for record in self:
+            if record.tax_ids:
+                group_igv = len([line_tax for line_tax in record.tax_ids 
+                    if line_tax.tax_group_id.tipo_afectacion in ["10"]])
+
+                if group_igv>1:
+                    raise UserError("No se puede incluir mas de un impuesto del Tipo IGV !!")      

@@ -412,8 +412,7 @@ class AccountMove(models.Model):
                 date_due_max = max(record.paymentterm_line.mapped('date_due'))
                 if record.invoice_date_due < date_due_max:
                     raise UserError(
-                        "Ninguna de las Fechas de Pago de las Cuotas debe ser mayor a la Fecha de Vencimiento del Documento !!")
-
+                        "Ninguna de las Fechas de Pago de las Cuotas debe ser mayor a la Fecha de Vencimiento del Documento !!")         
 
     ###########################################################################################################
 
@@ -832,14 +831,25 @@ class AccountMove(models.Model):
                      if line_tax.tax_group_id.tipo_afectacion in ["20"]])
             ])
             # *(1-move.descuento_global/100.0)
+            ##### CALCULO DE IMPUESTO SEGÚN METODO REDONDEO DE LA CONFIG:
+            if move.company_id.tax_calculation_rounding_method =='round_per_line':
+                move.amount_igv = sum([
+                    line.price_total - line.price_subtotal
+                    for line in move.line_ids
+                    if len([line.price_subtotal for line_tax in line.tax_ids
+                            if line_tax.tax_group_id.tipo_afectacion in ["10"]])
+                ])
 
-            move.amount_igv = sum([
-                line.price_total - line.price_subtotal
-                for line in move.line_ids
-                if len([line.price_subtotal for line_tax in line.tax_ids
-                        if line_tax.tax_group_id.tipo_afectacion in ["10"]])
-            ])
+            elif move.company_id.tax_calculation_rounding_method =='round_globally':
             #  *(1-move.descuento_global/100.0)
+                move.amount_igv = sum([
+                    line.price_subtotal*[line_tax.amount for line_tax in line.tax_ids
+                            if line_tax.tax_group_id.tipo_afectacion in ["10"]][0]*0.01
+
+                    for line in move.line_ids
+                    if len([line.price_subtotal for line_tax in line.tax_ids
+                            if line_tax.tax_group_id.tipo_afectacion in ["10"]])
+                ])
 
             move.total_descuento_global = (move.total_venta_gravado + move.total_venta_exonerada +
                                            move.total_venta_inafecto)*(move.descuento_global/100.0)/(1-move.descuento_global/100.0)
