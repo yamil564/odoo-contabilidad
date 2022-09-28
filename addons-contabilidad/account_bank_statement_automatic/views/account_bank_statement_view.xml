@@ -13,7 +13,7 @@
                     <button name="action_generate_bank_statement"
                             string="Generar Extracto"
                             type="object"/>
-                    <button name="print_extract" type="object" string="Imprimir" class="btn-primary" icon="fa-print" />
+                    <button name="action_print" type="object" string="Imprimir Extracto" class="btn-primary" icon="fa-print" />
                 </xpath>
 
                 <xpath expr="//group/group/field[@name='date']" position="after">

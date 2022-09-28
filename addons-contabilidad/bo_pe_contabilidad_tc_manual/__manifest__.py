@@ -12,8 +12,9 @@
     """,
     'author': 'Franco Najarro-BigOdoo',
     'website': '',
-    'depends': ['account'],
+    'depends': ['account','gestionit_pe_fe','bo_pe_contabilidad_documents'],
     'data': [
         'views/account_payment_view.xml',
+        'views/account_move_view.xml',
     ],
 }

@@ -4,7 +4,7 @@
 	'author': 'Franco Najarro-BigOdoo',
 	'website':'',
 	'category':'',
-	'depends': ['account'],
+	'depends': ['account','report_formats'],
 	'description':'''
 		Modulo de Extracto Bancario Automático al generar Asientos contables donde participan cuentas de liquidez.
 			> Conciliación bancaria

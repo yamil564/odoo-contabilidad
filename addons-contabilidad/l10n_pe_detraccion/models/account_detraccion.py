@@ -158,12 +158,15 @@ class AccountDetraction(models.Model):
 
 	
 	def action_cancel_detraccion(self):
-		if self.move_id and self.move_id.line_ids:
+		for rec in self:
+			if rec.move_id and rec.move_id.line_ids:
 
-			self._cr.execute("DELETE FROM account_move_line WHERE move_id=%s"%self.move_id.id)
-			self._cr.execute("DELETE FROM account_move WHERE id=%s"%self.move_id.id)
+				move_id = rec.move_id.id
 
-		self.write({'state':'cancel'})
+				self._cr.execute("DELETE FROM account_move_line WHERE move_id=%s"%(move_id))
+				self._cr.execute("DELETE FROM account_move WHERE id=%s"%(move_id))
+
+			rec.write({'state':'cancel'})
 
 	
 	def action_draft_detraccion(self):
@@ -174,8 +177,10 @@ class AccountDetraction(models.Model):
 	def unlink (self):
 		for line in self:
 			if line.move_id and line.move_id.line_ids:
-				self._cr.execute("DELETE FROM account_move_line WHERE move_id=%s"%line.move_id.id)
-				self._cr.execute("DELETE FROM account_move WHERE id=%s"%line.move_id.id)
+
+				line_move_id = line.move_id.id
+				self._cr.execute("DELETE FROM account_move_line WHERE move_id=%s"%line_move_id)
+				self._cr.execute("DELETE FROM account_move WHERE id=%s"%line_move_id)
 			
 			return super(AccountDetraction,line).unlink()
 	######################################
