@@ -69,6 +69,18 @@ class SaleOrder(models.Model):
             else:
                 self.date_due = False
 
+    ########################## RESTRICCIÓN PARA FECHAS EN CUOTAS DE PAGO DE COTIZACIONES ###########
+    @api.constrains('date_due','paymentterm_line','paymentterm_line.date_due')
+    def check_date_cuotas_vs_date_due(self):
+        for rec in self:
+            list_date_due = list(rec.paymentterm_line.mapped('date_due'))
+            if rec.paymentterm_line and rec.date_due and list_date_due:
+                max_date_due = max(list_date_due)
+                if max_date_due>rec.date_due:
+                    raise UserError("La Fecha de las cuotas no puede ser mayor a la fecha de vencimiento de la cotización !!")   
+
+    ##########################################################################################
+
 
     @api.depends("paymentterm_line",
                  "paymentterm_line.amount",
