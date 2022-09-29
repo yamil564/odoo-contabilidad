@@ -163,6 +163,10 @@
                                 <span t-field="o.claim_type"/>
                             </div>
                             <div class="col-4">
+                                <strong>Fecha de reclamo:</strong><br/>
+                                <span t-field="o.create_date"/>
+                            </div>
+                            <div class="col-4">
                                 <strong>Monto de reclamo:</strong><br/>
                                 <span t-field="o.claim_amount"/>
                             </div>

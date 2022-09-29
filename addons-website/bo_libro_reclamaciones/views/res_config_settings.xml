@@ -8,9 +8,8 @@
                 <h2 class="mt32">Libro de Reclamaciones</h2>
                 <div class="row mt16 o_settings_container">
                     <div class="col-12 col-lg-6 o_setting_box">
-                        <div class="o_setting_left_pane">
+                        <div class="o_setting_left_pane" />
                             
-                        </div>
                         <div class="o_setting_right_pane">
                             <div>
                                 <span class="o_form_label">Secuencia de Libro de reclamaciones</span>
@@ -30,7 +29,17 @@
                                     <field name="claim_user_id"/>
                                 </div>
                             </div>
+                            <div>
+                                <span class="o_form_label">Días para respuesta</span>
+                                <div class="text-muted">
+                                    Establece los días de espera para la respuesta a reclamos y quejas.
+                                </div>
+                                <div class="content-group" >
+                                    <field name="claim_days_response"/>
+                                </div>
+                            </div>
                         </div>
+                        
                     </div>
                 </div>
             </xpath>

@@ -50,6 +50,7 @@
                             <field name="consumer_company_document" attrs="{'invisible':[('consumer_type','=','individual')],'required':[('consumer_type','=','company')]}"/>
                             <field name="consumer_name"/>
                             <field name="consumer_lastname"/>
+                            <field name="consumer_email"/>
                             <field name="consumer_document_type" widget="radio"/>
                             <field name="consumer_document"/>
                         </group>

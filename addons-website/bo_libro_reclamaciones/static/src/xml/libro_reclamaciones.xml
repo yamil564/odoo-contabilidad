@@ -375,7 +375,7 @@
                             <div class="row g-3 alert alert-success d-flex align-items-center" role="alert">
                                 <div>
                                     <i class="fa fa-check"></i> 
-                                    <t t-esc="'Hemos registrado su reclamo con el número {} de forma exitosa, estaremos atendiendo su reclamo en los próximos 7 días'.format(code)"/>
+                                    <t t-esc="'Hemos registrado su reclamo con el número {} de forma exitosa, estaremos atendiendo su reclamo en los próximos {} días'.format(code,days)"/>
                                 </div>
                             </div>
                         </form>
