@@ -241,7 +241,7 @@
                             id="allow_receive_mails" 
                             name="allow_receive_mails"/>
                     <label class="form-check-label" for="allow_receive_mails">
-                       Recibir ofertas de nuestros socios*
+                       Enviarme novedades y ofertas por correo electrónico
                     </label>
                 </div>
                 
