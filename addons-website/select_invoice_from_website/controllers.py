@@ -42,11 +42,14 @@ class WebsiteSaleExtend(WebsiteSale):
                 error["vat"] = "error"
                 error["l10n_latam_identification_type_id"] = "error"
                 error_message.append("Número de documento o Tipo de documento inválido")
-        _logger.info(data)
+        # _logger.info(data)
         if not data.get("allow_receive_mails",False):
             error["allow_receive_mails"] = "error"
 
-        _logger.info(error)
+        if not data.get("accept_privacy_policies",False):
+            error["accept_privacy_policies"] = "error"
+
+        # _logger.info(error)
         # _logger.info(error_message)
         return error, error_message
 
@@ -208,6 +211,7 @@ class WebsiteSaleExtend(WebsiteSale):
                 partner.province_id = int(all_values['province_id'])
                 partner.district_id = int(all_values['district_id'])
                 partner.allow_receive_mails = bool(all_values['allow_receive_mails'])
+                partner.accept_privacy_policies = bool(all_values['accept_privacy_policies'])
                 # _logger.info(partner.district_id.code)
                 if partner.district_id:
                     partner.ubigeo = partner.district_id.code or ""
