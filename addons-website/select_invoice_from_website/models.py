@@ -28,3 +28,9 @@ class ResPartner(models.Model):
                 if not patron_dni.match(doc):
                     return False
         return True
+
+
+class IdentificationType(models.Model):
+    _inherit = "l10n_latam.identification.type"
+
+    available_in_website = fields.Boolean("Disponible en Sitio Web",default=True)

@@ -100,7 +100,7 @@
             <div class="col-12" t-if="mode == ('new','billing') or mode == ('edit','billing')">
                 <label class="col-form-label" for="vat">Tipo de documento de identidad </label>
                 <div class="form-group d-flex flex-row justify-content-between flex-wrap">
-                    <t t-foreach="request.env['l10n_latam.identification.type'].sudo().search([])" t-as="idt">
+                    <t t-foreach="request.env['l10n_latam.identification.type'].sudo().search([('available_in_website','=',True)]).sorted(key = lambda r:r.sequence)" t-as="idt">
                         <div t-attf-class="form-check pt-2 #{error.get('l10n_latam_identification_type_id') and 'o_has_error' or ''}">
                             <input t-attf-class="form-check-input #{error.get('l10n_latam_identification_type_id') and (int(checkout['l10n_latam_identification_type_id']) == idt.id) and 'is-invalid' or ''}" 
                                     type="radio" name="l10n_latam_identification_type_id" 
