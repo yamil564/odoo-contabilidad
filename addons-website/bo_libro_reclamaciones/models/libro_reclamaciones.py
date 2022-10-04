@@ -16,7 +16,8 @@ class LibroReclamaciones(models.Model):
                                                          ('cancel', 'Cancelado'),
                                                          ('resolved', 'Resuelto')],
                              default="new",
-                             group_expand='_expand_groups')
+                             group_expand='_expand_groups',
+                             tracking=True)
 
     @api.model
     def _expand_groups(self, states, domain, order):
@@ -95,6 +96,20 @@ class LibroReclamaciones(models.Model):
             return
         raise UserError(
             "Para pasar al reclamo en proceso, su estado debe ser Nuevo")
+
+    def action_claim_cancel(self):
+        if self.state in ['new', 'in_process']:
+            self.state = 'cancel'
+            return
+        raise UserError(
+            "Para cancelar el reclamo, su estado debe ser Nuevo o En proceso")
+
+    def action_claim_resolved(self):
+        if self.state in ['in_process']:
+            self.state = 'resolved'
+            return
+        raise UserError(
+            "Para resolver el reclamo, su estado debe ser En proceso")
 
     def action_claim_sent(self):
         self.ensure_one()
