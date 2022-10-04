@@ -59,18 +59,22 @@
     <template id="website_sale.address_b2b" inherit_id="website_sale.address" name="Show b2b fields" customize_show="True">
 
         <xpath expr="//div[contains(@t-attf-class, 'div_name')]" position="replace">
-            <label class="col-form-label" for="name">Nombre</label>
-            <input type="text" name="name" id="name_aux" t-attf-class="form-control #{error.get('name') and 'is-invalid' or ''}" t-att-value="'name' in checkout and checkout['name']" />
+            <div class="col-12">
+                <label class="col-form-label" for="name">Nombre</label>
+                <input type="text" name="name" id="name_aux" t-attf-class="form-control #{error.get('name') and 'is-invalid' or ''}" t-att-value="'name' in checkout and checkout['name']" />
+            </div>
         </xpath>
 
         <xpath expr="//div[contains(@t-attf-class, 'div_street')]" position="replace">
-            <label class="col-form-label" for="street">Calle <span class="d-none d-md-inline"> y número</span>
-            </label>
-            <input type="text" 
-                    name="street" 
-                    id="street_aux" 
-                    t-attf-class="form-control #{error.get('street') and 'is-invalid' or ''}" 
-                    t-att-value="'street' in checkout and checkout['street']"/>
+            <div class="col-12">
+                <label class="col-form-label" for="street">Calle <span class="d-none d-md-inline"> y número</span>
+                </label>
+                <input type="text" 
+                        name="street" 
+                        id="street_aux" 
+                        t-attf-class="form-control #{error.get('street') and 'is-invalid' or ''}" 
+                        t-att-value="'street' in checkout and checkout['street']"/>
+            </div>
         </xpath>
 
         <xpath expr="//div[@id='div_phone']" position="after">
@@ -96,7 +100,7 @@
             <div class="col-12" t-if="mode == ('new','billing') or mode == ('edit','billing')">
                 <label class="col-form-label" for="vat">Tipo de documento de identidad </label>
                 <div class="form-group d-flex flex-row justify-content-between flex-wrap">
-                    <t t-foreach="request.env['l10n_latam.identification.type'].sudo().search([])" t-as="idt">
+                    <t t-foreach="request.env['l10n_latam.identification.type'].sudo().search([('available_in_website','=',True)]).sorted(key = lambda r:r.sequence)" t-as="idt">
                         <div t-attf-class="form-check pt-2 #{error.get('l10n_latam_identification_type_id') and 'o_has_error' or ''}">
                             <input t-attf-class="form-check-input #{error.get('l10n_latam_identification_type_id') and (int(checkout['l10n_latam_identification_type_id']) == idt.id) and 'is-invalid' or ''}" 
                                     type="radio" name="l10n_latam_identification_type_id" 
@@ -115,11 +119,11 @@
 
             <!-- <t t-if="mode == ('new', 'billing') or (mode == ('edit', 'billing') and (can_edit_vat or 'vat' in checkout and checkout['vat']))"> -->
             <t t-if="mode[1] == 'billing'">
-                <div t-attf-class="form-group #{error.get('vat') and 'o_has_error' or ''} col-lg-6 div_vat">
+                <div t-attf-class="form-group #{error.get('vat') and 'o_has_error' or ''} col-lg-6 div_vat mb-2">
                     <label class="col-form-label " for="vat">Número de documento </label>
                     <input type="text" name="vat" id="vat" t-attf-class="form-control #{error.get('vat') and 'is-invalid' or ''}" t-att-value="'vat' in checkout and checkout['vat']" t-att-readonly="'1' if 'vat' in checkout and checkout['vat'] and not can_edit_vat else None" t-att-title="'Changing VAT number is not allowed once document(s) have been issued for your account. Please contact us directly for this operation.' if 'vat' in checkout and checkout['vat'] and not can_edit_vat else None" />
                 </div>
-                <div t-attf-class="form-group #{error.get('company_name') and 'o_has_error' or ''} col-lg-6 div_company">
+                <div t-attf-class="form-group #{error.get('company_name') and 'o_has_error' or ''} col-lg-6 div_company mb-2">
                     <label class="col-form-label label-optional" for="company_name">Nombre de empresa o razón social</label>
                     <input type="text" name="company_name" id="company_name" t-attf-class="form-control #{error.get('company_name') and 'is-invalid' or ''}" t-att-value="'commercial_company_name' in checkout and checkout['commercial_company_name'] or 'company_name' in checkout and checkout['company_name']" t-att-readonly="'1' if 'vat' in checkout and checkout['vat'] and not can_edit_vat else None" t-att-title="'Changing company name is not allowed once document(s) have been issued for your account. Please contact us directly for this operation.' if 'vat' in checkout and checkout['vat'] and not can_edit_vat else None" />
                 </div>
@@ -187,7 +191,7 @@
 
             <!-- Departamento - state_id -->
             <!-- <t t-esc="error"/> -->
-            <div class="col-md-3 pt-3 pb-3">
+            <div class="col-md-4 pt-4 pb-4">
                 <div t-attf-class="form-floating #{error.get('state_id') and 'o_has_error' or ''}">
                     <select t-attf-class="form-select #{error.get('state_id') and 'is-invalid' or ''}" name="state_id" id="departamento" aria-label="Floating label select" required="" >
                         <option value="0" selected="" disabled="">Seleccionar</option>
@@ -202,7 +206,7 @@
                 </div>
             </div>
             <!-- Provicncia - province_id -->
-            <div class="col-md-3 pt-3 pb-3">
+            <div class="col-md-4 pt-4 pb-4">
                 <div t-attf-class="form-floating #{error.get('province_id') and 'o_has_error' or ''}">
                     <select t-attf-class="form-select #{error.get('province_id') and 'is-invalid' or ''}" name="province_id" id="provincia" aria-label="Floating label select" required="" >
                         <option value="0" selected="" disabled="">Seleccionar</option>
@@ -217,7 +221,7 @@
                 </div>
             </div>
             <!-- Distrito - district_id -->
-            <div class="col-md-3 pt-3 pb-3">
+            <div class="col-md-4 pt-4 pb-4">
                 <div t-attf-class="form-floating #{error.get('district_id') and 'o_has_error' or ''}">
                     <select t-attf-class="form-select #{error.get('district_id') and 'is-invalid' or ''}" name="district_id" id="distrito" aria-label="Floating label select" required="" >
                         <option value="0" selected="" disabled="">Seleccionar</option>
@@ -232,8 +236,7 @@
                 </div>
             </div>
             
-            <div class="col-12 pt-3 pb-3">
-                <!-- <t t-esc="checkout.allow_receive_mails"/> -->
+            <div class="col-12 pt-2 pb-2">
                 <div t-attf-class="form-check #{error.get('allow_receive_mails') and 'o_has_error' or ''}">
                     <input t-attf-class="form-check-input #{error.get('allow_receive_mails') and 'is-invalid' or ''}" 
                             type="checkbox" 
@@ -241,10 +244,21 @@
                             id="allow_receive_mails" 
                             name="allow_receive_mails"/>
                     <label class="form-check-label" for="allow_receive_mails">
-                       Recibir ofertas de nuestros socios*
+                       <t t-raw="website.allow_receive_mails_label"/>
                     </label>
                 </div>
-                
+            </div>
+            <div class="col-12 pt-2 pb-2">
+                <div t-attf-class="form-check #{error.get('accept_privacy_policies') and 'o_has_error' or ''}">
+                    <input t-attf-class="form-check-input #{error.get('accept_privacy_policies') and 'is-invalid' or ''}" 
+                            type="checkbox" 
+                            t-att-checked="'accept_privacy_policies' in checkout and checkout['accept_privacy_policies']"
+                            id="accept_privacy_policies" 
+                            name="accept_privacy_policies"/>
+                    <label class="form-check-label" for="accept_privacy_policies">
+                       <t t-raw="website.signup_privacy_policies_label"/>
+                    </label>
+                </div>
             </div>
         </xpath>
 
