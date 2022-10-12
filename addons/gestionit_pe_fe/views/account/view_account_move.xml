@@ -442,6 +442,9 @@
                 </button>
             </xpath>
             <xpath expr="//button[@name='preview_invoice']" position="after">
+
+                <field name="mostrar_btn_comunicacion_baja" invisible="1"/>
+
                 <button name="action_generate_and_signed_xml"
                         string="Generar XML"
                         class="oe_highlight"
@@ -449,12 +452,16 @@
                         groups="gestionit_pe_fe.group_fe_allow_generate_send_xml"
                         attrs="{'invisible': ['|',('state','!=','posted'),('type','not in',['out_invoice','out_refund'])]}"/>
                 <button name="action_send_invoice" string="Enviar XML" class="oe_highlight" type="object" groups="gestionit_pe_fe.group_fe_allow_generate_send_xml" attrs="{'invisible': ['|',('state','!=','posted'),('type','not in',['out_invoice','out_refund'])]}"/>
+
+                
                 <button name="btn_comunicacion_baja"
                             string="Anular Comprobante"
                             class="oe_highlight"
                             type="object"
                             groups="gestionit_pe_fe.res_groups_anulacion_buttons"
-                            attrs="{'invisible': ['|','|',('estado_comprobante_electronico','=','2_ANULADO'),('state','not in',['posted']),('type','in',['in_invoice','in_refund'])]}"/>
+                            attrs="{'invisible': ['|','|',('estado_comprobante_electronico','=','2_ANULADO'),('state','not in',['posted']),'|',('type','in',['in_invoice','in_refund']),('mostrar_btn_comunicacion_baja','not in',[True])]}"/>
+
+
                 <button name="action_open_guia_remision"
                             string="Generar Guía de Remisión"
                             class="oe_highlight"
