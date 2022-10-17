@@ -14,7 +14,7 @@
                 <br/>
                 <div>
                 % if user and user.signature:
-                <span>${object.claim_user_id.signature | safe}</span>
+                <span>${user.signature | safe}</span>
                 % endif
                 </div>
             </div>

@@ -13,15 +13,16 @@
                             </div>
                         </div>
                     </div>
-                    <br/>
+                    
                     <!-- IDENTIFICACIÓN DEL CONSUMIDOR RECLAMANTE -->
-                    <div class="container">
+                    <div class="container mt-2" style="font-size:14px">
                         <div class="row">
                             <div class="col-12">
-                                <strong style="font-size:16px">IDENTIFICACIÓN DEL CONSUMIDOR RECLAMANTE:</strong>
+                                <!-- <strong style="font-size:16px">IDENTIFICACIÓN DEL CONSUMIDOR RECLAMANTE:</strong> -->
+                                <strong>IDENTIFICACIÓN DEL CONSUMIDOR RECLAMANTE:</strong>
                             </div>
                         </div>
-                        <br/>
+                        
                         <div class="row pl-4">
                             <div class="col-4">
                                 <strong>Tipo de cliente:</strong><br/>
@@ -36,8 +37,7 @@
                                 <span t-field="o.consumer_company_document"/>
                             </div>
                         </div>
-                        <br/>
-                        <div class="row pl-4">
+                        <div class="row pl-4 mt-1">
                             <div class="col-4">
                                 <strong>Nombres:</strong><br/>
                                 <span t-field="o.consumer_name"/>
@@ -51,8 +51,8 @@
                                 <span t-field="o.consumer_email"/>
                             </div>
                         </div>
-                        <br/>
-                        <div class="row pl-4">
+
+                        <div class="row pl-4 mt-1">
                             <div class="col-4">
                                 <strong>Tipo de documento:</strong><br/>
                                 <span t-field="o.consumer_document_type"/>
@@ -66,15 +66,15 @@
                                 <span t-field="o.consumer_phone"/>
                             </div>
                         </div>
-                        <br/>
-                        <div class="row pl-4">
+                        
+                        <div class="row pl-4 mt-1">
                             <div class="col-12">
                                 <strong>Dirección:</strong><br/>
                                 <span t-field="o.consumer_address"/>
                             </div>
                         </div>
-                        <br/>
-                        <div class="row pl-4">
+
+                        <div class="row pl-4 mt-1">
                             <div class="col-4">
                                 <strong>Departamento:</strong><br/>
                                 <span t-field="o.consumer_state_id"/>
@@ -91,14 +91,14 @@
                     </div>
                     <!-- DATOS DEL PADRE, MADRE O TUTOR -->
                     <br t-if="o.consumer_younger"/>
-                    <div class="container"  t-if="o.consumer_younger">
+                    <div class="container mt-2" style="font-size:14px" t-if="o.consumer_younger">
                         <div class="row">
                             <div class="col-12">
+                                <!-- <strong style="font-size:16px">DATOS DEL PADRE, MADRE O TUTOR:</strong> -->
                                 <strong style="font-size:16px">DATOS DEL PADRE, MADRE O TUTOR:</strong>
                             </div>
                         </div>
-                        <br/>
-                        <div class="row pl-4">
+                        <div class="row pl-4 mt-1">
                             <div class="col-4">
                                 <strong>Nombres:</strong><br/>
                                 <span t-field="o.consumer_younger_name"/>
@@ -114,15 +114,16 @@
                         </div>
                     </div>
                     <!-- IDENTIFICACIÓN DEL BIEN CONTRATADO -->
-                    <br/>
-                    <div class="container">
+                    
+                    <div class="container mt-2" style="font-size:14px">
                         <div class="row">
                             <div class="col-12">
-                                <strong style="font-size:16px">IDENTIFICACIÓN DEL BIEN CONTRATADO:</strong>
+                                <!-- <strong style="font-size:16px">IDENTIFICACIÓN DEL BIEN CONTRATADO:</strong> -->
+                                <strong>IDENTIFICACIÓN DEL BIEN CONTRATADO:</strong>
                             </div>
                         </div>
-                        <br/>
-                        <div class="row pl-4">
+                      
+                        <div class="row pl-4 mt-1">
                             <div class="col-4">
                                 <strong>Tipo de producto:</strong><br/>
                                 <span t-field="o.product_type"/>
@@ -136,8 +137,8 @@
                                 <span t-field="o.product_name"/>
                             </div>
                         </div>
-                        <br/>
-                        <div class="row pl-4">
+                      
+                        <div class="row pl-4 mt-1">
                             <div class="col-4">
                                 <strong>Número de venta:</strong><br/>
                                 <span t-field="o.order_name"/>
@@ -149,15 +150,15 @@
                         </div>
                     </div>
                     <!-- DETALLE DE RECLAMO O QUEJA -->
-                    <br/>
-                    <div class="container">
+              
+                    <div class="container mt-2" style="font-size:14px">
                         <div class="row">
                             <div class="col-12">
-                                <strong style="font-size:16px">DETALLE DE RECLAMO O QUEJA:</strong>
+                                <!-- <strong style="font-size:16px">DETALLE DE RECLAMO O QUEJA:</strong> -->
+                                <strong>DETALLE DE RECLAMO O QUEJA:</strong>
                             </div>
                         </div>
-                        <br/>
-                        <div class="row pl-4">
+                        <div class="row pl-4 mt-1">
                             <div class="col-4">
                                 <strong>Tipo de reclamo:</strong><br/>
                                 <span t-field="o.claim_type"/>
@@ -171,13 +172,14 @@
                                 <span t-field="o.claim_amount"/>
                             </div>
                         </div>
-                        <br/>
-                        <div class="row pl-4">
-                            <div class="col-4">
+                        <div class="row pl-4 mt-1">
+                            <div class="col-12">
                                 <strong>Detalle de reclamo:</strong><br/>
                                 <span t-field="o.claim_detail"/>
                             </div>
-                            <div class="col-4">
+                        </div>
+                        <div class="row pl-4 mt-1">
+                            <div class="col-12">
                                 <strong>Solicitud de reclamo:</strong><br/>
                                 <span t-field="o.claim_request"/>
                             </div>

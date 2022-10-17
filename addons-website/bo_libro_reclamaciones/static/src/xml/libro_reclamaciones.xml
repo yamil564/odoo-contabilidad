@@ -352,6 +352,18 @@
                                     <t t-esc="errors.get('claim_request')"/>
                                 </div>
                             </div>
+                            <div class="col-12 pt-3">
+                                <div class="row">
+                                    <div class="col-6"><span><strong>RECLAMO:</strong>Disconformidad relacionada a los productos o servicios.</span></div>
+                                    <div class="col-6"><span><strong>QUEJA:</strong>Disconformidad NO relacionada a los productos o servicios; o, malestar o descontento respecto a la atención al público.</span></div>
+                                </div>
+                                <div class="row">
+                                    <span class="text-danger">* Campos obligatorios</span>
+                                    <!-- <span>La formulación del reclamo no impide recurrir a otras vías de solución de controversias ni es requesitio previo para imponer una denuncia frente el INDECOPI.</span>
+                                    <span>El proveedor deberá dar respuesta al reclamo en un plazo no mayor a treinta (30) días de calendario, pudiendo ampliar el plazo hasta por treinta (30) días más, previa comunicación al consumidor.</span> -->
+                                    <t t-raw="company.get('prev_info_claim','')"/>
+                                </div>
+                            </div>
 
 
                             <div class="input-group flex-nowrap pt-3 justify-content-center">
@@ -375,7 +387,8 @@
                             <div class="row g-3 alert alert-success d-flex align-items-center" role="alert">
                                 <div>
                                     <i class="fa fa-check"></i> 
-                                    <t t-esc="'Hemos registrado su reclamo con el número {} de forma exitosa, estaremos atendiendo su reclamo en los próximos {} días'.format(code,days)"/>
+                                    <!-- <t t-esc="'Hemos registrado su reclamo con el número {} de forma exitosa, estaremos atendiendo su reclamo en los próximos {} días'.format(code,days)"/> -->
+                                    <t t-raw="post_info"/> - Reclamo:<t t-esc="code"/>
                                 </div>
                             </div>
                         </form>
