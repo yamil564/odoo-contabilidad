@@ -13,8 +13,9 @@ class CustomLibroReclamaciones(http.Controller):
 
     @http.route('/reclamacion-enviada/<string:code>', type='http', auth='public', methods=['GET', 'POST'], website=True, csrf=False)
     def LibroReclamacionesEnviada(self, code, **kw):
-        days = request.env.company.default_claim_days_response
-        return request.render('bo_libro_reclamaciones.reclamacion_enviada', {"code": code, "days": days})
+        # days = request.env.company.default_claim_days_response
+        post_info = request.env.company.default_post_info_claim
+        return request.render('bo_libro_reclamaciones.reclamacion_enviada', {"code": code, "post_info": post_info})
         # if request.env.user._is_public():
         #     return request.render('bo_libro_reclamaciones.reclamacion_enviada')
         # else:
@@ -101,7 +102,8 @@ class CustomLibroReclamaciones(http.Controller):
         company = {
             "name": company_obj.name,
             "street": company_obj.street,
-            "vat": company_obj.vat
+            "vat": company_obj.vat,
+            "prev_info_claim": company_obj.default_prev_info_claim
         }
         country_id = request.env.ref("base.pe").id
         state_ids = request.env['res.country.state'].sudo().search(

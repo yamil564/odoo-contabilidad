@@ -5,6 +5,7 @@
         <field name="arch" type="xml">
             <tree>
                 <field name="name"/>
+                <field name="company_id" groups="base.group_multi_company"/>
                 <field name="consumer_type"/>
                 <field name="consumer_name"/>
                 <field name="consumer_email"/>
@@ -28,10 +29,12 @@
         <field name="arch" type="xml">
             <form>
                 <header>
-                    <button name="action_claim_sent" type="object" string="Enviar Reclamación" class="oe_highlight" attrs="{'invisible':[('state','=','cancel')]}"/>
+                    <button name="action_claim_sent" type="object" string="Enviar correo" class="oe_highlight" attrs="{'invisible':[('state','=','cancel')]}"/>
                     <button name="action_in_process" type="object" string="En Proceso" class="oe_highlight" attrs="{'invisible':[('state','!=','new')]}"/>
                     <button name="action_claim_cancel" type="object" string="Cancelar Reclamación"  attrs="{'invisible':[('state','in',['new','resolved','cancel'])]}"/>
                     <button name="action_claim_resolved" type="object" string="Resolver Reclamación" class="oe_highlight" attrs="{'invisible':[('state','in',['new','cancel','resolved'])]}"/>
+                    <button name="action_revert" type="object" string="Convertir a En proceso"  attrs="{'invisible':[('state','not in',['cancel'])]}"/>
+                    
                     <field name="state" widget="statusbar"/>
                 </header>
                 <sheet>

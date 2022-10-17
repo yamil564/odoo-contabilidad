@@ -40,5 +40,12 @@
             <field name="perm_create">1</field>
             <field name="group_id" ref="base.group_public"/>
         </record>
+
+        <record model="ir.rule" id="libro_reclamaciones_comp_rule">
+            <field name="name">Libro de reclamaciones multi-company</field>
+            <field name="model_id" ref="model_libro_reclamaciones"/>
+            <field name="global" eval="True"/>
+            <field name="domain_force">['|',('company_id', '=', False), ('company_id', 'child_of', [user.company_id.id])]</field>
+        </record>
     </data>
 </odoo>

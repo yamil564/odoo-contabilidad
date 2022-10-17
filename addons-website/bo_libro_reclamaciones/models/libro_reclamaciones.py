@@ -96,6 +96,13 @@ class LibroReclamaciones(models.Model):
             return
         raise UserError(
             "Para pasar al reclamo en proceso, su estado debe ser Nuevo")
+    
+    def action_revert(self):
+        if self.state == 'cancel':
+            self.state = 'in_process'
+            return
+        raise UserError(
+            "Para pasar al reclamo en proceso, su estado debe ser Cancelado")
 
     def action_claim_cancel(self):
         if self.state in ['new', 'in_process']:
