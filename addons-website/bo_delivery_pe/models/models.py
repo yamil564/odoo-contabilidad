@@ -13,7 +13,7 @@ class DeliveryCarrier(models.Model):
     _inherit = "delivery.carrier"
 
     # delivery_type = fields.Selection(selection_add=[('pe_go_pack','Go PACK'),('pe_express','Express')])
-    country_ids = fields.Many2many("res.country",default=lambda self:[self.env.ref("base.pe").id],readonly=True)
+    country_ids = fields.Many2many("res.country",default=lambda self:[self.env.ref("base.pe").id],readonly=False)
     province_ids = fields.Many2many("res.country.state","res_country_state_province",string="Provincias")
     district_ids = fields.Many2many("res.country.state","res_country_state_district",string="Distritos")
 

@@ -50,4 +50,5 @@ RUN pip install cachetools
 RUN pip install marshmallow 
 RUN pip install marshmallow_objects 
 RUN pip install jsondiff
+RUN pip install extendable-pydantic
 RUN apt-get clean && apt-get autoclean
