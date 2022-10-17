@@ -1502,6 +1502,30 @@ class AccountMove(models.Model):
 
     #     return reverse_moves
 
+    ##########################################################################################
+    mostrar_btn_comunicacion_baja = fields.Boolean(string="Mostrar botón comunicación baja",
+        compute="compute_mostrar_btn_comunicacion_baja")
+
+
+    @api.depends('estado_comprobante_electronico','journal_id','journal_id.invoice_type_code_id',
+        'reversed_entry_id','reversed_entry_id.estado_comprobante_electronico','reversed_entry_id.journal_id','type')
+    def compute_mostrar_btn_comunicacion_baja(self):
+        for rec in self:
+            rec.mostrar_btn_comunicacion_baja=False
+            if rec.type in ['out_invoice','out_refund'] and rec.state in ['posted']:
+                if rec.estado_comprobante_electronico == '1_ACEPTADO' and rec.journal_id \
+                    and rec.journal_id.invoice_type_code_id in ['03']:
+                    
+                    rec.mostrar_btn_comunicacion_baja = True
+
+                elif rec.estado_comprobante_electronico == '1_ACEPTADO' and rec.journal_id \
+                    and rec.journal_id.invoice_type_code_id in ['07','08'] and rec.reversed_entry_id and \
+                    rec.reversed_entry_id.estado_comprobante_electronico == '1_ACEPTADO' and rec.reversed_entry_id.journal_id and \
+                    rec.reversed_entry_id.journal_id.invoice_type_code_id in ['03']:
+                    
+                    rec.mostrar_btn_comunicacion_baja = True                
+    ##########################################################################################
+
     def btn_comunicacion_baja(self):
 
         tz = self.env.user.tz or "America/Lima"

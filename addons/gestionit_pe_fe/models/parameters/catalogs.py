@@ -11,7 +11,7 @@ tnc = [
     ("06", "Devolución total"),
     ("07", "Devolución por ítem"),
     ("08", "Bonificación"),
-    ("09", "Disminución en el valor"),
+    #("09", "Disminución en el valor"),
     ("10", "Otros Conceptos "),
     ("11", "Ajustes de operaciones de exportación"),
     ("12", "Ajustes afectos al IVAP"),

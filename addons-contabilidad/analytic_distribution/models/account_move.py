@@ -9,7 +9,8 @@ class AccountMove(models.Model):
 
 	
 	def update_analytic_distribution(self):
-		self.line_ids.update_analytic_distribution()
+		for rec in self:
+			rec.line_ids.update_analytic_distribution()
 
 
 	#############################
@@ -70,6 +71,8 @@ class AccountMoveLine(models.Model):
 				vals['analytic_tag_ids'] = tag_ids
 		lines = super(AccountMoveLine, self).create(vals_list)
 		return lines
+
+
 
 	@api.onchange('account_id')
 	def _onchange_account_tag_id(self):
