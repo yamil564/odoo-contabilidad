@@ -271,13 +271,18 @@
 
     <template id="total" inherit_id="website_sale.total">
 
-        <xpath expr="//tr[@id='order_total_untaxed']/td[last()]" position="replace">
+        <xpath expr="//tr[@id='order_total_untaxed']/td[last()]" position="attributes">
+            <attribute name="style">display:none</attribute>
+        </xpath>
+        <xpath expr="//tr[@id='order_total_untaxed']/td[last()]" position="after">
             <td class="text-xl-right border-0">
                 <span t-field="website_sale_order.total_venta_gravado" class="monetary_field" style="white-space: nowrap;" t-options="{'widget': 'monetary', 'display_currency': website_sale_order.currency_id}"/>
             </td>
         </xpath>
-
-        <xpath expr="//tr[@id='order_total_taxes']/td[last()]" position="replace">
+        <xpath expr="//tr[@id='order_total_taxes']/td[last()]" position="attributes">
+            <attribute name="style">display:none</attribute>
+        </xpath>
+        <xpath expr="//tr[@id='order_total_taxes']/td[last()]" position="after">
             <td class="text-xl-right border-0">
                 <span t-field="website_sale_order.total_igv" class="monetary_field" style="white-space: nowrap;" t-options="{'widget': 'monetary', 'display_currency': website_sale_order.currency_id}" />
             </td>
