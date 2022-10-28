@@ -87,13 +87,13 @@ class SaleOrder(models.Model):
                 order.payment_state = order.compute_payment_state
 
             if order.compute_payment_state == 'no_invoice':
-                order.compute_payment_state = 'No Invoice'
+                order.compute_payment_state = _('No Invoice')
             elif order.compute_payment_state == 'not_paid':
-                order.compute_payment_state = 'Not Paid'
+                order.compute_payment_state = _('Not Paid')
             elif order.compute_payment_state == 'partial_paid':
-                order.compute_payment_state = 'Partial Paid'
+                order.compute_payment_state = _('Partial Paid')
             elif order.compute_payment_state == 'fully_paid':
-                order.compute_payment_state = 'Fully Paid'
+                order.compute_payment_state = _('Fully Paid')
             elif order.compute_payment_state == 'overdue':
                 diff = 0
                 today = fields.Date.context_today(self)
@@ -101,9 +101,9 @@ class SaleOrder(models.Model):
                     if (today - l.invoice_date_due).days > diff:
                         diff = (today - l.invoice_date_due).days
                 if diff == 1:
-                    order.compute_payment_state = 'Overdue (yesterday)'
+                    order.compute_payment_state = _('Overdue (yesterday)')
                 elif diff > 1:
-                    order.compute_payment_state = 'Overdue (%s days ago)' % str(diff)
+                    order.compute_payment_state = _('Overdue (%s days ago)') % str(diff)
 
     def _show_payment_button(self):
         self.show_payment_button = False

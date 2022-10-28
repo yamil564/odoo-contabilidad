@@ -13,7 +13,7 @@
                                     decoration-success="payment_state == 'fully_paid'" 
                                     decoration-info="payment_state == 'not_paid'" 
                                     decoration-warning="payment_state == 'partial_paid'" 
-                                    decoration-light="payment_state == 'no_invoice'" 
+                                    decoration-bf="payment_state == 'no_invoice'" 
                                     widget="badge" optional="show"/>
                 </field>
             </field>
