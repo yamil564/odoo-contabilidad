@@ -322,6 +322,24 @@ def build_nota_credito(data):
                                        tax_category=tax_category)
             tax_total.add_tax_subtotal(tax_subtotal=tax_subtotal)
 
+        # 9997 - Exonerado
+        if cod_afectacion_igv in ["20"]:
+            tax_scheme = TaxScheme("9997", "EXO", "VAT")
+            tax_category = TaxCategory(category_id="E",
+                                       percent=tasaIgv,
+                                       tax_exemption_reason_code=line.get(
+                                           "codAfectacionIgv"),
+                                       tax_scheme=tax_scheme)
+            taxable_amount = TaxableAmount(amount=line.get(
+                "montoItem", 0.0), currencyID=tipoMoneda)
+            tax_amount = TaxAmount(amount=line.get("montoIgv", 0.0),
+                                   currencyID=tipoMoneda)
+
+            tax_subtotal = TaxSubtotal(taxable_amount=taxable_amount,
+                                       tax_amount=tax_amount,
+                                       tax_category=tax_category)
+            tax_total.add_tax_subtotal(tax_subtotal=tax_subtotal)
+            
         # 9996 -	Inafecto
         if cod_afectacion_igv in ["30"]:
             tax_scheme = TaxScheme("9998", "INA", "FRE")
