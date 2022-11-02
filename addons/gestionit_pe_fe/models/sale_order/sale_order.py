@@ -190,7 +190,7 @@ class SaleOrder(models.Model):
         if len(wh_ids) > 0:
             return wh_ids.ids
         else:
-            raise UserError("Para crear una vemta su usuario debe estar asociado a un almacén de la compañia. Comuníquese con su administrador.")
+            raise UserError("Para crear una venta su usuario debe estar asociado a un almacén de la compañia. Comuníquese con su administrador.")
         
     warehouses_allowed_ids = fields.Many2many("stock.warehouse", string="Almacenes Permitidos", default=_get_default_warehouse_ids)
 
