@@ -20,26 +20,8 @@ patron_dni = re.compile("\d{8}$")
 _logger = logging.getLogger(__name__)
 
 codigo_unidades_de_medida = [
-    "DZN",
-    "DAY",
-    "HUR",
-    "LTR",
-    "NIU",
-    "CMT",
-    "GLL",
-    "OZI",
-    "GRM",
-    "GLL",
-    "KGM",
-    "LBR",
-    "MTR",
-    "LBR",
-    "SMI",
-    "ONZ",
-    "FOT",
-    "INH",
-    "LTN",
-    "BX"
+    "DZN","DAY","HUR","LTR","NIU","CMT","GLL","OZI","GRM","GLL","KGM","LBR","MTR","LBR","SMI","ONZ","FOT","INH","LTN","BX","MTQ",
+    '4A','BJ','BLL','BG','BO','BX','CT','CMK','CMQ','CEN','CY','CJ','DZP','BE','GLI','GRO','HLT','LEF','SET','KWH','KT','CA','MWH','MTK','MTQ','MGM','MLT','MMT','MMK','MMQ','MLL','UM','PF','PK','PR','FTK','FTQ','C62','PG','ST','RM','DR','STN','TNE','TU','ZZ','YRD','YDK'
 ]
 codigos_tipo_afectacion_igv = [
     "10", "11", "12", "13", "14", "15", "16", "20", "30", "31", "34", "35", "36", "40"
@@ -1144,7 +1126,7 @@ class AccountMove(models.Model):
             else:
                 if line.product_uom_id.code not in codigo_unidades_de_medida:
                     errors.append(
-                        "* El código de la unida de medida del detalle de las líneas del comprobante es invalido.")
+                        "* El código de la unidad de medida del detalle de las líneas del comprobante es invalido.")
                     break
 
             if line.quantity <= 0:
