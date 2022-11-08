@@ -2,7 +2,7 @@ version: '3'
 services:
   web:
     container_name: ${WEB_HOST}
-    image: ${WEB_IMAGE_NAME}:${WEB_IMAGE_TAG}
+    image: ${WEB_IMAGE_NAME}
     build: ./
     ports:
       - "${WEB_PORT}:8069"
@@ -14,6 +14,7 @@ services:
       - ./addons-contabilidad:/mnt/extra-addons-contabilidad
       - ./addons-ple:/mnt/extra-addons-ple
       - ./addons-website:/mnt/extra-addons-website
+      - ./addons-EEFF:/mnt/extra-addons-eeff
     entrypoint: "/usr/bin/odoo -c /etc/odoo/odoo.conf"
 volumes:
   odoo-web-data:
