@@ -22,54 +22,54 @@
         <record id='uom.product_uom_unit' model='uom.uom'><field name='code'>NIU</field><field name='description'>number of international units</field></record>
         
 
-        <record id='uom.product_uom_4A' model='uom.uom'><field name='code'>4A</field><field name='description'>BOBINAS</field></record>
-        <record id='uom.product_uom_BJ' model='uom.uom'><field name='code'>BJ</field><field name='description'>BALDE</field></record>
-        <record id='uom.product_uom_BLL' model='uom.uom'><field name='code'>BLL</field><field name='description'>BARRILES</field></record>
-        <record id='uom.product_uom_BG' model='uom.uom'><field name='code'>BG</field><field name='description'>BOLSA</field></record>
-        <record id='uom.product_uom_BO' model='uom.uom'><field name='code'>BO</field><field name='description'>BOTELLAS</field></record>
-        <record id='uom.product_uom_BX' model='uom.uom'><field name='code'>BX</field><field name='description'>CAJA</field></record>
-        <record id='uom.product_uom_CT' model='uom.uom'><field name='code'>CT</field><field name='description'>CARTONES</field></record>
-        <record id='uom.product_uom_CMK' model='uom.uom'><field name='code'>CMK</field><field name='description'>CENTIMETRO CUADRADO</field></record>
-        <record id='uom.product_uom_CMQ' model='uom.uom'><field name='code'>CMQ</field><field name='description'>CENTIMETRO CUBICO</field></record>
-        <record id='uom.product_uom_CEN' model='uom.uom'><field name='code'>CEN</field><field name='description'>CIENTO DE UNIDADES</field></record>
-        <record id='uom.product_uom_CY' model='uom.uom'><field name='code'>CY</field><field name='description'>CILINDRO</field></record>
-        <record id='uom.product_uom_CJ' model='uom.uom'><field name='code'>CJ</field><field name='description'>CONOS</field></record>
-        <record id='uom.product_uom_DZP' model='uom.uom'><field name='code'>DZP</field><field name='description'>DOCENA POR 10**6</field></record>
-        <record id='uom.product_uom_BE' model='uom.uom'><field name='code'>BE</field><field name='description'>FARDO</field></record>
-        <record id='uom.product_uom_GLI' model='uom.uom'><field name='code'>GLI</field><field name='description'>GALON INGLES (4,545956L)</field></record>
-        <record id='uom.product_uom_GRO' model='uom.uom'><field name='code'>GRO</field><field name='description'>GRUESA</field></record>
-        <record id='uom.product_uom_HLT' model='uom.uom'><field name='code'>HLT</field><field name='description'>HECTOLITRO</field></record>
-        <record id='uom.product_uom_LEF' model='uom.uom'><field name='code'>LEF</field><field name='description'>HOJA</field></record>
-        <record id='uom.product_uom_SET' model='uom.uom'><field name='code'>SET</field><field name='description'>JUEGO</field></record>
-        <record id='uom.product_uom_KWH' model='uom.uom'><field name='code'>KWH</field><field name='description'>KILOVATIO HORA</field></record>
-        <record id='uom.product_uom_KT' model='uom.uom'><field name='code'>KT</field><field name='description'>KIT</field></record>
-        <record id='uom.product_uom_CA' model='uom.uom'><field name='code'>CA</field><field name='description'>LATAS</field></record>
-        <record id='uom.product_uom_MWH' model='uom.uom'><field name='code'>MWH</field><field name='description'>MEGAWATT HORA</field></record>
-        <record id='uom.product_uom_MTK' model='uom.uom'><field name='code'>MTK</field><field name='description'>METRO CUADRADO</field></record>
-        <record id='uom.product_uom_MTQ' model='uom.uom'><field name='code'>MTQ</field><field name='description'>METRO CUBICO</field></record>
-        <record id='uom.product_uom_MGM' model='uom.uom'><field name='code'>MGM</field><field name='description'>MILIGRAMOS</field></record>
-        <record id='uom.product_uom_MLT' model='uom.uom'><field name='code'>MLT</field><field name='description'>MILILITRO</field></record>
-        <record id='uom.product_uom_MMT' model='uom.uom'><field name='code'>MMT</field><field name='description'>MILIMETRO</field></record>
-        <record id='uom.product_uom_MMK' model='uom.uom'><field name='code'>MMK</field><field name='description'>MILIMETRO CUADRADO</field></record>
-        <record id='uom.product_uom_MMQ' model='uom.uom'><field name='code'>MMQ</field><field name='description'>MILIMETRO CUBICO</field></record>
-        <record id='uom.product_uom_MLL' model='uom.uom'><field name='code'>MLL</field><field name='description'>MILLARES</field></record>
-        <record id='uom.product_uom_UM' model='uom.uom'><field name='code'>UM</field><field name='description'>MILLON DE UNIDADES</field></record>
-        <record id='uom.product_uom_PF' model='uom.uom'><field name='code'>PF</field><field name='description'>PALETAS</field></record>
-        <record id='uom.product_uom_PK' model='uom.uom'><field name='code'>PK</field><field name='description'>PAQUETE</field></record>
-        <record id='uom.product_uom_PR' model='uom.uom'><field name='code'>PR</field><field name='description'>PAR</field></record>
-        <record id='uom.product_uom_FTK' model='uom.uom'><field name='code'>FTK</field><field name='description'>PIES CUADRADOS</field></record>
-        <record id='uom.product_uom_FTQ' model='uom.uom'><field name='code'>FTQ</field><field name='description'>PIES CUBICOS</field></record>
-        <record id='uom.product_uom_C62' model='uom.uom'><field name='code'>C62</field><field name='description'>PIEZAS</field></record>
-        <record id='uom.product_uom_PG' model='uom.uom'><field name='code'>PG</field><field name='description'>PLACAS</field></record>
-        <record id='uom.product_uom_ST' model='uom.uom'><field name='code'>ST</field><field name='description'>PLIEGO</field></record>
-        <record id='uom.product_uom_RM' model='uom.uom'><field name='code'>RM</field><field name='description'>RESMA</field></record>
-        <record id='uom.product_uom_DR' model='uom.uom'><field name='code'>DR</field><field name='description'>TAMBOR</field></record>
-        <record id='uom.product_uom_STN' model='uom.uom'><field name='code'>STN</field><field name='description'>TONELADA CORTA</field></record>
-        <record id='uom.product_uom_TNE' model='uom.uom'><field name='code'>TNE</field><field name='description'>TONELADAS</field></record>
-        <record id='uom.product_uom_TU' model='uom.uom'><field name='code'>TU</field><field name='description'>TUBOS</field></record>
-        <record id='uom.product_uom_ZZ' model='uom.uom'><field name='code'>ZZ</field><field name='description'>UNIDAD (SERVICIOS)</field></record>
-        <record id='uom.product_uom_YRD' model='uom.uom'><field name='code'>YRD</field><field name='description'>YARDA</field></record>
-        <record id='uom.product_uom_YDK' model='uom.uom'><field name='code'>YDK</field><field name='description'>YARDA CUADRADA</field></record>
+        <record id='product_uom_4A' model='uom.uom'><field name='code'>4A</field><field name='description'>BOBINAS</field></record>
+        <record id='product_uom_BJ' model='uom.uom'><field name='code'>BJ</field><field name='description'>BALDE</field></record>
+        <record id='product_uom_BLL' model='uom.uom'><field name='code'>BLL</field><field name='description'>BARRILES</field></record>
+        <record id='product_uom_BG' model='uom.uom'><field name='code'>BG</field><field name='description'>BOLSA</field></record>
+        <record id='product_uom_BO' model='uom.uom'><field name='code'>BO</field><field name='description'>BOTELLAS</field></record>
+        <record id='product_uom_BX' model='uom.uom'><field name='code'>BX</field><field name='description'>CAJA</field></record>
+        <record id='product_uom_CT' model='uom.uom'><field name='code'>CT</field><field name='description'>CARTONES</field></record>
+        <record id='product_uom_CMK' model='uom.uom'><field name='code'>CMK</field><field name='description'>CENTIMETRO CUADRADO</field></record>
+        <record id='product_uom_CMQ' model='uom.uom'><field name='code'>CMQ</field><field name='description'>CENTIMETRO CUBICO</field></record>
+        <record id='product_uom_CEN' model='uom.uom'><field name='code'>CEN</field><field name='description'>CIENTO DE UNIDADES</field></record>
+        <record id='product_uom_CY' model='uom.uom'><field name='code'>CY</field><field name='description'>CILINDRO</field></record>
+        <record id='product_uom_CJ' model='uom.uom'><field name='code'>CJ</field><field name='description'>CONOS</field></record>
+        <record id='product_uom_DZP' model='uom.uom'><field name='code'>DZP</field><field name='description'>DOCENA POR 10**6</field></record>
+        <record id='product_uom_BE' model='uom.uom'><field name='code'>BE</field><field name='description'>FARDO</field></record>
+        <record id='product_uom_GLI' model='uom.uom'><field name='code'>GLI</field><field name='description'>GALON INGLES (4,545956L)</field></record>
+        <record id='product_uom_GRO' model='uom.uom'><field name='code'>GRO</field><field name='description'>GRUESA</field></record>
+        <record id='product_uom_HLT' model='uom.uom'><field name='code'>HLT</field><field name='description'>HECTOLITRO</field></record>
+        <record id='product_uom_LEF' model='uom.uom'><field name='code'>LEF</field><field name='description'>HOJA</field></record>
+        <record id='product_uom_SET' model='uom.uom'><field name='code'>SET</field><field name='description'>JUEGO</field></record>
+        <record id='product_uom_KWH' model='uom.uom'><field name='code'>KWH</field><field name='description'>KILOVATIO HORA</field></record>
+        <record id='product_uom_KT' model='uom.uom'><field name='code'>KT</field><field name='description'>KIT</field></record>
+        <record id='product_uom_CA' model='uom.uom'><field name='code'>CA</field><field name='description'>LATAS</field></record>
+        <record id='product_uom_MWH' model='uom.uom'><field name='code'>MWH</field><field name='description'>MEGAWATT HORA</field></record>
+        <record id='product_uom_MTK' model='uom.uom'><field name='code'>MTK</field><field name='description'>METRO CUADRADO</field></record>
+        <record id='product_uom_MTQ' model='uom.uom'><field name='code'>MTQ</field><field name='description'>METRO CUBICO</field></record>
+        <record id='product_uom_MGM' model='uom.uom'><field name='code'>MGM</field><field name='description'>MILIGRAMOS</field></record>
+        <record id='product_uom_MLT' model='uom.uom'><field name='code'>MLT</field><field name='description'>MILILITRO</field></record>
+        <record id='product_uom_MMT' model='uom.uom'><field name='code'>MMT</field><field name='description'>MILIMETRO</field></record>
+        <record id='product_uom_MMK' model='uom.uom'><field name='code'>MMK</field><field name='description'>MILIMETRO CUADRADO</field></record>
+        <record id='product_uom_MMQ' model='uom.uom'><field name='code'>MMQ</field><field name='description'>MILIMETRO CUBICO</field></record>
+        <record id='product_uom_MLL' model='uom.uom'><field name='code'>MLL</field><field name='description'>MILLARES</field></record>
+        <record id='product_uom_UM' model='uom.uom'><field name='code'>UM</field><field name='description'>MILLON DE UNIDADES</field></record>
+        <record id='product_uom_PF' model='uom.uom'><field name='code'>PF</field><field name='description'>PALETAS</field></record>
+        <record id='product_uom_PK' model='uom.uom'><field name='code'>PK</field><field name='description'>PAQUETE</field></record>
+        <record id='product_uom_PR' model='uom.uom'><field name='code'>PR</field><field name='description'>PAR</field></record>
+        <record id='product_uom_FTK' model='uom.uom'><field name='code'>FTK</field><field name='description'>PIES CUADRADOS</field></record>
+        <record id='product_uom_FTQ' model='uom.uom'><field name='code'>FTQ</field><field name='description'>PIES CUBICOS</field></record>
+        <record id='product_uom_C62' model='uom.uom'><field name='code'>C62</field><field name='description'>PIEZAS</field></record>
+        <record id='product_uom_PG' model='uom.uom'><field name='code'>PG</field><field name='description'>PLACAS</field></record>
+        <record id='product_uom_ST' model='uom.uom'><field name='code'>ST</field><field name='description'>PLIEGO</field></record>
+        <record id='product_uom_RM' model='uom.uom'><field name='code'>RM</field><field name='description'>RESMA</field></record>
+        <record id='product_uom_DR' model='uom.uom'><field name='code'>DR</field><field name='description'>TAMBOR</field></record>
+        <record id='product_uom_STN' model='uom.uom'><field name='code'>STN</field><field name='description'>TONELADA CORTA</field></record>
+        <record id='product_uom_TNE' model='uom.uom'><field name='code'>TNE</field><field name='description'>TONELADAS</field></record>
+        <record id='product_uom_TU' model='uom.uom'><field name='code'>TU</field><field name='description'>TUBOS</field></record>
+        <record id='product_uom_ZZ' model='uom.uom'><field name='code'>ZZ</field><field name='description'>UNIDAD (SERVICIOS)</field></record>
+        <record id='product_uom_YRD' model='uom.uom'><field name='code'>YRD</field><field name='description'>YARDA</field></record>
+        <record id='product_uom_YDK' model='uom.uom'><field name='code'>YDK</field><field name='description'>YARDA CUADRADA</field></record>
 
     </data>
 </odoo>
