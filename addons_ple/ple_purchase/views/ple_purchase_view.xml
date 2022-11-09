@@ -10,7 +10,8 @@
             <field name="arch" type="xml">
 
                    <xpath expr="//form/header" position="inside">
-                    
+
+
                     <button name="button_view_tree_domiciliados"
                             string="Compras Domiciliadas"
                             states='open,send'
@@ -29,18 +30,18 @@
                             string="Recibos por Honorario"
                             states='open,send'
                             type="object"
-                            icon="fa-square-o"
+                            icon="fa-square"
                     />
 
                     </xpath>
 
-                <field name="currency_id" position="replace">
+                <!--<field name="currency_id" position="replace">
                 </field>
 
                 <field name="bimonetario" position="replace">
                 </field>
                 <field name="currency_second_id" position="replace">
-                </field>
+                </field>-->
 
                      <group name="grupo_base" position="replace">
 
@@ -61,10 +62,6 @@
                             </div>
 
 
-                        </group>
-
-                        <group>
-                            <field name="incluir_anteriores_no_declarados"/>
                         </group>
 
 
@@ -95,20 +92,15 @@
                                 <field name="currency_ids" placeholder="" class="oe_inline" widget="many2many_tags" options="{'no_create': True}"/>
                             </div>
                     </group>
+
+                    <group>
+                        
+                        <field name="incluir_anteriores_no_declarados"/>
+                        
+                    </group>
                     
                     </group>
 
-                    <field name="print_order" position="after">
-                        <field name="imprimir_recibo_honorarios"/>
-                    </field>
-
-
-
-                    <group name="grupo_base_impresion" position="inside">
-                        <separator string="Nomenclatura de impresión del PLE"/>
-                        <field name="identificador_operaciones"/>
-                        <field name="identificador_libro"/>
-                    </group>
 
                     <xpath expr="//form" position="inside">
                        <notebook>

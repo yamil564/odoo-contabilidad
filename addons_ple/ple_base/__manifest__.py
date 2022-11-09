@@ -13,6 +13,7 @@
 		'security/group_users.xml',
 		'security/ir.model.access.csv',
 		'views/ple_base_view.xml',
+		'views/wizard_printer_ple_base_view.xml',
 		'views/res_country_view.xml',
 
 	],

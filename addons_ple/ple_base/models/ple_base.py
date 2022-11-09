@@ -72,6 +72,9 @@ class PleBase(models.Model):
 		return meses[month]
 
 
+	def open_wizard_print_form(self):
+		return {}
+
 	
 	def name_get(self):
 		result = []

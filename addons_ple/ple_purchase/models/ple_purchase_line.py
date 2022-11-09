@@ -77,7 +77,7 @@ class PlePurchaseLine(models.Model):
 	error_3=fields.Char(string="Error Tipo 3") 
 	error_4=fields.Char(string="Error Tipo 4" ) 
 	indicador_comprobantes=fields.Char(string="Indicador Comprobantes" ) 
-	oportunidad_anotacion=fields.Char(string="Oportunidad Anotación",compute='_compute_campo_oportunidad_anotacion', store=True) 
+	oportunidad_anotacion=fields.Char(string="Oportunidad Anotación Domiciliado",compute='_compute_campo_oportunidad_anotacion', store=True) 
 	############################################################################################################
 	partner_country_id=fields.Many2one('res.country',string="Pais residencia sujeto no domiciliado" , compute="compute_partner_country_id" , inverse='inverse_compute_partner_country_id' , store=True) #,
 	
@@ -120,7 +120,7 @@ class PlePurchaseLine(models.Model):
 	no_domiciliado_tipo_renta = fields.Char(string="Tipo de Renta" , default='00', store=True) 
 	no_domiciliado_modalidad_servicio_prestado= fields.Char(string="Modalidad servicio prestado", store=True ) 
 	no_domiciliado_aplicacion_ley_impuesto_renta = fields.Char(string="Aplicación Art. 76°" , store=True ) 
-	no_domiciliado_oportunidad_anotacion= fields.Char(string="Oportunidad Anotación",
+	no_domiciliado_oportunidad_anotacion= fields.Char(string="Oportunidad Anotación no Domiciliado",
 		compute='_compute_campo_oportunidad_anotacion',store=True)
 
 	###################################################################3

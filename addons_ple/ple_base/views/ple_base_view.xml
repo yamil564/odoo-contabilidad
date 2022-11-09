@@ -8,29 +8,37 @@
             <field name="arch" type="xml">
             	<form>
                     <header>
-                        <button name="action_print" 
+                        
+                        <button name="open_wizard_print_form" 
                             string="Imprimir"
                             type="object"
                             states='open,send'
+                            class="btn-primary"
                             icon="fa-print"
                             />
+    
                         <button name="action_draft"
                             string="Borrador"
                             states='open'
                             type="object"
                             />
+
                         <button name="action_open"
                             string="Generar Libro"
                             states='draft,open'
+                            class="btn-primary"
                             type="object"
                             />
+
                         <button name="action_send"
                             string="Declarar Libro"
                             confirm="Una vez confirmado no volvera a generar y/o editar el PLE"
                             states='open'
                             type="object"
                             />
+
                         <field name="state" widget="statusbar" statusbar_visible="draft,open,send" />
+                    
                     </header>
                     <group>
                         <group name="grupo_base" string="Periodo Fiscal">
@@ -41,14 +49,15 @@
                             </div>
                             <field name="company_id" options="{'no_create': True, 'no_create_edit':True}" groups="base.group_multi_company"/>
                         </group>
-                        <group name="grupo_base_impresion" string="Parámetros de Impresión">
-                            <field name="print_format"/>
-                    		<field name="print_order"/>
+
+                        <!--<group name="grupo_base_impresion" string="Parámetros de Impresión">
                     	    <field name="currency_id"/>
                             <field name="bimonetario"/>
                             <field name="currency_second_id" attrs="{'invisible':[('bimonetario','=',False)]}"/>
+                        
 
-                        </group>
+                        </group>  -->
+
                     </group>
                 </form>
             </field>
