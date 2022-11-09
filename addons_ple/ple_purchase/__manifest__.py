@@ -10,10 +10,11 @@
 			> Compras
 		''',
 	'data':[
-		'security/group_users.xml',
+		#'security/group_users.xml',
 		'security/ir.model.access.csv',
 		'views/ple_purchase_view.xml',
 		'views/ple_purchase_line_view.xml',
+		'views/wizard_printer_ple_purchase_view.xml',
 	],
 	'installable': True,
     'auto_install': False,

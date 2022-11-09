@@ -10,10 +10,11 @@
 			> Libro Diario-Mayor-Simplificado
 		''',
 	'data':[
-		'security/group_users.xml',
+		#'security/group_users.xml',
 		'security/ir.model.access.csv',
 		'views/ple_diary_view.xml',
 		'views/ple_diary_line_view.xml',
+		'views/wizard_printer_ple_diary_view.xml',
 	],
 	'installable': True,
     'auto_install': False,

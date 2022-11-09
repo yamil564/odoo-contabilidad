@@ -307,7 +307,7 @@ class PleSaleLine(models.Model):
 					tools.getDateYYYYMM(rec.invoice_id.date) > tools.getDateYYYYMM(rec.invoice_id.invoice_date):
 					valor_campo='8'
 
-				elif rec.invoice_id.state=='cancel' and rec.invoice_id.date and rec.ple_sale_id:
+				elif rec.invoice_id.state=='cancel' and rec.invoice_id.invoice_date and rec.ple_sale_id:
 
 					anio=rec.ple_sale_id.fiscal_year
 					mes = rec.ple_sale_id.fiscal_month
@@ -315,7 +315,7 @@ class PleSaleLine(models.Model):
 					if len(mes or '')==1:
 						mes="0%s"%(mes)
 					
-					if "%s%s"%(anio,mes)==tools.getDateYYYYMM(rec.invoice_id.date):
+					if "%s%s"%(anio,mes)==tools.getDateYYYYMM(rec.invoice_id.invoice_date):
 						valor_campo='2'
 					#elif "%s%s"%(anio,mes)>tools.getDateYYYYMM(rec.invoice_id.date):
 					#	valor_campo='8'  ## Se esta en duda que un comprobante anulado entre en periodos posteriores.
