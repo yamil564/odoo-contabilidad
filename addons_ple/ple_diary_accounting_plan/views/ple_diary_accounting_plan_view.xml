@@ -23,35 +23,24 @@
                     </xpath>
 
                 
-                <field name="currency_id" position="replace">
+                <!--<field name="currency_id" position="replace">
                 </field>
 
                 <field name="bimonetario" position="replace">
                 </field>
                 
                 <field name="currency_second_id" position="replace">
-                </field>
-
-
-
-                    <group name="grupo_base_impresion" position="inside">
-                        <separator string="Nomenclatura de impresión del PLE"/>
-                        <field name="identificador_operaciones"/>
-                        <field name="identificador_libro"/>
-                    </group>
-
+                </field>-->
 
                     <xpath expr="//form" position="inside">
-                       <notebook>
+                        <notebook>
                         <page name="PLE_Libro_diary_plan_contable" string="PLE Libro diario-Plan Contable">
                         
-                                <field name='ple_diary_accounting_plan_line_ids'>
-                                   
+                                <field name='ple_diary_accounting_plan_line_ids'>     
                                     
-                                <tree> 
+                                    <tree> 
 
                                          <field name="account_id"/>
-
                                          <field name="codigo_cuenta_desagregado"/>
                                          <field name="descripcion_cuenta_contable"/>
                                          <field name="codigo_plan_contable"/>
@@ -60,7 +49,7 @@
                                          <field name="descripcion_cuenta_contable_corporativa"/>
                                          <field name="indicador_estado_operacion"/>
                                
-                                </tree>      
+                                    </tree>      
 
 
                               </field>
@@ -72,10 +61,9 @@
                                 <field name='ple_diary_accounting_plan_line_ids'>
                                    
                                     
-                                <tree> 
+                                    <tree> 
 
                                          <field name="account_id"/>
-
                                          <field name="codigo_cuenta_desagregado"/>
                                          <field name="descripcion_cuenta_contable"/>
                                          <field name="codigo_plan_contable"/>
@@ -84,14 +72,14 @@
                                          <field name="descripcion_cuenta_contable_corporativa"/>
                                          <field name="indicador_estado_operacion"/>
                                
-                                </tree>      
+                                    </tree>      
 
 
                               </field>
                         
                           </page>
 
-                             </notebook>
+                        </notebook>
                     </xpath>                            
             </field>
         </record>
@@ -114,7 +102,7 @@
         </record>
 
         <record id="action_ple_diary_accounting_plan" model="ir.actions.act_window">
-            <field name="name">Libro diario-Plan Contable</field>
+            <field name="name">PLE-Plan Contable</field>
             <field name="res_model">ple.diary.accounting.plan</field>
             <field name="view_mode">tree,form</field>
             <field eval="False" name="view_id"/>

@@ -2,7 +2,7 @@
 <odoo>
 
     <data>
-<!-- ############## EL BOTON DE IMPRIMIR UNICAMENTE ESTARA DISPONIBLE CUANDO EL LIBRO SE SENCUANTRE EN ESTADO ABIERTO "!!!!!!" -->
+<!-- ####### EL BOTON DE IMPRIMIR UNICAMENTE ESTARA DISPONIBLE CUANDO EL LIBRO SE ENCUENTRE EN ESTADO ABIERTO "!!!!!!" -->
         <record id="ple_diary_view_form" model="ir.ui.view">
             <field name="name">ple.diary.form</field>
             <field name="model">ple.diary</field>
