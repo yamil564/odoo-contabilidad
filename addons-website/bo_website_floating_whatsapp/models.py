@@ -7,6 +7,7 @@ class Website(models.Model):
     _inherit = "website"
 
     website_floating_whatsapp = fields.Char("Celular Whatsapp")
+    website_floating_whatsapp_location = fields.Selection(string="Ubicación",selection=[("right","Derecha"),("left","Izquierda")],default="left")
     website_floating_whatsapp_message_shop = fields.Text("Mensaje WSP Shop")
     website_floating_whatsapp_message_product = fields.Text("Mensaje WSP Producto")
     website_floating_whatsapp_message_order = fields.Text("Mensaje WSP Orden")
@@ -49,14 +50,16 @@ class ResConfigSettings(models.TransientModel):
                                             readonly=False,
                                             default="")
     website_floating_whatsapp_message_shop = fields.Text(related="website_id.website_floating_whatsapp_message_shop",
-                                            readonly=False,
-                                            default="Hola, estoy interesado en sus productos.")
+                                                        readonly=False,
+                                                        default="Hola, estoy interesado en sus productos.")
     website_floating_whatsapp_message_product = fields.Text(related="website_id.website_floating_whatsapp_message_product",
-                                            readonly=False,
-                                            default="Hola, estoy interesado en este producto {producto}.")
+                                                            readonly=False,
+                                                            default="Hola, estoy interesado en este producto {producto}.")
     website_floating_whatsapp_message_order = fields.Text(related="website_id.website_floating_whatsapp_message_order",
-                                            readonly=False,
-                                            default="Hola, mi número de compra es {orden}, me puedes ayudar con mi compra porfavor.")
-
-
-    
+                                                            readonly=False,
+                                                            default="Hola, mi número de compra es {orden}, me puedes ayudar con mi compra porfavor.")
+    website_floating_whatsapp_location = fields.Selection(string="Ubicación",
+                                                        related="website_id.website_floating_whatsapp_location",
+                                                        selection=[("right","Derecha"),("left","Izquierda")],
+                                                        readonly=False,
+                                                        default="left")
