@@ -12,9 +12,9 @@ services:
       - ./config:/etc/odoo
       - ./addons:/mnt/extra-addons
       - ./addons-contabilidad:/mnt/extra-addons-contabilidad
-      - ./addons-ple:/mnt/extra-addons-ple
+      - ./addons_ple:/mnt/extra-addons-ple
       - ./addons-website:/mnt/extra-addons-website
-      - ./addons-EEFF:/mnt/extra-addons-eeff
+      - ./addons_EEFF:/mnt/extra-addons-eeff
     entrypoint: "/usr/bin/odoo -c /etc/odoo/odoo.conf"
 volumes:
   odoo-web-data:
