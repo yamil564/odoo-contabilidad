@@ -6,7 +6,6 @@
         "gestionit_pe_fe",
         "gestionit_pe_consulta_ruc_dni",
         "gestionit_pe_fe_consulta_web",
-        "gestionit_pe_ple",
         "gestionit_pe_tipocambio",
         "create_invoice_from_sale"],
     "category": "invoicing",

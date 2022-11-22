@@ -15,13 +15,17 @@ RUN set -x; \
             libssl-dev \
             python3-lxml \
             python3-cryptography \
-            python3-openssl  \
             python3-defusedxml \
         && pip3 install --upgrade setuptools  pip \
         && pip3 install cryptography \
             ipaddress \
             signxml \
             openpyxl
+
+RUN apt-get -y install locales locales-all
+RUN update-locale 
+
+EXPOSE 8080/tcp
 
 RUN python3 -m pip install --upgrade pip
 RUN apt-get clean && apt-get autoclean
@@ -52,3 +56,4 @@ RUN pip install marshmallow_objects
 RUN pip install jsondiff
 RUN pip install extendable-pydantic
 RUN apt-get clean && apt-get autoclean
+RUN pip install --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib

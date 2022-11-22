@@ -36,7 +36,7 @@ class ProductTemplate(models.Model):
     def _check_default_code_aux(self):
         for record in self:
             referece = self.env['product.template'].search([('default_code', 'not in', ('', False)), ('default_code', '=', self.default_code), ('id', '!=', self.id), ('company_id', 'in' , (self.env.company.id,False))])
-            if self.default_code.isdigit():
+            if (self.default_code or "0").isdigit():
                 sequence = self.env['ir.sequence'].search([('code', '=', 'ref.prod'), ('company_id', 'in' , (self.env.company.id,))], limit=1)
                 if int(self.default_code) > int(sequence.number_next_actual):
                     raise ValidationError('La Referencia Interna no puede ser mayor al siguiente número de su secuencia.')
