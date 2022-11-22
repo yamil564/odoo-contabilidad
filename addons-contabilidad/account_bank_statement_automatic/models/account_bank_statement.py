@@ -31,10 +31,10 @@ class AccountBankStatement(models.Model):
 
 	
 
-	@api.onchange('balance_start')
+	@api.onchange('balance_start','line_ids','line_ids.amount')
 	def _onchange_balance_end_real(self):
 		for rec in self:
-			rec._onchange_balance_end_real_real= rec.balance_start + sum([i.amount for i in rec.line_ids])
+			rec.balance_end_real= rec.balance_start + sum([i.amount for i in rec.line_ids])
 
 
 	#################### IMPRIMIR ESTADO DE CUENTA DESDE EL EXTRACTO ##################################

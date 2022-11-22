@@ -34,12 +34,12 @@ class LibroReclamaciones(models.Model):
 
     consumer_name = fields.Char(string="Nombres")
     consumer_lastname = fields.Char(string="Apellidos")
-    consumer_email = fields.Char(string="E-mail")
+    consumer_email = fields.Char(string="E-mail", tracking=True)
     consumer_document_type = fields.Selection(string="Tipo de documento de Identidad", selection=[
                                               ('1', 'DNI'), ('4', 'CE'), ('7', 'Pasaporte')], default="1")
     consumer_document = fields.Char(string="Número de documento")
-    consumer_phone = fields.Char(string="Teléfono")
-    consumer_address = fields.Char(string="Dirección")
+    consumer_phone = fields.Char(string="Teléfono", tracking=True)
+    consumer_address = fields.Char(string="Dirección", tracking=True)
 
     consumer_country_id = fields.Many2one(
         "res.country", default=lambda r: r.env.ref("base.pe", raise_if_not_found=False))
@@ -96,7 +96,7 @@ class LibroReclamaciones(models.Model):
             return
         raise UserError(
             "Para pasar al reclamo en proceso, su estado debe ser Nuevo")
-    
+
     def action_revert(self):
         if self.state == 'cancel':
             self.state = 'in_process'
