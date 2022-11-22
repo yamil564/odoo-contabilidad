@@ -291,7 +291,7 @@
                 <b>SON:</b>
                 <t t-esc="receipt.son"/>
                 <br />
-                <b>LE ATENDIÓ:</b>
+                <b t-if="receipt.cashier">LE ATENDIÓ:</b>
                 <t t-esc="receipt.cashier"/>
                 <br />
             </div>

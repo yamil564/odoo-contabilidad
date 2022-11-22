@@ -35,7 +35,8 @@ class AccountMove(models.Model):
     def invoice_data(self, ticket_id):
         # _logger.info("----- invoice_data -----")
         move_env = self.browse(ticket_id)
-
+        # _logger.info("ticket_id")
+        # _logger.info(ticket_id)
         if move_env:
             company_env = self.env['res.company'].browse(
                 move_env.company_id.id)
@@ -49,7 +50,7 @@ class AccountMove(models.Model):
                            'total_descuento_global', 'total_descuentos', 'amount_total', 'invoice_user_id', 'user_id',
                            'invoice_payment_term_id', 'journal_id', 'digest_value', 'invoice_origin'}
             move = move_env.read(fields_move)[0]
-
+            _logger.info(move)
             journal_env = self.env['account.journal'].browse(
                 move_env.journal_id.id)
             fields_journal = {'code', 'invoice_type_code_id'}
@@ -75,8 +76,8 @@ class AccountMove(models.Model):
             # _logger.info("lines_ids: %s" % str(lines_ids))
             lot_values = move_env._get_invoiced_lot_values()
             json_lines = []
-            _logger.info(lines_ids)
-            _logger.info(lot_values)
+            # _logger.info(lines_ids)
+            # _logger.info(lot_values)
             for line in lines_ids:
                 # _logger.info("line: %s" % str(line))
                 if line['display_type'] not in ['line_section', 'line_note']:
@@ -105,13 +106,17 @@ class AccountMove(models.Model):
             # _logger.info("move_env-read: %s" % str(move.read()))
 
             # _logger.info("company: %s" % company)
+            invoice_user_id = ""
+            if move.get('invoice_user_id',False) :
+                invoice_user_id = move['invoice_user_id'][1] or ""
 
+            # _logger.info(move)
             data = {
                 'name': move['name'],
                 'origin': move['invoice_origin'],
-                'invoice_date': move['invoice_date'],
+                'invoice_date': move.get('invoice_date',''),
                 'payment_id': move['invoice_payment_term_id'] and move['invoice_payment_term_id'][1] or "Contado",
-                'cashier': move['invoice_user_id'] and move['invoice_user_id'][1] or move['user_id'][1],
+                'cashier': invoice_user_id,
                 # 'invoice_type_code': move['invoice_type_code'],
                 'invoice_type_code': move_env.journal_id.invoice_type_code_id,
                 'total_venta_gravado': move['total_venta_gravado'],
