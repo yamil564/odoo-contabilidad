@@ -459,7 +459,9 @@
                             class="oe_highlight"
                             type="object"
                             groups="gestionit_pe_fe.res_groups_anulacion_buttons"
-                            attrs="{'invisible': ['|','|',('estado_comprobante_electronico','=','2_ANULADO'),('state','not in',['posted']),'|',('type','in',['in_invoice','in_refund']),('mostrar_btn_comunicacion_baja','not in',[True])]}"/>
+                            attrs="{'invisible': ['|','|',('state','not in',['posted']),('type','in',['in_invoice','in_refund']),('mostrar_btn_comunicacion_baja','not in',[True])]}"/>
+
+            <!--attrs="{'invisible': ['|','|',('estado_comprobante_electronico','=','2_ANULADO'),('state','not in',['posted']),'|',('type','in',['in_invoice','in_refund']),('mostrar_btn_comunicacion_baja','not in',[True])]}"/>-->
 
 
                 <button name="action_open_guia_remision"
