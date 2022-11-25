@@ -48,14 +48,14 @@ class ResPartner(models.Model):
         for rec in self:
             #current_user = record.env.user
             #if not current_user.has_group('gestionit_pe_fe.group_user_sunat_restrict_format_number_document'):
-            if rec.l10n_latam_identification_type_id:
+            if rec.l10n_latam_identification_type_id and rec.vat:
                 vat_code = rec.l10n_latam_identification_type_id.l10n_pe_vat_code
                 if  vat_code == '6':
-                    if not bool(re.compile("\d{11}$").match(rec.vat)):
+                    if not bool(re.compile("\d{11}$").match(rec.vat or '')):
                          raise UserError("El tipo de Documento RUC debe ser numérico y tener 11 dígitos.")
                 elif vat_code== '1':
-                    if not bool(re.compile("\d{8}$").match(rec.vat)):
+                    if not bool(re.compile("\d{8}$").match(rec.vat or '')):
                          raise UserError("El tipo de Documento DNI debe ser numérico y tener 8 dígitos.")
                 elif vat_code== 'A':
-                    if not bool(re.compile("\d{15}$").match(rec.vat)):
+                    if not bool(re.compile("\d{15}$").match(rec.vat or '')):
                          raise UserError("El tipo de Documento CÉDULA DIPLOMÁTICA debe ser numérico y tener 15 dígitos.")
