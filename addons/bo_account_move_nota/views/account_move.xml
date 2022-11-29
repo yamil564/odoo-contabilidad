@@ -16,9 +16,15 @@
             <xpath expr="//button[@name='action_generate_and_signed_xml']" position="attributes">
                 <attribute name="attrs">{'invisible': ['|','|',('state','!=','posted'),('type','not in',['out_invoice','out_refund']),('invoice_type_code','=','100')]}</attribute>
             </xpath>
+
+            <!-- ############################################ -->
+
             <xpath expr="//button[@name='btn_comunicacion_baja']" position="attributes">
-                <attribute name="attrs">{'invisible': ['|','|','|',('estado_comprobante_electronico','=','2_ANULADO'),('state','not in',['posted']),('type','in',['in_invoice','in_refund']),('invoice_type_code','=','100')]}</attribute>
+                <attribute name="attrs">{'invisible': ['|','|','|','|',('estado_comprobante_electronico','=','2_ANULADO'),('state','not in',['posted']),('type','in',['in_invoice','in_refund']),('invoice_type_code','=','100'),('mostrar_btn_comunicacion_baja','not in',[True])]}</attribute>
             </xpath>
+            <!-- ############################################# -->
+
+
             <xpath expr="//button[@name='action_open_guia_remision']" position="attributes">
                 <attribute name="attrs">{'invisible': ['|','|',('guia_remision_count','!=',0),('type','in',['in_invoice','in_refund']),('invoice_type_code','=','100')]}</attribute>
             </xpath>
