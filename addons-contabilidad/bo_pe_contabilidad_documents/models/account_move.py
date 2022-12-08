@@ -20,6 +20,96 @@ class AccountMove(models.Model):
     type_document_id = fields.Selection(string="Tipo de Documento",selection="_selection_invoice_type",
         compute="compute_campo_type_document_id",store=True)
     ### EL TIPO DOC EN ASIENTOWS VIENE DADO bPOR EL TD DEL DIARIO USADO
+    exist_in_invoice_document = fields.Boolean(string="Existen Comprobantes Registrados",compute="compute_campo_exist_in_invoice_document",store=True)
+    
+    #exist_invoice_move_ids = fields.Many2many('account.move','exist_account_move_rel','move_id_1','move_id_2',
+    #    string="Comprobante Registrado existente",
+    #    compute="compute_campo_exist_in_invoice_document",store=True)
+
+    def get_exist_invoice_documents(self):
+        for rec in self:
+
+            if rec and rec.company_id and rec.prefix_code and rec.invoice_number and rec.type and \
+                rec.type in ('in_invoice','in_refund') and rec.partner_id and rec.type_document_id:
+                
+                query = """select id from
+                    account_move 
+                    where 
+                    type in ('in_invoice','in_refund') and 
+                    prefix_code='%s' and 
+                    invoice_number='%s' and 
+                    type_document_id = '%s' and 
+                    partner_id = %s and 
+                    company_id = %s 
+                    """ % (rec.prefix_code or '',
+                        rec.invoice_number or '',
+                        rec.type_document_id or False,
+                        str(rec.partner_id.id),
+                        rec.company_id.id
+                        )
+
+                self.env.cr.execute(query)
+                records = self.env.cr.dictfetchall()
+
+                if records:
+                    #move_id_id = records[0]['id']
+                    move_id_id = [i['id'] for i in records if i['id'] != rec.id]
+
+                    return move_id_id
+
+
+
+    @api.depends('prefix_code','invoice_number','partner_id','type','type_document_id')
+    def compute_campo_exist_in_invoice_document(self):
+        for rec in self:
+            rec.exist_in_invoice_document = False
+            #rec.exist_invoice_move_id = False
+
+            if rec and rec.prefix_code and rec.invoice_number and rec.type and rec.type in ('in_invoice','in_refund') and rec.partner_id and rec.type_document_id:
+                query = """select id from
+                    account_move 
+                    where 
+                    type in ('in_invoice','in_refund') and 
+                    prefix_code='%s' and 
+                    invoice_number='%s' and 
+                    type_document_id = '%s' and 
+                    partner_id = %s and
+                    company_id = %s 
+                    """ % (rec.prefix_code or '',
+                        rec.invoice_number or '',
+                        rec.type_document_id or False,
+                        str(rec.partner_id.id),
+                        rec.company_id.id 
+                        )
+
+                self.env.cr.execute(query)
+                records = self.env.cr.dictfetchall()
+
+                if records:
+                    #move_id_id = records[0]['id']
+                    move_id_id = [i['id'] for i in records if i['id'] != rec.id]
+
+                    if move_id_id:
+                        rec.exist_in_invoice_document = True
+                        #rec.exist_invoice_move_ids = move_id_id
+
+
+
+    def open_exist_document_in_invoice(self):
+        if self.exist_in_invoice_document:
+            move_ids = self.get_exist_invoice_documents()
+
+            diccionario = {
+                    'name': 'Documentos existentes',
+                    'view_type': 'form',
+                    'view_mode': 'tree,form',
+                    'res_model': 'account.move',
+                    'view_id': False,
+                    'type': 'ir.actions.act_window',
+                    'domain': [('id', 'in', move_ids or [])]
+                }
+            return diccionario
+
 
 
     def _selection_invoice_type(self):

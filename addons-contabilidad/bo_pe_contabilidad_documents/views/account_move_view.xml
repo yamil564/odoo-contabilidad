@@ -7,6 +7,16 @@
             <field name="model">account.move</field>
             <field name="inherit_id" ref="gestionit_pe_fe.view_account_move_tipo_comprobante"/>
             <field name="arch" type="xml">
+
+                <xpath expr="//form/header" position="before">
+                    <field name="exist_in_invoice_document" invisible="1"/>
+
+                    <div class="alert alert-info" role="alert" style="margin-bottom:0px" attrs="{'invisible': [('exist_in_invoice_document','not in',[True])]}">
+                        <bold>Ya existe otro Documento con el mismo número de Serie y Correlativo !</bold> 
+                        <button name="open_exist_document_in_invoice" attrs="{'invisible': [('exist_in_invoice_document','not in',[True])]}" string="Ver Documento" type="object" class="oe_link oe_inline"/> 
+                    </div>
+
+                </xpath>
                 
                 <field name="inv_supplier_ref" position="after">
                     
@@ -14,9 +24,9 @@
 
                     <field name="invoice_number" attrs="{'required':[('type','in',['in_invoice','in_refund'])]}"/>-->
 
-                    <field name="prefix_code" attrs="{'invisible':[('type','not in',['in_invoice','in_refund'])],'required':[('type','in',['in_invoice','in_refund'])]}"/>
+                    <field name="prefix_code" attrs="{'invisible':[('type','not in',['in_invoice','in_refund'])],'required':[('type','in',['in_invoice','in_refund'])],'readonly':[('state','in',['posted'])]}"/>
 
-                    <field name="invoice_number" attrs="{'invisible':[('type','not in',['in_invoice','in_refund'])],'required':[('type','in',['in_invoice','in_refund'])]}"/>
+                    <field name="invoice_number" attrs="{'invisible':[('type','not in',['in_invoice','in_refund'])],'required':[('type','in',['in_invoice','in_refund'])],'readonly':[('state','in',['posted'])]}"/>
                     
                 </field>
 
@@ -51,7 +61,7 @@
 
 
         <record id="view_account_invoice_filter_inherit_receipt_of_fees" model="ir.ui.view">
-            <field name="name">account.invoice.select.inherit.receipt_of_fees</field>
+            <field name="name">account.invoice.select.inherit.receipt.of.fees</field>
             <field name="model">account.move</field>
             <field name="inherit_id" ref="account.view_account_invoice_filter"/>
             <field name="arch" type="xml">
@@ -60,9 +70,7 @@
 
                     <field name="type" invisible="1"/>
                     <field name="prefix_code"/>
-                    <!--attrs="{'invisible':[('type','not in',['in_invoice','in_refund'])]}"/>-->
                     <field name="invoice_number"/>
-                    <!--attrs="{'invisible':[('type','not in',['in_invoice','in_refund'])]}"/>-->
 
                 </field>
             </field>
@@ -70,7 +78,7 @@
 
 
         <record id="view_invoice_tree_inherit_receipt_of_fees" model="ir.ui.view">
-            <field name="name">account.invoice.tree.inherit.receipt_of_fees</field>
+            <field name="name">account.invoice.tree.inherit.receipt.of.fees</field>
             <field name="model">account.move</field>
             <field name="inherit_id" ref="account.view_invoice_tree"/>
             <field name="arch" type="xml">
@@ -78,9 +86,7 @@
                 <field name="name" position="after">
                     
                     <field name="prefix_code"/>
-                    <!--attrs="{'invisible':[('type','not in',['in_invoice','in_refund'])]}"/>-->
                     <field name="invoice_number"/>
-                    <!--attrs="{'invisible':[('type','not in',['in_invoice','in_refund'])]}"/>-->
 
                 </field>
             </field>
