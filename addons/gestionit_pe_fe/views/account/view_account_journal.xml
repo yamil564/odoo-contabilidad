@@ -19,7 +19,7 @@
             <field name="type" position="after">
                 <field name="invoice_type_code_id"/> 
                 <field name="tipo_comprobante_a_rectificar" 
-                        attrs="{'invisible':[['invoice_type_code_id','not in',['00','07','08']]],'required':[['invoice_type_code_id','in',['07','08']]]}"/> 
+                        attrs="{'invisible':[['invoice_type_code_id','not in',['00','07','08','97','98']]],'required':[['invoice_type_code_id','in',['07','08']]]}"/> 
             </field>
             <xpath expr="//group[@name='column_posting']" position="after">
                 <group string="Facturación Electrónica">

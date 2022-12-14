@@ -142,7 +142,10 @@ class AccountMove(models.Model):
                                                     ('01', 'Factura'),
                                                     ('03', 'Boleta'),
                                                     ('07', 'Nota de crédito'),
-                                                    ('08', 'Nota de débito')],
+                                                    ('08', 'Nota de débito'),
+                                                    ('91', 'Comprobante de No Domiciliado'),
+                                                    ('97', 'Nota de Crédito-No Domiciliado'),
+                                                    ('98', 'Nota de Dédito-No Domiciliado')],
                                          string="Tipo de Comprobante",
                                          readonly=True
                                          )
@@ -1795,7 +1798,7 @@ class AccountMoveReversal(models.TransientModel):
     _inherit = 'account.move.reversal'
 
     tipo_comprobante_a_rectificar = fields.Selection(
-        selection=[("00", "Otros"), ("01", "Factura"), ("03", "Boleta")])
+        selection=[("00", "Otros"), ("01", "Factura"), ("03", "Boleta"),("91","Comprobante de No Domiciliado")])
     journal_type = fields.Selection(
         selection=[("sale", "Ventas"), ("purchase", "Compras")], string="Tipo de diario")
 
@@ -1823,7 +1826,7 @@ class AccountMoveReversal(models.TransientModel):
 
         if move_ids.exists():
             journals = self.env["account.journal"].sudo().search([('tipo_comprobante_a_rectificar', '=', res['tipo_comprobante_a_rectificar']),
-                                                                  ("invoice_type_code_id","=", "07"),
+                                                                  ("invoice_type_code_id","in",["07","97"]),
                                                                   ("company_id","=",self.env.company.id),
                                                                   ("type", "=", res['journal_type'])]).ids
             res['journal_id'] = journals[0] if len(journals) > 0 else False
@@ -1836,7 +1839,7 @@ class AccountMoveReversal(models.TransientModel):
         res = super(AccountMoveReversal, self)._prepare_default_reversal(move)
         res.update({"sustento_nota": self.reason,
                     "tipo_nota_credito": self.credit_note_type,
-                    "invoice_type_code": "07"})
+                    "invoice_type_code": self.journal_id.invoice_type_code_id or "07"})
         if self.credit_note_type in ["04"]:
             res.update({"line_ids": []})
         return res

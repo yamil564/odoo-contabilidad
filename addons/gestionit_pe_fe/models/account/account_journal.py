@@ -21,7 +21,7 @@ class AccountJournal(models.Model):
     def _selection_invoice_type(self):
         return tdc
     
-    tipo_comprobante_a_rectificar = fields.Selection(selection=[("00","Otros"),("01","Factura"),("03","Boleta")])
+    tipo_comprobante_a_rectificar = fields.Selection(selection=[("00","Otros"),("01","Factura"),("03","Boleta"),("91","Comprobante de No Domiciliado")])
 
     @api.onchange("invoice_type_code_id","tipo_envio","code")
     def onchange_name(self):
