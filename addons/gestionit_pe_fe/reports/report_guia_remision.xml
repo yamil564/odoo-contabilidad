@@ -325,6 +325,31 @@
                                     </t>
                                 </div>
                             </div>
+
+                            <!-- ################################################## -->
+                            <div class="row" id="qr-section">
+
+                                <div t-if="o.state in ['validado']" class="d-flex flex-row">
+                                
+                                    <div name="electronic_guia_remision_qr">
+                                        <img t-att-src="'/report/barcode/?type=%s&amp;value=%s&amp;width=%s&amp;height=%s'%('QR', o.generate_text_qr_guia_remision(), 80, 80)"/>
+                                    </div>
+                                    
+
+                                    <div class="pl-3">
+                                        <t t-if="o.digest_value">
+                                            <span t-esc="'Hash: {}'.format(o.digest_value)"/>
+                                        </t>
+                                        <br/>
+                                        <span t-esc="'Representación impresa de la GUÍA DE REMISIÓN'"/>
+                                    </div>
+
+
+                                </div>
+                            </div>
+                            <!-- ################################################## -->
+
+
                         </t>
                     </div>
                 </t>

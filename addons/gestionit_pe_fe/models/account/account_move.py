@@ -397,9 +397,21 @@ class AccountMove(models.Model):
                 date_due_max = max(record.paymentterm_line.mapped('date_due'))
                 if record.invoice_date_due < date_due_max:
                     raise UserError(
-                        "Ninguna de las Fechas de Pago de las Cuotas debe ser mayor a la Fecha de Vencimiento del Documento !!")         
+                        "Ninguna de las Fechas de Pago de las Cuotas debe ser mayor a la Fecha de Vencimiento del Documento !!")
 
-    ###########################################################################################################
+    ##################################################################
+    @api.constrains("invoice_date_due", "paymentterm_line","paymentterm_line.date_due")
+    def check_invoice_date_emission_vs_cuotas(self):
+        for record in self:
+
+            if record.invoice_date and record.paymentterm_line and record.paymentterm_line.mapped('date_due'):
+                _logger.info('\n\nENTRE \n\n')
+                date_due_min = min(record.paymentterm_line.mapped('date_due'))
+                if record.invoice_date >= date_due_min:
+                    raise UserError(
+                        "La fecha de vencimiento de las cuotas deben de ser posteriores a la fecha de emisión del comprobante !")   
+
+    ###################################################################
 
     @api.depends("invoice_payment_term_id", "invoice_date_due")
     def _compute_invoice_payment_term_type(self):
