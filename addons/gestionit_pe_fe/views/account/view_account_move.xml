@@ -539,6 +539,11 @@
                 <filter name="tipo_comprobante_boleta" string="BOLETAS" domain="[('invoice_type_code','=','03')]"/>
                 <filter name="tipo_comprobante_nota_credito" string="NOTA DE CRÉDITO" domain="[('invoice_type_code','=','07')]"/>
                 <filter name="tipo_comprobante_nota_debito" string="NOTA DE DÉBITO" domain="[('invoice_type_code','=','08')]"/>
+
+                <separator/>
+
+                <filter name="estado_existe_items_gratuitos" string="OPERACIÓN GRATUITA" domain="[('exist_items_gratuito','=',True)]"/>
+
             </xpath>
             <xpath expr="//group/filter" position="before">
                 <filter string="Estado de comprobante electrónico" name="estado_comprobante_electronico" context="{'group_by':'estado_comprobante_electronico'}"/>

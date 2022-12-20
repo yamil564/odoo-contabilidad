@@ -712,6 +712,34 @@ class AccountMove(models.Model):
     guia_remision_count = fields.Integer(
         "Cantidad de GRE", compute="_compute_guia_remision_count")
 
+    ######################## FLAG DE ITEMS GRATUITOS ########################
+    exist_items_gratuito = fields.Boolean(string="Operacion Gratuita",copy=False,
+        compute="compute_exist_items_gratuito",default=False,store=True)
+
+    @api.depends(
+        'line_ids',
+        'line_ids.tax_ids',
+        'line_ids.debit',
+        'line_ids.credit',
+        'line_ids.currency_id',
+        'line_ids.amount_currency',
+        'line_ids.amount_residual',
+        'line_ids.amount_residual_currency',
+        'line_ids.payment_id.state',
+        'descuento_global',
+        'apply_global_discount',
+        'retention_rate',
+        'apply_retention')
+    def compute_exist_items_gratuito(self):
+        for move in self:
+            move.exist_items_gratuito = False
+
+            for line in move.line_ids:
+                if len([1 for line_tax in line.tax_ids \
+                    if line_tax.tax_group_id.tipo_afectacion in ["31", "32", "33", "34", "35", "36", "37"]]):
+                    move.exist_items_gratuito = True
+
+    ###########################################################################
     def _compute_guia_remision_count(self):
         for record in self:
             record.guia_remision_count = len(record.guia_remision_ids)
