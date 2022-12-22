@@ -230,6 +230,11 @@ class GuiaRemision(models.Model):
         "account.log.status", "guia_remision_id", string="Registro de Envíos", copy=False)
 
     current_log_status_id = fields.Many2one("account.log.status",copy=False)
+
+    ######################## CODE HASH ###################################################
+    digest_value = fields.Char(string="Digest Value",copy=False,default="*",compute="compute_campo_digest_value")
+    #    "current_log_status_id.digest_value"
+    #######################################################################################
     # SERIE Y CORRELATIVO
     journal_id = fields.Many2one("account.journal", string="Serie", states={
                                  'validado': [('readonly', True)]})
@@ -248,6 +253,29 @@ class GuiaRemision(models.Model):
     transporte_lines = fields.One2many('gestionit.lineas_transporte', 'guia_id', 'Lineas de Transporte')
     note = fields.Text('Observaciones')
     multiple_tramos = fields.Boolean('Multiples Tramos', default=False)
+
+    ###############################################
+    @api.depends('current_log_status_id')
+    def compute_campo_digest_value(self):
+        for rec in self:
+            if rec.current_log_status_id:
+                rec.digest_value = rec.current_log_status_id.digest_value
+            else:
+                rec.digest_value = "*"
+    
+    ########################################################
+    def generate_text_qr_guia_remision(self):
+        ruc_emisor = self.destinatario_partner_id.vat
+        invoice_ids = self.comprobante_pago_ids
+        if invoice_ids:
+            invoice_id = invoice_ids[0]
+            prefix_code,invoice_number = invoice_id.name.split('-')
+
+            if prefix_code and invoice_number:
+                #digest_value = invoice.digest_value if invoice.digest_value else "-"
+                s = ruc_emisor+"|"+prefix_code+"|"+invoice_number
+                return s
+    ########################################################
 
     def action_send_email(self):
         self.ensure_one()

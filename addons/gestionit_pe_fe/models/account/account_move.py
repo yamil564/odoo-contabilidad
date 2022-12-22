@@ -142,7 +142,10 @@ class AccountMove(models.Model):
                                                     ('01', 'Factura'),
                                                     ('03', 'Boleta'),
                                                     ('07', 'Nota de crédito'),
-                                                    ('08', 'Nota de débito')],
+                                                    ('08', 'Nota de débito'),
+                                                    ('91', 'Comprobante de No Domiciliado'),
+                                                    ('97', 'Nota de Crédito-No Domiciliado'),
+                                                    ('98', 'Nota de Dédito-No Domiciliado')],
                                          string="Tipo de Comprobante",
                                          readonly=True
                                          )
@@ -394,9 +397,21 @@ class AccountMove(models.Model):
                 date_due_max = max(record.paymentterm_line.mapped('date_due'))
                 if record.invoice_date_due < date_due_max:
                     raise UserError(
-                        "Ninguna de las Fechas de Pago de las Cuotas debe ser mayor a la Fecha de Vencimiento del Documento !!")         
+                        "Ninguna de las Fechas de Pago de las Cuotas debe ser mayor a la Fecha de Vencimiento del Documento !!")
 
-    ###########################################################################################################
+    ##################################################################
+    @api.constrains("invoice_date_due", "paymentterm_line","paymentterm_line.date_due")
+    def check_invoice_date_emission_vs_cuotas(self):
+        for record in self:
+
+            if record.invoice_date and record.paymentterm_line and record.paymentterm_line.mapped('date_due'):
+                _logger.info('\n\nENTRE \n\n')
+                date_due_min = min(record.paymentterm_line.mapped('date_due'))
+                if record.invoice_date >= date_due_min:
+                    raise UserError(
+                        "La fecha de vencimiento de las cuotas deben de ser posteriores a la fecha de emisión del comprobante !")   
+
+    ###################################################################
 
     @api.depends("invoice_payment_term_id", "invoice_date_due")
     def _compute_invoice_payment_term_type(self):
@@ -697,6 +712,34 @@ class AccountMove(models.Model):
     guia_remision_count = fields.Integer(
         "Cantidad de GRE", compute="_compute_guia_remision_count")
 
+    ######################## FLAG DE ITEMS GRATUITOS ########################
+    exist_items_gratuito = fields.Boolean(string="Operacion Gratuita",copy=False,
+        compute="compute_exist_items_gratuito",default=False,store=True)
+
+    @api.depends(
+        'line_ids',
+        'line_ids.tax_ids',
+        'line_ids.debit',
+        'line_ids.credit',
+        'line_ids.currency_id',
+        'line_ids.amount_currency',
+        'line_ids.amount_residual',
+        'line_ids.amount_residual_currency',
+        'line_ids.payment_id.state',
+        'descuento_global',
+        'apply_global_discount',
+        'retention_rate',
+        'apply_retention')
+    def compute_exist_items_gratuito(self):
+        for move in self:
+            move.exist_items_gratuito = False
+
+            for line in move.line_ids:
+                if len([1 for line_tax in line.tax_ids \
+                    if line_tax.tax_group_id.tipo_afectacion in ["31", "32", "33", "34", "35", "36", "37"]]):
+                    move.exist_items_gratuito = True
+
+    ###########################################################################
     def _compute_guia_remision_count(self):
         for record in self:
             record.guia_remision_count = len(record.guia_remision_ids)
@@ -1795,7 +1838,7 @@ class AccountMoveReversal(models.TransientModel):
     _inherit = 'account.move.reversal'
 
     tipo_comprobante_a_rectificar = fields.Selection(
-        selection=[("00", "Otros"), ("01", "Factura"), ("03", "Boleta")])
+        selection=[("00", "Otros"), ("01", "Factura"), ("03", "Boleta"),("91","Comprobante de No Domiciliado")])
     journal_type = fields.Selection(
         selection=[("sale", "Ventas"), ("purchase", "Compras")], string="Tipo de diario")
 
@@ -1823,7 +1866,7 @@ class AccountMoveReversal(models.TransientModel):
 
         if move_ids.exists():
             journals = self.env["account.journal"].sudo().search([('tipo_comprobante_a_rectificar', '=', res['tipo_comprobante_a_rectificar']),
-                                                                  ("invoice_type_code_id","=", "07"),
+                                                                  ("invoice_type_code_id","in",["07","97"]),
                                                                   ("company_id","=",self.env.company.id),
                                                                   ("type", "=", res['journal_type'])]).ids
             res['journal_id'] = journals[0] if len(journals) > 0 else False
@@ -1836,7 +1879,7 @@ class AccountMoveReversal(models.TransientModel):
         res = super(AccountMoveReversal, self)._prepare_default_reversal(move)
         res.update({"sustento_nota": self.reason,
                     "tipo_nota_credito": self.credit_note_type,
-                    "invoice_type_code": "07"})
+                    "invoice_type_code": self.journal_id.invoice_type_code_id or "07"})
         if self.credit_note_type in ["04"]:
             res.update({"line_ids": []})
         return res
