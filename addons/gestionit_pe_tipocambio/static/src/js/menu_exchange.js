@@ -1,10 +1,9 @@
-odoo.define("gestionit_pe_tipocambio.menu_exchange",[
-    "web.SystrayMenu",
-    "web.Widget"
-],function(require){
+odoo.define("gestionit_pe_tipocambio.menu_exchange",function(require){
     "use strict";
     var SystrayMenu = require('web.SystrayMenu');
     var Widget = require('web.Widget');
+    var rpc = require('web.rpc');
+    var ajax = require('web.ajax');
 
     function dateToYMD(date) {
         var d = date.getDate();
@@ -93,5 +92,15 @@ odoo.define("gestionit_pe_tipocambio.menu_exchange",[
         },
 
     })
-    SystrayMenu.Items.push(ExchangeMenu);
+    rpc.query({
+        model:"res.users",
+        method:"has_group",
+        args:['gestionit_pe_tipocambio.res_groups_access_exchange_usd_pen_view'],
+        kwarts:{}
+    }).then(function(res){
+        if(res){
+            SystrayMenu.Items.push(ExchangeMenu);
+        }
+    })
+    
 })

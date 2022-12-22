@@ -25,8 +25,8 @@ RUN set -x; \
 RUN apt-get -y install locales locales-all
 RUN update-locale 
 
-EXPOSE 8080/tcp
 
+RUN apt-get install -y poppler-utils 
 RUN python3 -m pip install --upgrade pip
 RUN apt-get clean && apt-get autoclean
 RUN pip3 install pyjwt
@@ -57,3 +57,4 @@ RUN pip install jsondiff
 RUN pip install extendable-pydantic
 RUN apt-get clean && apt-get autoclean
 RUN pip install --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib
+RUN pip3 install pdf2image
